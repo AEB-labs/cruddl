@@ -21,14 +21,12 @@
       {
         "locations": [
           {
-            "column": 5,
-            "line": 20
+            "line": 14,
+            "column": 5
           }
         ],
         "message": "Can't combine \"addTo_number\" and \"multiplyWith_number\" in \"UpdateNumberRangeInput\"",
-        "path": [
-          "updateNumberRange"
-        ]
+        "path": ["updateNumberRange"]
       }
     ]
   },
@@ -40,14 +38,12 @@
       {
         "locations": [
           {
-            "column": 5,
-            "line": 30
+            "line": 22,
+            "column": 5
           }
         ],
         "message": "Can't combine \"number\" and \"multiplyWith_number\" in \"UpdateNumberRangeInput\"",
-        "path": [
-          "updateNumberRange"
-        ]
+        "path": ["updateNumberRange"]
       }
     ]
   }

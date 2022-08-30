@@ -14,7 +14,9 @@ function ensureStringMap(value: any) {
             }
             delete value[propKey];
         } else if (typeof propVal !== 'string') {
-            throw new TypeError(`Expected value of property ${JSON.stringify(propKey)} to be a string`);
+            throw new TypeError(
+                `Expected value of property ${JSON.stringify(propKey)} to be a string`,
+            );
         }
     }
 
@@ -39,7 +41,9 @@ function parseStringMap(ast: ASTNode, variables: { [key: string]: unknown } | nu
                 }
                 if (typeof variableValue !== 'string') {
                     throw new TypeError(
-                        `Expected value of property ${JSON.stringify(field.name.value)} to be a string`
+                        `Expected value of property ${JSON.stringify(
+                            field.name.value,
+                        )} to be a string`,
                     );
                 }
                 value[field.name.value] = variableValue;
@@ -48,7 +52,9 @@ function parseStringMap(ast: ASTNode, variables: { [key: string]: unknown } | nu
                 // we allow this but silently discard of it
                 break;
             default:
-                throw new TypeError(`Expected value of property ${JSON.stringify(field.name.value)} to be a string`);
+                throw new TypeError(
+                    `Expected value of property ${JSON.stringify(field.name.value)} to be a string`,
+                );
         }
     }
     return value;
@@ -63,7 +69,7 @@ This type can be used for key-value mappings where fetching keys without values 
 Values are *not* additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.`,
     serialize: ensureStringMap,
     parseValue: ensureStringMap,
-    parseLiteral: parseStringMap
+    parseLiteral: parseStringMap,
 });
 
 export const GraphQLI18nString = new GraphQLScalarType({
@@ -75,5 +81,5 @@ export const GraphQLI18nString = new GraphQLScalarType({
     Values are *not* additionally JSON-encoded or JSON-parsed, so e.g. pass a raw JSON object here instead of a JSON-representation of that object.`,
     serialize: ensureStringMap,
     parseValue: ensureStringMap,
-    parseLiteral: parseStringMap
+    parseLiteral: parseStringMap,
 });

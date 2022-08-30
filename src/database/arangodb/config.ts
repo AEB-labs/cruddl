@@ -80,7 +80,7 @@ export function initDatabase(config: ArangoDBConfig): Database {
     const db = new CustomDatabase({
         ...(config.arangoJSConfig ? config.arangoJSConfig : {}),
         url: config.url,
-        databaseName: config.databaseName
+        databaseName: config.databaseName,
     });
     if (config.user) {
         db.useBasicAuth(config.user, config.password);

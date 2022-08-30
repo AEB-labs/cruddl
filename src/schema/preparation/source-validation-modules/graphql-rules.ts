@@ -9,7 +9,7 @@ import {
     UniqueEnumValueNamesRule,
     validate,
     ValuesOfCorrectTypeRule,
-    VariablesInAllowedPositionRule
+    VariablesInAllowedPositionRule,
 } from 'graphql';
 import gql from 'graphql-tag';
 import { KnownArgumentNamesOnDirectivesRule } from 'graphql/validation/rules/KnownArgumentNamesRule';
@@ -31,7 +31,7 @@ const rules = [
     UniqueEnumValueNamesRule,
     ValuesOfCorrectTypeRule,
     ProvidedRequiredArgumentsOnDirectivesRule,
-    VariablesInAllowedPositionRule
+    VariablesInAllowedPositionRule,
 ];
 
 export class GraphQLRulesValidator implements ParsedSourceValidator {
@@ -42,8 +42,8 @@ export class GraphQLRulesValidator implements ParsedSourceValidator {
 
         let ast = source.document;
 
-        return validate(coreSchema, ast, rules).map(error =>
-            ValidationMessage.error(error.message, getMessageLocation(error))
+        return validate(coreSchema, ast, rules).map((error) =>
+            ValidationMessage.error(error.message, getMessageLocation(error)),
         );
     }
 }
@@ -67,7 +67,11 @@ const schemaBase: DocumentNode = gql`
 
 const coreSchema = buildASTSchema({
     kind: 'Document',
-    definitions: [...DIRECTIVES.definitions, ...CORE_SCALARS.definitions, ...schemaBase.definitions]
+    definitions: [
+        ...DIRECTIVES.definitions,
+        ...CORE_SCALARS.definitions,
+        ...schemaBase.definitions,
+    ],
 });
 
 function getDescriptionFromSyntaxError(error: GraphQLError) {

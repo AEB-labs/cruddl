@@ -1,4 +1,4 @@
 {
-    "roles": ["users"],
-    "rootEntities": {}
+  "roles": ["users"],
+  "rootEntities": {}
 }

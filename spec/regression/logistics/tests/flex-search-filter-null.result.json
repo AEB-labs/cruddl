@@ -1,180 +1,180 @@
 {
-    "stringEqualsNull": {
-        "data": {
-            "flexSearchCountries": [
-                {
-                    "isoCode": "CH",
-                    "someKey": null
-                },
-                {
-                    "isoCode": "US",
-                    "someKey": null
-                }
-            ]
+  "stringEqualsNull": {
+    "data": {
+      "flexSearchCountries": [
+        {
+          "isoCode": "CH",
+          "someKey": null
+        },
+        {
+          "isoCode": "US",
+          "someKey": null
         }
-    },
-    "stringNotEqualsNull": {
-        "data": {
-            "flexSearchCountries": [
-                {
-                    "isoCode": "DE",
-                    "someKey": "1"
-                },
-                {
-                    "isoCode": "GB",
-                    "someKey": "2"
-                }
-            ]
-        }
-    },
-    "stringGreaterThanNull": {
-        "data": {
-            "flexSearchCountries": [
-                {
-                    "isoCode": "DE",
-                    "someKey": "1"
-                },
-                {
-                    "isoCode": "GB",
-                    "someKey": "2"
-                }
-            ]
-        }
-    },
-    "stringGreaterThanOrEqualNull": {
-        "data": {
-            "flexSearchCountries": [
-                {
-                    "isoCode": "CH",
-                    "someKey": null
-                },
-                {
-                    "isoCode": "DE",
-                    "someKey": "1"
-                },
-                {
-                    "isoCode": "GB",
-                    "someKey": "2"
-                },
-                {
-                    "isoCode": "US",
-                    "someKey": null
-                }
-            ]
-        }
-    },
-    "stringLessThanNull": {
-        "data": {
-            "flexSearchCountries": []
-        }
-    },
-    "stringLessThanOrEqualNull": {
-        "data": {
-            "flexSearchCountries": [
-                {
-                    "isoCode": "CH",
-                    "someKey": null
-                },
-                {
-                    "isoCode": "US",
-                    "someKey": null
-                }
-            ]
-        }
-    },
-    "stringInNull": {
-        "data": {
-            "flexSearchCountries": [
-                {
-                    "isoCode": "CH",
-                    "someKey": null
-                },
-                {
-                    "isoCode": "DE",
-                    "someKey": "1"
-                },
-                {
-                    "isoCode": "US",
-                    "someKey": null
-                }
-            ]
-        }
-    },
-    "stringNotInNull": {
-        "data": {
-            "flexSearchCountries": [
-                {
-                    "isoCode": "GB",
-                    "someKey": "2"
-                }
-            ]
-        }
-    },
-    "stringStartsWithNull": {
-        "data": {
-            "flexSearchCountries": [
-                {
-                    "isoCode": "CH",
-                    "someKey": null
-                },
-                {
-                    "isoCode": "DE",
-                    "someKey": "1"
-                },
-                {
-                    "isoCode": "GB",
-                    "someKey": "2"
-                },
-                {
-                    "isoCode": "US",
-                    "someKey": null
-                }
-            ]
-        }
-    },
-    "stringNotStartsWithNull": {
-        "data": {
-            "flexSearchCountries": [
-                {
-                    "isoCode": "CH",
-                    "someKey": null
-                },
-                {
-                    "isoCode": "DE",
-                    "someKey": "1"
-                },
-                {
-                    "isoCode": "GB",
-                    "someKey": "2"
-                },
-                {
-                    "isoCode": "US",
-                    "someKey": null
-                }
-            ]
-        }
-    },
-    "nothingIsLessThanNull": {
-        "data": {
-            "flexSearchDeliveries": []
-        }
-    },
-    "everythingIsGreaterThanNull": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173",
-                    "sometimesNull": "1"
-                },
-                {
-                    "deliveryNumber": "1000521",
-                    "sometimesNull": "2"
-                },
-                {
-                    "deliveryNumber": "1000522",
-                    "sometimesNull": null
-                }
-            ]
-        }
+      ]
     }
+  },
+  "stringNotEqualsNull": {
+    "data": {
+      "flexSearchCountries": [
+        {
+          "isoCode": "DE",
+          "someKey": "1"
+        },
+        {
+          "isoCode": "GB",
+          "someKey": "2"
+        }
+      ]
+    }
+  },
+  "stringGreaterThanNull": {
+    "data": {
+      "flexSearchCountries": [
+        {
+          "isoCode": "DE",
+          "someKey": "1"
+        },
+        {
+          "isoCode": "GB",
+          "someKey": "2"
+        }
+      ]
+    }
+  },
+  "stringGreaterThanOrEqualNull": {
+    "data": {
+      "flexSearchCountries": [
+        {
+          "isoCode": "CH",
+          "someKey": null
+        },
+        {
+          "isoCode": "DE",
+          "someKey": "1"
+        },
+        {
+          "isoCode": "GB",
+          "someKey": "2"
+        },
+        {
+          "isoCode": "US",
+          "someKey": null
+        }
+      ]
+    }
+  },
+  "stringLessThanNull": {
+    "data": {
+      "flexSearchCountries": []
+    }
+  },
+  "stringLessThanOrEqualNull": {
+    "data": {
+      "flexSearchCountries": [
+        {
+          "isoCode": "CH",
+          "someKey": null
+        },
+        {
+          "isoCode": "US",
+          "someKey": null
+        }
+      ]
+    }
+  },
+  "stringInNull": {
+    "data": {
+      "flexSearchCountries": [
+        {
+          "isoCode": "CH",
+          "someKey": null
+        },
+        {
+          "isoCode": "DE",
+          "someKey": "1"
+        },
+        {
+          "isoCode": "US",
+          "someKey": null
+        }
+      ]
+    }
+  },
+  "stringNotInNull": {
+    "data": {
+      "flexSearchCountries": [
+        {
+          "isoCode": "GB",
+          "someKey": "2"
+        }
+      ]
+    }
+  },
+  "stringStartsWithNull": {
+    "data": {
+      "flexSearchCountries": [
+        {
+          "isoCode": "CH",
+          "someKey": null
+        },
+        {
+          "isoCode": "DE",
+          "someKey": "1"
+        },
+        {
+          "isoCode": "GB",
+          "someKey": "2"
+        },
+        {
+          "isoCode": "US",
+          "someKey": null
+        }
+      ]
+    }
+  },
+  "stringNotStartsWithNull": {
+    "data": {
+      "flexSearchCountries": [
+        {
+          "isoCode": "CH",
+          "someKey": null
+        },
+        {
+          "isoCode": "DE",
+          "someKey": "1"
+        },
+        {
+          "isoCode": "GB",
+          "someKey": "2"
+        },
+        {
+          "isoCode": "US",
+          "someKey": null
+        }
+      ]
+    }
+  },
+  "nothingIsLessThanNull": {
+    "data": {
+      "flexSearchDeliveries": []
+    }
+  },
+  "everythingIsGreaterThanNull": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "sometimesNull": "1"
+        },
+        {
+          "deliveryNumber": "1000521",
+          "sometimesNull": "2"
+        },
+        {
+          "deliveryNumber": "1000522",
+          "sometimesNull": null
+        }
+      ]
+    }
+  }
 }

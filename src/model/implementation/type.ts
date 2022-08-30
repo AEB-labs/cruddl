@@ -17,9 +17,9 @@ export class InvalidType extends ScalarType {
             {
                 kind: TypeKind.SCALAR,
                 name,
-                graphQLScalarType: GraphQLString
+                graphQLScalarType: GraphQLString,
             },
-            model
+            model,
         );
     }
 }

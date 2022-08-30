@@ -149,17 +149,25 @@ const VALIDATION_ERROR_INVALID_DEFINITION_KIND =
 function createTypeInputs(
     parsedProject: ParsedProject,
     context: ValidationContext,
-    options: ModelOptions
+    options: ModelOptions,
 ): ReadonlyArray<TypeConfig> {
     const graphQLSchemaParts = parsedProject.sources.filter(
-        (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.GRAPHQL
+        (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.GRAPHQL,
     ) as ReadonlyArray<ParsedGraphQLProjectSource>;
     return flatMap(graphQLSchemaParts, (schemaPart) =>
         compact(
             schemaPart.document.definitions.map((definition) => {
                 // Only look at object types and enums (scalars are not supported yet, they need to be implemented somehow, e.g. via regex check)
-                if (definition.kind != OBJECT_TYPE_DEFINITION && definition.kind !== ENUM_TYPE_DEFINITION) {
-                    context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVALID_DEFINITION_KIND, definition));
+                if (
+                    definition.kind != OBJECT_TYPE_DEFINITION &&
+                    definition.kind !== ENUM_TYPE_DEFINITION
+                ) {
+                    context.addMessage(
+                        ValidationMessage.error(
+                            VALIDATION_ERROR_INVALID_DEFINITION_KIND,
+                            definition,
+                        ),
+                    );
                     return undefined;
                 }
 
@@ -183,19 +191,21 @@ function createTypeInputs(
                     default:
                         return undefined;
                 }
-            })
-        )
+            }),
+        ),
     );
 }
 
-function createEnumValues(valueNodes: ReadonlyArray<EnumValueDefinitionNode>): ReadonlyArray<EnumValueConfig> {
+function createEnumValues(
+    valueNodes: ReadonlyArray<EnumValueDefinitionNode>,
+): ReadonlyArray<EnumValueConfig> {
     return valueNodes.map(
         (valNode): EnumValueConfig => ({
             value: valNode.name.value,
             description: valNode.description && valNode.description.value,
             deprecationReason: getDeprecationReason(valNode),
             astNode: valNode,
-        })
+        }),
     );
 }
 
@@ -203,7 +213,7 @@ function createObjectTypeInput(
     definition: ObjectTypeDefinitionNode,
     schemaPart: ParsedGraphQLProjectSource,
     context: ValidationContext,
-    options: ModelOptions
+    options: ModelOptions,
 ): ObjectTypeConfig {
     const entityType = getKindOfObjectTypeNode(definition, context);
 
@@ -221,8 +231,8 @@ function createObjectTypeInput(
         context.addMessage(
             ValidationMessage.error(
                 `The directive @${BUSINESS_OBJECT_DIRECTIVE} can only be used on root entity type definitions.`,
-                definition.loc
-            )
+                definition.loc,
+            ),
         );
     }
 
@@ -267,7 +277,7 @@ function createObjectTypeInput(
 function processKeyField(
     definition: ObjectTypeDefinitionNode,
     fields: ReadonlyArray<FieldConfig>,
-    context: ValidationContext
+    context: ValidationContext,
 ) {
     let keyFieldASTNode: FieldDefinitionNode | undefined = getKeyFieldASTNode(definition, context);
     let keyFieldName: string | undefined = keyFieldASTNode ? keyFieldASTNode.name.value : undefined;
@@ -280,15 +290,15 @@ function processKeyField(
             context.addMessage(
                 ValidationMessage.warn(
                     `The field "_key" is deprecated and should be replaced with "id" (of type "ID").`,
-                    underscoreKeyField.astNode
-                )
+                    underscoreKeyField.astNode,
+                ),
             );
         } else {
             context.addMessage(
                 ValidationMessage.error(
                     `The field name "_key" is reserved and can only be used in combination with @key.`,
-                    underscoreKeyField.astNode
-                )
+                    underscoreKeyField.astNode,
+                ),
             );
         }
     }
@@ -302,12 +312,14 @@ function processKeyField(
             context.addMessage(
                 ValidationMessage.warn(
                     `The field "id" is redundant and should only be explicitly added when used with @key.`,
-                    idField.astNode
-                )
+                    idField.astNode,
+                ),
             );
         }
         if (idField.typeName !== GraphQLID.name || idField.isList) {
-            context.addMessage(ValidationMessage.error(`The field "id" must be of type "ID".`, idField.astNode));
+            context.addMessage(
+                ValidationMessage.error(`The field "id" must be of type "ID".`, idField.astNode),
+            );
         }
     }
     return { fields, keyFieldASTNode, keyFieldName };
@@ -321,20 +333,25 @@ function getDefaultValue(fieldNode: FieldDefinitionNode, context: ValidationCont
     const defaultValueArg = getNodeByName(defaultValueDirective.arguments, VALUE_ARG);
     if (!defaultValueArg) {
         context.addMessage(
-            ValidationMessage.error(VALIDATION_ERROR_MISSING_ARGUMENT_DEFAULT_VALUE, defaultValueDirective)
+            ValidationMessage.error(
+                VALIDATION_ERROR_MISSING_ARGUMENT_DEFAULT_VALUE,
+                defaultValueDirective,
+            ),
         );
         return undefined;
     }
     return getValueFromAST(defaultValueArg.value);
 }
 
-function getFlexSearchOrder(rootEntityDirective?: DirectiveNode): ReadonlyArray<FlexSearchPrimarySortClauseConfig> {
+function getFlexSearchOrder(
+    rootEntityDirective?: DirectiveNode,
+): ReadonlyArray<FlexSearchPrimarySortClauseConfig> {
     if (!rootEntityDirective) {
         return [];
     }
     const argumentFlexSearchOrder: ArgumentNode | undefined = getNodeByName(
         rootEntityDirective.arguments,
-        FLEX_SEARCH_ORDER_ARGUMENT
+        FLEX_SEARCH_ORDER_ARGUMENT,
     );
     if (argumentFlexSearchOrder && argumentFlexSearchOrder.value.kind === 'ListValue') {
         return argumentFlexSearchOrder.value.values
@@ -344,7 +361,10 @@ function getFlexSearchOrder(rootEntityDirective?: DirectiveNode): ReadonlyArray<
             .map((value: any) => {
                 return {
                     field: value.field,
-                    direction: value.direction === 'DESC' ? OrderDirection.DESCENDING : OrderDirection.ASCENDING,
+                    direction:
+                        value.direction === 'DESC'
+                            ? OrderDirection.DESCENDING
+                            : OrderDirection.ASCENDING,
                 };
             });
     }
@@ -353,7 +373,7 @@ function getFlexSearchOrder(rootEntityDirective?: DirectiveNode): ReadonlyArray<
 
 function createFlexSearchDefinitionInputs(
     objectNode: ObjectTypeDefinitionNode,
-    context: ValidationContext
+    context: ValidationContext,
 ): FlexSearchIndexConfig {
     let directive = findDirectiveWithName(objectNode, ROOT_ENTITY_DIRECTIVE);
     let config = {
@@ -364,7 +384,7 @@ function createFlexSearchDefinitionInputs(
     if (directive) {
         const argumentIndexed: ArgumentNode | undefined = getNodeByName(
             directive.arguments,
-            FLEX_SEARCH_INDEXED_ARGUMENT
+            FLEX_SEARCH_INDEXED_ARGUMENT,
         );
         if (argumentIndexed) {
             if (argumentIndexed.value.kind === 'BooleanValue') {
@@ -377,7 +397,7 @@ function createFlexSearchDefinitionInputs(
 
 function getFlexSearchIndexCaseSensitiveNode(
     fieldNode: FieldDefinitionNode,
-    context: ValidationContext
+    context: ValidationContext,
 ): ArgumentNode | undefined {
     const directive = findDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE);
     if (directive) {
@@ -391,30 +411,46 @@ function getFlexSearchIndexCaseSensitiveNode(
     return undefined;
 }
 
-function getIsIncludedInSearch(fieldNode: FieldDefinitionNode, context: ValidationContext): boolean {
+function getIsIncludedInSearch(
+    fieldNode: FieldDefinitionNode,
+    context: ValidationContext,
+): boolean {
     const directive = findDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE);
     if (directive) {
-        const argument = getNodeByName(directive.arguments, FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT);
+        const argument = getNodeByName(
+            directive.arguments,
+            FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
+        );
         if (argument) {
             if (argument.value.kind === 'BooleanValue') {
                 return argument.value.value;
             } else {
-                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc));
+                context.addMessage(
+                    ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc),
+                );
             }
         }
     }
     return false;
 }
 
-function getIsFulltextIncludedInSearch(fieldNode: FieldDefinitionNode, context: ValidationContext): boolean {
+function getIsFulltextIncludedInSearch(
+    fieldNode: FieldDefinitionNode,
+    context: ValidationContext,
+): boolean {
     const directive = findDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE);
     if (directive) {
-        const argument = getNodeByName(directive.arguments, FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT);
+        const argument = getNodeByName(
+            directive.arguments,
+            FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
+        );
         if (argument) {
             if (argument.value.kind === 'BooleanValue') {
                 return argument.value.value;
             } else {
-                context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc));
+                context.addMessage(
+                    ValidationMessage.error(VALIDATION_ERROR_EXPECTED_BOOLEAN, argument.value.loc),
+                );
             }
         }
     }
@@ -423,7 +459,7 @@ function getIsFulltextIncludedInSearch(fieldNode: FieldDefinitionNode, context: 
 
 function getDefaultLanguage(
     objectTypeDefinitionNode: ObjectTypeDefinitionNode,
-    context: ValidationContext
+    context: ValidationContext,
 ): FlexSearchLanguage | undefined {
     let directive: DirectiveNode | undefined =
         findDirectiveWithName(objectTypeDefinitionNode, ROOT_ENTITY_DIRECTIVE) ||
@@ -433,7 +469,10 @@ function getDefaultLanguage(
     if (!directive) {
         return undefined;
     }
-    const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, FLEX_SEARCH_DEFAULT_LANGUAGE_ARG);
+    const argument: ArgumentNode | undefined = getNodeByName(
+        directive.arguments,
+        FLEX_SEARCH_DEFAULT_LANGUAGE_ARG,
+    );
     if (!argument) {
         return undefined;
     }
@@ -441,17 +480,28 @@ function getDefaultLanguage(
     if (argument.value.kind === 'EnumValue') {
         return argument.value.value as FlexSearchLanguage;
     } else {
-        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM, argument.value.loc));
+        context.addMessage(
+            ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM, argument.value.loc),
+        );
         return undefined;
     }
 }
 
-function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext): FlexSearchLanguage | undefined {
-    let directive: DirectiveNode | undefined = findDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE);
+function getLanguage(
+    fieldNode: FieldDefinitionNode,
+    context: ValidationContext,
+): FlexSearchLanguage | undefined {
+    let directive: DirectiveNode | undefined = findDirectiveWithName(
+        fieldNode,
+        FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
+    );
     if (!directive) {
         return undefined;
     }
-    const argument: ArgumentNode | undefined = getNodeByName(directive.arguments, FLEX_SEARCH_INDEXED_LANGUAGE_ARG);
+    const argument: ArgumentNode | undefined = getNodeByName(
+        directive.arguments,
+        FLEX_SEARCH_INDEXED_LANGUAGE_ARG,
+    );
     if (!argument) {
         return undefined;
     }
@@ -459,7 +509,9 @@ function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext)
     if (argument.value.kind === 'EnumValue') {
         return argument.value.value as FlexSearchLanguage;
     } else {
-        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM, argument.value.loc));
+        context.addMessage(
+            ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM, argument.value.loc),
+        );
         return undefined;
     }
 }
@@ -467,7 +519,7 @@ function getLanguage(fieldNode: FieldDefinitionNode, context: ValidationContext)
 function createFieldInput(
     fieldNode: FieldDefinitionNode,
     context: ValidationContext,
-    options: ModelOptions
+    options: ModelOptions,
 ): FieldConfig {
     const inverseOfASTNode = getInverseOfASTNode(fieldNode, context);
     const relationDeleteActionASTNode = getRelationDeleteActionASTNode(fieldNode, context);
@@ -475,7 +527,10 @@ function createFieldInput(
     const referenceKeyFieldASTNode = getReferenceKeyFieldASTNode(fieldNode, context);
     const parentDirectiveNode = findDirectiveWithName(fieldNode, PARENT_DIRECTIVE);
     const rootDirectiveNode = findDirectiveWithName(fieldNode, ROOT_DIRECTIVE);
-    const flexSearchIndexCaseSensitiveNode = getFlexSearchIndexCaseSensitiveNode(fieldNode, context);
+    const flexSearchIndexCaseSensitiveNode = getFlexSearchIndexCaseSensitiveNode(
+        fieldNode,
+        context,
+    );
     const accessFieldDirectiveASTNode = findDirectiveWithName(fieldNode, ACCESS_FIELD_DIRECTIVE);
 
     return {
@@ -514,8 +569,14 @@ function createFieldInput(
                 ? flexSearchIndexCaseSensitiveNode.value.value
                 : options.isFlexSearchIndexCaseSensitiveByDefault,
         isFlexSearchIndexedASTNode: findDirectiveWithName(fieldNode, FLEX_SEARCH_INDEXED_DIRECTIVE),
-        isFlexSearchFulltextIndexed: hasDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
-        isFlexSearchFulltextIndexedASTNode: findDirectiveWithName(fieldNode, FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE),
+        isFlexSearchFulltextIndexed: hasDirectiveWithName(
+            fieldNode,
+            FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
+        ),
+        isFlexSearchFulltextIndexedASTNode: findDirectiveWithName(
+            fieldNode,
+            FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
+        ),
         isIncludedInSearch: getIsIncludedInSearch(fieldNode, context),
         isFulltextIncludedInSearch: getIsFulltextIncludedInSearch(fieldNode, context),
         flexSearchLanguage: getLanguage(fieldNode, context),
@@ -527,16 +588,22 @@ function createFieldInput(
 
 function getCalcMutationOperators(
     fieldNode: FieldDefinitionNode,
-    context: ValidationContext
+    context: ValidationContext,
 ): ReadonlyArray<CalcMutationsOperator> {
     const calcMutationsDirective = findDirectiveWithName(fieldNode, CALC_MUTATIONS_DIRECTIVE);
     if (!calcMutationsDirective) {
         return [];
     }
-    const calcMutationsArg = getNodeByName(calcMutationsDirective.arguments, CALC_MUTATIONS_OPERATORS_ARG);
+    const calcMutationsArg = getNodeByName(
+        calcMutationsDirective.arguments,
+        CALC_MUTATIONS_OPERATORS_ARG,
+    );
     if (!calcMutationsArg) {
         context.addMessage(
-            ValidationMessage.error(VALIDATION_ERROR_MISSING_ARGUMENT_OPERATORS, calcMutationsDirective.loc)
+            ValidationMessage.error(
+                VALIDATION_ERROR_MISSING_ARGUMENT_OPERATORS,
+                calcMutationsDirective.loc,
+            ),
         );
         return [];
     }
@@ -547,17 +614,23 @@ function getCalcMutationOperators(
             calcMutationsArg.value.values.map((val) => {
                 if (val.kind !== ENUM) {
                     context.addMessage(
-                        ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS, val.loc)
+                        ValidationMessage.error(
+                            VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS,
+                            val.loc,
+                        ),
                     );
                     return undefined;
                 } else {
                     return val.value as CalcMutationsOperator;
                 }
-            })
+            }),
         );
     } else {
         context.addMessage(
-            ValidationMessage.error(VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS, calcMutationsArg.value.loc)
+            ValidationMessage.error(
+                VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS,
+                calcMutationsArg.value.loc,
+            ),
         );
         return [];
     }
@@ -565,7 +638,7 @@ function getCalcMutationOperators(
 
 function createIndexDefinitionInputs(
     definition: ObjectTypeDefinitionNode,
-    context: ValidationContext
+    context: ValidationContext,
 ): ReadonlyArray<IndexDefinitionConfig> {
     return [
         ...createRootEntityBasedIndices(definition, context),
@@ -576,7 +649,7 @@ function createIndexDefinitionInputs(
 
 function createRootEntityBasedIndices(
     definition: ObjectTypeDefinitionNode,
-    context: ValidationContext
+    context: ValidationContext,
 ): ReadonlyArray<IndexDefinitionConfig> {
     const rootEntityDirective = findDirectiveWithName(definition, ROOT_ENTITY_DIRECTIVE);
     if (!rootEntityDirective) {
@@ -592,14 +665,18 @@ function createRootEntityBasedIndices(
         return compact(
             indicesArg.value.values.map((val) => {
                 if (val.kind !== OBJECT) {
-                    context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVALID_ARGUMENT_TYPE, val.loc));
+                    context.addMessage(
+                        ValidationMessage.error(VALIDATION_ERROR_INVALID_ARGUMENT_TYPE, val.loc),
+                    );
                     return undefined;
                 }
                 return buildIndexDefinitionFromObjectValue(val);
-            })
+            }),
         );
     } else {
-        context.addMessage(ValidationMessage.error(VALIDATION_ERROR_INVALID_ARGUMENT_TYPE, indicesArg.loc));
+        context.addMessage(
+            ValidationMessage.error(VALIDATION_ERROR_INVALID_ARGUMENT_TYPE, indicesArg.loc),
+        );
         return [];
     }
 }
@@ -607,16 +684,20 @@ function createRootEntityBasedIndices(
 function createFieldBasedIndices(
     definition: ObjectTypeDefinitionNode,
     context: ValidationContext,
-    unique: boolean
+    unique: boolean,
 ): ReadonlyArray<IndexDefinitionConfig> {
     return compact(
         (definition.fields || []).map((field): IndexDefinitionConfig | undefined => {
-            let indexDirective = findDirectiveWithName(field, unique ? UNIQUE_DIRECTIVE : INDEX_DIRECTIVE);
+            let indexDirective = findDirectiveWithName(
+                field,
+                unique ? UNIQUE_DIRECTIVE : INDEX_DIRECTIVE,
+            );
             if (!indexDirective) {
                 return undefined;
             }
             let sparseArg =
-                indexDirective.arguments && indexDirective.arguments.find((arg) => arg.name.value === 'sparse');
+                indexDirective.arguments &&
+                indexDirective.arguments.find((arg) => arg.name.value === 'sparse');
             let sparse: boolean | undefined;
             if (sparseArg) {
                 switch (sparseArg.value.kind) {
@@ -630,8 +711,8 @@ function createFieldBasedIndices(
                         context.addMessage(
                             ValidationMessage.error(
                                 `The value for the "sparse" argument should be either "true" or "false"`,
-                                sparseArg.value
-                            )
+                                sparseArg.value,
+                            ),
                         );
                 }
             }
@@ -642,11 +723,13 @@ function createFieldBasedIndices(
                 sparse,
                 fieldASTNodes: [indexDirective],
             };
-        })
+        }),
     );
 }
 
-function buildIndexDefinitionFromObjectValue(indexDefinitionNode: ObjectValueNode): IndexDefinitionConfig {
+function buildIndexDefinitionFromObjectValue(
+    indexDefinitionNode: ObjectValueNode,
+): IndexDefinitionConfig {
     return {
         ...mapIndexDefinition(indexDefinitionNode),
         astNode: indexDefinitionNode,
@@ -656,7 +739,10 @@ function buildIndexDefinitionFromObjectValue(indexDefinitionNode: ObjectValueNod
 function mapIndexDefinition(index: ObjectValueNode): IndexDefinitionConfig {
     const { id, name, ...value } = valueFromAST(index, indexDefinitionInputObjectType);
     const fieldsField = index.fields.find((f) => f.name.value === 'fields');
-    const fieldASTNodes = fieldsField && fieldsField.value.kind === 'ListValue' ? fieldsField.value.values : undefined;
+    const fieldASTNodes =
+        fieldsField && fieldsField.value.kind === 'ListValue'
+            ? fieldsField.value.values
+            : undefined;
     const nameASTNode = index.fields.find((f) => f.name.value === 'name');
     return {
         ...value,
@@ -668,21 +754,27 @@ function mapIndexDefinition(index: ObjectValueNode): IndexDefinitionConfig {
 
 function getKindOfObjectTypeNode(
     definition: ObjectTypeDefinitionNode,
-    context?: ValidationContext
+    context?: ValidationContext,
 ): string | undefined {
     const kindDirectives = (definition.directives || []).filter((dir) =>
-        OBJECT_TYPE_KIND_DIRECTIVES.includes(dir.name.value)
+        OBJECT_TYPE_KIND_DIRECTIVES.includes(dir.name.value),
     );
     if (kindDirectives.length !== 1) {
         if (context) {
             if (kindDirectives.length === 0) {
                 context.addMessage(
-                    ValidationMessage.error(VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE, definition.name)
+                    ValidationMessage.error(
+                        VALIDATION_ERROR_MISSING_OBJECT_TYPE_DIRECTIVE,
+                        definition.name,
+                    ),
                 );
             } else {
                 for (const directive of kindDirectives) {
                     context.addMessage(
-                        ValidationMessage.error(VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES, directive)
+                        ValidationMessage.error(
+                            VALIDATION_ERROR_MULTIPLE_OBJECT_TYPE_DIRECTIVES,
+                            directive,
+                        ),
                     );
                 }
             }
@@ -695,7 +787,7 @@ function getKindOfObjectTypeNode(
 
 function getNamespacePath(
     definition: TypeDefinitionNode,
-    sourceNamespacePath: ReadonlyArray<string>
+    sourceNamespacePath: ReadonlyArray<string>,
 ): ReadonlyArray<string> {
     const directiveNamespace = findDirectiveWithName(definition, NAMESPACE_DIRECTIVE);
     if (!directiveNamespace || !directiveNamespace.arguments) {
@@ -708,7 +800,9 @@ function getNamespacePath(
 }
 
 function getKeyFieldASTNode(definition: ObjectTypeDefinitionNode, context: ValidationContext) {
-    const keyFields = (definition.fields || []).filter((field) => findDirectiveWithName(field, KEY_FIELD_DIRECTIVE));
+    const keyFields = (definition.fields || []).filter((field) =>
+        findDirectiveWithName(field, KEY_FIELD_DIRECTIVE),
+    );
     if (keyFields.length == 0) {
         return undefined;
     }
@@ -717,9 +811,9 @@ function getKeyFieldASTNode(definition: ObjectTypeDefinitionNode, context: Valid
             context.addMessage(
                 ValidationMessage.error(
                     VALIDATION_ERROR_DUPLICATE_KEY_FIELD,
-                    findDirectiveWithName(f, KEY_FIELD_DIRECTIVE)
-                )
-            )
+                    findDirectiveWithName(f, KEY_FIELD_DIRECTIVE),
+                ),
+            ),
         );
         return undefined;
     }
@@ -728,7 +822,7 @@ function getKeyFieldASTNode(definition: ObjectTypeDefinitionNode, context: Valid
 
 function getPermissions(
     node: ObjectTypeDefinitionNode | FieldDefinitionNode,
-    context: ValidationContext
+    context: ValidationContext,
 ): PermissionsConfig | undefined {
     const rootEntityDirective = findDirectiveWithName(node, ROOT_ENTITY_DIRECTIVE);
     const permissionProfileArg = rootEntityDirective
@@ -742,12 +836,17 @@ function getPermissions(
     const roles: RolesSpecifierConfig | undefined = rolesDirective
         ? {
               read: getRolesOfArg(getNodeByName(rolesDirective.arguments, ROLES_READ_ARG), context),
-              readWrite: getRolesOfArg(getNodeByName(rolesDirective.arguments, ROLES_READ_WRITE_ARG), context),
+              readWrite: getRolesOfArg(
+                  getNodeByName(rolesDirective.arguments, ROLES_READ_WRITE_ARG),
+                  context,
+              ),
               astNode: rolesDirective,
           }
         : undefined;
     return {
-        permissionProfileName: permissionProfileNameAstNode ? permissionProfileNameAstNode.value : undefined,
+        permissionProfileName: permissionProfileNameAstNode
+            ? permissionProfileNameAstNode.value
+            : undefined,
         permissionProfileNameAstNode,
         roles,
     };
@@ -764,19 +863,25 @@ function getRolesOfArg(rolesArg: ArgumentNode | undefined, context: ValidationCo
                 rolesArg.value.values.map((val) => {
                     if (val.kind !== STRING) {
                         context.addMessage(
-                            ValidationMessage.error(VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS, val.loc)
+                            ValidationMessage.error(
+                                VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS,
+                                val.loc,
+                            ),
                         );
                         return undefined;
                     } else {
                         return val.value;
                     }
-                })
+                }),
             );
         } else if (rolesArg.value.kind === STRING) {
             roles = [rolesArg.value.value];
         } else {
             context.addMessage(
-                ValidationMessage.error(VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS, rolesArg.value.loc)
+                ValidationMessage.error(
+                    VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS,
+                    rolesArg.value.loc,
+                ),
             );
         }
     }
@@ -785,13 +890,16 @@ function getRolesOfArg(rolesArg: ArgumentNode | undefined, context: ValidationCo
 
 function getPermissionProfileAstNode(
     permissionProfileArg: ArgumentNode | undefined,
-    context: ValidationContext
+    context: ValidationContext,
 ): StringValueNode | undefined {
     let permissionProfileNameAstNode = undefined;
     if (permissionProfileArg) {
         if (permissionProfileArg.value.kind !== STRING) {
             context.addMessage(
-                ValidationMessage.error(VALIDATION_ERROR_INVALID_PERMISSION_PROFILE, permissionProfileArg.value.loc)
+                ValidationMessage.error(
+                    VALIDATION_ERROR_INVALID_PERMISSION_PROFILE,
+                    permissionProfileArg.value.loc,
+                ),
             );
         } else {
             permissionProfileNameAstNode = permissionProfileArg.value;
@@ -800,7 +908,10 @@ function getPermissionProfileAstNode(
     return permissionProfileNameAstNode;
 }
 
-function getInverseOfASTNode(fieldNode: FieldDefinitionNode, context: ValidationContext): StringValueNode | undefined {
+function getInverseOfASTNode(
+    fieldNode: FieldDefinitionNode,
+    context: ValidationContext,
+): StringValueNode | undefined {
     const relationDirective = findDirectiveWithName(fieldNode, RELATION_DIRECTIVE);
     if (!relationDirective) {
         return undefined;
@@ -811,7 +922,10 @@ function getInverseOfASTNode(fieldNode: FieldDefinitionNode, context: Validation
     }
     if (inverseOfArg.value.kind !== STRING) {
         context.addMessage(
-            ValidationMessage.error(VALIDATION_ERROR_INVERSE_OF_ARG_MUST_BE_STRING, inverseOfArg.value.loc)
+            ValidationMessage.error(
+                VALIDATION_ERROR_INVERSE_OF_ARG_MUST_BE_STRING,
+                inverseOfArg.value.loc,
+            ),
         );
         return undefined;
     }
@@ -820,7 +934,7 @@ function getInverseOfASTNode(fieldNode: FieldDefinitionNode, context: Validation
 
 function getRelationDeleteActionASTNode(
     fieldNode: FieldDefinitionNode,
-    context: ValidationContext
+    context: ValidationContext,
 ): ArgumentNode | undefined {
     const relationDirective = findDirectiveWithName(fieldNode, RELATION_DIRECTIVE);
     if (!relationDirective) {
@@ -831,7 +945,7 @@ function getRelationDeleteActionASTNode(
 
 function getReferenceKeyFieldASTNode(
     fieldNode: FieldDefinitionNode,
-    context: ValidationContext
+    context: ValidationContext,
 ): StringValueNode | undefined {
     const relationDirective = findDirectiveWithName(fieldNode, REFERENCE_DIRECTIVE);
     if (!relationDirective) {
@@ -844,27 +958,38 @@ function getReferenceKeyFieldASTNode(
     if (keyFieldArg.value.kind !== STRING) {
         // should be caught by the graphql validator anyway...
         context.addMessage(
-            ValidationMessage.error(`The argument "${KEY_FIELD_ARG}" must be of type String`, keyFieldArg.value.loc)
+            ValidationMessage.error(
+                `The argument "${KEY_FIELD_ARG}" must be of type String`,
+                keyFieldArg.value.loc,
+            ),
         );
         return undefined;
     }
     return keyFieldArg.value;
 }
 
-function getCollectConfig(fieldNode: FieldDefinitionNode, context: ValidationContext): CollectFieldConfig | undefined {
+function getCollectConfig(
+    fieldNode: FieldDefinitionNode,
+    context: ValidationContext,
+): CollectFieldConfig | undefined {
     const directive = findDirectiveWithName(fieldNode, COLLECT_DIRECTIVE);
     if (!directive) {
         return undefined;
     }
     const pathArg = getNodeByName(directive.arguments, COLLECT_PATH_ARG);
     if (!pathArg) {
-        context.addMessage(ValidationMessage.error(`Argument "${COLLECT_PATH_ARG}" is missing`, directive.loc));
+        context.addMessage(
+            ValidationMessage.error(`Argument "${COLLECT_PATH_ARG}" is missing`, directive.loc),
+        );
         return undefined;
     }
     if (pathArg.value.kind !== STRING) {
         // should be caught by the graphql validator anyway...
         context.addMessage(
-            ValidationMessage.error(`The argument "${COLLECT_PATH_ARG}" must be of type String`, pathArg.value.loc)
+            ValidationMessage.error(
+                `The argument "${COLLECT_PATH_ARG}" must be of type String`,
+                pathArg.value.loc,
+            ),
         );
         return undefined;
     }
@@ -873,7 +998,10 @@ function getCollectConfig(fieldNode: FieldDefinitionNode, context: ValidationCon
     if (aggregateValueNode && aggregateValueNode.kind !== 'EnumValue') {
         // should be caught by the graphql validator anyway...
         context.addMessage(
-            ValidationMessage.error(`The argument "${COLLECT_AGGREGATE_ARG}" must be an enum value`, pathArg.value.loc)
+            ValidationMessage.error(
+                `The argument "${COLLECT_AGGREGATE_ARG}" must be an enum value`,
+                pathArg.value.loc,
+            ),
         );
         return undefined;
     }
@@ -881,12 +1009,15 @@ function getCollectConfig(fieldNode: FieldDefinitionNode, context: ValidationCon
         astNode: directive,
         path: pathArg.value.value,
         pathASTNode: pathArg.value,
-        aggregationOperator: aggregateValueNode && (aggregateValueNode.value as AggregationOperator),
+        aggregationOperator:
+            aggregateValueNode && (aggregateValueNode.value as AggregationOperator),
         aggregationOperatorASTNode: aggregateValueNode,
     };
 }
 
-function extractPermissionProfiles(parsedProject: ParsedProject): ReadonlyArray<NamespacedPermissionProfileConfigMap> {
+function extractPermissionProfiles(
+    parsedProject: ParsedProject,
+): ReadonlyArray<NamespacedPermissionProfileConfigMap> {
     return compact(
         parsedProject.sources.map((source): NamespacedPermissionProfileConfigMap | undefined => {
             if (source.kind !== ParsedProjectSourceBaseKind.OBJECT) {
@@ -895,43 +1026,51 @@ function extractPermissionProfiles(parsedProject: ParsedProject): ReadonlyArray<
             if (!source.object.permissionProfiles) {
                 return undefined;
             }
-            const profilesWithoutLocs = source.object.permissionProfiles as PermissionProfileConfigMap;
-            const profiles: PermissionProfileConfigMap = mapValues(profilesWithoutLocs, (profile, name) => ({
-                ...profile,
-                permissions: profile.permissions?.map((permission, permissionIndex) => ({
-                    ...permission,
-                    restrictions: permission.restrictions?.map((restriction, restrictionIndex) => ({
-                        ...restriction,
-                        fieldValueLoc:
-                            source.pathLocationMap[
-                                `/permissionProfiles/${name}/permissions/${permissionIndex}/restrictions/${restrictionIndex}/field`
-                            ],
+            const profilesWithoutLocs = source.object
+                .permissionProfiles as PermissionProfileConfigMap;
+            const profiles: PermissionProfileConfigMap = mapValues(
+                profilesWithoutLocs,
+                (profile, name) => ({
+                    ...profile,
+                    permissions: profile.permissions?.map((permission, permissionIndex) => ({
+                        ...permission,
+                        restrictions: permission.restrictions?.map(
+                            (restriction, restrictionIndex) => ({
+                                ...restriction,
+                                fieldValueLoc:
+                                    source.pathLocationMap[
+                                        `/permissionProfiles/${name}/permissions/${permissionIndex}/restrictions/${restrictionIndex}/field`
+                                    ],
+                                loc: source.pathLocationMap[
+                                    `/permissionProfiles/${name}/permissions/${permissionIndex}/restrictions/${restrictionIndex}`
+                                ],
+                            }),
+                        ),
                         loc: source.pathLocationMap[
-                            `/permissionProfiles/${name}/permissions/${permissionIndex}/restrictions/${restrictionIndex}`
+                            `/permissionProfiles/${name}/permissions/${permissionIndex}`
                         ],
                     })),
-                    loc: source.pathLocationMap[`/permissionProfiles/${name}/permissions/${permissionIndex}`],
-                })),
-                loc: source.pathLocationMap[`/permissionProfiles/${name}`],
-            }));
+                    loc: source.pathLocationMap[`/permissionProfiles/${name}`],
+                }),
+            );
             return {
                 namespacePath: source.namespacePath,
                 profiles,
             };
-        })
+        }),
     );
 }
 
 function extractI18n(parsedProject: ParsedProject): ReadonlyArray<LocalizationConfig> {
     const objectSchemaParts = parsedProject.sources.filter(
-        (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT
+        (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT,
     ) as ReadonlyArray<ParsedObjectProjectSource>;
     return flatMap(objectSchemaParts, (source) => parseI18nConfigs(source));
 }
 
 function extractBilling(parsedProject: ParsedProject): BillingConfig {
     const objectSchemaParts = parsedProject.sources.filter(
-        (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT
+        (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT,
     ) as ReadonlyArray<ParsedObjectProjectSource>;
     return objectSchemaParts
         .map((source) => parseBillingConfigs(source))
@@ -939,16 +1078,19 @@ function extractBilling(parsedProject: ParsedProject): BillingConfig {
             (previousValue, currentValue) => {
                 return {
                     ...previousValue,
-                    billingEntities: [...currentValue.billingEntities, ...previousValue.billingEntities],
+                    billingEntities: [
+                        ...currentValue.billingEntities,
+                        ...previousValue.billingEntities,
+                    ],
                 };
             },
-            { billingEntities: [] }
+            { billingEntities: [] },
         );
 }
 
 function extractTimeToLive(parsedProject: ParsedProject): TimeToLiveConfig[] {
     const objectSchemaParts = parsedProject.sources.filter(
-        (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT
+        (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT,
     ) as ReadonlyArray<ParsedObjectProjectSource>;
     return objectSchemaParts
         .map((source) => parseTTLConfigs(source))

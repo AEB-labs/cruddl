@@ -14,7 +14,7 @@ import {
     REMOVE_EDGES_FIELD_PREFIX,
     UPDATE_ALL_ENTITIES_FIELD_PREFIX,
     UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
-    UPDATE_ENTITY_FIELD_PREFIX
+    UPDATE_ENTITY_FIELD_PREFIX,
 } from './constants';
 
 export function getAllEntitiesFieldName(rootEntityType: RootEntityType) {

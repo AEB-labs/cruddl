@@ -9,7 +9,6 @@ const modelWithNonUniqueFields = `
         `;
 
 describe('unique field validator', () => {
-
     it('finds non-unique fields', () => {
         const validationResult = validate(modelWithNonUniqueFields);
         expect(validationResult.hasErrors()).to.be.true;
@@ -27,5 +26,4 @@ describe('unique field validator', () => {
             }
         `);
     });
-
 });

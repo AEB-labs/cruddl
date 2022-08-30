@@ -1,5 +1,11 @@
 import { expect } from 'chai';
-import { CollectPath, Model, CollectPathSegment, TypeKind, ValidationContext } from '../../../src/model';
+import {
+    CollectPath,
+    Model,
+    CollectPathSegment,
+    TypeKind,
+    ValidationContext,
+} from '../../../src/model';
 
 describe('CollectPath', () => {
     const model = new Model({
@@ -10,9 +16,9 @@ describe('CollectPath', () => {
                 fields: [
                     {
                         name: 'itemNumber',
-                        typeName: 'String'
-                    }
-                ]
+                        typeName: 'String',
+                    },
+                ],
             },
             {
                 name: 'DangerousGoodsInfo',
@@ -21,25 +27,27 @@ describe('CollectPath', () => {
                     {
                         name: 'dangerousItems',
                         typeName: 'Item',
-                        isList: true
-                    }
-                ]
-            }, {
+                        isList: true,
+                    },
+                ],
+            },
+            {
                 name: 'DeliveryContent',
                 kind: TypeKind.CHILD_ENTITY,
                 fields: [
                     {
                         name: 'items',
                         typeName: 'Item',
-                        isList: true
+                        isList: true,
                     },
                     {
                         name: 'subContents',
                         typeName: 'DeliveryContent',
-                        isList: true
-                    }
-                ]
-            }, {
+                        isList: true,
+                    },
+                ],
+            },
+            {
                 name: 'Order',
                 kind: TypeKind.ROOT_ENTITY,
                 fields: [
@@ -47,16 +55,17 @@ describe('CollectPath', () => {
                         name: 'handlingUnits',
                         typeName: 'HandlingUnit',
                         isList: true,
-                        isRelation: true
+                        isRelation: true,
                     },
                     {
                         name: 'delivery',
                         typeName: 'Delivery',
                         isRelation: true,
-                        inverseOfFieldName: 'order'
-                    }
-                ]
-            }, {
+                        inverseOfFieldName: 'order',
+                    },
+                ],
+            },
+            {
                 name: 'PurchaseOrder',
                 kind: TypeKind.ROOT_ENTITY,
                 fields: [
@@ -64,108 +73,117 @@ describe('CollectPath', () => {
                         name: 'handlingUnits',
                         typeName: 'HandlingUnit',
                         isList: true,
-                        isRelation: true
+                        isRelation: true,
                     },
                     {
                         name: 'delivery',
                         typeName: 'Delivery',
                         isRelation: true,
-                        inverseOfFieldName: 'order'
+                        inverseOfFieldName: 'order',
                     },
                     {
                         name: 'shipment',
                         typeName: 'Shipment',
                         isRelation: true,
-                        inverseOfFieldName: 'purchaseOrder'
-                    }
-                ]
-            }, {
+                        inverseOfFieldName: 'purchaseOrder',
+                    },
+                ],
+            },
+            {
                 name: 'Shipment',
                 kind: TypeKind.ROOT_ENTITY,
                 fields: [
                     {
                         name: 'shipmentNumber',
-                        typeName: 'String'
+                        typeName: 'String',
                     },
                     {
                         name: 'handlingUnits',
                         typeName: 'HandlingUnit',
                         isList: true,
-                        isRelation: true
+                        isRelation: true,
                     },
                     {
                         name: 'order',
                         typeName: 'Order',
-                        isRelation: true
+                        isRelation: true,
                     },
                     {
                         name: 'purchaseOrder',
                         typeName: 'PurchaseOrder',
-                        isRelation: true
-                    }
-                ]
-            }, {
+                        isRelation: true,
+                    },
+                ],
+            },
+            {
                 name: 'HandlingUnit',
                 kind: TypeKind.ROOT_ENTITY,
                 fields: [
                     {
                         name: 'handlingUnitNumber',
-                        typeName: 'String'
+                        typeName: 'String',
                     },
                     {
                         name: 'childHandlingUnits',
                         typeName: 'HandlingUnit',
                         isList: true,
-                        isRelation: true
+                        isRelation: true,
                     },
                     {
                         name: 'parentHandlingUnit',
                         typeName: 'HandlingUnit',
                         isRelation: true,
-                        inverseOfFieldName: 'childHandlingUnits'
+                        inverseOfFieldName: 'childHandlingUnits',
                     },
                     {
                         name: 'items',
                         typeName: 'Item',
-                        isList: true
-                    }
-                ]
-            }, {
+                        isList: true,
+                    },
+                ],
+            },
+            {
                 name: 'Delivery',
                 kind: TypeKind.ROOT_ENTITY,
                 fields: [
                     {
                         name: 'deliveryNumber',
-                        typeName: 'String'
-                    }, {
+                        typeName: 'String',
+                    },
+                    {
                         name: 'items',
                         typeName: 'Item',
-                        isList: true
-                    }, {
+                        isList: true,
+                    },
+                    {
                         name: 'contents',
                         typeName: 'DeliveryContent',
-                        isList: true
-                    }, {
+                        isList: true,
+                    },
+                    {
                         name: 'dangerousGoodsInfo',
-                        typeName: 'DangerousGoodsInfo'
-                    }, {
+                        typeName: 'DangerousGoodsInfo',
+                    },
+                    {
                         name: 'order',
                         typeName: 'Order',
-                        isRelation: true
-                    }, {
+                        isRelation: true,
+                    },
+                    {
                         name: 'shipments',
                         typeName: 'Shipment',
                         isRelation: true,
-                        isList: true
-                    }, {
+                        isList: true,
+                    },
+                    {
                         name: 'handlingUnits',
                         typeName: 'HandlingUnit',
                         isRelation: true,
-                        isList: true
-                    }
-                ]
-            }
-        ]
+                        isList: true,
+                    },
+                ],
+            },
+        ],
     });
 
     const shipmentType = model.getRootEntityTypeOrThrow('Shipment');
@@ -177,11 +195,14 @@ describe('CollectPath', () => {
     const deliveryContentType = model.getChildEntityTypeOrThrow('DeliveryContent');
     const deliveryType = model.getRootEntityTypeOrThrow('Delivery');
 
-    function assertSegmentsEqual(path: CollectPath, expectedSegments: ReadonlyArray<CollectPathSegment>) {
+    function assertSegmentsEqual(
+        path: CollectPath,
+        expectedSegments: ReadonlyArray<CollectPathSegment>,
+    ) {
         const context = new ValidationContext();
         path.validate(context);
         const errors = context.asResult().getErrors();
-        expect(errors, errors.map(e => e.toString()).join('\n')).to.be.empty;
+        expect(errors, errors.map((e) => e.toString()).join('\n')).to.be.empty;
 
         const actualSegments = path.segments;
         // don't use deep.equal because it would deep-compare the Field instnaces which are *really* deep (with graphql stuff)
@@ -210,8 +231,8 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: shipmentsField,
-                relationSide: shipmentsField.getRelationSideOrThrow()
-            } as const
+                relationSide: shipmentsField.getRelationSideOrThrow(),
+            } as const,
         ]);
         expect(path.resultingType).to.equal(shipmentType);
     });
@@ -231,8 +252,8 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: orderField,
-                relationSide: orderField.getRelationSideOrThrow()
-            } as const
+                relationSide: orderField.getRelationSideOrThrow(),
+            } as const,
         ]);
         expect(path.resultingType).to.equal(orderType);
     });
@@ -253,7 +274,7 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: shipmentsField,
-                relationSide: shipmentsField.getRelationSideOrThrow()
+                relationSide: shipmentsField.getRelationSideOrThrow(),
             },
             {
                 kind: 'relation',
@@ -266,8 +287,8 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: handlingUnitsField,
-                relationSide: handlingUnitsField.getRelationSideOrThrow()
-            }
+                relationSide: handlingUnitsField.getRelationSideOrThrow(),
+            },
         ] as const);
         expect(path.resultingType).to.equal(handlingUnitType);
     });
@@ -288,7 +309,7 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: orderField,
-                relationSide: orderField.getRelationSideOrThrow()
+                relationSide: orderField.getRelationSideOrThrow(),
             },
             {
                 kind: 'relation',
@@ -301,8 +322,8 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: handlingUnitsField,
-                relationSide: handlingUnitsField.getRelationSideOrThrow()
-            }
+                relationSide: handlingUnitsField.getRelationSideOrThrow(),
+            },
         ] as const);
         expect(path.resultingType).to.equal(handlingUnitType);
     });
@@ -323,7 +344,7 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: shipmentsField,
-                relationSide: shipmentsField.getRelationSideOrThrow()
+                relationSide: shipmentsField.getRelationSideOrThrow(),
             },
             {
                 kind: 'relation',
@@ -336,8 +357,8 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: purchaseOrderField,
-                relationSide: purchaseOrderField.getRelationSideOrThrow()
-            }
+                relationSide: purchaseOrderField.getRelationSideOrThrow(),
+            },
         ] as const);
         expect(path.resultingType).to.equal(purchaseOrderType);
         expect(path.resultIsList).to.equal(true);
@@ -359,7 +380,7 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: shipmentsField,
-                relationSide: shipmentsField.getRelationSideOrThrow()
+                relationSide: shipmentsField.getRelationSideOrThrow(),
             },
             {
                 kind: 'relation',
@@ -372,8 +393,8 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: orderField,
-                relationSide: orderField.getRelationSideOrThrow()
-            }
+                relationSide: orderField.getRelationSideOrThrow(),
+            },
         ] as const);
         expect(path.resultingType).to.equal(orderType);
         expect(path.resultIsList).to.equal(true);
@@ -395,7 +416,7 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: orderField,
-                relationSide: orderField.getRelationSideOrThrow()
+                relationSide: orderField.getRelationSideOrThrow(),
             },
             {
                 kind: 'relation',
@@ -408,15 +429,18 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: deliveryField,
-                relationSide: deliveryField.getRelationSideOrThrow()
-            }
+                relationSide: deliveryField.getRelationSideOrThrow(),
+            },
         ] as const);
         expect(path.resultingType).to.equal(deliveryType);
         expect(path.resultIsList).to.equal(false);
     });
 
     it('resolves recursive relations', () => {
-        const path = new CollectPath({ path: 'handlingUnits.childHandlingUnits.childHandlingUnits' }, deliveryType);
+        const path = new CollectPath(
+            { path: 'handlingUnits.childHandlingUnits.childHandlingUnits' },
+            deliveryType,
+        );
         const handlingUnitsField = deliveryType.getFieldOrThrow('handlingUnits');
         const childHandlingUnitsField = handlingUnitType.getFieldOrThrow('childHandlingUnits');
         assertSegmentsEqual(path, [
@@ -431,7 +455,7 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: handlingUnitsField,
-                relationSide: handlingUnitsField.getRelationSideOrThrow()
+                relationSide: handlingUnitsField.getRelationSideOrThrow(),
             },
             {
                 kind: 'relation',
@@ -444,7 +468,7 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: childHandlingUnitsField,
-                relationSide: childHandlingUnitsField.getRelationSideOrThrow()
+                relationSide: childHandlingUnitsField.getRelationSideOrThrow(),
             },
             {
                 kind: 'relation',
@@ -457,8 +481,8 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: childHandlingUnitsField,
-                relationSide: childHandlingUnitsField.getRelationSideOrThrow()
-            }
+                relationSide: childHandlingUnitsField.getRelationSideOrThrow(),
+            },
         ] as const);
         expect(path.resultingType).to.equal(handlingUnitType);
     });
@@ -479,7 +503,7 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: handlingUnitsField,
-                relationSide: handlingUnitsField.getRelationSideOrThrow()
+                relationSide: handlingUnitsField.getRelationSideOrThrow(),
             },
             {
                 kind: 'relation',
@@ -492,14 +516,17 @@ describe('CollectPath', () => {
                 minDepth: 2,
                 maxDepth: 2,
                 field: childHandlingUnitsField,
-                relationSide: childHandlingUnitsField.getRelationSideOrThrow()
-            }
+                relationSide: childHandlingUnitsField.getRelationSideOrThrow(),
+            },
         ] as const);
         expect(path.resultingType).to.equal(handlingUnitType);
     });
 
     it('resolves relations with min and max depth specifier', () => {
-        const path = new CollectPath({ path: 'handlingUnits.childHandlingUnits{2,4}' }, deliveryType);
+        const path = new CollectPath(
+            { path: 'handlingUnits.childHandlingUnits{2,4}' },
+            deliveryType,
+        );
         const handlingUnitsField = deliveryType.getFieldOrThrow('handlingUnits');
         const childHandlingUnitsField = handlingUnitType.getFieldOrThrow('childHandlingUnits');
         assertSegmentsEqual(path, [
@@ -514,7 +541,7 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: handlingUnitsField,
-                relationSide: handlingUnitsField.getRelationSideOrThrow()
+                relationSide: handlingUnitsField.getRelationSideOrThrow(),
             },
             {
                 kind: 'relation',
@@ -527,8 +554,8 @@ describe('CollectPath', () => {
                 minDepth: 2,
                 maxDepth: 4,
                 field: childHandlingUnitsField,
-                relationSide: childHandlingUnitsField.getRelationSideOrThrow()
-            }
+                relationSide: childHandlingUnitsField.getRelationSideOrThrow(),
+            },
         ] as const);
         expect(path.resultingType).to.equal(handlingUnitType);
     });
@@ -545,8 +572,8 @@ describe('CollectPath', () => {
                 isNullableSegment: false,
                 resultIsNullable: false,
                 resultMayContainDuplicateEntities: false,
-                field: itemsField
-            }
+                field: itemsField,
+            },
         ] as const);
         expect(path.resultingType).to.equal(itemType);
     });
@@ -564,7 +591,7 @@ describe('CollectPath', () => {
                 isNullableSegment: false,
                 resultIsNullable: false,
                 resultMayContainDuplicateEntities: false,
-                field: contentsField
+                field: contentsField,
             },
             {
                 kind: 'field',
@@ -574,8 +601,8 @@ describe('CollectPath', () => {
                 isNullableSegment: false,
                 resultIsNullable: false,
                 resultMayContainDuplicateEntities: false,
-                field: itemsField
-            }
+                field: itemsField,
+            },
         ] as const);
         expect(path.resultingType).to.equal(itemType);
     });
@@ -593,7 +620,7 @@ describe('CollectPath', () => {
                 isNullableSegment: false,
                 resultIsNullable: false,
                 resultMayContainDuplicateEntities: false,
-                field: dangerousGoodsField
+                field: dangerousGoodsField,
             },
             {
                 kind: 'field',
@@ -603,8 +630,8 @@ describe('CollectPath', () => {
                 isNullableSegment: false,
                 resultIsNullable: false,
                 resultMayContainDuplicateEntities: false,
-                field: itemsField
-            }
+                field: itemsField,
+            },
         ] as const);
         expect(path.resultingType).to.equal(itemType);
     });
@@ -622,7 +649,7 @@ describe('CollectPath', () => {
                 isNullableSegment: false,
                 resultIsNullable: false,
                 resultMayContainDuplicateEntities: false,
-                field: contentsField
+                field: contentsField,
             },
             {
                 kind: 'field',
@@ -632,7 +659,7 @@ describe('CollectPath', () => {
                 isNullableSegment: false,
                 resultIsNullable: false,
                 resultMayContainDuplicateEntities: false,
-                field: subContentsField
+                field: subContentsField,
             },
             {
                 kind: 'field',
@@ -642,8 +669,8 @@ describe('CollectPath', () => {
                 isNullableSegment: false,
                 resultIsNullable: false,
                 resultMayContainDuplicateEntities: false,
-                field: subContentsField
-            }
+                field: subContentsField,
+            },
         ] as const);
         expect(path.resultingType).to.equal(deliveryContentType);
     });
@@ -664,7 +691,7 @@ describe('CollectPath', () => {
                 minDepth: 1,
                 maxDepth: 1,
                 field: handlingUnitsField,
-                relationSide: handlingUnitsField.getRelationSideOrThrow()
+                relationSide: handlingUnitsField.getRelationSideOrThrow(),
             },
             {
                 kind: 'field',
@@ -674,8 +701,8 @@ describe('CollectPath', () => {
                 isNullableSegment: false,
                 resultIsNullable: false,
                 resultMayContainDuplicateEntities: false,
-                field: itemsField
-            }
+                field: itemsField,
+            },
         ] as const);
         expect(path.resultingType).to.equal(itemType);
     });

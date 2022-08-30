@@ -6,7 +6,7 @@ import {
     PreExecQueryParms,
     QueryNode,
     VariableQueryNode,
-    WithPreExecutionQueryNode
+    WithPreExecutionQueryNode,
 } from '../query-tree';
 import { mapToIDNodesUnoptimized } from './utils/map';
 import { getPreEntityRemovalStatements } from './utils/relations';
@@ -14,13 +14,15 @@ import { getPreEntityRemovalStatements } from './utils/relations';
 export function generateDeleteAllQueryNode(
     rootEntityType: RootEntityType,
     listNode: QueryNode,
-    { resultValue = DeleteEntitiesResultValue.OLD_ENTITIES }: { readonly resultValue?: DeleteEntitiesResultValue } = {}
+    {
+        resultValue = DeleteEntitiesResultValue.OLD_ENTITIES,
+    }: { readonly resultValue?: DeleteEntitiesResultValue } = {},
 ) {
     if (!rootEntityType.relations.length) {
         return new DeleteEntitiesQueryNode({
             rootEntityType,
             listNode,
-            resultValue
+            resultValue,
         });
     }
 
@@ -33,7 +35,7 @@ export function generateDeleteAllQueryNode(
         // don't use optimizations here so we actually "see" the entities and don't just return the ids
         // this is relevant if there are accessGroup filters
         query: mapToIDNodesUnoptimized(listNode),
-        resultVariable: idsVariable
+        resultVariable: idsVariable,
     });
 
     // no preexec for the actual deletion here because we need to evaluate the result while the entity still exists
@@ -42,13 +44,13 @@ export function generateDeleteAllQueryNode(
         rootEntityType,
         listNode: idsVariable,
         entitiesIdentifierKind: EntitiesIdentifierKind.ID,
-        resultValue
+        resultValue,
     });
 
     const removeEdgesStatements = getPreEntityRemovalStatements(rootEntityType, idsVariable);
 
     return new WithPreExecutionQueryNode({
         preExecQueries: [idsStatement, ...removeEdgesStatements],
-        resultNode: deleteEntitiesNode
+        resultNode: deleteEntitiesNode,
     });
 }

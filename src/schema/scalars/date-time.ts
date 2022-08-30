@@ -12,12 +12,7 @@ function parseDateTime(value: string): Instant {
             // allow +00:00 and the like (normalized() returns a ZoneOffsets for fixed zones
             const zonedDateTime = tryParseZonedDateTime(value);
             if (zonedDateTime) {
-                if (
-                    zonedDateTime
-                        .zone()
-                        .normalized()
-                        .equals(ZoneOffset.UTC)
-                ) {
+                if (zonedDateTime.zone().normalized().equals(ZoneOffset.UTC)) {
                     return zonedDateTime.toInstant();
                 }
                 throw new Error(`DateTime should be in UTC: ${value}`);
@@ -72,5 +67,5 @@ export const GraphQLDateTime = new GraphQLScalarType({
             throw new Error('DateTime must be specified as String value');
         }
         return coerceDateTime(ast.value);
-    }
+    },
 });

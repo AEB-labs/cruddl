@@ -29,7 +29,10 @@ query {
         _cursor
     }
 
-    noPaginationButCursorAndSort: flexSearchPapers(postFilter: { id: "@{ids/Paper/1}" }, orderBy: key_ASC) {
+    noPaginationButCursorAndSort: flexSearchPapers(
+        postFilter: { id: "@{ids/Paper/1}" }
+        orderBy: key_ASC
+    ) {
         _cursor
     }
 }

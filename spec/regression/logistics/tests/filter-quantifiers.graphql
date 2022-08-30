@@ -32,7 +32,10 @@ query every_equals {
 
 # can be simplified to equals
 query some_like_simple {
-    allDeliveries(filter: { items_some: { itemNumber_like: "1001" } }, orderBy: deliveryNumber_ASC) {
+    allDeliveries(
+        filter: { items_some: { itemNumber_like: "1001" } }
+        orderBy: deliveryNumber_ASC
+    ) {
         deliveryNumber
     }
 }
@@ -45,14 +48,20 @@ query some_like_complicated {
 
 # can't use any of the optimizations because it uses multiple filters in one object
 query some_multiple {
-    allDeliveries(filter: { items_some: { quantity_gt: 7, quantity_lt: 15 } }, orderBy: deliveryNumber_ASC) {
+    allDeliveries(
+        filter: { items_some: { quantity_gt: 7, quantity_lt: 15 } }
+        orderBy: deliveryNumber_ASC
+    ) {
         deliveryNumber
     }
 }
 
 # should find all because a list that's null is a list that's empty, so all items match anything
 query null_list {
-    allDeliveries(filter: { serialNumbers_every: { equal: "doesnotexist" } }, orderBy: deliveryNumber_ASC) {
+    allDeliveries(
+        filter: { serialNumbers_every: { equal: "doesnotexist" } }
+        orderBy: deliveryNumber_ASC
+    ) {
         deliveryNumber
     }
 }
@@ -65,7 +74,10 @@ mutation set_empty_list {
 
 # should find all because a list that's null is a list that's empty, so all items match anything
 query empty_list {
-    allDeliveries(filter: { serialNumbers_every: { equal: "doesnotexist" } }, orderBy: deliveryNumber_ASC) {
+    allDeliveries(
+        filter: { serialNumbers_every: { equal: "doesnotexist" } }
+        orderBy: deliveryNumber_ASC
+    ) {
         deliveryNumber
     }
 }

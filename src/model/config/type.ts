@@ -5,7 +5,7 @@ import {
     GraphQLScalarType,
     ObjectTypeDefinitionNode,
     ScalarTypeDefinitionNode,
-    TypeDefinitionNode
+    TypeDefinitionNode,
 } from 'graphql';
 import { FixedPointDecimalInfo } from '../implementation/scalar-type';
 import { FieldConfig, FlexSearchLanguage } from './field';
@@ -19,7 +19,7 @@ export enum TypeKind {
     ROOT_ENTITY = 'ROOT_ENTITY',
     CHILD_ENTITY = 'CHILD_ENTITY',
     VALUE_OBJECT = 'VALUE_OBJECT',
-    ENTITY_EXTENSION = 'ENTITY_EXTENSION'
+    ENTITY_EXTENSION = 'ENTITY_EXTENSION',
 }
 
 export interface TypeConfigBase {

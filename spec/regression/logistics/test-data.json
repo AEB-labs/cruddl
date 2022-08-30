@@ -1,265 +1,265 @@
 {
-    "roles": ["allusers", "accounting", "logistics", "admin"],
-    "rootEntities": {
-        "Country": [
-            {
-                "@id": "1",
-                "isoCode": "DE",
-                "description": [
-                    {
-                        "languageIsoCode": "DE",
-                        "translation": "Deutschland"
-                    },
-                    {
-                        "languageIsoCode": "EN",
-                        "translation": "Germany"
-                    }
-                ],
-                "totalInvestment": "EUR 50000000",
-                "someKey": "1"
-            },
-            {
-                "@id": "2",
-                "isoCode": "GB",
-                "description": [
-                    {
-                        "languageIsoCode": "DE",
-                        "translation": "Vereinigtes Königreich"
-                    },
-                    {
-                        "languageIsoCode": "EN",
-                        "translation": "United Kingdom"
-                    }
-                ],
-                "totalInvestment": "EUR 3000000",
-                "someKey": "2"
-            },
-            {
-                "@id": "3",
-                "isoCode": "US",
-                "description": [
-                    {
-                        "languageIsoCode": "DE",
-                        "translation": "Vereinigte Staaten"
-                    },
-                    {
-                        "languageIsoCode": "EN",
-                        "translation": "United States"
-                    }
-                ],
-                "someKey": null
-            },
-            {
-                "@id": "4",
-                "isoCode": "CH",
-                "description": [
-                    {
-                        "languageIsoCode": "DE",
-                        "translation": "Schweiz"
-                    },
-                    {
-                        "languageIsoCode": "EN",
-                        "translation": "Switzerland"
-                    }
-                ]
-            }
+  "roles": ["allusers", "accounting", "logistics", "admin"],
+  "rootEntities": {
+    "Country": [
+      {
+        "@id": "1",
+        "isoCode": "DE",
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Deutschland"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "Germany"
+          }
         ],
-        "HandlingUnit": [
-            {
-                "@id": "1",
-                "huNumber": "1000007"
-            },
-            {
-                "@id": "2",
-                "huNumber": "1000014"
-            },
-            {
-                "@id": "3",
-                "huNumber": "1000021"
-            }
+        "totalInvestment": "EUR 50000000",
+        "someKey": "1"
+      },
+      {
+        "@id": "2",
+        "isoCode": "GB",
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Vereinigtes Königreich"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "United Kingdom"
+          }
         ],
-        "Delivery": [
-            {
-                "@id": "1",
-                "deliveryNumber": "1000173",
-                "consignee": {
-                    "street": "675 Kurtis Route",
-                    "city": "Port Neldahaven",
-                    "zipCode": "17624"
-                },
-                "contentInfo": [
-                    {
-                        "languageIsoCode": "DE",
-                        "translation": "Kerosin 1000L"
-                    }
-                ],
-                "dgInfo": {
-                    "unNumber": "1863",
-                    "flashpoint": "37 °C"
-                },
-                "items": [
-                    {
-                        "itemNumber": "1001",
-                        "quantity": 3,
-                        "handlingUnit": "@{ids/HandlingUnit/1}",
-                        "description": {
-                            "de": "Bananen",
-                            "en": "Bananas"
-                        }
-                    },
-                    {
-                        "itemNumber": "1002",
-                        "quantity": 8,
-                        "handlingUnit": "@{ids/HandlingUnit/2}",
-                        "description": {
-                            "de": "Äpfel",
-                            "en": "Apples"
-                        }
-                    }
-                ],
-                "totalValue": "EUR 1024.00",
-                "description": "description with anyword phrase a all",
-                "enumFlexSearch": "Foo",
-                "aNumber": 123,
-                "recursion": {
-                    "name": "test_a",
-                    "recursion": {
-                        "name": "test_b",
-                        "recursion": {
-                            "name": "test_c"
-                        }
-                    }
-                },
-                "aText": "foo bar",
-                "sometimesNull": "1",
-                "caseInsensitiveField": "Ä TEXT",
-                "colorData": { "packageColor": "red" },
-                "serialNumbers": ["12345", "67890"]
-            },
-            {
-                "@id": "2",
-                "deliveryNumber": "1000521",
-                "consignee": {
-                    "street": "1 North Bridge Road",
-                    "city": "Singapore",
-                    "zipCode": "179094"
-                    //"country": "US" // schema is currently wrong (accepts CreateCountry instead of String)
-                },
-                "contentInfo": [
-                    {
-                        "languageIsoCode": "DE",
-                        "translation": "Hartplastik-Bausteine"
-                    }
-                ],
-                "items": [
-                    {
-                        "itemNumber": "2001",
-                        "quantity": 13,
-                        "handlingUnit": "@{ids/Country/1}"
-                        //wrong ID (Country instead of HandlingUnit) should not be resolved as reference
-                    },
-                    {
-                        "itemNumber": "2002",
-                        "quantity": 18
-                    }
-                ],
-                "destinationCountryISOCode": "XX",
-                "description": "description with all words prefixesFooBar phrase",
-                "enumFlexSearch": "Bar",
-                "aNumber": 1234,
-                "recursion": {
-                    "name": "test_x",
-                    "recursion": {
-                        "name": "test_y",
-                        "recursion": {
-                            "name": "test_z"
-                        }
-                    }
-                },
-                "sometimesNull": "2",
-                "caseInsensitiveField": "ä text",
-                "colorData": { "packageColor": "blue" },
-                "serialNumbers": ["54321"]
-            },
-            {
-                "@id": "3",
-                "deliveryNumber": "1000522",
-                "contentInfo": [
-                    {
-                        "languageIsoCode": "DE",
-                        "translation": "Metall-Bausteine"
-                    }
-                ],
-                "items": [
-                    {
-                        "itemNumber": "3001",
-                        "quantity": 3
-                    },
-                    {
-                        "itemNumber": "3002",
-                        "quantity": 18
-                    },
-                    {
-                        "itemNumber": "1001",
-                        "quantity": 3,
-                        "handlingUnit": "@{ids/HandlingUnit/1}",
-                        "description": {
-                            "en": "Bananen",
-                            "de": "Bananas"
-                        }
-                    },
-                    {
-                        "itemNumber": "1002",
-                        "quantity": 8,
-                        "handlingUnit": "@{ids/HandlingUnit/2}",
-                        "description": {
-                            "en": "Äpfel",
-                            "de": "Apples"
-                        }
-                    }
-                ],
-                "destinationCountryISOCode": "US",
-                "description": "description with a phrase any word",
-                "aNumber": 1000521,
-                "recursion": {
-                    "name": "test_1",
-                    "recursion": {
-                        "name": "test_2",
-                        "recursion": {
-                            "name": "test_3"
-                        }
-                    }
-                },
-                "sometimesNull": null,
-                "caseInsensitiveField": "änother text",
-                "colorData": { "packageColor": "green" }
-            }
+        "totalInvestment": "EUR 3000000",
+        "someKey": "2"
+      },
+      {
+        "@id": "3",
+        "isoCode": "US",
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Vereinigte Staaten"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "United States"
+          }
         ],
-        "Forwarder": [
-            {
-                "@id": "1",
-                "name": "DHL",
-                "deliveries": ["@{ids/Delivery/1}"]
-            }
-        ],
-        "SecretKey": [
-            {
-                "@id": "1",
-                "key": "42",
-                "value": "everything"
-            }
-        ],
-        "NumberRange": [
-            {
-                "@id": "1",
-                "number": 0,
-                "name": "DELIVERY"
-            },
-            {
-                "@id": "2",
-                "number": 0,
-                "name": "HANDLING_UNIT"
-            }
+        "someKey": null
+      },
+      {
+        "@id": "4",
+        "isoCode": "CH",
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Schweiz"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "Switzerland"
+          }
         ]
-    }
+      }
+    ],
+    "HandlingUnit": [
+      {
+        "@id": "1",
+        "huNumber": "1000007"
+      },
+      {
+        "@id": "2",
+        "huNumber": "1000014"
+      },
+      {
+        "@id": "3",
+        "huNumber": "1000021"
+      }
+    ],
+    "Delivery": [
+      {
+        "@id": "1",
+        "deliveryNumber": "1000173",
+        "consignee": {
+          "street": "675 Kurtis Route",
+          "city": "Port Neldahaven",
+          "zipCode": "17624"
+        },
+        "contentInfo": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Kerosin 1000L"
+          }
+        ],
+        "dgInfo": {
+          "unNumber": "1863",
+          "flashpoint": "37 °C"
+        },
+        "items": [
+          {
+            "itemNumber": "1001",
+            "quantity": 3,
+            "handlingUnit": "@{ids/HandlingUnit/1}",
+            "description": {
+              "de": "Bananen",
+              "en": "Bananas"
+            }
+          },
+          {
+            "itemNumber": "1002",
+            "quantity": 8,
+            "handlingUnit": "@{ids/HandlingUnit/2}",
+            "description": {
+              "de": "Äpfel",
+              "en": "Apples"
+            }
+          }
+        ],
+        "totalValue": "EUR 1024.00",
+        "description": "description with anyword phrase a all",
+        "enumFlexSearch": "Foo",
+        "aNumber": 123,
+        "recursion": {
+          "name": "test_a",
+          "recursion": {
+            "name": "test_b",
+            "recursion": {
+              "name": "test_c"
+            }
+          }
+        },
+        "aText": "foo bar",
+        "sometimesNull": "1",
+        "caseInsensitiveField": "Ä TEXT",
+        "colorData": { "packageColor": "red" },
+        "serialNumbers": ["12345", "67890"]
+      },
+      {
+        "@id": "2",
+        "deliveryNumber": "1000521",
+        "consignee": {
+          "street": "1 North Bridge Road",
+          "city": "Singapore",
+          "zipCode": "179094"
+          //"country": "US" // schema is currently wrong (accepts CreateCountry instead of String)
+        },
+        "contentInfo": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Hartplastik-Bausteine"
+          }
+        ],
+        "items": [
+          {
+            "itemNumber": "2001",
+            "quantity": 13,
+            "handlingUnit": "@{ids/Country/1}"
+            //wrong ID (Country instead of HandlingUnit) should not be resolved as reference
+          },
+          {
+            "itemNumber": "2002",
+            "quantity": 18
+          }
+        ],
+        "destinationCountryISOCode": "XX",
+        "description": "description with all words prefixesFooBar phrase",
+        "enumFlexSearch": "Bar",
+        "aNumber": 1234,
+        "recursion": {
+          "name": "test_x",
+          "recursion": {
+            "name": "test_y",
+            "recursion": {
+              "name": "test_z"
+            }
+          }
+        },
+        "sometimesNull": "2",
+        "caseInsensitiveField": "ä text",
+        "colorData": { "packageColor": "blue" },
+        "serialNumbers": ["54321"]
+      },
+      {
+        "@id": "3",
+        "deliveryNumber": "1000522",
+        "contentInfo": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Metall-Bausteine"
+          }
+        ],
+        "items": [
+          {
+            "itemNumber": "3001",
+            "quantity": 3
+          },
+          {
+            "itemNumber": "3002",
+            "quantity": 18
+          },
+          {
+            "itemNumber": "1001",
+            "quantity": 3,
+            "handlingUnit": "@{ids/HandlingUnit/1}",
+            "description": {
+              "en": "Bananen",
+              "de": "Bananas"
+            }
+          },
+          {
+            "itemNumber": "1002",
+            "quantity": 8,
+            "handlingUnit": "@{ids/HandlingUnit/2}",
+            "description": {
+              "en": "Äpfel",
+              "de": "Apples"
+            }
+          }
+        ],
+        "destinationCountryISOCode": "US",
+        "description": "description with a phrase any word",
+        "aNumber": 1000521,
+        "recursion": {
+          "name": "test_1",
+          "recursion": {
+            "name": "test_2",
+            "recursion": {
+              "name": "test_3"
+            }
+          }
+        },
+        "sometimesNull": null,
+        "caseInsensitiveField": "änother text",
+        "colorData": { "packageColor": "green" }
+      }
+    ],
+    "Forwarder": [
+      {
+        "@id": "1",
+        "name": "DHL",
+        "deliveries": ["@{ids/Delivery/1}"]
+      }
+    ],
+    "SecretKey": [
+      {
+        "@id": "1",
+        "key": "42",
+        "value": "everything"
+      }
+    ],
+    "NumberRange": [
+      {
+        "@id": "1",
+        "number": 0,
+        "name": "DELIVERY"
+      },
+      {
+        "@id": "2",
+        "number": 0,
+        "name": "HANDLING_UNIT"
+      }
+    ]
+  }
 }

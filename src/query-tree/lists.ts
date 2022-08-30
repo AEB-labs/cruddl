@@ -20,7 +20,7 @@ export class ListQueryNode extends QueryNode {
         if (!this.itemNodes.length) {
             return `[]`;
         }
-        return `[\n` + indent(this.itemNodes.map(item => item.describe()).join(',\n')) + `\n]`;
+        return `[\n` + indent(this.itemNodes.map((item) => item.describe()).join(',\n')) + `\n]`;
     }
 }
 
@@ -62,11 +62,13 @@ export class TransformListQueryNode extends QueryNode {
             `${this.listNode.describe()} as list with ${this.itemVariable.describe()} => \n` +
             indent(
                 '' + // '' to move the arg label here in WebStorm
-                    (this.filterNode.equals(ConstBoolQueryNode.TRUE) ? '' : `where ${this.filterNode.describe()}\n`) +
+                    (this.filterNode.equals(ConstBoolQueryNode.TRUE)
+                        ? ''
+                        : `where ${this.filterNode.describe()}\n`) +
                     (this.orderBy.isUnordered() ? '' : `order by ${this.orderBy.describe()}\n`) +
                     (this.skip != 0 ? `skip ${this.skip}\n` : '') +
                     (this.maxCount != undefined ? `limit ${this.maxCount}\n` : '') +
-                    `as ${this.innerNode.describe()}`
+                    `as ${this.innerNode.describe()}`,
             )
         );
     }
@@ -104,7 +106,7 @@ export class OrderSpecification extends QueryNode {
         if (!this.clauses.length) {
             return '(unordered)';
         }
-        return this.clauses.map(c => c.describe()).join(', ');
+        return this.clauses.map((c) => c.describe()).join(', ');
     }
 }
 
@@ -122,7 +124,9 @@ export class ConcatListsQueryNode extends QueryNode {
         if (!this.listNodes.length) {
             return `[]`;
         }
-        return `[\n` + this.listNodes.map(node => indent('...' + node.describe())).join(',\n') + `]`;
+        return (
+            `[\n` + this.listNodes.map((node) => indent('...' + node.describe())).join(',\n') + `]`
+        );
     }
 }
 
@@ -175,7 +179,7 @@ export class AggregationQueryNode extends QueryNode {
     constructor(
         readonly listNode: QueryNode,
         readonly operator: AggregationOperator,
-        options: AggregationQueryNodeParams = {}
+        options: AggregationQueryNodeParams = {},
     ) {
         super();
         this.sort = options.sort || false;

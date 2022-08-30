@@ -1,5 +1,5 @@
 {
-    "schemaOptions": {
-        "maxOrderByRootEntityDepth": 0
-    }
+  "schemaOptions": {
+    "maxOrderByRootEntityDepth": 0
+  }
 }

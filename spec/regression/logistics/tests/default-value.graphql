@@ -20,7 +20,9 @@ query checkCreatedByInit {
 }
 
 mutation createNewWithSomeOtherValuesOverwritten {
-    createDelivery(input: { deliveryNumber: "42", defaultValueString: "distinct", defaultValueFloat: 1.62 }) {
+    createDelivery(
+        input: { deliveryNumber: "42", defaultValueString: "distinct", defaultValueFloat: 1.62 }
+    ) {
         deliveryNumber
         destination {
             street

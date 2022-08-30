@@ -67,7 +67,8 @@ export const INTERFACE_TYPE_DEFINITION: 'InterfaceTypeDefinition' = 'InterfaceTy
 export const UNION_TYPE_DEFINITION: 'UnionTypeDefinition' = 'UnionTypeDefinition';
 export const ENUM_TYPE_DEFINITION: 'EnumTypeDefinition' = 'EnumTypeDefinition';
 export const ENUM_VALUE_DEFINITION: 'EnumValueDefinition' = 'EnumValueDefinition';
-export const INPUT_OBJECT_TYPE_DEFINITION: 'InputObjectTypeDefinition' = 'InputObjectTypeDefinition';
+export const INPUT_OBJECT_TYPE_DEFINITION: 'InputObjectTypeDefinition' =
+    'InputObjectTypeDefinition';
 
 // Type Extensions
 

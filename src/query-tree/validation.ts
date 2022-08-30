@@ -62,7 +62,7 @@ export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryR
 
     /* istanbul ignore next */
     static getValidatorFunction() {
-        return function(validationData: any, result: any) {
+        return function (validationData: any, result: any) {
             /**
              * An error that is thrown if a validator fails
              */
@@ -77,7 +77,9 @@ export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryR
             }
 
             if (!result) {
-                throw new RuntimeValidationError(validationData.errorMessage, { code: validationData.errorCode });
+                throw new RuntimeValidationError(validationData.errorMessage, {
+                    code: validationData.errorCode,
+                });
             }
         };
     }
@@ -93,7 +95,7 @@ export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryR
     getValidatorData() {
         return {
             errorMessage: this.errorMessage,
-            errorCode: this.errorCode
+            errorCode: this.errorCode,
         };
     }
 
@@ -121,7 +123,7 @@ export class ErrorIfEmptyResultValidator extends QueryNode implements QueryResul
 
     /* istanbul ignore next */
     static getValidatorFunction() {
-        return function(validationData: any, result: any) {
+        return function (validationData: any, result: any) {
             /**
              * An error that is thrown if a validator fails
              */
@@ -136,7 +138,9 @@ export class ErrorIfEmptyResultValidator extends QueryNode implements QueryResul
             }
 
             if (!result || !result.length) {
-                throw new RuntimeValidationError(validationData.errorMessage, { code: validationData.errorCode });
+                throw new RuntimeValidationError(validationData.errorMessage, {
+                    code: validationData.errorCode,
+                });
             }
         };
     }
@@ -152,7 +156,7 @@ export class ErrorIfEmptyResultValidator extends QueryNode implements QueryResul
     getValidatorData() {
         return {
             errorMessage: this.errorMessage,
-            errorCode: this.errorCode
+            errorCode: this.errorCode,
         };
     }
 
@@ -176,7 +180,10 @@ interface NoRestrictingObjectsOnDeleteValidatorData {
 /**
  * A validator that verifies that a list is empty, and if it's not, it reports them as restring a delete operation
  */
-export class NoRestrictingObjectsOnDeleteValidator extends QueryNode implements QueryResultValidator {
+export class NoRestrictingObjectsOnDeleteValidator
+    extends QueryNode
+    implements QueryResultValidator
+{
     readonly data: NoRestrictingObjectsOnDeleteValidatorData;
 
     constructor(params: NoRestrictingObjectsOnDeleteValidatorParams) {
@@ -184,7 +191,7 @@ export class NoRestrictingObjectsOnDeleteValidator extends QueryNode implements 
         this.data = {
             restrictingTypeName: params.restrictingRootEntityType.name,
             restrictedTypeName: params.restrictedRootEntityType.name,
-            path: params.path.map(s => s.getSourceFieldOrThrow().name).join('.')
+            path: params.path.map((s) => s.getSourceFieldOrThrow().name).join('.'),
         };
     }
 
@@ -194,7 +201,10 @@ export class NoRestrictingObjectsOnDeleteValidator extends QueryNode implements 
 
     /* istanbul ignore next */
     static getValidatorFunction() {
-        return function(validationData: NoRestrictingObjectsOnDeleteValidatorData, result: ReadonlyArray<string>) {
+        return function (
+            validationData: NoRestrictingObjectsOnDeleteValidatorData,
+            result: ReadonlyArray<string>,
+        ) {
             /**
              * An error that is thrown if a validator fails
              */
@@ -213,14 +223,14 @@ export class NoRestrictingObjectsOnDeleteValidator extends QueryNode implements 
                     throw new RuntimeValidationError(
                         `Cannot delete ${validationData.restrictedTypeName} object because a ${validationData.restrictingTypeName} object is still referenced via ${validationData.path} (id: ${result[0]})`,
                         {
-                            code: 'RELATION_CONSTRAINT_VIOLATION'
-                        }
+                            code: 'RELATION_CONSTRAINT_VIOLATION',
+                        },
                     );
                 }
 
                 let ids = result
                     .slice(0, 5)
-                    .map(id => id)
+                    .map((id) => id)
                     .join(', ');
                 if (result.length > 5) {
                     ids += ', ...';
@@ -228,8 +238,8 @@ export class NoRestrictingObjectsOnDeleteValidator extends QueryNode implements 
                 throw new RuntimeValidationError(
                     `Cannot delete ${validationData.restrictedTypeName} object because ${result.length} ${validationData.restrictingTypeName} objects are still referenced via ${validationData.path} (ids: ${ids})`,
                     {
-                        code: 'RELATION_CONSTRAINT_VIOLATION'
-                    }
+                        code: 'RELATION_CONSTRAINT_VIOLATION',
+                    },
                 );
             }
         };
@@ -252,8 +262,9 @@ export class NoRestrictingObjectsOnDeleteValidator extends QueryNode implements 
     }
 }
 
-export const ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS: ReadonlyArray<QueryResultValidatorFunctionProvider> = [
-    ErrorIfNotTruthyResultValidator,
-    ErrorIfEmptyResultValidator,
-    NoRestrictingObjectsOnDeleteValidator
-];
+export const ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS: ReadonlyArray<QueryResultValidatorFunctionProvider> =
+    [
+        ErrorIfNotTruthyResultValidator,
+        ErrorIfEmptyResultValidator,
+        NoRestrictingObjectsOnDeleteValidator,
+    ];

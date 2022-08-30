@@ -1,7 +1,14 @@
 import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
-import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType, ValueObjectType } from '../../model';
+import {
+    ChildEntityType,
+    EntityExtensionType,
+    Field,
+    ObjectType,
+    RootEntityType,
+    ValueObjectType,
+} from '../../model';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import {
     BasicCreateInputField,
@@ -11,20 +18,20 @@ import {
     CreateObjectInputField,
     CreateReferenceInputField,
     DummyCreateInputField,
-    ObjectListCreateInputField
+    ObjectListCreateInputField,
 } from './input-fields';
 import {
     CreateChildEntityInputType,
     CreateEntityExtensionInputType,
     CreateObjectInputType,
     CreateRootEntityInputType,
-    ValueObjectInputType
+    ValueObjectInputType,
 } from './input-types';
 import {
     AddEdgesCreateInputField,
     CreateAndAddEdgesCreateInputField,
     CreateAndSetEdgeCreateInputField,
-    SetEdgeCreateInputField
+    SetEdgeCreateInputField,
 } from './relation-fields';
 
 export class CreateInputTypeGenerator {
@@ -47,27 +54,29 @@ export class CreateInputTypeGenerator {
     @memorize()
     generateForRootEntityType(type: RootEntityType): CreateRootEntityInputType {
         return new CreateRootEntityInputType(type, () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field))
+            flatMap(type.fields, (field: Field) => this.generateFields(field)),
         );
     }
 
     @memorize()
     generateForChildEntityType(type: ChildEntityType): CreateChildEntityInputType {
         return new CreateChildEntityInputType(type, () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field))
+            flatMap(type.fields, (field: Field) => this.generateFields(field)),
         );
     }
 
     @memorize()
     generateForEntityExtensionType(type: EntityExtensionType): CreateObjectInputType {
         return new CreateEntityExtensionInputType(type, () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field))
+            flatMap(type.fields, (field: Field) => this.generateFields(field)),
         );
     }
 
     @memorize()
     generateForValueObjectType(type: ValueObjectType): CreateObjectInputType {
-        return new ValueObjectInputType(type, () => flatMap(type.fields, (field: Field) => this.generateFields(field)));
+        return new ValueObjectInputType(type, () =>
+            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+        );
     }
 
     private generateFields(field: Field): CreateInputField[] {
@@ -109,7 +118,11 @@ export class CreateInputTypeGenerator {
             if (field.isList) {
                 // don't allow null values in lists
                 return [
-                    new BasicListCreateInputField(field, undefined, new GraphQLList(new GraphQLNonNull(inputType)))
+                    new BasicListCreateInputField(
+                        field,
+                        undefined,
+                        new GraphQLList(new GraphQLNonNull(inputType)),
+                    ),
                 ];
             } else if (field.referenceField) {
                 // this is the key field to a reference field - add some comments
@@ -124,8 +137,8 @@ export class CreateInputTypeGenerator {
                               field.referenceField.type.name +
                               '` to be referenced'
                             : undefined,
-                        inputType
-                    )
+                        inputType,
+                    ),
                 ];
             } else {
                 return [new BasicCreateInputField(field, undefined, inputType)];
@@ -138,10 +151,13 @@ export class CreateInputTypeGenerator {
                 if (field.isList) {
                     return [
                         new AddEdgesCreateInputField(field),
-                        new CreateAndAddEdgesCreateInputField(field, inputType)
+                        new CreateAndAddEdgesCreateInputField(field, inputType),
                     ];
                 } else {
-                    return [new SetEdgeCreateInputField(field), new CreateAndSetEdgeCreateInputField(field, inputType)];
+                    return [
+                        new SetEdgeCreateInputField(field),
+                        new CreateAndSetEdgeCreateInputField(field, inputType),
+                    ];
                 }
             }
             if (field.isReference) {
@@ -160,7 +176,14 @@ export class CreateInputTypeGenerator {
 
                 if (referenceKeyField === field) {
                     // if the key field *is* the reference field, this means that there is no explicit key field
-                    return [new CreateReferenceInputField(referenceKeyField, field.name, description, scalarType)];
+                    return [
+                        new CreateReferenceInputField(
+                            referenceKeyField,
+                            field.name,
+                            description,
+                            scalarType,
+                        ),
+                    ];
                 } else {
                     // there is a separate key field. We still generate this field (for backwards-compatibility), but users should use the key field instead
                     return [
@@ -169,13 +192,15 @@ export class CreateInputTypeGenerator {
                             field.name,
                             description,
                             scalarType,
-                            `Use "${referenceKeyField.name}" instead.`
-                        )
+                            `Use "${referenceKeyField.name}" instead.`,
+                        ),
                     ];
                 }
             }
 
-            throw new Error(`Field "${field.declaringType.name}.${field.name}" has an unexpected configuration`);
+            throw new Error(
+                `Field "${field.declaringType.name}.${field.name}" has an unexpected configuration`,
+            );
         }
 
         if (field.type.isEntityExtensionType) {

@@ -28,7 +28,9 @@ type Delivery
     forwarder: Forwarder @relation
 
     destination: Address
-        @defaultValue(value: { street: "Hauptstraße", city: "Stuttgart", zipCode: "70xxx", country: "DE" })
+        @defaultValue(
+            value: { street: "Hauptstraße", city: "Stuttgart", zipCode: "70xxx", country: "DE" }
+        )
     defaultValueString: String @defaultValue(value: "foo")
     defaultValueString2: String @defaultValue(value: "bar")
     defaultValueInt: Int @defaultValue(value: 42)

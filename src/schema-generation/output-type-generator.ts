@@ -12,9 +12,14 @@ import {
     QueryNode,
     RevisionQueryNode,
     UnaryOperationQueryNode,
-    UnaryOperator
+    UnaryOperator,
 } from '../query-tree';
-import { CURSOR_FIELD, FLEX_SEARCH_ENTITIES_FIELD_PREFIX, ORDER_BY_ARG, REVISION_FIELD } from '../schema/constants';
+import {
+    CURSOR_FIELD,
+    FLEX_SEARCH_ENTITIES_FIELD_PREFIX,
+    ORDER_BY_ARG,
+    REVISION_FIELD,
+} from '../schema/constants';
 import { getMetaFieldName } from '../schema/names';
 import { compact, flatMap } from '../utils/utils';
 import { EnumTypeGenerator } from './enum-type-generator';
@@ -28,7 +33,7 @@ import {
     QueryNodeField,
     QueryNodeListType,
     QueryNodeNonNullType,
-    QueryNodeOutputType
+    QueryNodeOutputType,
 } from './query-node-object-type';
 import { RootFieldHelper } from './root-field-helper';
 import { orderArgMatchesPrimarySort } from './utils/flex-search-utils';
@@ -41,7 +46,7 @@ export class OutputTypeGenerator {
         private readonly enumTypeGenerator: EnumTypeGenerator,
         private readonly orderByEnumGenerator: OrderByEnumGenerator,
         private readonly metaTypeGenerator: MetaTypeGenerator,
-        private readonly rootFieldHelper: RootFieldHelper
+        private readonly rootFieldHelper: RootFieldHelper,
     ) {}
 
     generate(type: Type): QueryNodeOutputType {
@@ -71,20 +76,20 @@ export class OutputTypeGenerator {
         return {
             name: objectType.name,
             description,
-            fields: () => this.getFields(objectType)
+            fields: () => this.getFields(objectType),
         };
     }
 
     private getFields(objectType: ObjectType): ReadonlyArray<QueryNodeField> {
         const origFields = [...objectType.fields];
-        origFields.filter(field => field.isReference);
+        origFields.filter((field) => field.isReference);
 
-        const fields = flatMap(objectType.fields, field => {
+        const fields = flatMap(objectType.fields, (field) => {
             const nodeFields = this.createFields(field);
             if (field.isReference) {
                 const type = field.type;
                 if (type.kind === TypeKind.ROOT_ENTITY) {
-                    nodeFields.forEach(nf => {
+                    nodeFields.forEach((nf) => {
                         nf.description =
                             (field.description ? field.description + '\n\n' : '') +
                             'This field references a `' +
@@ -104,8 +109,8 @@ export class OutputTypeGenerator {
                 // include cursor fields in all types that could occur in lists and that can be ordered (unorderable types can't use cursor-based navigation)
                 this.createCursorField(objectType),
 
-                this.createRevisionField(objectType)
-            ])
+                this.createRevisionField(objectType),
+            ]),
         ];
     }
 
@@ -127,8 +132,8 @@ export class OutputTypeGenerator {
                     source,
                     info.selectionStack[info.selectionStack.length - 2].fieldRequest,
                     orderByType,
-                    objectType
-                )
+                    objectType,
+                ),
         };
     }
 
@@ -136,7 +141,7 @@ export class OutputTypeGenerator {
         itemNode: QueryNode,
         listFieldRequest: FieldRequest | undefined,
         orderByType: OrderByEnumType,
-        objectType: ObjectType
+        objectType: ObjectType,
     ): QueryNode {
         if (!listFieldRequest || !isListTypeIgnoringNonNull(listFieldRequest.field.type)) {
             return NullQueryNode.NULL;
@@ -149,23 +154,32 @@ export class OutputTypeGenerator {
         if (
             objectType.isRootEntityType &&
             listFieldRequest.fieldName.startsWith(FLEX_SEARCH_ENTITIES_FIELD_PREFIX) &&
-            orderArgMatchesPrimarySort(listFieldRequest.args[ORDER_BY_ARG], objectType.flexSearchPrimarySort)
+            orderArgMatchesPrimarySort(
+                listFieldRequest.args[ORDER_BY_ARG],
+                objectType.flexSearchPrimarySort,
+            )
         ) {
             // this would be cleaner if the primary sort was actually parsed into a ModelComponent (see e.g. the Index and IndexField classes)
-            orderByValues = objectType.flexSearchPrimarySort.map(clause =>
+            orderByValues = objectType.flexSearchPrimarySort.map((clause) =>
                 orderByType.getValueOrThrow(
                     clause.field.path.replace('.', '_') +
-                        (clause.direction === OrderDirection.ASCENDING ? '_ASC' : '_DESC')
-                )
+                        (clause.direction === OrderDirection.ASCENDING ? '_ASC' : '_DESC'),
+                ),
             );
         } else {
-            orderByValues = getOrderByValues(listFieldRequest.args, orderByType, { isAbsoluteOrderRequired: true });
+            orderByValues = getOrderByValues(listFieldRequest.args, orderByType, {
+                isAbsoluteOrderRequired: true,
+            });
         }
-        const sortedClauses = sortBy(orderByValues, clause => clause.name);
+        const sortedClauses = sortBy(orderByValues, (clause) => clause.name);
         const objectNode = new ObjectQueryNode(
             sortedClauses.map(
-                clause => new PropertySpecification(clause.underscoreSeparatedPath, clause.getValueNode(itemNode))
-            )
+                (clause) =>
+                    new PropertySpecification(
+                        clause.underscoreSeparatedPath,
+                        clause.getValueNode(itemNode),
+                    ),
+            ),
         );
         return new UnaryOperationQueryNode(objectNode, UnaryOperator.JSON_STRINGIFY);
     }
@@ -179,7 +193,7 @@ export class OutputTypeGenerator {
             name: REVISION_FIELD,
             description: `An identifier that is updated automatically on each update of this root entity (but not on relation changes)`,
             type: new GraphQLNonNull(GraphQLID),
-            resolve: source => this.getRevisionNode(source)
+            resolve: (source) => this.getRevisionNode(source),
         };
     }
 
@@ -206,7 +220,9 @@ export class OutputTypeGenerator {
         }
         const schemaField: QueryNodeField = {
             name: field.name,
-            type: field.isList ? new QueryNodeNonNullType(new QueryNodeListType(itemType)) : itemType,
+            type: field.isList
+                ? new QueryNodeNonNullType(new QueryNodeListType(itemType))
+                : itemType,
             description,
             deprecationReason: field.deprecationReason,
 
@@ -216,17 +232,24 @@ export class OutputTypeGenerator {
             // fields in them, and a FieldQueryNode returns null if the source is null.
             skipNullCheck: field.type.isEntityExtensionType,
             isPure: true,
-            resolve: (sourceNode, args, info) => this.resolveField(field, sourceNode, info)
+            resolve: (sourceNode, args, info) => this.resolveField(field, sourceNode, info),
         };
 
         if (field.isList && field.type.isObjectType) {
-            return [this.listAugmentation.augment(schemaField, field.type), this.createMetaField(field)];
+            return [
+                this.listAugmentation.augment(schemaField, field.type),
+                this.createMetaField(field),
+            ];
         } else {
             return [schemaField];
         }
     }
 
-    private resolveField(field: Field, sourceNode: QueryNode, fieldContext: FieldContext): QueryNode {
+    private resolveField(
+        field: Field,
+        sourceNode: QueryNode,
+        fieldContext: FieldContext,
+    ): QueryNode {
         const rootHelperResult = this.rootFieldHelper.processField(field, sourceNode, fieldContext);
 
         if (rootHelperResult.resultNode) {
@@ -236,7 +259,7 @@ export class OutputTypeGenerator {
 
         return createFieldNode(field, rootHelperResult.sourceNode, {
             skipNullFallbackForEntityExtensions: true,
-            captureRootEntitiesOnCollectFields: rootHelperResult.captureRootEntitiesOnCollectFields
+            captureRootEntitiesOnCollectFields: rootHelperResult.captureRootEntitiesOnCollectFields,
         });
     }
 
@@ -252,7 +275,7 @@ export class OutputTypeGenerator {
             skipNullCheck: true, // meta fields should never be null
             description: field.description,
             isPure: true,
-            resolve: sourceNode => createFieldNode(field, sourceNode)
+            resolve: (sourceNode) => createFieldNode(field, sourceNode),
         };
         return this.filterAugmentation.augment(plainField, field.type);
     }

@@ -13,34 +13,34 @@ const i18n: LocalizationConfig[] = [
             A: {
                 label: 'A_FULLY_LABEL',
                 labelPlural: 'A_FULLY_LABEL_PLURAL',
-                hint: 'A_FULLY_HINT'
+                hint: 'A_FULLY_HINT',
             },
             B: {
                 label: 'B_FULLY_LABEL',
                 labelPlural: 'B_FULLY_LABEL_PLURAL',
-                hint: 'B_FULLY_HINT'
+                hint: 'B_FULLY_HINT',
             },
             // C is actually located in 'namespace' but translated in root here
             C: {
                 label: 'C_FULLY_LABEL',
                 labelPlural: 'C_FULLY_LABEL_PLURAL',
-                hint: 'C_FULLY_HINT'
-            }
-        }
+                hint: 'C_FULLY_HINT',
+            },
+        },
     },
     {
         language: PARTIALLY,
         namespacePath: [],
         types: {
             A: {
-                label: 'A_PARTIALLY_LABEL'
+                label: 'A_PARTIALLY_LABEL',
             },
             // B missing
             // C is actually located in 'namespace' but translated in root here
             C: {
-                label: 'C_PARTIALLY_LABEL'
-            }
-        }
+                label: 'C_PARTIALLY_LABEL',
+            },
+        },
     },
     {
         language: NAMESPACED,
@@ -50,15 +50,15 @@ const i18n: LocalizationConfig[] = [
             A: {
                 label: 'A_NAMESPACED_LABEL',
                 labelPlural: 'A_NAMESPACED_LABEL_PLURAL',
-                hint: 'A_NAMESPACED_HINT'
+                hint: 'A_NAMESPACED_HINT',
             },
             C: {
                 label: 'C_NAMESPACED_LABEL',
                 labelPlural: 'C_NAMESPACED_LABEL_PLURAL',
-                hint: 'C_NAMESPACED_HINT'
-            }
-        }
-    }
+                hint: 'C_NAMESPACED_HINT',
+            },
+        },
+    },
 ];
 
 const model = new Model({
@@ -67,29 +67,32 @@ const model = new Model({
             kind: TypeKind.ROOT_ENTITY,
             name: 'A',
             fields: [
-                {name: 'field1', typeName: 'String'}, {name: 'field2', typeName: 'String'},
-                {name: 'field3', typeName: 'String'}
-            ]
+                { name: 'field1', typeName: 'String' },
+                { name: 'field2', typeName: 'String' },
+                { name: 'field3', typeName: 'String' },
+            ],
         },
         {
             kind: TypeKind.ROOT_ENTITY,
             name: 'B',
             fields: [
-                {name: 'field1', typeName: 'String'}, {name: 'field2', typeName: 'String'},
-                {name: 'field3', typeName: 'String'}
-            ]
+                { name: 'field1', typeName: 'String' },
+                { name: 'field2', typeName: 'String' },
+                { name: 'field3', typeName: 'String' },
+            ],
         },
         {
             kind: TypeKind.ROOT_ENTITY,
             name: 'C',
             namespacePath: ['namespace'],
             fields: [
-                {name: 'field1', typeName: 'String'}, {name: 'field2', typeName: 'String'},
-                {name: 'field3', typeName: 'String'}
-            ]
-        }
+                { name: 'field1', typeName: 'String' },
+                { name: 'field2', typeName: 'String' },
+                { name: 'field3', typeName: 'String' },
+            ],
+        },
     ],
-    i18n
+    i18n,
 });
 
 describe('I18n type localization', () => {
@@ -100,7 +103,9 @@ describe('I18n type localization', () => {
         expect(localization.hint).to.equal('A_FULLY_HINT');
     });
     it('prefers languages in their given order', () => {
-        const localization = model.getRootEntityTypeOrThrow('A').getLocalization([FULLY, PARTIALLY]);
+        const localization = model
+            .getRootEntityTypeOrThrow('A')
+            .getLocalization([FULLY, PARTIALLY]);
         expect(localization.label).to.equal('A_FULLY_LABEL');
         expect(localization.labelPlural).to.equal('A_FULLY_LABEL_PLURAL');
         expect(localization.hint).to.equal('A_FULLY_HINT');
@@ -112,13 +117,17 @@ describe('I18n type localization', () => {
         expect(localization.hint).to.be.undefined;
     });
     it('falls back to a less preferred language for missing localization property', () => {
-        const localization = model.getRootEntityTypeOrThrow('A').getLocalization([PARTIALLY, FULLY]);
+        const localization = model
+            .getRootEntityTypeOrThrow('A')
+            .getLocalization([PARTIALLY, FULLY]);
         expect(localization.label).to.equal('A_PARTIALLY_LABEL');
         expect(localization.labelPlural).to.equal('A_FULLY_LABEL_PLURAL');
         expect(localization.hint).to.equal('A_FULLY_HINT');
     });
     it('falls back to a less preferred language for missing type localization', () => {
-        const localization = model.getRootEntityTypeOrThrow('B').getLocalization([PARTIALLY, FULLY]);
+        const localization = model
+            .getRootEntityTypeOrThrow('B')
+            .getLocalization([PARTIALLY, FULLY]);
         expect(localization.label).to.equal('B_FULLY_LABEL');
         expect(localization.labelPlural).to.equal('B_FULLY_LABEL_PLURAL');
         expect(localization.hint).to.equal('B_FULLY_HINT');
@@ -142,7 +151,9 @@ describe('I18n type localization', () => {
         expect(localization.hint).to.be.undefined;
     });
     it('prefers a super namespace over fallback language', () => {
-        const localization = model.getRootEntityTypeOrThrow('C').getLocalization([FULLY, NAMESPACED]);
+        const localization = model
+            .getRootEntityTypeOrThrow('C')
+            .getLocalization([FULLY, NAMESPACED]);
         expect(localization.label).to.equal('C_FULLY_LABEL');
         expect(localization.labelPlural).to.equal('C_FULLY_LABEL_PLURAL');
         expect(localization.hint).to.equal('C_FULLY_HINT');

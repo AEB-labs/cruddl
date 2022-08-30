@@ -1,6 +1,6 @@
 mutation create {
-    createDelivery(input: { deliveryNumber: "123", handlingUnits: [ "@{ids/HandlingUnit/1}" ] }) {
-        deliveryNumber,
+    createDelivery(input: { deliveryNumber: "123", handlingUnits: ["@{ids/HandlingUnit/1}"] }) {
+        deliveryNumber
         handlingUnits {
             huNumber
         }
@@ -8,7 +8,13 @@ mutation create {
 }
 
 mutation update {
-    updateDelivery(input: { id: "@{ids/Delivery/1}", deliveryNumber: "234", addHandlingUnits: [ "@{ids/HandlingUnit/1}" ] }) {
+    updateDelivery(
+        input: {
+            id: "@{ids/Delivery/1}"
+            deliveryNumber: "234"
+            addHandlingUnits: ["@{ids/HandlingUnit/1}"]
+        }
+    ) {
         deliveryNumber
         handlingUnits {
             huNumber

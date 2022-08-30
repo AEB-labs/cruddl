@@ -1,5 +1,10 @@
 import {
-    BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, QueryNode, UnaryOperationQueryNode, UnaryOperator
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ConstBoolQueryNode,
+    QueryNode,
+    UnaryOperationQueryNode,
+    UnaryOperator,
 } from '..';
 
 /**

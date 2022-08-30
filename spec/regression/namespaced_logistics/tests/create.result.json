@@ -38,15 +38,9 @@
             "dgInfo": {
               "flashpoint": "37 °C",
               "unNumber": "123",
-              "notices": [
-                "handle with care",
-                "do not throw"
-              ]
+              "notices": ["handle with care", "do not throw"]
             },
-            "serialNumbers": [
-              "456",
-              "424242"
-            ],
+            "serialNumbers": ["456", "424242"],
             "items": [
               {
                 "itemNumber": "44"
@@ -100,15 +94,9 @@
               "dgInfo": {
                 "flashpoint": "37 °C",
                 "unNumber": "123",
-                "notices": [
-                  "handle with care",
-                  "do not throw"
-                ]
+                "notices": ["handle with care", "do not throw"]
               },
-              "serialNumbers": [
-                "456",
-                "424242"
-              ],
+              "serialNumbers": ["456", "424242"],
               "items": [
                 {
                   "itemNumber": "44"

@@ -1,24 +1,18 @@
 mutation addRelation1 {
-    updateHandlingUnit(input: {
-        id: "@{ids/HandlingUnit/1}",
-        delivery: "@{ids/Delivery/1}"
-    }) {
+    updateHandlingUnit(input: { id: "@{ids/HandlingUnit/1}", delivery: "@{ids/Delivery/1}" }) {
         huNumber
     }
 }
 
 # make sure that it just does not find a deliverey with *any* handling unit
 mutation addRelation2 {
-    updateHandlingUnit(input: {
-        id: "@{ids/HandlingUnit/2}",
-        delivery: "@{ids/Delivery/2}"
-    }) {
+    updateHandlingUnit(input: { id: "@{ids/HandlingUnit/2}", delivery: "@{ids/Delivery/2}" }) {
         huNumber
     }
 }
 
 query q {
-    allHandlingUnits(filter: { delivery: { deliveryNumber: "1000173"}}) {
+    allHandlingUnits(filter: { delivery: { deliveryNumber: "1000173" } }) {
         huNumber
         delivery {
             deliveryNumber

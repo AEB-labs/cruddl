@@ -8,13 +8,16 @@ import {
     NullQueryNode,
     QueryNode,
     VariableAssignmentQueryNode,
-    VariableQueryNode
+    VariableQueryNode,
 } from '../../query-tree';
 import { objectEntries } from '../../utils/utils';
 import { createFieldPathNode } from '../field-path-node';
 import { equal } from './input-types';
 
-export function createBillingEntityCategoryNode(billingEntityConfig: BillingEntityType, entityNode: QueryNode) {
+export function createBillingEntityCategoryNode(
+    billingEntityConfig: BillingEntityType,
+    entityNode: QueryNode,
+) {
     if (billingEntityConfig.category != undefined) {
         return new LiteralQueryNode(billingEntityConfig.category);
     }
@@ -49,16 +52,23 @@ export function createBillingEntityCategoryNode(billingEntityConfig: BillingEnti
                 keyNode = new LiteralQueryNode(parseInt(key, 10));
             }
         }
-        node = new ConditionalQueryNode(equal(valueVar, keyNode), new LiteralQueryNode(value), node);
+        node = new ConditionalQueryNode(
+            equal(valueVar, keyNode),
+            new LiteralQueryNode(value),
+            node,
+        );
     }
     return new VariableAssignmentQueryNode({
         variableValueNode: valueNode,
         variableNode: valueVar,
-        resultNode: node
+        resultNode: node,
     });
 }
 
-export function createBillingEntityQuantityNode(billingEntityConfig: BillingEntityType, entityNode: QueryNode) {
+export function createBillingEntityQuantityNode(
+    billingEntityConfig: BillingEntityType,
+    entityNode: QueryNode,
+) {
     if (!billingEntityConfig.quantityFieldPath) {
         return NullQueryNode.NULL;
     }

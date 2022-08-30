@@ -3,7 +3,7 @@ import {
     GraphQLInputFieldConfigMap,
     GraphQLInputObjectType,
     GraphQLInputType,
-    Thunk
+    Thunk,
 } from 'graphql';
 import { chain, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
@@ -21,7 +21,7 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
     constructor(
         public readonly name: string,
         private readonly _fields: Thunk<ReadonlyArray<TField>>,
-        public readonly description?: string
+        public readonly description?: string,
     ) {}
 
     @memorize()
@@ -32,7 +32,7 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
             fields: () =>
                 this.transformFieldConfigs(
                     chain(this.fields)
-                        .keyBy(field => field.name)
+                        .keyBy((field) => field.name)
                         .mapValues(
                             (field): GraphQLInputFieldConfig => ({
                                 type:
@@ -40,26 +40,30 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
                                         ? field.inputType.getInputType()
                                         : field.inputType,
                                 description: field.description,
-                                deprecationReason: field.deprecationReason
-                            })
+                                deprecationReason: field.deprecationReason,
+                            }),
                         )
-                        .value()
-                )
+                        .value(),
+                ),
         });
     }
 
-    protected transformFieldConfigs(fields: GraphQLInputFieldConfigMap): GraphQLInputFieldConfigMap {
+    protected transformFieldConfigs(
+        fields: GraphQLInputFieldConfigMap,
+    ): GraphQLInputFieldConfigMap {
         return fields;
     }
 
     getFieldOrThrow<T extends TField>(name: string, clazz?: Constructor<T>): T {
         const field = this.fieldMap.get(name);
         if (!field) {
-            throw new Error(`Expected field "${name}" to exist on input object type "${this.name}"`);
+            throw new Error(
+                `Expected field "${name}" to exist on input object type "${this.name}"`,
+            );
         }
         if (clazz && !(field instanceof clazz)) {
             throw new Error(
-                `Expected input field "${this.name}.${name}" to be of type "${clazz.name}", but is of type "${field.constructor.name}"`
+                `Expected input field "${this.name}.${name}" to be of type "${clazz.name}", but is of type "${field.constructor.name}"`,
             );
         }
         return field as T;
@@ -78,12 +82,14 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
 
 function resolveAndCheckFields<TField extends TypedInputFieldBase<TField>>(
     thunk: Thunk<ReadonlyArray<TField>>,
-    typeName: string
+    typeName: string,
 ): ReadonlyArray<TField> {
     const fields = resolveThunk(thunk);
-    if (uniqBy(fields, field => field.name).length !== fields.length) {
+    if (uniqBy(fields, (field) => field.name).length !== fields.length) {
         throw new Error(
-            `Input type "${typeName}" has duplicate fields (fields: ${fields.map(f => f.name).join(', ')})`
+            `Input type "${typeName}" has duplicate fields (fields: ${fields
+                .map((f) => f.name)
+                .join(', ')})`,
         );
     }
     return fields;

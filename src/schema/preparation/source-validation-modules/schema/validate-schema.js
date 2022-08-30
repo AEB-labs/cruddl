@@ -49,7 +49,13 @@ var validate = (function () {
                         for (var i1 = 0; i1 < data1.length; i1++) {
                             var errs_2 = errors;
                             if (
-                                !refVal2(data1[i1], (dataPath || '') + '.permissions[' + i1 + ']', data1, i1, rootData)
+                                !refVal2(
+                                    data1[i1],
+                                    (dataPath || '') + '.permissions[' + i1 + ']',
+                                    data1,
+                                    i1,
+                                    rootData,
+                                )
                             ) {
                                 if (vErrors === null) vErrors = refVal2.errors;
                                 else vErrors = vErrors.concat(refVal2.errors);
@@ -426,8 +432,13 @@ var validate = (function () {
                                 if (!pattern1.test(data2)) {
                                     var err = {
                                         keyword: 'pattern',
-                                        dataPath: (dataPath || '') + '.restrictToAccessGroups[' + i1 + ']',
-                                        schemaPath: '#/properties/restrictToAccessGroups/items/pattern',
+                                        dataPath:
+                                            (dataPath || '') +
+                                            '.restrictToAccessGroups[' +
+                                            i1 +
+                                            ']',
+                                        schemaPath:
+                                            '#/properties/restrictToAccessGroups/items/pattern',
                                         params: {
                                             pattern: '.+',
                                         },
@@ -440,7 +451,8 @@ var validate = (function () {
                             } else {
                                 var err = {
                                     keyword: 'type',
-                                    dataPath: (dataPath || '') + '.restrictToAccessGroups[' + i1 + ']',
+                                    dataPath:
+                                        (dataPath || '') + '.restrictToAccessGroups[' + i1 + ']',
                                     schemaPath: '#/properties/restrictToAccessGroups/items/type',
                                     params: {
                                         type: 'string',
@@ -478,7 +490,13 @@ var validate = (function () {
                         for (var i1 = 0; i1 < data1.length; i1++) {
                             var errs_2 = errors;
                             if (
-                                !refVal3(data1[i1], (dataPath || '') + '.restrictions[' + i1 + ']', data1, i1, rootData)
+                                !refVal3(
+                                    data1[i1],
+                                    (dataPath || '') + '.restrictions[' + i1 + ']',
+                                    data1,
+                                    i1,
+                                    rootData,
+                                )
                             ) {
                                 if (vErrors === null) vErrors = refVal3.errors;
                                 else vErrors = vErrors.concat(refVal3.errors);
@@ -748,7 +766,8 @@ var validate = (function () {
                             var err = {
                                 keyword: 'type',
                                 dataPath: (dataPath || '') + '.claim',
-                                schemaPath: '#/definitions/PermissionRestrictionWithClaim/properties/claim/type',
+                                schemaPath:
+                                    '#/definitions/PermissionRestrictionWithClaim/properties/claim/type',
                                 params: {
                                     type: 'string',
                                 },
@@ -892,7 +911,7 @@ var validate = (function () {
                                         (dataPath || '') + ".types['" + key1 + "']",
                                         data1,
                                         key1,
-                                        rootData
+                                        rootData,
                                     )
                                 ) {
                                     if (vErrors === null) vErrors = refVal8.errors;
@@ -927,8 +946,13 @@ var validate = (function () {
                                         if (typeof data2.label !== 'string') {
                                             var err = {
                                                 keyword: 'type',
-                                                dataPath: (dataPath || '') + ".fields['" + key1 + "'].label",
-                                                schemaPath: '#/definitions/FieldLocalization/properties/label/type',
+                                                dataPath:
+                                                    (dataPath || '') +
+                                                    ".fields['" +
+                                                    key1 +
+                                                    "'].label",
+                                                schemaPath:
+                                                    '#/definitions/FieldLocalization/properties/label/type',
                                                 params: {
                                                     type: 'string',
                                                 },
@@ -945,8 +969,13 @@ var validate = (function () {
                                         if (typeof data2.hint !== 'string') {
                                             var err = {
                                                 keyword: 'type',
-                                                dataPath: (dataPath || '') + ".fields['" + key1 + "'].hint",
-                                                schemaPath: '#/definitions/FieldLocalization/properties/hint/type',
+                                                dataPath:
+                                                    (dataPath || '') +
+                                                    ".fields['" +
+                                                    key1 +
+                                                    "'].hint",
+                                                schemaPath:
+                                                    '#/definitions/FieldLocalization/properties/hint/type',
                                                 params: {
                                                     type: 'string',
                                                 },
@@ -1117,8 +1146,13 @@ var validate = (function () {
                                         if (typeof data2.label !== 'string') {
                                             var err = {
                                                 keyword: 'type',
-                                                dataPath: (dataPath || '') + ".fields['" + key1 + "'].label",
-                                                schemaPath: '#/definitions/FieldLocalization/properties/label/type',
+                                                dataPath:
+                                                    (dataPath || '') +
+                                                    ".fields['" +
+                                                    key1 +
+                                                    "'].label",
+                                                schemaPath:
+                                                    '#/definitions/FieldLocalization/properties/label/type',
                                                 params: {
                                                     type: 'string',
                                                 },
@@ -1135,8 +1169,13 @@ var validate = (function () {
                                         if (typeof data2.hint !== 'string') {
                                             var err = {
                                                 keyword: 'type',
-                                                dataPath: (dataPath || '') + ".fields['" + key1 + "'].hint",
-                                                schemaPath: '#/definitions/FieldLocalization/properties/hint/type',
+                                                dataPath:
+                                                    (dataPath || '') +
+                                                    ".fields['" +
+                                                    key1 +
+                                                    "'].hint",
+                                                schemaPath:
+                                                    '#/definitions/FieldLocalization/properties/hint/type',
                                                 params: {
                                                     type: 'string',
                                                 },
@@ -1221,8 +1260,13 @@ var validate = (function () {
                                         if (typeof data2.label !== 'string') {
                                             var err = {
                                                 keyword: 'type',
-                                                dataPath: (dataPath || '') + ".values['" + key1 + "'].label",
-                                                schemaPath: '#/definitions/EnumValueLocalization/properties/label/type',
+                                                dataPath:
+                                                    (dataPath || '') +
+                                                    ".values['" +
+                                                    key1 +
+                                                    "'].label",
+                                                schemaPath:
+                                                    '#/definitions/EnumValueLocalization/properties/label/type',
                                                 params: {
                                                     type: 'string',
                                                 },
@@ -1239,8 +1283,13 @@ var validate = (function () {
                                         if (typeof data2.hint !== 'string') {
                                             var err = {
                                                 keyword: 'type',
-                                                dataPath: (dataPath || '') + ".values['" + key1 + "'].hint",
-                                                schemaPath: '#/definitions/EnumValueLocalization/properties/hint/type',
+                                                dataPath:
+                                                    (dataPath || '') +
+                                                    ".values['" +
+                                                    key1 +
+                                                    "'].hint",
+                                                schemaPath:
+                                                    '#/definitions/EnumValueLocalization/properties/hint/type',
                                                 params: {
                                                     type: 'string',
                                                 },
@@ -1521,7 +1570,7 @@ var validate = (function () {
                                     (dataPath || '') + ".permissionProfiles['" + key1 + "']",
                                     data1,
                                     key1,
-                                    rootData
+                                    rootData,
                                 )
                             ) {
                                 if (vErrors === null) vErrors = refVal1.errors;
@@ -1575,7 +1624,13 @@ var validate = (function () {
                         if (pattern2.test(key1)) {
                             var errs_2 = errors;
                             if (
-                                !refVal7(data1[key1], (dataPath || '') + ".i18n['" + key1 + "']", data1, key1, rootData)
+                                !refVal7(
+                                    data1[key1],
+                                    (dataPath || '') + ".i18n['" + key1 + "']",
+                                    data1,
+                                    key1,
+                                    rootData,
+                                )
                             ) {
                                 if (vErrors === null) vErrors = refVal7.errors;
                                 else vErrors = vErrors.concat(refVal7.errors);
@@ -1649,7 +1704,11 @@ var validate = (function () {
                                             valid4 = false;
                                             var err = {
                                                 keyword: 'additionalProperties',
-                                                dataPath: (dataPath || '') + '.billing.billingEntities[' + i2 + ']',
+                                                dataPath:
+                                                    (dataPath || '') +
+                                                    '.billing.billingEntities[' +
+                                                    i2 +
+                                                    ']',
                                                 schemaPath:
                                                     '#/properties/billing/properties/billingEntities/items/additionalProperties',
                                                 params: {
@@ -1667,7 +1726,11 @@ var validate = (function () {
                                         valid4 = false;
                                         var err = {
                                             keyword: 'required',
-                                            dataPath: (dataPath || '') + '.billing.billingEntities[' + i2 + ']',
+                                            dataPath:
+                                                (dataPath || '') +
+                                                '.billing.billingEntities[' +
+                                                i2 +
+                                                ']',
                                             schemaPath:
                                                 '#/properties/billing/properties/billingEntities/items/required',
                                             params: {
@@ -1694,7 +1757,8 @@ var validate = (function () {
                                                     params: {
                                                         pattern: '^[a-zA-Z0-9_-]+$',
                                                     },
-                                                    message: 'should match pattern "^[a-zA-Z0-9_-]+$"',
+                                                    message:
+                                                        'should match pattern "^[a-zA-Z0-9_-]+$"',
                                                 };
                                                 if (vErrors === null) vErrors = [err];
                                                 else vErrors.push(err);
@@ -1704,7 +1768,10 @@ var validate = (function () {
                                             var err = {
                                                 keyword: 'type',
                                                 dataPath:
-                                                    (dataPath || '') + '.billing.billingEntities[' + i2 + '].typeName',
+                                                    (dataPath || '') +
+                                                    '.billing.billingEntities[' +
+                                                    i2 +
+                                                    '].typeName',
                                                 schemaPath:
                                                     '#/properties/billing/properties/billingEntities/items/properties/typeName/type',
                                                 params: {
@@ -1735,7 +1802,8 @@ var validate = (function () {
                                                     params: {
                                                         pattern: '^[a-zA-Z0-9_-]+$',
                                                     },
-                                                    message: 'should match pattern "^[a-zA-Z0-9_-]+$"',
+                                                    message:
+                                                        'should match pattern "^[a-zA-Z0-9_-]+$"',
                                                 };
                                                 if (vErrors === null) vErrors = [err];
                                                 else vErrors.push(err);
@@ -1791,7 +1859,10 @@ var validate = (function () {
                                             var err = {
                                                 keyword: 'type',
                                                 dataPath:
-                                                    (dataPath || '') + '.billing.billingEntities[' + i2 + '].category',
+                                                    (dataPath || '') +
+                                                    '.billing.billingEntities[' +
+                                                    i2 +
+                                                    '].category',
                                                 schemaPath:
                                                     '#/properties/billing/properties/billingEntities/items/properties/category/type',
                                                 params: {
@@ -1808,7 +1879,11 @@ var validate = (function () {
                                     var data4 = data3.categoryMapping;
                                     if (data4 !== undefined) {
                                         var errs_4 = errors;
-                                        if (data4 && typeof data4 === 'object' && !Array.isArray(data4)) {
+                                        if (
+                                            data4 &&
+                                            typeof data4 === 'object' &&
+                                            !Array.isArray(data4)
+                                        ) {
                                             var errs__4 = errors;
                                             var valid5 = true;
                                             for (var key4 in data4) {
@@ -1832,7 +1907,8 @@ var validate = (function () {
                                                         params: {
                                                             additionalProperty: '' + key4 + '',
                                                         },
-                                                        message: 'should NOT have additional properties',
+                                                        message:
+                                                            'should NOT have additional properties',
                                                     };
                                                     if (vErrors === null) vErrors = [err];
                                                     else vErrors.push(err);
@@ -1853,7 +1929,8 @@ var validate = (function () {
                                                     params: {
                                                         missingProperty: 'fieldName',
                                                     },
-                                                    message: "should have required property 'fieldName'",
+                                                    message:
+                                                        "should have required property 'fieldName'",
                                                 };
                                                 if (vErrors === null) vErrors = [err];
                                                 else vErrors.push(err);
@@ -1896,7 +1973,8 @@ var validate = (function () {
                                                     params: {
                                                         missingProperty: 'defaultValue',
                                                     },
-                                                    message: "should have required property 'defaultValue'",
+                                                    message:
+                                                        "should have required property 'defaultValue'",
                                                 };
                                                 if (vErrors === null) vErrors = [err];
                                                 else vErrors.push(err);
@@ -1917,7 +1995,8 @@ var validate = (function () {
                                                             params: {
                                                                 pattern: '^[a-zA-Z0-9_-]+$',
                                                             },
-                                                            message: 'should match pattern "^[a-zA-Z0-9_-]+$"',
+                                                            message:
+                                                                'should match pattern "^[a-zA-Z0-9_-]+$"',
                                                         };
                                                         if (vErrors === null) vErrors = [err];
                                                         else vErrors.push(err);
@@ -1959,14 +2038,19 @@ var validate = (function () {
                                                     params: {
                                                         missingProperty: 'values',
                                                     },
-                                                    message: "should have required property 'values'",
+                                                    message:
+                                                        "should have required property 'values'",
                                                 };
                                                 if (vErrors === null) vErrors = [err];
                                                 else vErrors.push(err);
                                                 errors++;
                                             } else {
                                                 var errs_5 = errors;
-                                                if (data5 && typeof data5 === 'object' && !Array.isArray(data5)) {
+                                                if (
+                                                    data5 &&
+                                                    typeof data5 === 'object' &&
+                                                    !Array.isArray(data5)
+                                                ) {
                                                     var errs__5 = errors;
                                                     var valid6 = true;
                                                     for (var key5 in data5) {
@@ -2039,8 +2123,13 @@ var validate = (function () {
                                 } else {
                                     var err = {
                                         keyword: 'type',
-                                        dataPath: (dataPath || '') + '.billing.billingEntities[' + i2 + ']',
-                                        schemaPath: '#/properties/billing/properties/billingEntities/items/type',
+                                        dataPath:
+                                            (dataPath || '') +
+                                            '.billing.billingEntities[' +
+                                            i2 +
+                                            ']',
+                                        schemaPath:
+                                            '#/properties/billing/properties/billingEntities/items/type',
                                         params: {
                                             type: 'object',
                                         },
@@ -2131,8 +2220,13 @@ var validate = (function () {
                                     if (!pattern2.test(data3)) {
                                         var err = {
                                             keyword: 'pattern',
-                                            dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['typeName:']",
-                                            schemaPath: '#/properties/timeToLive/items/properties/typeName%3A/pattern',
+                                            dataPath:
+                                                (dataPath || '') +
+                                                '.timeToLive[' +
+                                                i1 +
+                                                "]['typeName:']",
+                                            schemaPath:
+                                                '#/properties/timeToLive/items/properties/typeName%3A/pattern',
                                             params: {
                                                 pattern: '^[a-zA-Z0-9_-]+$',
                                             },
@@ -2145,8 +2239,13 @@ var validate = (function () {
                                 } else {
                                     var err = {
                                         keyword: 'type',
-                                        dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['typeName:']",
-                                        schemaPath: '#/properties/timeToLive/items/properties/typeName%3A/type',
+                                        dataPath:
+                                            (dataPath || '') +
+                                            '.timeToLive[' +
+                                            i1 +
+                                            "]['typeName:']",
+                                        schemaPath:
+                                            '#/properties/timeToLive/items/properties/typeName%3A/type',
                                         params: {
                                             type: 'string',
                                         },
@@ -2165,12 +2264,18 @@ var validate = (function () {
                                     if (!pattern4.test(data3)) {
                                         var err = {
                                             keyword: 'pattern',
-                                            dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['dateField:']",
-                                            schemaPath: '#/properties/timeToLive/items/properties/dateField%3A/pattern',
+                                            dataPath:
+                                                (dataPath || '') +
+                                                '.timeToLive[' +
+                                                i1 +
+                                                "]['dateField:']",
+                                            schemaPath:
+                                                '#/properties/timeToLive/items/properties/dateField%3A/pattern',
                                             params: {
                                                 pattern: '^([a-zA-Z0-9_-]|\\.)+$',
                                             },
-                                            message: 'should match pattern "^([a-zA-Z0-9_-]|\\.)+$"',
+                                            message:
+                                                'should match pattern "^([a-zA-Z0-9_-]|\\.)+$"',
                                         };
                                         if (vErrors === null) vErrors = [err];
                                         else vErrors.push(err);
@@ -2179,8 +2284,13 @@ var validate = (function () {
                                 } else {
                                     var err = {
                                         keyword: 'type',
-                                        dataPath: (dataPath || '') + '.timeToLive[' + i1 + "]['dateField:']",
-                                        schemaPath: '#/properties/timeToLive/items/properties/dateField%3A/type',
+                                        dataPath:
+                                            (dataPath || '') +
+                                            '.timeToLive[' +
+                                            i1 +
+                                            "]['dateField:']",
+                                        schemaPath:
+                                            '#/properties/timeToLive/items/properties/dateField%3A/type',
                                         params: {
                                             type: 'string',
                                         },
@@ -2212,8 +2322,13 @@ var validate = (function () {
                                 if (typeof data3 !== 'number' || data3 % 1 || data3 !== data3) {
                                     var err = {
                                         keyword: 'type',
-                                        dataPath: (dataPath || '') + '.timeToLive[' + i1 + '].expireAfterDays',
-                                        schemaPath: '#/properties/timeToLive/items/properties/expireAfterDays/type',
+                                        dataPath:
+                                            (dataPath || '') +
+                                            '.timeToLive[' +
+                                            i1 +
+                                            '].expireAfterDays',
+                                        schemaPath:
+                                            '#/properties/timeToLive/items/properties/expireAfterDays/type',
                                         params: {
                                             type: 'integer',
                                         },
@@ -2227,7 +2342,11 @@ var validate = (function () {
                                     if (data3 < 1 || data3 !== data3) {
                                         var err = {
                                             keyword: 'minimum',
-                                            dataPath: (dataPath || '') + '.timeToLive[' + i1 + '].expireAfterDays',
+                                            dataPath:
+                                                (dataPath || '') +
+                                                '.timeToLive[' +
+                                                i1 +
+                                                '].expireAfterDays',
                                             schemaPath:
                                                 '#/properties/timeToLive/items/properties/expireAfterDays/minimum',
                                             params: {

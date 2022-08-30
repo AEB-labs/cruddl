@@ -1,5 +1,5 @@
 mutation {
-    updateDelivery(input: {id: "not-found", deliveryNumber: "123"}) {
+    updateDelivery(input: { id: "not-found", deliveryNumber: "123" }) {
         deliveryNumber
     }
 }

@@ -61,7 +61,9 @@ export function isRuntimeErrorValue(value: any): value is RuntimeErrorValue {
  * Converts a RuntimeErrorValue to a regular error that can be thrown
  */
 export function extractRuntimeError(value: RuntimeErrorValue): RuntimeError {
-    return new RuntimeError(value.__cruddl_runtime_error, { code: value.__cruddl_runtime_error_code });
+    return new RuntimeError(value.__cruddl_runtime_error, {
+        code: value.__cruddl_runtime_error_code,
+    });
 }
 
 /**
@@ -82,6 +84,6 @@ export class RuntimeError extends Error {
  */
 export function createRuntimeErrorValue(message: string): RuntimeErrorValue {
     return {
-        [RUNTIME_ERROR_TOKEN]: message
+        [RUNTIME_ERROR_TOKEN]: message,
     };
 }

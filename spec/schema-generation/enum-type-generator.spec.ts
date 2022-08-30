@@ -3,14 +3,17 @@ import { EnumType, Model, TypeKind } from '../../src/model';
 import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator';
 
 describe('EnumTypeGenerator', () => {
-    const model = new Model({types: []});
+    const model = new Model({ types: [] });
 
     it('generates the enum type', () => {
-        const enumType = new EnumType({
-            kind: TypeKind.ENUM,
-            name: 'Color',
-            values: [{value: 'RED'}, {value: 'GREEN'}, {value: 'BLUE'}]
-        }, model);
+        const enumType = new EnumType(
+            {
+                kind: TypeKind.ENUM,
+                name: 'Color',
+                values: [{ value: 'RED' }, { value: 'GREEN' }, { value: 'BLUE' }],
+            },
+            model,
+        );
 
         const graphQLType = new EnumTypeGenerator().generate(enumType);
         expect(graphQLType.name).to.equal('Color');

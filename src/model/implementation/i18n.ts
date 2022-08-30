@@ -6,13 +6,13 @@ import {
     decapitalize,
     groupArray,
     mapFirstDefined,
-    mapValues
+    mapValues,
 } from '../../utils/utils';
 import {
     LocalizationBaseConfig,
     LocalizationConfig,
     NamespaceLocalizationConfig,
-    TypeLocalizationConfig
+    TypeLocalizationConfig,
 } from '../config';
 import { MessageLocation, ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
@@ -23,17 +23,20 @@ import { Type } from './type';
 import { TypeBase } from './type-base';
 
 export class ModelI18n implements ModelComponent {
-    private readonly languageLocalizationProvidersByLanguage: ReadonlyMap<string, ModelLocalizationProvider>;
+    private readonly languageLocalizationProvidersByLanguage: ReadonlyMap<
+        string,
+        ModelLocalizationProvider
+    >;
 
     constructor(input: ReadonlyArray<LocalizationConfig>, private readonly model: Model) {
         // collect configs by language and create one localization provider per language
-        const configsByLanguage = groupArray(input, config => config.language);
-        const localizationsByLanguage = mapValues(configsByLanguage, configs =>
-            configs.map(config => new NamespaceLocalization(config))
+        const configsByLanguage = groupArray(input, (config) => config.language);
+        const localizationsByLanguage = mapValues(configsByLanguage, (configs) =>
+            configs.map((config) => new NamespaceLocalization(config)),
         );
         this.languageLocalizationProvidersByLanguage = mapValues(
             localizationsByLanguage,
-            localizations => new ModelLocalizationProvider(localizations)
+            (localizations) => new ModelLocalizationProvider(localizations),
         );
     }
 
@@ -43,47 +46,64 @@ export class ModelI18n implements ModelComponent {
         }
     }
 
-    public getTypeLocalization(type: TypeBase, resolutionOrder: ReadonlyArray<string>): TypeLocalization {
+    public getTypeLocalization(
+        type: TypeBase,
+        resolutionOrder: ReadonlyArray<string>,
+    ): TypeLocalization {
         const resolutionProviders = this.getResolutionProviders(resolutionOrder);
         // try to build one complete type localization out of the available possibly partial localizations
         return {
-            label: mapFirstDefined(resolutionProviders, rp => rp.localizeType(type).label),
-            labelPlural: mapFirstDefined(resolutionProviders, rp => rp.localizeType(type).labelPlural),
-            hint: mapFirstDefined(resolutionProviders, rp => rp.localizeType(type).hint)
+            label: mapFirstDefined(resolutionProviders, (rp) => rp.localizeType(type).label),
+            labelPlural: mapFirstDefined(
+                resolutionProviders,
+                (rp) => rp.localizeType(type).labelPlural,
+            ),
+            hint: mapFirstDefined(resolutionProviders, (rp) => rp.localizeType(type).hint),
         };
     }
 
-    public getFieldLocalization(field: Field, resolutionOrder: ReadonlyArray<string>): FieldLocalization {
+    public getFieldLocalization(
+        field: Field,
+        resolutionOrder: ReadonlyArray<string>,
+    ): FieldLocalization {
         const resolutionProviders = this.getResolutionProviders(resolutionOrder);
         // try to build one complete field localization out of the available possibly partial localizations
 
         return {
-            label: mapFirstDefined(resolutionProviders, rp => rp.localizeField(field).label),
-            hint: mapFirstDefined(resolutionProviders, rp => rp.localizeField(field).hint)
+            label: mapFirstDefined(resolutionProviders, (rp) => rp.localizeField(field).label),
+            hint: mapFirstDefined(resolutionProviders, (rp) => rp.localizeField(field).hint),
         };
     }
 
     public getEnumValueLocalization(
         enumValue: EnumValue,
-        resolutionOrder: ReadonlyArray<string>
+        resolutionOrder: ReadonlyArray<string>,
     ): EnumValueLocalization {
         const resolutionProviders = this.getResolutionProviders(resolutionOrder);
         return {
-            label: mapFirstDefined(resolutionProviders, rp => rp.localizeEnumValue(enumValue).label),
-            hint: mapFirstDefined(resolutionProviders, rp => rp.localizeEnumValue(enumValue).hint)
+            label: mapFirstDefined(
+                resolutionProviders,
+                (rp) => rp.localizeEnumValue(enumValue).label,
+            ),
+            hint: mapFirstDefined(
+                resolutionProviders,
+                (rp) => rp.localizeEnumValue(enumValue).hint,
+            ),
         };
     }
 
-    private getResolutionProviders(resolutionOrder: ReadonlyArray<string>): ReadonlyArray<LocalizationProvider> {
+    private getResolutionProviders(
+        resolutionOrder: ReadonlyArray<string>,
+    ): ReadonlyArray<LocalizationProvider> {
         return compact(
-            resolutionOrder.map(providerName => {
+            resolutionOrder.map((providerName) => {
                 switch (providerName) {
                     case I18N_GENERIC:
                         return new GenericLocalizationProvider();
                     default:
                         return this.languageLocalizationProvidersByLanguage.get(providerName);
                 }
-            })
+            }),
         );
     }
 }
@@ -104,34 +124,42 @@ export class NamespaceLocalization {
             label: type.label,
             labelPlural: type.labelPlural,
             hint: type.hint,
-            loc: type.loc
+            loc: type.loc,
         };
     }
 
     public getFieldLocalization({
         typeName,
-        fieldName
+        fieldName,
     }: {
         typeName: string;
         fieldName: string;
     }): FieldLocalization | undefined {
-        return this.getElementLocalization({ typeName, elementName: fieldName, property: 'fields' });
+        return this.getElementLocalization({
+            typeName,
+            elementName: fieldName,
+            property: 'fields',
+        });
     }
 
     public getEnumValueLocalization({
         typeName,
-        enumValue
+        enumValue,
     }: {
         typeName: string;
         enumValue: string;
     }): EnumValueLocalization | undefined {
-        return this.getElementLocalization({ typeName, elementName: enumValue, property: 'values' });
+        return this.getElementLocalization({
+            typeName,
+            elementName: enumValue,
+            property: 'values',
+        });
     }
 
     private getElementLocalization({
         typeName,
         elementName,
-        property
+        property,
     }: {
         typeName: string;
         elementName: string;
@@ -142,7 +170,8 @@ export class NamespaceLocalization {
         }
         const typeConfig = this.config.types[typeName];
 
-        let elementLocalizations: { [name: string]: LocalizationBaseConfig } | undefined = typeConfig[property];
+        let elementLocalizations: { [name: string]: LocalizationBaseConfig } | undefined =
+            typeConfig[property];
         if (!elementLocalizations) {
             return undefined;
         }
@@ -155,7 +184,7 @@ export class NamespaceLocalization {
         return {
             hint: element.hint,
             label: element.label,
-            loc: element.loc
+            loc: element.loc,
         };
     }
 
@@ -172,7 +201,7 @@ export class NamespaceLocalization {
         return {
             hint: field.hint,
             label: field.label,
-            loc: field.loc
+            loc: field.loc,
         };
     }
 
@@ -205,14 +234,18 @@ interface LocalizationProvider {
 class ModelLocalizationProvider implements LocalizationProvider {
     constructor(private namespaces: ReadonlyArray<NamespaceLocalization>) {}
 
-    private getMatchingNamespaces(namespacePath: ReadonlyArray<string>): ReadonlyArray<NamespaceLocalization> {
+    private getMatchingNamespaces(
+        namespacePath: ReadonlyArray<string>,
+    ): ReadonlyArray<NamespaceLocalization> {
         return this.namespaces
-            .filter(set => arrayStartsWith(namespacePath, set.namespacePath))
+            .filter((set) => arrayStartsWith(namespacePath, set.namespacePath))
             .sort((lhs, rhs) => lhs.namespacePath.length - rhs.namespacePath.length);
     }
 
     validate(validationContext: ValidationContext, model: Model) {
-        const groupedNamespaceLocalizations = groupArray(this.namespaces, ns => ns.namespacePath.join('.'));
+        const groupedNamespaceLocalizations = groupArray(this.namespaces, (ns) =>
+            ns.namespacePath.join('.'),
+        );
         for (const namespaces of groupedNamespaceLocalizations.values()) {
             checkForDoubleDefinitions(namespaces, validationContext);
             checkForTypeConstraints(namespaces, model, validationContext);
@@ -221,11 +254,13 @@ class ModelLocalizationProvider implements LocalizationProvider {
 
     localizeType(type: TypeBase): TypeLocalization {
         const matchingNamespaces = this.getMatchingNamespaces(type.namespacePath);
-        const matchingTypeLocalizations = compact(matchingNamespaces.map(ns => ns.getTypeLocalization(type.name)));
+        const matchingTypeLocalizations = compact(
+            matchingNamespaces.map((ns) => ns.getTypeLocalization(type.name)),
+        );
         return {
-            label: mapFirstDefined(matchingTypeLocalizations, t => t.label),
-            labelPlural: mapFirstDefined(matchingTypeLocalizations, t => t.labelPlural),
-            hint: mapFirstDefined(matchingTypeLocalizations, t => t.hint)
+            label: mapFirstDefined(matchingTypeLocalizations, (t) => t.label),
+            labelPlural: mapFirstDefined(matchingTypeLocalizations, (t) => t.labelPlural),
+            hint: mapFirstDefined(matchingTypeLocalizations, (t) => t.hint),
         };
     }
 
@@ -239,7 +274,7 @@ class ModelLocalizationProvider implements LocalizationProvider {
         for (const namespace of matchingNamespaces) {
             const typeField = namespace.getFieldLocalization({
                 typeName: field.declaringType.name,
-                fieldName: field.name
+                fieldName: field.name,
             });
             if (typeField) {
                 label = label ? label : typeField.label;
@@ -265,7 +300,9 @@ class ModelLocalizationProvider implements LocalizationProvider {
     }
 
     localizeEnumValue(enumValue: EnumValue): EnumValueLocalization {
-        const matchingNamespaces = this.getMatchingNamespaces(enumValue.declaringType.namespacePath);
+        const matchingNamespaces = this.getMatchingNamespaces(
+            enumValue.declaringType.namespacePath,
+        );
 
         let label: string | undefined;
         let hint: string | undefined;
@@ -273,7 +310,7 @@ class ModelLocalizationProvider implements LocalizationProvider {
         for (const namespace of matchingNamespaces) {
             const localization = namespace.getEnumValueLocalization({
                 typeName: enumValue.declaringType.name,
-                enumValue: enumValue.value
+                enumValue: enumValue.value,
             });
             if (localization) {
                 label = label ? label : localization.label;
@@ -291,7 +328,7 @@ class ModelLocalizationProvider implements LocalizationProvider {
 function checkForTypeConstraints(
     namespaces: ReadonlyArray<NamespaceLocalization>,
     model: Model,
-    validationContext: ValidationContext
+    validationContext: ValidationContext,
 ) {
     for (const ns of namespaces) {
         if (ns.types) {
@@ -305,8 +342,8 @@ function checkForTypeConstraints(
                             'There is no type "' +
                                 typeKey +
                                 '" in the model specification. This might be a spelling error.',
-                            type.loc
-                        )
+                            type.loc,
+                        ),
                     );
                     continue;
                 }
@@ -315,7 +352,7 @@ function checkForTypeConstraints(
                     try {
                         const objectType = model.getObjectTypeOrThrow(typeKey);
                         for (const field in type.fields) {
-                            if (!objectType.fields.find(f => f.name === field)) {
+                            if (!objectType.fields.find((f) => f.name === field)) {
                                 validationContext.addMessage(
                                     ValidationMessage.warn(
                                         'The type "' +
@@ -323,8 +360,8 @@ function checkForTypeConstraints(
                                             '" has no field "' +
                                             field +
                                             '". This might be a spelling error.',
-                                        type.fields[field].loc
-                                    )
+                                        type.fields[field].loc,
+                                    ),
                                 );
                             }
                         }
@@ -334,8 +371,8 @@ function checkForTypeConstraints(
                                 'The type "' +
                                     typeKey +
                                     '" is a non-object-type. It does not have "fields" attribute. Did you mean to use "values" instead?',
-                                type.loc
-                            )
+                                type.loc,
+                            ),
                         );
                     }
                 } else if (type.values) {
@@ -346,13 +383,13 @@ function checkForTypeConstraints(
                                 'The type "' +
                                     typeKey +
                                     '" is not an enum type. It does not have "values" attribute. Did you mean to use "fields" instead?',
-                                type.loc
-                            )
+                                type.loc,
+                            ),
                         );
                     } else {
                         if (type.values) {
                             for (const value in type.values) {
-                                if (!enumType.values.find(v => v.value === value)) {
+                                if (!enumType.values.find((v) => v.value === value)) {
                                     validationContext.addMessage(
                                         ValidationMessage.warn(
                                             'The enum type "' +
@@ -360,8 +397,8 @@ function checkForTypeConstraints(
                                                 '" has no value "' +
                                                 value +
                                                 '". This might be a spelling error.',
-                                            type.values[value].loc
-                                        )
+                                            type.values[value].loc,
+                                        ),
                                     );
                                 }
                             }
@@ -375,7 +412,7 @@ function checkForTypeConstraints(
 
 function checkForDoubleDefinitions(
     namespaces: ReadonlyArray<NamespaceLocalization>,
-    validationContext: ValidationContext
+    validationContext: ValidationContext,
 ) {
     const alreadySeen: string[] = [];
 
@@ -389,8 +426,8 @@ function checkForDoubleDefinitions(
                             'The attribute "hint" in type "' +
                                 type +
                                 '" was defined several times in the i18n translation',
-                            typeConf.loc
-                        )
+                            typeConf.loc,
+                        ),
                     );
                 }
                 if (typeConf.label && isExistingAndAdd(type + '/label', alreadySeen)) {
@@ -399,8 +436,8 @@ function checkForDoubleDefinitions(
                             'The attribute "label" in type "' +
                                 type +
                                 '" was defined several times in the i18n translation',
-                            typeConf.loc
-                        )
+                            typeConf.loc,
+                        ),
                     );
                 }
                 if (typeConf.labelPlural && isExistingAndAdd(type + '/labelPlural', alreadySeen)) {
@@ -409,8 +446,8 @@ function checkForDoubleDefinitions(
                             'The attribute "labelPlural" in type "' +
                                 type +
                                 '" was defined several times in the i18n translation',
-                            typeConf.loc
-                        )
+                            typeConf.loc,
+                        ),
                     );
                 }
 
@@ -429,8 +466,8 @@ function checkForDoubleDefinitions(
                                         '" of type "' +
                                         type +
                                         '" was defined several times in the i18n translation',
-                                    fieldConf.loc
-                                )
+                                    fieldConf.loc,
+                                ),
                             );
                         }
                         if (
@@ -445,8 +482,8 @@ function checkForDoubleDefinitions(
                                         '" of type "' +
                                         type +
                                         '" was defined several times in the i18n translation',
-                                    fieldConf.loc
-                                )
+                                    fieldConf.loc,
+                                ),
                             );
                         }
                     }
@@ -466,8 +503,8 @@ function checkForDoubleDefinitions(
                                         '" of type "' +
                                         type +
                                         '" was defined several times in the i18n translation',
-                                    valueConf.loc
-                                )
+                                    valueConf.loc,
+                                ),
                             );
                         }
                         if (
@@ -482,8 +519,8 @@ function checkForDoubleDefinitions(
                                         '" of type "' +
                                         type +
                                         '" was defined several times in the i18n translation',
-                                    valueConf.loc
-                                )
+                                    valueConf.loc,
+                                ),
                             );
                         }
                     }
@@ -505,20 +542,20 @@ function isExistingAndAdd(search: string, array: string[]) {
 class GenericLocalizationProvider implements LocalizationProvider {
     localizeField(field: Field): FieldLocalization {
         return {
-            label: generateGenericName(field.name)
+            label: generateGenericName(field.name),
         };
     }
 
     localizeType(type: Type): TypeLocalization {
         return {
             label: generateGenericName(type.name),
-            labelPlural: generateGenericName(type.pluralName)
+            labelPlural: generateGenericName(type.pluralName),
         };
     }
 
     localizeEnumValue(enumValue: EnumValue): FieldLocalization {
         return {
-            label: generateGenericName(enumValue.value)
+            label: generateGenericName(enumValue.value),
         };
     }
 }
@@ -527,5 +564,7 @@ function generateGenericName(name: string | undefined): string | undefined {
     if (name == undefined) {
         return undefined;
     }
-    return capitalize(name.replace(/([a-z])([A-Z])/g, (str, arg1, arg2) => `${arg1} ${decapitalize(arg2)}`));
+    return capitalize(
+        name.replace(/([a-z])([A-Z])/g, (str, arg1, arg2) => `${arg1} ${decapitalize(arg2)}`),
+    );
 }

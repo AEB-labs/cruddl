@@ -2,21 +2,25 @@ import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
 
 describe('no lists of lists validator', () => {
     it('rejects lists of lists', () => {
-        assertValidatorRejects(`
+        assertValidatorRejects(
+            `
             type Stuff @rootEntity {
                 foo: [[String]]
             }
         `,
-            'Lists of lists are not allowed.');
+            'Lists of lists are not allowed.',
+        );
     });
 
     it('rejects non-nullable lists of non-nullable lists of non-nullable elements', () => {
-        assertValidatorRejects(`
+        assertValidatorRejects(
+            `
             type Stuff @rootEntity {
                 foo: [[String!]!]!
             }
         `,
-            'Lists of lists are not allowed.');
+            'Lists of lists are not allowed.',
+        );
     });
 
     it('accepts non-nested lists', () => {
@@ -26,5 +30,4 @@ describe('no lists of lists validator', () => {
             }
         `);
     });
-
 });

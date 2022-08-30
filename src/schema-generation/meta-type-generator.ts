@@ -10,7 +10,7 @@ export class MetaTypeGenerator {
         return {
             name: QUERY_META_TYPE,
             description: 'Provides aggregated information about a collection or list',
-            fields: [this.getCountField()]
+            fields: [this.getCountField()],
         };
     }
 
@@ -18,9 +18,10 @@ export class MetaTypeGenerator {
         return {
             name: COUNT_META_FIELD,
             type: GraphQLInt,
-            description: 'The number of items in the collection or list, after applying the filter if specified.',
+            description:
+                'The number of items in the collection or list, after applying the filter if specified.',
             isPure: true,
-            resolve: listNode => new CountQueryNode(listNode)
+            resolve: (listNode) => new CountQueryNode(listNode),
         };
     }
 }

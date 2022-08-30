@@ -10,7 +10,11 @@ type Hero
         indices: [{ fields: "missions.date" }]
     ) {
     "The hero's screen name"
-    name: String @unique @flexSearch(caseSensitive: false) @flexSearchFulltext(includeInSearch: true) @accessField
+    name: String
+        @unique
+        @flexSearch(caseSensitive: false)
+        @flexSearchFulltext(includeInSearch: true)
+        @accessField
     knownName: I18nString @flexSearch @flexSearchFulltext
     age: Int @defaultValue(value: 42) @flexSearch
     nickNames: [String] @flexSearch(caseSensitive: false)
@@ -60,7 +64,8 @@ type Movie @rootEntity @roles(read: ["logistics-reader"]) {
 
     relatedMovies: [Movie] @collect(path: "heroes.movies", aggregate: DISTINCT)
     community: [Hero] @collect(path: "heroes.friends{0,2}", aggregate: DISTINCT)
-    subMissions: [Mission] @collect(path: "heroes.friends{0,2}.missions.subMissions", aggregate: DISTINCT)
+    subMissions: [Mission]
+        @collect(path: "heroes.friends{0,2}.missions.subMissions", aggregate: DISTINCT)
     skillCount: Int @collect(path: "heroes.skills", aggregate: COUNT)
     totalSkillStrength: Float @collect(path: "heroes.skills.strength", aggregate: SUM)
 }

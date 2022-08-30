@@ -1,68 +1,68 @@
 {
-    "createEdges": {
-        "data": {
-            "updateMain": {
-                "key": "m1"
-            }
-        }
-    },
-    "deleteRestricted": {
-        "errors": [
-            {
-                "message": "Cannot delete Main object because a Main object is still referenced via blockingMains (id: @{ids/Main/3})",
-                "locations": [
-                    {
-                        "line": 8,
-                        "column": 5
-                    }
-                ],
-                "path": ["deleteMains"]
-            }
-        ],
-        "data": {
-            "deleteMains": null
-        }
-    },
-    "everything1": {
-        "data": {
-            "allMains": [
-                {
-                    "key": "m1"
-                },
-                {
-                    "key": "m2"
-                },
-                {
-                    "key": "m3"
-                },
-                {
-                    "key": "m4"
-                }
-            ]
-        }
-    },
-    "deleteSuccessfully": {
-        "data": {
-            "deleteMains": [
-                {
-                    "key": "m1"
-                },
-                {
-                    "key": "m2"
-                },
-                {
-                    "key": "m3"
-                }
-            ]
-        }
-    },
-    "everything2": {
-        "data": {
-            "allMains": [
-                {
-                    "key": "m4"
-                }
-            ]
-        }
+  "createEdges": {
+    "data": {
+      "updateMain": {
+        "key": "m1"
+      }
     }
+  },
+  "deleteRestricted": {
+    "errors": [
+      {
+        "message": "Cannot delete Main object because a Main object is still referenced via blockingMains (id: @{ids/Main/3})",
+        "locations": [
+          {
+            "line": 10,
+            "column": 5
+          }
+        ],
+        "path": ["deleteMains"]
+      }
+    ],
+    "data": {
+      "deleteMains": null
+    }
+  },
+  "everything1": {
+    "data": {
+      "allMains": [
+        {
+          "key": "m1"
+        },
+        {
+          "key": "m2"
+        },
+        {
+          "key": "m3"
+        },
+        {
+          "key": "m4"
+        }
+      ]
+    }
+  },
+  "deleteSuccessfully": {
+    "data": {
+      "deleteMains": [
+        {
+          "key": "m1"
+        },
+        {
+          "key": "m2"
+        },
+        {
+          "key": "m3"
+        }
+      ]
+    }
+  },
+  "everything2": {
+    "data": {
+      "allMains": [
+        {
+          "key": "m4"
+        }
+      ]
+    }
+  }
 }

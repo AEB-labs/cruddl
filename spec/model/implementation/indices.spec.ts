@@ -10,57 +10,65 @@ describe('IndexField', () => {
                 fields: [
                     {
                         name: 'name',
-                        typeName: 'String'
+                        typeName: 'String',
                     },
                     {
                         name: 'addressLines',
                         typeName: 'String',
-                        isList: true
-                    }
-                ]
-            }, {
+                        isList: true,
+                    },
+                ],
+            },
+            {
                 name: 'Item',
                 kind: TypeKind.CHILD_ENTITY,
                 fields: [
                     {
                         name: 'itemNumber',
-                        typeName: 'String'
-                    }
-                ]
-            }, {
+                        typeName: 'String',
+                    },
+                ],
+            },
+            {
                 name: 'Shipment',
                 kind: TypeKind.ROOT_ENTITY,
                 fields: [
                     {
                         name: 'shipmentNumber',
-                        typeName: 'String'
-                    }
-                ]
-            }
-        ]
+                        typeName: 'String',
+                    },
+                ],
+            },
+        ],
     });
 
-    const deliveryType = new RootEntityType({
-        name: 'Delivery',
-        kind: TypeKind.ROOT_ENTITY,
-        fields: [
-            {
-                name: 'deliveryNumber',
-                typeName: 'String'
-            }, {
-                name: 'consignee',
-                typeName: 'Address'
-            }, {
-                name: 'items',
-                typeName: 'Item',
-                isList: true
-            }, {
-                name: 'shipment',
-                typeName: 'Shipment',
-                isRelation: true
-            }
-        ]
-    }, model);
+    const deliveryType = new RootEntityType(
+        {
+            name: 'Delivery',
+            kind: TypeKind.ROOT_ENTITY,
+            fields: [
+                {
+                    name: 'deliveryNumber',
+                    typeName: 'String',
+                },
+                {
+                    name: 'consignee',
+                    typeName: 'Address',
+                },
+                {
+                    name: 'items',
+                    typeName: 'Item',
+                    isList: true,
+                },
+                {
+                    name: 'shipment',
+                    typeName: 'Shipment',
+                    isRelation: true,
+                },
+            ],
+        },
+        model,
+    );
 
     describe('field', () => {
         it('resolves direct fields', () => {
@@ -70,12 +78,16 @@ describe('IndexField', () => {
 
         it('resolves value object fields', () => {
             const indexField = new IndexField('consignee.name', deliveryType);
-            expect(indexField.field).to.equal(model.getValueObjectTypeOrThrow('Address').getField('name'));
+            expect(indexField.field).to.equal(
+                model.getValueObjectTypeOrThrow('Address').getField('name'),
+            );
         });
 
         it('resolves child entity fields', () => {
             const indexField = new IndexField('items.itemNumber', deliveryType);
-            expect(indexField.field).to.equal(model.getChildEntityTypeOrThrow('Item').getField('itemNumber'));
+            expect(indexField.field).to.equal(
+                model.getChildEntityTypeOrThrow('Item').getField('itemNumber'),
+            );
         });
 
         it('does not resolve missing fields', () => {

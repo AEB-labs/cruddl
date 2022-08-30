@@ -23,9 +23,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "createDelivery"
-        ]
+        "path": ["createDelivery"]
       }
     ],
     "data": null
@@ -63,9 +61,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "updateDelivery"
-        ]
+        "path": ["updateDelivery"]
       }
     ],
     "data": {

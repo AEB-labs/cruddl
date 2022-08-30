@@ -4,29 +4,29 @@ import { createModel, Model, PermissionProfileConfigMap } from '../../src/model'
 
 export function createSimpleModel(document: DocumentNode): Model {
     const permissionProfiles: PermissionProfileConfigMap = {
-        'default': {
+        default: {
             permissions: [
                 {
                     access: 'readWrite',
-                    roles: ['*']
-                }
-            ]
-        }
+                    roles: ['*'],
+                },
+            ],
+        },
     };
     const parsedProject: ParsedProject = {
         sources: [
             {
                 kind: ParsedProjectSourceBaseKind.GRAPHQL,
                 namespacePath: [],
-                document
+                document,
             },
             {
                 kind: ParsedProjectSourceBaseKind.OBJECT,
                 namespacePath: [],
-                object: {permissionProfiles},
-                pathLocationMap: {}
-            }
-        ]
+                object: { permissionProfiles },
+                pathLocationMap: {},
+            },
+        ],
     };
     return createModel(parsedProject);
 }

@@ -19,9 +19,11 @@ export class PermissionProfile implements ModelComponent {
     constructor(
         public readonly name: string,
         public readonly namespacePath: ReadonlyArray<string>,
-        config: PermissionProfileConfig
+        config: PermissionProfileConfig,
     ) {
-        this.permissions = (config.permissions || []).map((permissionConfig) => new Permission(permissionConfig));
+        this.permissions = (config.permissions || []).map(
+            (permissionConfig) => new Permission(permissionConfig),
+        );
         this.loc = config.loc;
     }
 
@@ -44,12 +46,18 @@ export class Permission implements ModelComponent {
         this.access = Array.isArray(config.access) ? config.access : [config.access];
         this.restrictToAccessGroups = config.restrictToAccessGroups;
         this.hasDynamicAccessGroups =
-            !!this.restrictToAccessGroups && this.restrictToAccessGroups.some((group) => group.includes('$'));
-        this.restrictions = config.restrictions ? config.restrictions.map((c) => new PermissionRestriction(c)) : [];
+            !!this.restrictToAccessGroups &&
+            this.restrictToAccessGroups.some((group) => group.includes('$'));
+        this.restrictions = config.restrictions
+            ? config.restrictions.map((c) => new PermissionRestriction(c))
+            : [];
     }
 
     appliesToAuthContext(authContext: AuthContext) {
-        return authContext.authRoles && authContext.authRoles.some((role) => this.roles.includesRole(role));
+        return (
+            authContext.authRoles &&
+            authContext.authRoles.some((role) => this.roles.includesRole(role))
+        );
     }
 
     allowsOperation(operation: AccessOperation) {
@@ -78,7 +86,10 @@ export class Permission implements ModelComponent {
 
         const accessGroups = new Set<string>();
         for (const accessGroupExpression of this.restrictToAccessGroups) {
-            const accessGroupsInExpression = this.evaluateTemplate(accessGroupExpression, authContext);
+            const accessGroupsInExpression = this.evaluateTemplate(
+                accessGroupExpression,
+                authContext,
+            );
             for (const accessGroup of accessGroupsInExpression) {
                 accessGroups.add(accessGroup);
             }
@@ -157,7 +168,7 @@ export class RegexRoleSpecifierEntry implements RoleSpecifierEntry {
         const parts = /^\/(.*)\/([^\/]*)$/.exec(expression);
         if (!parts) {
             throw new InvalidRoleSpecifierError(
-                `Role specifier starts with a slash (/), but is not a valid regular expression: ${expression}`
+                `Role specifier starts with a slash (/), but is not a valid regular expression: ${expression}`,
             );
         }
         try {
@@ -238,13 +249,15 @@ export class PermissionRestriction implements ModelComponent {
     }
 
     validate(context: ValidationContext) {
-        const number = [this.valueTemplate, this.value, this.claim].filter((v) => v !== undefined).length;
+        const number = [this.valueTemplate, this.value, this.claim].filter(
+            (v) => v !== undefined,
+        ).length;
         if (number !== 1) {
             context.addMessage(
                 ValidationMessage.error(
                     `Exactly one of "value", "valueTemplate", and "claim" must be specified.`,
-                    this.loc
-                )
+                    this.loc,
+                ),
             );
         }
     }

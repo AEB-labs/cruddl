@@ -12,13 +12,13 @@ class FakeDBAdatper implements DatabaseAdapter {
     async updateSchema(schema: Model): Promise<void> {}
 
     async tokenizeExpressions(
-        tokenizations: ReadonlyArray<FlexSearchTokenizable>
+        tokenizations: ReadonlyArray<FlexSearchTokenizable>,
     ): Promise<ReadonlyArray<FlexSearchTokenization>> {
-        return tokenizations.map(value => {
+        return tokenizations.map((value) => {
             return {
                 expression: value.expression,
                 analyzer: value.analyzer,
-                tokens: value.expression.split('-')
+                tokens: value.expression.split('-'),
             };
         });
     }
@@ -35,9 +35,9 @@ describe('Relation', () => {
                         {
                             name: 'relB',
                             typeName: 'TypeB',
-                            isRelation: true
-                        }
-                    ]
+                            isRelation: true,
+                        },
+                    ],
                 },
                 {
                     kind: TypeKind.ROOT_ENTITY,
@@ -46,11 +46,11 @@ describe('Relation', () => {
                         {
                             name: 'relA',
                             typeName: 'TypeA',
-                            isRelation: true
-                        }
-                    ]
-                }
-            ]
+                            isRelation: true,
+                        },
+                    ],
+                },
+            ],
         });
         const fieldOnA = model.getRootEntityTypeOrThrow('TypeA').getFieldOrThrow('relB');
         const fieldOnB = model.getRootEntityTypeOrThrow('TypeB').getFieldOrThrow('relA');
@@ -74,9 +74,9 @@ describe('Relation', () => {
                         {
                             name: 'handlingUnits',
                             typeName: 'HandlingUnit',
-                            isRelation: true
-                        }
-                    ]
+                            isRelation: true,
+                        },
+                    ],
                 },
                 {
                     kind: TypeKind.ROOT_ENTITY,
@@ -86,11 +86,11 @@ describe('Relation', () => {
                             name: 'delivery',
                             typeName: 'Delivery',
                             isRelation: true,
-                            inverseOfFieldName: 'handlingUnits'
-                        }
-                    ]
-                }
-            ]
+                            inverseOfFieldName: 'handlingUnits',
+                        },
+                    ],
+                },
+            ],
         });
         const deliveryType = model.getRootEntityTypeOrThrow('Delivery');
         const handlingUnitType = model.getRootEntityTypeOrThrow('HandlingUnit');

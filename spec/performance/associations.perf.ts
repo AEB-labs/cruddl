@@ -1,15 +1,23 @@
 import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
 import { takeRandomSample } from '../../src/utils/utils';
 import {
-    addManyPapersWithAQL, addManyUsersWithAQL, aql, createLargePaper, createUser, getRandomPaperIDsWithAQL,
-    initEnvironment, TestEnvironment
+    addManyPapersWithAQL,
+    addManyUsersWithAQL,
+    aql,
+    createLargePaper,
+    createUser,
+    getRandomPaperIDsWithAQL,
+    initEnvironment,
+    TestEnvironment,
 } from './support/helpers';
 
-
-async function setUpPapersAndReaders(environment: TestEnvironment, config: { paperCount: number, userCount: number, associationCount: number}) {
+async function setUpPapersAndReaders(
+    environment: TestEnvironment,
+    config: { paperCount: number; userCount: number; associationCount: number },
+) {
     await Promise.all([
         addManyPapersWithAQL(environment, config.paperCount, createLargePaper(1)),
-        addManyUsersWithAQL(environment, config.paperCount, createUser())
+        addManyUsersWithAQL(environment, config.paperCount, createUser()),
     ]);
 
     await environment.getDB().query(aql`
@@ -34,7 +42,11 @@ async function setUpPapersAndReaders(environment: TestEnvironment, config: { pap
     `);
 }
 
-function testFetchWithAssociations(config: { paperCount: number, userCount: number, associationCount: number }): BenchmarkConfig {
+function testFetchWithAssociations(config: {
+    paperCount: number;
+    userCount: number;
+    associationCount: number;
+}): BenchmarkConfig {
     let env: TestEnvironment;
     let sampledIDs: string[] = [];
     return {
@@ -44,13 +56,14 @@ function testFetchWithAssociations(config: { paperCount: number, userCount: numb
             await setUpPapersAndReaders(env, config);
         },
 
-        async before({count}) {
+        async before({ count }) {
             sampledIDs = await getRandomPaperIDsWithAQL(env, count);
         },
 
         async fn() {
             const id = takeRandomSample(sampledIDs);
-            const result = await env.exec(`
+            const result = await env.exec(
+                `
             query($id: ID!) { 
                 allPapers(filter:{id: $id}) { 
                     id
@@ -60,20 +73,32 @@ function testFetchWithAssociations(config: { paperCount: number, userCount: numb
                         lastName
                     }
                 }
-            }`, {
-                id
-            });
+            }`,
+                {
+                    id,
+                },
+            );
             if (result.allPapers[0].id != id) {
                 throw new Error(`Unexpected result: ${JSON.stringify(result)}`);
             }
-        }
+        },
     };
 }
 
 const benchmarks: BenchmarkFactories = [
-    () => testFetchWithAssociations({paperCount: 1000, userCount: 1000, associationCount: 10000}),
-    () => testFetchWithAssociations({paperCount: 100000, userCount: 100000, associationCount: 1000000}),
-    () => testFetchWithAssociations({paperCount: 1000000, userCount: 1000000, associationCount: 1000000}),
+    () => testFetchWithAssociations({ paperCount: 1000, userCount: 1000, associationCount: 10000 }),
+    () =>
+        testFetchWithAssociations({
+            paperCount: 100000,
+            userCount: 100000,
+            associationCount: 1000000,
+        }),
+    () =>
+        testFetchWithAssociations({
+            paperCount: 1000000,
+            userCount: 1000000,
+            associationCount: 1000000,
+        }),
 ];
 
 export default benchmarks;

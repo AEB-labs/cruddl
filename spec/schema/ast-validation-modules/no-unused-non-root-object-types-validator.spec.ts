@@ -1,9 +1,13 @@
-import { assertValidatorAccepts, assertValidatorAcceptsAndDoesNotWarn, assertValidatorWarns } from './helpers';
+import {
+    assertValidatorAccepts,
+    assertValidatorAcceptsAndDoesNotWarn,
+    assertValidatorWarns,
+} from './helpers';
 
 describe('unused object validator', () => {
-
     it('warns about unused objects', () => {
-        assertValidatorWarns(`
+        assertValidatorWarns(
+            `
             type Stuff @rootEntity {
                 foo: String
             }
@@ -11,7 +15,8 @@ describe('unused object validator', () => {
                 stuff: Int
             }
         `,
-            'Type "Child" is not used.');
+            'Type "Child" is not used.',
+        );
     });
 
     it('accepts used objects', () => {
@@ -24,5 +29,4 @@ describe('unused object validator', () => {
             }
         `);
     });
-
 });

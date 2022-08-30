@@ -4,7 +4,7 @@ import { expect } from 'chai';
 
 describe('getAQLForQuery', () => {
     it('supports LiteralQuery', () => {
-        const query = new LiteralQueryNode({some: 'object'});
+        const query = new LiteralQueryNode({ some: 'object' });
         const aql = getAQLQuery(query);
         expect(aql.getExecutableQueries()[0].code).to.equal(`RETURN @var1`);
     });
@@ -15,6 +15,8 @@ describe('getAQLForQuery', () => {
             new PropertySpecification('propB', new LiteralQueryNode('b')),
         ]);
         const aql = getAQLQuery(query);
-        expect(aql.getExecutableQueries()[0].code).to.equal(`RETURN {\n"propA": @var1,\n"propB": @var2\n}`);
+        expect(aql.getExecutableQueries()[0].code).to.equal(
+            `RETURN {\n"propA": @var1,\n"propB": @var2\n}`,
+        );
     });
 });

@@ -34,7 +34,7 @@ export abstract class PermissionDescriptor {
     abstract getAccessCondition(
         authContext: AuthContext,
         operation: AccessOperation,
-        instanceNode: QueryNode
+        instanceNode: QueryNode,
     ): QueryNode;
 
     /**
@@ -42,7 +42,7 @@ export abstract class PermissionDescriptor {
      */
     canAccess(authContext: AuthContext, operation: AccessOperation): PermissionResult {
         const condition = simplifyBooleans(
-            this.getAccessCondition(authContext, operation, new UnknownValueQueryNode())
+            this.getAccessCondition(authContext, operation, new UnknownValueQueryNode()),
         );
         if (condition instanceof ConstBoolQueryNode) {
             return condition.value ? PermissionResult.GRANTED : PermissionResult.DENIED;
@@ -56,7 +56,7 @@ export abstract class PermissionDescriptor {
     getExplanationForCondition(
         authContext: AuthContext,
         operation: AccessOperation,
-        context: ConditionExplanationContext
+        context: ConditionExplanationContext,
     ): string | undefined {
         return undefined;
     }
@@ -104,7 +104,10 @@ export class AlwaysDenyPermissionDescriptor extends PermissionDescriptor {
 }
 
 export class ConjunctivePermissionDescriptor extends PermissionDescriptor {
-    constructor(public readonly lhs: PermissionDescriptor, public readonly rhs: PermissionDescriptor) {
+    constructor(
+        public readonly lhs: PermissionDescriptor,
+        public readonly rhs: PermissionDescriptor,
+    ) {
         super();
     }
 
@@ -114,8 +117,8 @@ export class ConjunctivePermissionDescriptor extends PermissionDescriptor {
             new BinaryOperationQueryNode(
                 this.lhs.getAccessCondition(authContext, operation, unknownAccessGroup),
                 BinaryOperator.AND,
-                this.rhs.getAccessCondition(authContext, operation, unknownAccessGroup)
-            )
+                this.rhs.getAccessCondition(authContext, operation, unknownAccessGroup),
+            ),
         );
     }
 }
@@ -125,7 +128,7 @@ export class StaticPermissionDescriptor extends PermissionDescriptor {
 
     constructor(
         public readonly readRoles: ReadonlyArray<string>,
-        public readonly readWriteRoles: ReadonlyArray<string>
+        public readonly readWriteRoles: ReadonlyArray<string>,
     ) {
         super();
         this.allReadRoles = [...readRoles, ...readWriteRoles];
@@ -143,7 +146,9 @@ export class StaticPermissionDescriptor extends PermissionDescriptor {
             case AccessOperation.DELETE:
                 roles = this.readWriteRoles;
         }
-        const allowed = roles.some((allowedRole) => (authContext.authRoles ?? []).includes(allowedRole));
+        const allowed = roles.some((allowedRole) =>
+            (authContext.authRoles ?? []).includes(allowedRole),
+        );
         return new ConstBoolQueryNode(allowed);
     }
 }
@@ -151,12 +156,19 @@ export class StaticPermissionDescriptor extends PermissionDescriptor {
 export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
     private readonly accessGroupField: Field | undefined;
 
-    constructor(private readonly profile: PermissionProfile, private readonly rootEntityType?: RootEntityType) {
+    constructor(
+        private readonly profile: PermissionProfile,
+        private readonly rootEntityType?: RootEntityType,
+    ) {
         super();
         this.accessGroupField = rootEntityType && rootEntityType.getField(ACCESS_GROUP_FIELD);
     }
 
-    getAccessCondition(authContext: AuthContext, operation: AccessOperation, instanceNode: QueryNode): QueryNode {
+    getAccessCondition(
+        authContext: AuthContext,
+        operation: AccessOperation,
+        instanceNode: QueryNode,
+    ): QueryNode {
         const applicablePermissions = this.getApplicablePermissions(authContext, operation);
 
         if (!applicablePermissions.length) {
@@ -167,7 +179,7 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
         const pureAccessGroupCondition = this.getPureAccessGroupCondition(
             applicablePermissions.filter((p) => !p.restrictions.length),
             authContext,
-            instanceNode
+            instanceNode,
         );
 
         const complexCondition = applicablePermissions
@@ -175,30 +187,39 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
             .map((p) => this.getPermissionRestrictionCondition(p, authContext, instanceNode))
             .reduce(
                 (acc, node) => new BinaryOperationQueryNode(acc, BinaryOperator.OR, node),
-                ConstBoolQueryNode.FALSE
+                ConstBoolQueryNode.FALSE,
             );
 
         // we either need to match a permission with purely an access group, or one of the others
-        const combined = new BinaryOperationQueryNode(pureAccessGroupCondition, BinaryOperator.OR, complexCondition);
+        const combined = new BinaryOperationQueryNode(
+            pureAccessGroupCondition,
+            BinaryOperator.OR,
+            complexCondition,
+        );
         return simplifyBooleans(combined);
     }
 
     getPermissionRestrictionCondition(
         permission: Permission,
         authContext: AuthContext,
-        instanceNode: QueryNode
+        instanceNode: QueryNode,
     ): QueryNode {
         let accessGroupConditionNode: QueryNode;
         if (permission.restrictToAccessGroups) {
             const allowedAccessGroups = permission.getAllowedAccessGroups(authContext);
-            accessGroupConditionNode = this.getAccessGroupConditionNode(allowedAccessGroups, instanceNode);
+            accessGroupConditionNode = this.getAccessGroupConditionNode(
+                allowedAccessGroups,
+                instanceNode,
+            );
         } else {
             accessGroupConditionNode = ConstBoolQueryNode.TRUE;
         }
 
         const restrictionNodes = permission.restrictions.map((restriction) => {
             if (!this.rootEntityType) {
-                throw new Error(`accessGroup-restricted permission profiles can only be used on root entities`);
+                throw new Error(
+                    `accessGroup-restricted permission profiles can only be used on root entities`,
+                );
             }
             const fieldPath = new FieldPath({
                 path: restriction.field,
@@ -212,26 +233,32 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
                 return new BinaryOperationQueryNode(
                     fieldNode,
                     BinaryOperator.EQUAL,
-                    new LiteralQueryNode(restriction.value)
+                    new LiteralQueryNode(restriction.value),
                 );
             }
 
             if (restriction.valueTemplate !== undefined) {
                 const values = permission.evaluateTemplate(restriction.valueTemplate, authContext);
-                return new BinaryOperationQueryNode(fieldNode, BinaryOperator.IN, new LiteralQueryNode(values));
+                return new BinaryOperationQueryNode(
+                    fieldNode,
+                    BinaryOperator.IN,
+                    new LiteralQueryNode(values),
+                );
             }
 
             if (restriction.claim !== undefined) {
                 const claimValue = authContext.claims?.[restriction.claim];
                 const claimValues = Array.isArray(claimValue) ? claimValue : [claimValue];
-                const sanitizedClaimValues = claimValues.filter((v) => !!v && typeof v === 'string');
+                const sanitizedClaimValues = claimValues.filter(
+                    (v) => !!v && typeof v === 'string',
+                );
                 if (!sanitizedClaimValues.length) {
                     return ConstBoolQueryNode.FALSE;
                 }
                 return new BinaryOperationQueryNode(
                     fieldNode,
                     BinaryOperator.IN,
-                    new LiteralQueryNode(sanitizedClaimValues)
+                    new LiteralQueryNode(sanitizedClaimValues),
                 );
             }
 
@@ -240,14 +267,14 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
 
         return restrictionNodes.reduce(
             (acc: QueryNode, node) => new BinaryOperationQueryNode(acc, BinaryOperator.AND, node),
-            accessGroupConditionNode
+            accessGroupConditionNode,
         );
     }
 
     private getPureAccessGroupCondition(
         applicablePermissions: ReadonlyArray<Permission>,
         authContext: AuthContext,
-        instanceNode: QueryNode
+        instanceNode: QueryNode,
     ): QueryNode {
         if (!applicablePermissions.length) {
             return ConstBoolQueryNode.FALSE;
@@ -264,14 +291,19 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
         return this.getAccessGroupConditionNode(allowedAccessGroups, instanceNode);
     }
 
-    private getAccessGroupConditionNode(allowedAccessGroups: ReadonlyArray<string>, instanceNode: QueryNode) {
+    private getAccessGroupConditionNode(
+        allowedAccessGroups: ReadonlyArray<string>,
+        instanceNode: QueryNode,
+    ) {
         if (!this.accessGroupField) {
             if (this.rootEntityType) {
                 throw new Error(
-                    `Using accessGroup-restricted permission profile on type ${this.rootEntityType.name} which does not have an accessGroup field`
+                    `Using accessGroup-restricted permission profile on type ${this.rootEntityType.name} which does not have an accessGroup field`,
                 );
             } else {
-                throw new Error(`accessGroup-restricted permission profiles can only be used on root entities`);
+                throw new Error(
+                    `accessGroup-restricted permission profiles can only be used on root entities`,
+                );
             }
         }
 
@@ -279,24 +311,35 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
         return new BinaryOperationQueryNode(
             accessGroupNode,
             BinaryOperator.IN,
-            new LiteralQueryNode(allowedAccessGroups)
+            new LiteralQueryNode(allowedAccessGroups),
         );
     }
 
-    private getApplicablePermissions(authContext: AuthContext, operation: AccessOperation): ReadonlyArray<Permission> {
+    private getApplicablePermissions(
+        authContext: AuthContext,
+        operation: AccessOperation,
+    ): ReadonlyArray<Permission> {
         return this.profile.permissions.filter(
-            (permission) => permission.allowsOperation(operation) && permission.appliesToAuthContext(authContext)
+            (permission) =>
+                permission.allowsOperation(operation) &&
+                permission.appliesToAuthContext(authContext),
         );
     }
 
-    private getAllowedAccessGroups(applicablePermissions: ReadonlyArray<Permission>, authContext: AuthContext) {
-        return flatMap(applicablePermissions, (permission) => permission.getAllowedAccessGroups(authContext)!);
+    private getAllowedAccessGroups(
+        applicablePermissions: ReadonlyArray<Permission>,
+        authContext: AuthContext,
+    ) {
+        return flatMap(
+            applicablePermissions,
+            (permission) => permission.getAllowedAccessGroups(authContext)!,
+        );
     }
 
     getExplanationForCondition(
         authContext: AuthContext,
         operation: AccessOperation,
-        context: ConditionExplanationContext
+        context: ConditionExplanationContext,
     ): string | undefined {
         const applicablePermissions = this.getApplicablePermissions(authContext, operation);
 
@@ -305,8 +348,13 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
         }
 
         // if we only restrict by access group, we can provide a more detailed explanation
-        if (applicablePermissions.every((p) => p.restrictToAccessGroups && !p.restrictions.length)) {
-            const allowedAccessGroups = this.getAllowedAccessGroups(applicablePermissions, authContext);
+        if (
+            applicablePermissions.every((p) => p.restrictToAccessGroups && !p.restrictions.length)
+        ) {
+            const allowedAccessGroups = this.getAllowedAccessGroups(
+                applicablePermissions,
+                authContext,
+            );
             const prefix = this.getExplanationPrefixForAccessGroups(context);
             return `${prefix}${allowedAccessGroups.join(', ')})`;
         }
@@ -328,7 +376,9 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
     }
 
     getExplanationPrefixForAccessGroups(context: ConditionExplanationContext): string {
-        const accessGroupFieldName = this.accessGroupField ? this.accessGroupField.name : this.accessGroupField;
+        const accessGroupFieldName = this.accessGroupField
+            ? this.accessGroupField.name
+            : this.accessGroupField;
         const typeName = (this.rootEntityType && this.rootEntityType.name) || '';
         switch (context) {
             case ConditionExplanationContext.BEFORE_WRITE:

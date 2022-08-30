@@ -8,7 +8,7 @@ describe('memorize-decorator', () => {
         class Test {
             @memorize()
             memorized(arg: any) {
-                return {arg};
+                return { arg };
             }
         }
 
@@ -24,7 +24,7 @@ describe('memorize-decorator', () => {
         class Test {
             @memorize()
             memorized(arg: any) {
-                return {arg};
+                return { arg };
             }
         }
 

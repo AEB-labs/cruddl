@@ -5,7 +5,7 @@ import { getLineAndColumnFromPosition } from '../../schema/schema-utils';
 export enum Severity {
     Error = 'ERROR',
     Warning = 'WARNING',
-    Info = 'INFO'
+    Info = 'INFO',
 }
 
 export class SourcePosition {
@@ -14,7 +14,11 @@ export class SourcePosition {
      * @param {number} line the one-based line number
      * @param {number} column the one-based column number
      */
-    constructor(public readonly offset: number, public readonly line: number, public readonly column: number) {}
+    constructor(
+        public readonly offset: number,
+        public readonly line: number,
+        public readonly column: number,
+    ) {}
 }
 
 export class MessageLocation {
@@ -26,22 +30,24 @@ export class MessageLocation {
     constructor(
         source: string | ProjectSource,
         readonly _start: SourcePosition | number,
-        readonly _end: SourcePosition | number
+        readonly _end: SourcePosition | number,
     ) {
         if (source instanceof ProjectSource) {
             Object.defineProperty(this, 'source', {
                 enumerable: false,
-                value: source
+                value: source,
             });
             this.sourceName = source.name;
         } else {
             this.sourceName = source;
             if (!(_start instanceof SourcePosition) || !(_end instanceof SourcePosition)) {
-                throw new Error(`If no ProjectSource is given, start and end positions must be SourcePositions.`);
+                throw new Error(
+                    `If no ProjectSource is given, start and end positions must be SourcePositions.`,
+                );
             }
             Object.defineProperty(this, 'source', {
                 enumerable: false,
-                value: new ProjectSource(this.sourceName, '')
+                value: new ProjectSource(this.sourceName, ''),
             });
         }
     }
@@ -50,7 +56,11 @@ export class MessageLocation {
         return new MessageLocation(
             ProjectSource.fromGraphQLSource(loc.source) || loc.source.name,
             new SourcePosition(loc.start, loc.startToken.line, loc.startToken.column),
-            new SourcePosition(loc.end, loc.endToken.line, loc.endToken.column + loc.endToken.end - loc.endToken.start)
+            new SourcePosition(
+                loc.end,
+                loc.endToken.line,
+                loc.endToken.column + loc.endToken.end - loc.endToken.start,
+            ),
         );
     }
 
@@ -95,7 +105,11 @@ export type LocationLike = MessageLocation | Location | ASTNode;
 export class ValidationMessage {
     public readonly location: MessageLocation | undefined;
 
-    constructor(public readonly severity: Severity, public readonly message: string, location?: LocationLike) {
+    constructor(
+        public readonly severity: Severity,
+        public readonly message: string,
+        location?: LocationLike,
+    ) {
         if (location && !(location instanceof MessageLocation)) {
             if (isASTNode(location)) {
                 location = location.loc;
@@ -140,7 +154,11 @@ function isASTNode(obj: any): obj is ASTNode {
     return 'kind' in obj;
 }
 
-export function locationWithinStringArgument(node: StringValueNode | MessageLocation, offset: number, length: number) {
+export function locationWithinStringArgument(
+    node: StringValueNode | MessageLocation,
+    offset: number,
+    length: number,
+) {
     if (node instanceof MessageLocation) {
         return locationWithinStringArgumentML(node, offset, length);
     }
@@ -152,24 +170,36 @@ export function locationWithinStringArgument(node: StringValueNode | MessageLoca
     // add 1 because of "
     return new MessageLocation(
         ProjectSource.fromGraphQLSource(loc.source) || loc.source.name,
-        new SourcePosition(loc.start + 1 + offset, loc.startToken.line, loc.startToken.column + 1 + offset),
+        new SourcePosition(
+            loc.start + 1 + offset,
+            loc.startToken.line,
+            loc.startToken.column + 1 + offset,
+        ),
         new SourcePosition(
             loc.start + 1 + offset + length,
             loc.endToken.line,
-            loc.startToken.column + 1 + offset + length
-        )
+            loc.startToken.column + 1 + offset + length,
+        ),
     );
 }
 
-function locationWithinStringArgumentML(loc: MessageLocation, offset: number, length: number): MessageLocation {
+function locationWithinStringArgumentML(
+    loc: MessageLocation,
+    offset: number,
+    length: number,
+): MessageLocation {
     // add 1 because of "
     return new MessageLocation(
         loc.source,
-        new SourcePosition(loc.start.offset + 1 + offset, loc.start.line, loc.start.column + 1 + offset),
+        new SourcePosition(
+            loc.start.offset + 1 + offset,
+            loc.start.line,
+            loc.start.column + 1 + offset,
+        ),
         new SourcePosition(
             loc.start.offset + 1 + offset + length,
             loc.start.line,
-            loc.start.column + 1 + offset + length
-        )
+            loc.start.column + 1 + offset + length,
+        ),
     );
 }

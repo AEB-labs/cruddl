@@ -26,12 +26,15 @@ export class ChildEntityType extends ObjectTypeBase {
     validate(context: ValidationContext) {
         super.validate(context);
 
-        if (this.fields.length && this.fields.every(f => f.isSystemField || f.isRootField || f.isParentField)) {
+        if (
+            this.fields.length &&
+            this.fields.every((f) => f.isSystemField || f.isRootField || f.isParentField)
+        ) {
             context.addMessage(
                 ValidationMessage.error(
                     `There need to be fields other than parent and root fields in a child entity type.`,
-                    this.nameASTNode
-                )
+                    this.nameASTNode,
+                ),
             );
         }
     }
@@ -46,7 +49,7 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
             'An auto-generated string that identifies this child entity uniquely within this collection of child entities',
         isFlexSearchIndexed: true,
         isFlexSearchFulltextIndexed: false,
-        isIncludedInSearch: false
+        isIncludedInSearch: false,
     },
     {
         name: 'createdAt',
@@ -55,7 +58,7 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         description: 'The instant this object has been created',
         isFlexSearchIndexed: true,
         isFlexSearchFulltextIndexed: false,
-        isIncludedInSearch: false
+        isIncludedInSearch: false,
     },
     {
         name: 'updatedAt',
@@ -64,6 +67,6 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         description: 'The instant this object has been updated the last time',
         isFlexSearchIndexed: true,
         isFlexSearchFulltextIndexed: false,
-        isIncludedInSearch: false
-    }
+        isIncludedInSearch: false,
+    },
 ];

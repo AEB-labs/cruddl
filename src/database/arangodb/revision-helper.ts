@@ -7,21 +7,22 @@ export function hasRevisionAssertions(node: QueryNode) {
     visitQueryNode(node, {
         enter(object: QueryNode, key: string | undefined): VisitResult<QueryNode> {
             if (
-                (object instanceof DeleteEntitiesQueryNode || object instanceof UpdateEntitiesQueryNode) &&
+                (object instanceof DeleteEntitiesQueryNode ||
+                    object instanceof UpdateEntitiesQueryNode) &&
                 object.revision
             ) {
                 hasRevisionAssertions = true;
                 return {
                     recurse: false,
-                    newValue: object
+                    newValue: object,
                 };
             }
             return {
                 // if we already found one, we don't need to recursive deeper
                 recurse: !hasRevisionAssertions,
-                newValue: object
+                newValue: object,
             };
-        }
+        },
     });
     return hasRevisionAssertions;
 }

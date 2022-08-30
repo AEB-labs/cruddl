@@ -1,9 +1,6 @@
 mutation firstIncrement {
     foundation {
-        updateNumberRange(input: {
-            id: "@{ids/foundation.NumberRange/1}",
-            addTo_number: 1
-        }) {
+        updateNumberRange(input: { id: "@{ids/foundation.NumberRange/1}", addTo_number: 1 }) {
             number
         }
     }
@@ -11,10 +8,7 @@ mutation firstIncrement {
 
 mutation secondIncrement {
     foundation {
-        updateNumberRange(input: {
-            id: "@{ids/foundation.NumberRange/1}",
-            addTo_number: 5
-        }) {
+        updateNumberRange(input: { id: "@{ids/foundation.NumberRange/1}", addTo_number: 5 }) {
             number
         }
     }

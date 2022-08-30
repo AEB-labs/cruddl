@@ -1,6 +1,9 @@
 import { IndexField, Model, RootEntityType } from '../../../model';
 import { ID_FIELD } from '../../../schema/constants';
-import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../../schema/scalars/offset-date-time';
+import {
+    GraphQLOffsetDateTime,
+    TIMESTAMP_PROPERTY,
+} from '../../../schema/scalars/offset-date-time';
 import { compact, flatMap } from '../../../utils/utils';
 import { getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBConfig } from '../config';
@@ -21,9 +24,9 @@ export interface IndexDefinition {
 export function describeIndex(index: IndexDefinition) {
     return `${index.unique ? 'unique ' : ''}${index.sparse ? 'sparse ' : ''}index${
         index.name ? ` "${index.name}"` : index.id ? ' ' + index.id : ''
-    } on collection ${index.collectionName} on ${index.fields.length > 1 ? 'fields' : 'field'} '${index.fields.join(
-        ','
-    )}'`;
+    } on collection ${index.collectionName} on ${
+        index.fields.length > 1 ? 'fields' : 'field'
+    } '${index.fields.join(',')}'`;
 }
 
 export function getIndexDescriptor(index: IndexDefinition) {
@@ -34,7 +37,7 @@ export function getIndexDescriptor(index: IndexDefinition) {
         index.unique ? 'unique' : undefined,
         index.sparse ? 'sparse' : undefined,
         `collection:${index.collectionName}`,
-        `fields:${index.fields.join(',')}`
+        `fields:${index.fields.join(',')}`,
     ]).join('/');
 }
 
@@ -50,47 +53,49 @@ function indexDefinitionsEqual(a: IndexDefinition, b: IndexDefinition) {
 }
 
 export function getRequiredIndicesFromModel(model: Model): ReadonlyArray<IndexDefinition> {
-    return flatMap(model.rootEntityTypes, rootEntity => getIndicesForRootEntity(rootEntity));
+    return flatMap(model.rootEntityTypes, (rootEntity) => getIndicesForRootEntity(rootEntity));
 }
 
 function getIndicesForRootEntity(rootEntity: RootEntityType): ReadonlyArray<IndexDefinition> {
-    return rootEntity.indices.map(index => ({
+    return rootEntity.indices.map((index) => ({
         rootEntity,
         collectionName: getCollectionNameForRootEntity(rootEntity),
         name: index.name,
         fields: index.fields.map(getArangoFieldPath),
         unique: index.unique,
         type: DEFAULT_INDEX_TYPE,
-        sparse: index.sparse
+        sparse: index.sparse,
     }));
 }
 
 export function calculateRequiredIndexOperations(
     existingIndices: ReadonlyArray<IndexDefinition>,
     requiredIndices: ReadonlyArray<IndexDefinition>,
-    config: ArangoDBConfig
+    config: ArangoDBConfig,
 ): {
     indicesToDelete: ReadonlyArray<IndexDefinition>;
     indicesToCreate: ReadonlyArray<IndexDefinition>;
 } {
     let indicesToDelete = [...existingIndices];
     const indicesToCreate = compact(
-        requiredIndices.map(requiredIndex => {
-            const existingIndex = existingIndices.find(index => indexDefinitionsEqual(index, requiredIndex));
-            indicesToDelete = indicesToDelete.filter(index => index !== existingIndex);
+        requiredIndices.map((requiredIndex) => {
+            const existingIndex = existingIndices.find((index) =>
+                indexDefinitionsEqual(index, requiredIndex),
+            );
+            indicesToDelete = indicesToDelete.filter((index) => index !== existingIndex);
             if (!!existingIndex) {
                 return undefined;
             }
             return requiredIndex;
-        })
+        }),
     );
     indicesToDelete = indicesToDelete
-        .filter(index => index.type === DEFAULT_INDEX_TYPE) // only remove indexes of types that we also add
+        .filter((index) => index.type === DEFAULT_INDEX_TYPE) // only remove indexes of types that we also add
         .filter(
-            index =>
+            (index) =>
                 !index.name ||
                 !config.nonManagedIndexNamesPattern ||
-                !index.name.match(config.nonManagedIndexNamesPattern)
+                !index.name.match(config.nonManagedIndexNamesPattern),
         );
     return { indicesToDelete, indicesToCreate };
 }
@@ -99,12 +104,18 @@ export function calculateRequiredIndexOperations(
  * Gets the field path of an index prepared for Arango, adding [*] suffix to spread list items on list types
  */
 function getArangoFieldPath(indexField: IndexField): string {
-    if (indexField.declaringType.isRootEntityType && indexField.path.length === 1 && indexField.path[0] === ID_FIELD) {
+    if (
+        indexField.declaringType.isRootEntityType &&
+        indexField.path.length === 1 &&
+        indexField.path[0] === ID_FIELD
+    ) {
         // translate to arangodb's id field
         return '_key';
     }
 
-    let segments = (indexField.fieldsInPath || []).map(field => (field.isList ? `${field.name}[*]` : field.name));
+    let segments = (indexField.fieldsInPath || []).map((field) =>
+        field.isList ? `${field.name}[*]` : field.name,
+    );
 
     // OffsetDateTime filters / sorts on the timestamp, so we should also index this field
     if (

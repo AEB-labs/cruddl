@@ -32,33 +32,24 @@ fragment Request on Delivery {
 mutation create {
     logistics {
         delivery {
-            createDelivery(input: {
-                deliveryNumber: "the-dn",
-                consignee: {
-                    city: "Saint Nowhere",
-                    country: "DE",
-                    street: "Sunrise Avenue 1",
+            createDelivery(
+                input: {
+                    deliveryNumber: "the-dn"
+                    consignee: { city: "Saint Nowhere", country: "DE", street: "Sunrise Avenue 1" }
+                    contentInfo: [
+                        { languageIsoCode: "de", translation: "für dich" }
+                        { languageIsoCode: "en", translation: "for you" }
+                    ]
+                    destinationCountry: "GB"
+                    dgInfo: {
+                        flashpoint: "37 °C"
+                        unNumber: "123"
+                        notices: ["handle with care", "do not throw"]
+                    }
+                    serialNumbers: ["456", "424242"]
+                    items: [{ itemNumber: "44" }, { itemNumber: "45" }]
                 }
-                contentInfo: [{
-                    languageIsoCode: "de",
-                    translation: "für dich"
-                },{
-                    languageIsoCode: "en",
-                    translation: "for you"
-                }],
-                destinationCountry: "GB",
-                dgInfo: {
-                    flashpoint: "37 °C",
-                    unNumber: "123",
-                    notices: [ "handle with care", "do not throw" ]
-                },
-                serialNumbers: [ "456", "424242" ],
-                items: [{
-                    itemNumber: "44",
-                }, {
-                    itemNumber: "45"
-                }]
-            }) {
+            ) {
                 ...Request
             }
         }
@@ -68,7 +59,7 @@ mutation create {
 query query {
     logistics {
         delivery {
-           allDeliveries(orderBy: updatedAt_DESC, first: 1) {
+            allDeliveries(orderBy: updatedAt_DESC, first: 1) {
                 ...Request
             }
         }

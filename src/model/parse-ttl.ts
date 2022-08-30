@@ -10,6 +10,6 @@ export function parseTTLConfigs(source: ParsedObjectProjectSource): TimeToLiveCo
         ...ttlConfig,
         typeNameLoc: source.pathLocationMap[`/timeToLive/${index}/typeName`],
         dateFieldLoc: source.pathLocationMap[`/timeToLive/${index}/dateField`],
-        expireAfterDaysLoc: source.pathLocationMap[`/timeToLive/${index}/expireAfterDays`]
+        expireAfterDaysLoc: source.pathLocationMap[`/timeToLive/${index}/expireAfterDays`],
     }));
 }

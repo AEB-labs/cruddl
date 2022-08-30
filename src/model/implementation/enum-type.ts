@@ -9,7 +9,7 @@ import { TypeBase } from './type-base';
 export class EnumType extends TypeBase {
     constructor(input: EnumTypeConfig, model: Model) {
         super(input, model);
-        this.values = input.values.map(v => new EnumValue(v, this));
+        this.values = input.values.map((v) => new EnumValue(v, this));
     }
 
     readonly values: ReadonlyArray<EnumValue>;
@@ -52,11 +52,15 @@ export class EnumValue implements ModelComponent {
         if (this.value === 'true' || this.value === 'false' || this.value === 'null') {
             // this is a graphql restriction, but there is no validator for this
             // see https://github.com/graphql/graphql-js/issues/3221
-            context.addMessage(ValidationMessage.error(`Enums cannot define value "${this.value}".`, this.astNode));
+            context.addMessage(
+                ValidationMessage.error(`Enums cannot define value "${this.value}".`, this.astNode),
+            );
             return;
         }
         if (this.value.toUpperCase() !== this.value) {
-            context.addMessage(ValidationMessage.warn(`Enum values should be UPPER_CASE.`, this.astNode));
+            context.addMessage(
+                ValidationMessage.warn(`Enum values should be UPPER_CASE.`, this.astNode),
+            );
         }
     }
 }

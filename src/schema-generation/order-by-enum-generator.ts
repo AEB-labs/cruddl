@@ -11,7 +11,10 @@ import { createFieldNode } from './field-nodes';
 import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
 
 export class OrderByEnumType {
-    constructor(public readonly objectType: ObjectType, public readonly values: ReadonlyArray<OrderByEnumValue>) {}
+    constructor(
+        public readonly objectType: ObjectType,
+        public readonly values: ReadonlyArray<OrderByEnumValue>,
+    ) {}
 
     get name() {
         return getOrderByTypeName(this.objectType.name);
@@ -39,14 +42,14 @@ export class OrderByEnumType {
         return new GraphQLEnumType({
             name: this.name,
             values: chain(this.values)
-                .keyBy(value => value.name)
+                .keyBy((value) => value.name)
                 .mapValues(
                     (value): GraphQLEnumValueConfig => ({
                         value: value.name,
-                        deprecationReason: value.deprecationReason
-                    })
+                        deprecationReason: value.deprecationReason,
+                    }),
                 )
-                .value()
+                .value(),
         });
     }
 }
@@ -55,17 +58,19 @@ export class OrderByEnumValue {
     constructor(
         public readonly path: ReadonlyArray<Field>,
         public readonly direction: OrderDirection,
-        readonly rootEntityDepth?: number
+        readonly rootEntityDepth?: number,
     ) {}
 
     get underscoreSeparatedPath(): string {
-        return this.path.map(field => field.name).join('_');
+        return this.path.map((field) => field.name).join('_');
     }
 
     get name() {
         return (
             this.underscoreSeparatedPath +
-            (this.direction == OrderDirection.ASCENDING ? ORDER_BY_ASC_SUFFIX : ORDER_BY_DESC_SUFFIX)
+            (this.direction == OrderDirection.ASCENDING
+                ? ORDER_BY_ASC_SUFFIX
+                : ORDER_BY_DESC_SUFFIX)
         );
     }
 
@@ -81,8 +86,8 @@ export class OrderByEnumValue {
             return this.path[0].deprecationReason;
         }
         const deprecations = this.path
-            .filter(f => f.deprecationReason)
-            .map(f => `${f.declaringType.name}.${f.name}: ${f.deprecationReason}`);
+            .filter((f) => f.deprecationReason)
+            .map((f) => `${f.declaringType.name}.${f.name}: ${f.deprecationReason}`);
         if (deprecations.length) {
             return deprecations.join(', ');
         }
@@ -124,11 +129,17 @@ export class OrderByEnumGenerator {
         return new OrderByEnumType(objectType, values);
     }
 
-    private getValues(type: ObjectType, options?: RecursionOptions): ReadonlyArray<OrderByEnumValue> {
-        return flatMap(type.fields, field => this.getValuesForField(field, options));
+    private getValues(
+        type: ObjectType,
+        options?: RecursionOptions,
+    ): ReadonlyArray<OrderByEnumValue> {
+        return flatMap(type.fields, (field) => this.getValuesForField(field, options));
     }
 
-    private getValuesForField(field: Field, { path = [], rootEntityDepth = 0 }: RecursionOptions = {}) {
+    private getValuesForField(
+        field: Field,
+        { path = [], rootEntityDepth = 0 }: RecursionOptions = {},
+    ) {
         // Don't recurse
         if (path.includes(field)) {
             return [];
@@ -145,17 +156,25 @@ export class OrderByEnumGenerator {
 
         const newPath = [...path, field];
         if (field.type.isObjectType) {
-            const newRootEntityDepth = field.type.isRootEntityType ? rootEntityDepth + 1 : rootEntityDepth;
-            if (this.config.maxRootEntityDepth != undefined && newRootEntityDepth > this.config.maxRootEntityDepth) {
+            const newRootEntityDepth = field.type.isRootEntityType
+                ? rootEntityDepth + 1
+                : rootEntityDepth;
+            if (
+                this.config.maxRootEntityDepth != undefined &&
+                newRootEntityDepth > this.config.maxRootEntityDepth
+            ) {
                 return [];
             }
-            return this.getValues(field.type, { path: newPath, rootEntityDepth: newRootEntityDepth });
+            return this.getValues(field.type, {
+                path: newPath,
+                rootEntityDepth: newRootEntityDepth,
+            });
         }
 
         // currently, all scalars and enums are ordered types
         return [
             new OrderByEnumValue(newPath, OrderDirection.ASCENDING, rootEntityDepth),
-            new OrderByEnumValue(newPath, OrderDirection.DESCENDING, rootEntityDepth)
+            new OrderByEnumValue(newPath, OrderDirection.DESCENDING, rootEntityDepth),
         ];
     }
 }

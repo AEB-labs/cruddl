@@ -9,14 +9,12 @@ import { QueryNodeField } from './query-node-object-type';
 export class ListAugmentation {
     constructor(
         private readonly filterAugmentation: FilterAugmentation,
-        private readonly orderByAugmentation: OrderByAndPaginationAugmentation
-    ) {
-    }
+        private readonly orderByAugmentation: OrderByAndPaginationAugmentation,
+    ) {}
 
     augment(schemaField: QueryNodeField, type: Type): QueryNodeField {
         const filtered = this.filterAugmentation.augment(schemaField, type);
         const paged = this.orderByAugmentation.augment(filtered, type);
         return paged;
     }
-
 }

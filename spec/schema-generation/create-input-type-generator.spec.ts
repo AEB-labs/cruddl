@@ -1,7 +1,16 @@
 import { expect } from 'chai';
-import { GraphQLEnumType, GraphQLInputObjectType, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
+import {
+    GraphQLEnumType,
+    GraphQLInputObjectType,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLString,
+} from 'graphql';
 import { ChildEntityType, Model, RootEntityType, TypeKind } from '../../src/model';
-import { CreateInputTypeGenerator, CreateObjectInputField } from '../../src/schema-generation/create-input-types';
+import {
+    CreateInputTypeGenerator,
+    CreateObjectInputField,
+} from '../../src/schema-generation/create-input-types';
 import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator';
 import { FieldContext, SelectionToken } from '../../src/schema-generation/query-node-object-type';
 
@@ -10,7 +19,11 @@ describe('CreateInputTypeGenerator', () => {
 
     const generator = new CreateInputTypeGenerator(new EnumTypeGenerator());
 
-    const context: FieldContext = { selectionStack: [], selectionTokenStack: [], selectionToken: new SelectionToken() };
+    const context: FieldContext = {
+        selectionStack: [],
+        selectionTokenStack: [],
+        selectionToken: new SelectionToken(),
+    };
 
     describe('with simple scalar fields', () => {
         const type = new RootEntityType(
@@ -20,11 +33,11 @@ describe('CreateInputTypeGenerator', () => {
                 fields: [
                     {
                         name: 'name',
-                        typeName: 'String'
-                    }
-                ]
+                        typeName: 'String',
+                    },
+                ],
             },
-            model
+            model,
         );
         const inputType = generator.generate(type);
 
@@ -79,9 +92,9 @@ describe('CreateInputTypeGenerator', () => {
                 {
                     kind: TypeKind.ENUM,
                     name: 'Morality',
-                    values: [{ value: 'GOOD' }, { value: 'EVIL' }]
-                }
-            ]
+                    values: [{ value: 'GOOD' }, { value: 'EVIL' }],
+                },
+            ],
         });
 
         const type = new RootEntityType(
@@ -91,16 +104,18 @@ describe('CreateInputTypeGenerator', () => {
                 fields: [
                     {
                         name: 'morality',
-                        typeName: 'Morality'
-                    }
-                ]
+                        typeName: 'Morality',
+                    },
+                ],
             },
-            model
+            model,
         );
         const inputType = generator.generate(type);
 
         it('includes them in the input type', () => {
-            expect(inputType.getInputType().getFields()['morality'].type).to.be.an.instanceOf(GraphQLEnumType);
+            expect(inputType.getInputType().getFields()['morality'].type).to.be.an.instanceOf(
+                GraphQLEnumType,
+            );
         });
 
         describe('prepare()', () => {
@@ -148,11 +163,11 @@ describe('CreateInputTypeGenerator', () => {
                     {
                         name: 'name',
                         typeName: 'String',
-                        defaultValue: 'Batman'
-                    }
-                ]
+                        defaultValue: 'Batman',
+                    },
+                ],
             },
-            model
+            model,
         );
         const inputType = generator.generate(type);
 
@@ -195,11 +210,11 @@ describe('CreateInputTypeGenerator', () => {
                     {
                         name: 'nickNames',
                         typeName: 'String',
-                        isList: true
-                    }
-                ]
+                        isList: true,
+                    },
+                ],
             },
-            model
+            model,
         );
         const inputType = generator.generate(type);
 
@@ -211,13 +226,18 @@ describe('CreateInputTypeGenerator', () => {
             });
 
             it('has correct type', () => {
-                expect(field.type).to.deep.equal(new GraphQLList(new GraphQLNonNull(GraphQLString)));
+                expect(field.type).to.deep.equal(
+                    new GraphQLList(new GraphQLNonNull(GraphQLString)),
+                );
             });
         });
 
         describe('prepare()', () => {
             it('includes it if specified', () => {
-                const prepared = inputType.prepareValue({ nickNames: ['Dark Knight', 'Batsy'] }, context);
+                const prepared = inputType.prepareValue(
+                    { nickNames: ['Dark Knight', 'Batsy'] },
+                    context,
+                );
                 expect(prepared.nickNames).to.deep.equal(['Dark Knight', 'Batsy']);
             });
 
@@ -236,7 +256,10 @@ describe('CreateInputTypeGenerator', () => {
 
         describe('getAffectedFields()', () => {
             it('includes it if specified', () => {
-                const fields = inputType.getAffectedFields({ nickNames: ['Dark Knight', 'Batsy'] }, context);
+                const fields = inputType.getAffectedFields(
+                    { nickNames: ['Dark Knight', 'Batsy'] },
+                    context,
+                );
                 expect(fields).to.deep.equal([type.getFieldOrThrow('nickNames')]);
             });
 
@@ -261,11 +284,11 @@ describe('CreateInputTypeGenerator', () => {
                     fields: [
                         {
                             name: 'name',
-                            typeName: 'String'
-                        }
-                    ]
-                }
-            ]
+                            typeName: 'String',
+                        },
+                    ],
+                },
+            ],
         });
         const type = new RootEntityType(
             {
@@ -275,11 +298,11 @@ describe('CreateInputTypeGenerator', () => {
                     {
                         name: 'movies',
                         typeName: 'Movie',
-                        isList: true
-                    }
-                ]
+                        isList: true,
+                    },
+                ],
             },
-            model
+            model,
         );
         const movieType = model.getChildEntityTypeOrThrow('Movie');
         const inputType = generator.generate(type);
@@ -287,7 +310,7 @@ describe('CreateInputTypeGenerator', () => {
         const movies = [
             { name: 'Batman Begins' },
             { name: 'The dark Knight Rises' },
-            { name: 'The Dark Knight Rises' }
+            { name: 'The Dark Knight Rises' },
         ];
 
         describe('input field', () => {
@@ -337,7 +360,10 @@ describe('CreateInputTypeGenerator', () => {
         describe('getAffectedFields()', () => {
             it('includes it and its inner fields if specified', () => {
                 const fields = inputType.getAffectedFields({ movies }, context);
-                expect(fields).to.deep.equal([type.getFieldOrThrow('movies'), movieType.getFieldOrThrow('name')]);
+                expect(fields).to.deep.equal([
+                    type.getFieldOrThrow('movies'),
+                    movieType.getFieldOrThrow('name'),
+                ]);
             });
 
             it('includes it if specified null', () => {
@@ -361,11 +387,11 @@ describe('CreateInputTypeGenerator', () => {
                     fields: [
                         {
                             name: 'color',
-                            typeName: 'String'
-                        }
-                    ]
-                }
-            ]
+                            typeName: 'String',
+                        },
+                    ],
+                },
+            ],
         });
         const type = new RootEntityType(
             {
@@ -374,11 +400,11 @@ describe('CreateInputTypeGenerator', () => {
                 fields: [
                     {
                         name: 'suit',
-                        typeName: 'Suit'
-                    }
-                ]
+                        typeName: 'Suit',
+                    },
+                ],
             },
-            model
+            model,
         );
         const suitType = model.getEntityExtensionTypeOrThrow('Suit');
         const inputType = generator.generate(type);
@@ -392,13 +418,17 @@ describe('CreateInputTypeGenerator', () => {
 
             it('has correct type', () => {
                 expect(field.type).to.be.an.instanceOf(GraphQLInputObjectType);
-                expect((field.type as GraphQLInputObjectType).getFields().color).not.to.be.undefined;
+                expect((field.type as GraphQLInputObjectType).getFields().color).not.to.be
+                    .undefined;
             });
         });
 
         describe('prepare()', () => {
             it('includes it if specified', () => {
-                const prepared = inputType.prepareValue({ suit: { color: 'black' } }, context) as any;
+                const prepared = inputType.prepareValue(
+                    { suit: { color: 'black' } },
+                    context,
+                ) as any;
                 expect(prepared.suit).to.deep.equal({ color: 'black' });
             });
 
@@ -416,7 +446,10 @@ describe('CreateInputTypeGenerator', () => {
         describe('getAffectedFields()', () => {
             it('includes it and its inner fields if specified', () => {
                 const fields = inputType.getAffectedFields({ suit: { color: 'black' } }, context);
-                expect(fields).to.deep.equal([type.getFieldOrThrow('suit'), suitType.getFieldOrThrow('color')]);
+                expect(fields).to.deep.equal([
+                    type.getFieldOrThrow('suit'),
+                    suitType.getFieldOrThrow('color'),
+                ]);
             });
 
             it('includes it if specified null', () => {
@@ -441,11 +474,11 @@ describe('CreateInputTypeGenerator', () => {
                     fields: [
                         {
                             name: 'isoCode',
-                            typeName: 'String'
-                        }
-                    ]
-                }
-            ]
+                            typeName: 'String',
+                        },
+                    ],
+                },
+            ],
         });
 
         const type = new RootEntityType(
@@ -456,11 +489,11 @@ describe('CreateInputTypeGenerator', () => {
                     {
                         name: 'country',
                         typeName: 'Country',
-                        isReference: true
-                    }
-                ]
+                        isReference: true,
+                    },
+                ],
             },
-            model
+            model,
         );
         const inputType = generator.generate(type);
 
@@ -513,11 +546,11 @@ describe('CreateInputTypeGenerator', () => {
                     {
                         name: 'name',
                         typeName: 'String',
-                        defaultValue: 'Batman'
-                    }
-                ]
+                        defaultValue: 'Batman',
+                    },
+                ],
             },
-            model
+            model,
         );
         const inputType = generator.generate(type);
 
@@ -552,11 +585,11 @@ describe('CreateInputTypeGenerator', () => {
                     {
                         name: 'name',
                         typeName: 'String',
-                        defaultValue: 'Batman'
-                    }
-                ]
+                        defaultValue: 'Batman',
+                    },
+                ],
             },
-            model
+            model,
         );
         const inputType = generator.generate(type);
 
@@ -587,11 +620,11 @@ describe('CreateInputTypeGenerator', () => {
                     fields: [
                         {
                             name: 'parent',
-                            typeName: 'Node'
-                        }
-                    ]
-                }
-            ]
+                            typeName: 'Node',
+                        },
+                    ],
+                },
+            ],
         });
 
         it('does not enter an infinite loop on creation', () => {
@@ -600,7 +633,7 @@ describe('CreateInputTypeGenerator', () => {
 
         it('creates a cyclic object structure', () => {
             const inputType = generator.generate(model.getValueObjectTypeOrThrow('Node'));
-            const parentField = inputType.fields.find(f => f.name == 'parent');
+            const parentField = inputType.fields.find((f) => f.name == 'parent');
             expect((parentField as CreateObjectInputField).objectInputType).to.equal(inputType);
         });
 

@@ -19,7 +19,7 @@ export class ObjectQueryNode extends QueryNode {
         if (!this.properties.length) {
             return `{}`;
         }
-        return `{\n` + indent(this.properties.map(p => p.describe()).join('\n')) + `\n}`;
+        return `{\n` + indent(this.properties.map((p) => p.describe()).join('\n')) + `\n}`;
     }
 }
 
@@ -50,7 +50,11 @@ export class MergeObjectsQueryNode extends QueryNode {
     }
 
     describe() {
-        return `{\n` + indent(this.objectNodes.map(node => '...' + node.describe()).join(',\n')) + '\n}';
+        return (
+            `{\n` +
+            indent(this.objectNodes.map((node) => '...' + node.describe()).join(',\n')) +
+            '\n}'
+        );
     }
 }
 

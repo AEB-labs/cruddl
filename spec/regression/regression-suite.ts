@@ -69,7 +69,8 @@ export class RegressionSuite {
             },
             getExecutionOptions: ({ context }) => ({
                 authContext: { authRoles: context.authRoles, claims: context.claims },
-                flexSearchMaxFilterableAndSortableAmount: context.flexSearchMaxFilterableAndSortableAmount,
+                flexSearchMaxFilterableAndSortableAmount:
+                    context.flexSearchMaxFilterableAndSortableAmount,
             }),
             modelOptions: {
                 forbiddenRootEntityNames: [],
@@ -77,7 +78,10 @@ export class RegressionSuite {
             ...options,
             getOperationIdentifier: ({ info }) => info.operation,
         };
-        const warnLevelOptions = { ...generalOptions, loggerProvider: new Log4jsLoggerProvider('warn') };
+        const warnLevelOptions = {
+            ...generalOptions,
+            loggerProvider: new Log4jsLoggerProvider('warn'),
+        };
         const debugLevelOptions = {
             ...generalOptions,
             loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', {
@@ -86,16 +90,25 @@ export class RegressionSuite {
         };
 
         // use a schema that logs less for initTestData and for schema migrations
-        const silentProject = await loadProjectFromDir(path.resolve(this.path, 'model'), warnLevelOptions);
+        const silentProject = await loadProjectFromDir(
+            path.resolve(this.path, 'model'),
+            warnLevelOptions,
+        );
         const silentAdapter = await this.createAdapter(warnLevelOptions);
         const silentSchema = silentProject.createSchema(silentAdapter);
 
-        const project = await loadProjectFromDir(path.resolve(this.path, 'model'), debugLevelOptions);
+        const project = await loadProjectFromDir(
+            path.resolve(this.path, 'model'),
+            debugLevelOptions,
+        );
         const adapter = await this.createAdapter(debugLevelOptions);
         this.schema = project.createSchema(adapter);
 
         await silentAdapter.updateSchema(silentProject.getModel());
-        this.testDataEnvironment = await initTestData(path.resolve(this.path, 'test-data.json'), silentSchema);
+        this.testDataEnvironment = await initTestData(
+            path.resolve(this.path, 'test-data.json'),
+            silentSchema,
+        );
 
         if (this.databaseSpecifier === 'arangodb') {
             const version = await (adapter as ArangoDBAdapter).getArangoDBVersion();
@@ -172,12 +185,15 @@ export class RegressionSuite {
         const gqlSource = this.testDataEnvironment.fillTemplateStrings(gqlTemplate);
 
         const operations = parse(gqlSource).definitions.filter(
-            (def) => def.kind == 'OperationDefinition'
+            (def) => def.kind == 'OperationDefinition',
         ) as OperationDefinitionNode[];
-        this._isSetUpClean = this._isSetUpClean && !operations.some((op) => op.operation == 'mutation');
+        this._isSetUpClean =
+            this._isSetUpClean && !operations.some((op) => op.operation == 'mutation');
         const hasNamedOperations = operations.length && operations[0].name;
 
-        const expectedResultTemplate = JSON.parse(stripJsonComments(fs.readFileSync(resultPath, 'utf-8')));
+        const expectedResultTemplate = JSON.parse(
+            stripJsonComments(fs.readFileSync(resultPath, 'utf-8')),
+        );
         const expectedResult = this.testDataEnvironment.fillTemplateStrings(expectedResultTemplate);
         const variableValues = fs.existsSync(variablesPath)
             ? JSON.parse(stripJsonComments(fs.readFileSync(variablesPath, 'utf-8')))
@@ -185,7 +201,9 @@ export class RegressionSuite {
         const context = fs.existsSync(contextPath)
             ? JSON.parse(stripJsonComments(fs.readFileSync(contextPath, 'utf-8')))
             : {};
-        const meta = fs.existsSync(metaPath) ? JSON.parse(stripJsonComments(fs.readFileSync(metaPath, 'utf-8'))) : {};
+        const meta = fs.existsSync(metaPath)
+            ? JSON.parse(stripJsonComments(fs.readFileSync(metaPath, 'utf-8')))
+            : {};
 
         if (meta.waitForArangoSearch && this.databaseSpecifier === 'arangodb') {
             await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -206,13 +224,19 @@ export class RegressionSuite {
                     {} /* root */,
                     operationContext,
                     variableValues,
-                    operationName
+                    operationName,
                 );
                 operationResult = JSON.parse(JSON.stringify(operationResult)); // serialize e.g. errors as they would be in a GraphQL server
                 actualResult[operationName] = operationResult;
             }
         } else {
-            actualResult = await graphql(this.schema, gqlSource, {} /* root */, context, variableValues);
+            actualResult = await graphql(
+                this.schema,
+                gqlSource,
+                {} /* root */,
+                context,
+                variableValues,
+            );
             actualResult = JSON.parse(JSON.stringify(actualResult)); // serialize e.g. errors as they would be in a GraphQL server
         }
 

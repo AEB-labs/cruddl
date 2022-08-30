@@ -7,7 +7,7 @@ export interface LoggerProvider {
 }
 
 export interface Logger {
-    level: string
+    level: string;
 
     isLevelEnabled(level?: string): boolean;
 
@@ -37,17 +37,17 @@ export interface Logger {
 }
 
 export class ConsoleLoggerProvider implements LoggerProvider {
-    constructor(private prefix?: string) {
-    }
+    constructor(private prefix?: string) {}
 
     getLogger(categoryName?: string | undefined): Logger {
-        return new ConsoleLogger((this.prefix ? this.prefix + ': ' : '') + (categoryName ? categoryName + ': ' : ''));
+        return new ConsoleLogger(
+            (this.prefix ? this.prefix + ': ' : '') + (categoryName ? categoryName + ': ' : ''),
+        );
     }
 }
 
 export class ConsoleLogger implements Logger {
-    constructor(private prefix?: string) {
-    }
+    constructor(private prefix?: string) {}
 
     private _log(message: string, ...args: any[]): void {
         console.log((this.prefix || '') + message, ...args);

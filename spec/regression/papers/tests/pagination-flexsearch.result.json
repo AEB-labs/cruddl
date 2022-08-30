@@ -1,44 +1,44 @@
 {
-    "data": {
-        "flexSearchPapers": [
-            {
-                "key": "NoSQL",
-                "_cursor": "{\"id\":\"@{ids/Paper/3}\",\"key\":\"NoSQL\"}",
-                "title2": "Will NoSQL databases live up to their promise?",
-                "title": "Will NoSQL databases live up to their promise?",
-                "readers": [],
-                "b": [],
-                "empty": []
-            },
-            {
-                "key": "OOM",
-                "_cursor": "{\"id\":\"@{ids/Paper/1}\",\"key\":\"OOM\"}",
-                "title2": "Object-oriented modeling and design",
-                "title": "Object-oriented modeling and design",
-                "readers": [],
-                "b": [],
-                "empty": []
-            },
-            {
-                "key": "Part",
-                "_cursor": "{\"id\":\"@{ids/Paper/4}\",\"key\":\"Part\"}",
-                "title2": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services",
-                "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services",
-                "readers": [],
-                "b": [],
-                "empty": []
-            }
-        ],
-        "noPagesLeft": [],
-        "noPaginationButCursor": [
-            {
-                "_cursor": "{\"id\":\"@{ids/Paper/1}\"}"
-            }
-        ],
-        "noPaginationButCursorAndSort": [
-            {
-                "_cursor": "{\"id\":\"@{ids/Paper/1}\",\"key\":\"OOM\"}"
-            }
-        ]
-    }
+  "data": {
+    "flexSearchPapers": [
+      {
+        "key": "NoSQL",
+        "_cursor": "{\"id\":\"@{ids/Paper/3}\",\"key\":\"NoSQL\"}",
+        "title2": "Will NoSQL databases live up to their promise?",
+        "title": "Will NoSQL databases live up to their promise?",
+        "readers": [],
+        "b": [],
+        "empty": []
+      },
+      {
+        "key": "OOM",
+        "_cursor": "{\"id\":\"@{ids/Paper/1}\",\"key\":\"OOM\"}",
+        "title2": "Object-oriented modeling and design",
+        "title": "Object-oriented modeling and design",
+        "readers": [],
+        "b": [],
+        "empty": []
+      },
+      {
+        "key": "Part",
+        "_cursor": "{\"id\":\"@{ids/Paper/4}\",\"key\":\"Part\"}",
+        "title2": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services",
+        "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services",
+        "readers": [],
+        "b": [],
+        "empty": []
+      }
+    ],
+    "noPagesLeft": [],
+    "noPaginationButCursor": [
+      {
+        "_cursor": "{\"id\":\"@{ids/Paper/1}\"}"
+      }
+    ],
+    "noPaginationButCursorAndSort": [
+      {
+        "_cursor": "{\"id\":\"@{ids/Paper/1}\",\"key\":\"OOM\"}"
+      }
+    ]
+  }
 }

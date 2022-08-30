@@ -8,7 +8,7 @@ describe('known field directive validator', () => {
                 foo: String @unknown
             }
         `,
-            'Unknown directive "@unknown".'
+            'Unknown directive "@unknown".',
         );
     });
 

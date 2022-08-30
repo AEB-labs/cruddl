@@ -7,7 +7,7 @@ import { isArangoDBDisabled } from './arangodb-test-utils';
 
 describe('ArangoDBAdapter', () => {
     describe('updateSchema', () => {
-        it('it creates and removes indices', async function() {
+        it('it creates and removes indices', async function () {
             // can't use arrow function because we need the "this"
             if (isArangoDBDisabled()) {
                 (this as any).skip();
@@ -27,7 +27,7 @@ describe('ArangoDBAdapter', () => {
             const dbConfig = await createTempDatabase();
             const adapter = new ArangoDBAdapter({
                 ...dbConfig,
-                createIndicesInBackground: true
+                createIndicesInBackground: true,
             });
             const db = getTempDatabase();
             await db.collection('deliveries').create({});
@@ -37,7 +37,7 @@ describe('ArangoDBAdapter', () => {
                 fields: ['itemCount'],
                 sparse: false,
                 unique: false,
-                type: 'persistent'
+                type: 'persistent',
             });
 
             // add an index that *almost* fits. Will be removed
@@ -45,7 +45,7 @@ describe('ArangoDBAdapter', () => {
                 fields: ['deliveryNumber'],
                 sparse: false,
                 unique: true,
-                type: 'persistent'
+                type: 'persistent',
             });
 
             // add an index on a different collection. Will be kept.
@@ -54,7 +54,7 @@ describe('ArangoDBAdapter', () => {
                 fields: ['test'],
                 sparse: false,
                 unique: true,
-                type: 'persistent'
+                type: 'persistent',
             });
 
             // add a non-unique index that is needed for @index, but should not satisfy the @unique index
@@ -62,7 +62,7 @@ describe('ArangoDBAdapter', () => {
                 fields: ['indexedTwice'],
                 sparse: false,
                 unique: false,
-                type: 'persistent'
+                type: 'persistent',
             });
 
             await adapter.updateSchema(model);
@@ -73,59 +73,59 @@ describe('ArangoDBAdapter', () => {
                     fields: ['_key'],
                     sparse: false,
                     type: 'primary',
-                    unique: true
+                    unique: true,
                 },
                 {
                     fields: ['isShipped'],
                     sparse: false,
                     type: 'persistent',
-                    unique: false
+                    unique: false,
                 },
                 {
                     fields: ['itemCount'],
                     sparse: false,
                     type: 'persistent',
-                    unique: false
+                    unique: false,
                 },
                 // for automatic absolute ordering
                 {
                     fields: ['_key'],
                     sparse: false,
                     type: 'persistent',
-                    unique: false
+                    unique: false,
                 },
                 {
                     fields: ['deliveryNumber'],
                     sparse: true,
                     type: 'persistent',
-                    unique: true
+                    unique: true,
                 },
                 {
                     fields: ['shippedAt'],
                     sparse: true,
                     unique: false,
-                    type: 'persistent'
+                    type: 'persistent',
                 },
                 {
                     fields: ['indexedTwice'],
                     sparse: true,
                     unique: true,
-                    type: 'persistent'
+                    type: 'persistent',
                 },
                 {
                     fields: ['indexedTwice'],
                     sparse: false,
                     unique: false,
-                    type: 'persistent'
-                }
+                    type: 'persistent',
+                },
             ];
             expect(
                 indices.map((index: any) => ({
                     fields: index.fields,
                     sparse: index.sparse,
                     type: index.type,
-                    unique: index.unique
-                }))
+                    unique: index.unique,
+                })),
             ).to.deep.equalInAnyOrder(expectedIndices);
 
             const indicesOnOtherCollection = await db.collection('second').indexes();
@@ -134,21 +134,21 @@ describe('ArangoDBAdapter', () => {
                     fields: index.fields,
                     sparse: index.sparse,
                     type: index.type,
-                    unique: index.unique
-                }))
+                    unique: index.unique,
+                })),
             ).to.deep.equal([
                 {
                     fields: ['_key'],
                     sparse: false,
                     type: 'primary',
-                    unique: true
+                    unique: true,
                 },
                 {
                     fields: ['test'],
                     sparse: false,
                     type: 'persistent',
-                    unique: true
-                }
+                    unique: true,
+                },
             ]);
         });
     });

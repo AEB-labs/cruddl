@@ -2,10 +2,7 @@ import { expect } from 'chai';
 import { GraphQLLocalDate } from '../../../src/schema/scalars/local-date';
 
 describe('GraphQLLocalDate', () => {
-    const validStrings = [
-        '2018-08-21',
-        '2004-02-29',
-    ];
+    const validStrings = ['2018-08-21', '2004-02-29'];
 
     const invalidStrings = [
         'something',
@@ -28,7 +25,9 @@ describe('GraphQLLocalDate', () => {
 
     for (const str of invalidStrings) {
         it(`rejects ${str}`, () => {
-            expect(() => GraphQLLocalDate.parseValue(str)).to.throw(`Invalid ISO 8601 LocalDate: ${str}`);
+            expect(() => GraphQLLocalDate.parseValue(str)).to.throw(
+                `Invalid ISO 8601 LocalDate: ${str}`,
+            );
         });
     }
 });

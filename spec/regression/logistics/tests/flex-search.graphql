@@ -15,7 +15,10 @@ query containsAllPrefixes {
 }
 
 query containsAllPrefixesWithEmptyFilter {
-    flexSearchDeliveries(filter: {}, flexSearchFilter: { description_contains_all_prefixes: "all prefixes" }) {
+    flexSearchDeliveries(
+        filter: {}
+        flexSearchFilter: { description_contains_all_prefixes: "all prefixes" }
+    ) {
         deliveryNumber
     }
 }
@@ -109,7 +112,9 @@ query caseInsensitive_gte {
 }
 
 query caseInsensitive_in {
-    flexSearchDeliveries(flexSearchFilter: { caseInsensitiveField_in: ["a TeXt", "another TEXT"] }) {
+    flexSearchDeliveries(
+        flexSearchFilter: { caseInsensitiveField_in: ["a TeXt", "another TEXT"] }
+    ) {
         deliveryNumber
         caseInsensitiveField
     }

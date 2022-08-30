@@ -16,7 +16,7 @@ export function createFastApp(project: Project, databaseAdapter: DatabaseAdapter
             res.end(
                 JSON.stringify({
                     errors: validationErrors.map((e) => formatError(e)),
-                })
+                }),
             );
         }
         const fastPromise = executor.tryExecute({
@@ -55,18 +55,18 @@ export function createFastApp(project: Project, databaseAdapter: DatabaseAdapter
                                       undefined,
                                       undefined,
                                       undefined,
-                                      result.error
-                                  )
+                                      result.error,
+                                  ),
                               ),
                           ]
                         : undefined,
-                })
+                }),
             );
         } catch (e) {
             res.end(
                 JSON.stringify({
                     errors: [formatError(new GraphQLError(e.stack))],
-                })
+                }),
             );
         }
     };

@@ -11,18 +11,24 @@ function createFixedPointDecimalType(decimals: number) {
     function coerceFixedPointDecimal(value: unknown) {
         // same logic like Float
         if (typeof value !== 'number' || !isFinite(value)) {
-            throw new GraphQLError(`${typeName} cannot represent non numeric value: `.concat(JSON.stringify(value)));
+            throw new GraphQLError(
+                `${typeName} cannot represent non numeric value: `.concat(JSON.stringify(value)),
+            );
         }
 
         const num = Number(value.toFixed(decimals));
         if (num > maxValue) {
             throw new GraphQLError(
-                `${typeName} cannot represent value larger than ${maxValueStr}: `.concat(JSON.stringify(value))
+                `${typeName} cannot represent value larger than ${maxValueStr}: `.concat(
+                    JSON.stringify(value),
+                ),
             );
         }
         if (num < minValue) {
             throw new GraphQLError(
-                `${typeName} cannot represent value smaller than ${minValueStr}: `.concat(JSON.stringify(value))
+                `${typeName} cannot represent value smaller than ${minValueStr}: `.concat(
+                    JSON.stringify(value),
+                ),
             );
         }
 
@@ -33,7 +39,7 @@ function createFixedPointDecimalType(decimals: number) {
         if (valueNode.kind !== 'IntValue' && valueNode.kind !== 'FloatValue') {
             throw new GraphQLError(
                 `${typeName} cannot represent non numeric value: `.concat(print(valueNode)),
-                valueNode
+                valueNode,
             );
         }
 
@@ -41,12 +47,16 @@ function createFixedPointDecimalType(decimals: number) {
         const num = Number(value.toFixed(decimals));
         if (num > maxValue) {
             throw new GraphQLError(
-                `${typeName} cannot represent value larger than ${maxValueStr}: `.concat(JSON.stringify(value))
+                `${typeName} cannot represent value larger than ${maxValueStr}: `.concat(
+                    JSON.stringify(value),
+                ),
             );
         }
         if (num < minValue) {
             throw new GraphQLError(
-                `${typeName} cannot represent value smaller than ${minValueStr}: `.concat(JSON.stringify(value))
+                `${typeName} cannot represent value smaller than ${minValueStr}: `.concat(
+                    JSON.stringify(value),
+                ),
             );
         }
 
@@ -61,7 +71,7 @@ function createFixedPointDecimalType(decimals: number) {
     Values of this type are serialized as numbers in GraphQL and JSON representations. The value is always rounded to ${decimals} decimal ${digitWord}.`,
         serialize: coerceFixedPointDecimal,
         parseValue: coerceFixedPointDecimal,
-        parseLiteral: parseFixedPointDecimal
+        parseLiteral: parseFixedPointDecimal,
     });
 }
 

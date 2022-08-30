@@ -28,5 +28,5 @@ export type PathLocationMap = { readonly [path: string]: MessageLocation };
 
 export enum ParsedProjectSourceBaseKind {
     GRAPHQL = 'graphql',
-    OBJECT = 'object'
+    OBJECT = 'object',
 }

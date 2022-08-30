@@ -1,62 +1,62 @@
 {
-    "createEdges": {
-        "data": {
-            "updateMain": {
-                "key": "m2"
-            }
-        }
-    },
-    "deleteSuccessfully": {
-        "data": {
-            "deleteMain": {
-                "key": "m1"
-            }
-        }
-    },
-    "deleteRestricted": {
-        "errors": [
-            {
-                "message": "Cannot delete Main object because 2 Blocker objects are still referenced via blockers (ids: @{ids/Blocker/2}, @{ids/Blocker/3})",
-                "locations": [
-                    {
-                        "line": 14,
-                        "column": 5
-                    }
-                ],
-                "path": ["deleteMain"]
-            }
-        ],
-        "data": {
-            "deleteMain": null
-        }
-    },
-    "everything": {
-        "data": {
-            "allMains": [
-                {
-                    "key": "m2"
-                },
-                {
-                    "key": "m3"
-                },
-                {
-                    "key": "m4"
-                }
-            ],
-            "allBlockers": [
-                {
-                    "key": "b1"
-                },
-                {
-                    "key": "b2"
-                },
-                {
-                    "key": "b3"
-                },
-                {
-                    "key": "b4"
-                }
-            ]
-        }
+  "createEdges": {
+    "data": {
+      "updateMain": {
+        "key": "m2"
+      }
     }
+  },
+  "deleteSuccessfully": {
+    "data": {
+      "deleteMain": {
+        "key": "m1"
+      }
+    }
+  },
+  "deleteRestricted": {
+    "errors": [
+      {
+        "message": "Cannot delete Main object because 2 Blocker objects are still referenced via blockers (ids: @{ids/Blocker/2}, @{ids/Blocker/3})",
+        "locations": [
+          {
+            "line": 16,
+            "column": 5
+          }
+        ],
+        "path": ["deleteMain"]
+      }
+    ],
+    "data": {
+      "deleteMain": null
+    }
+  },
+  "everything": {
+    "data": {
+      "allMains": [
+        {
+          "key": "m2"
+        },
+        {
+          "key": "m3"
+        },
+        {
+          "key": "m4"
+        }
+      ],
+      "allBlockers": [
+        {
+          "key": "b1"
+        },
+        {
+          "key": "b2"
+        },
+        {
+          "key": "b3"
+        },
+        {
+          "key": "b4"
+        }
+      ]
+    }
+  }
 }

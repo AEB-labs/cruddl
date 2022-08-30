@@ -26,7 +26,7 @@ import {
     UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-    WithPreExecutionQueryNode
+    WithPreExecutionQueryNode,
 } from '../query-tree';
 import { ID_FIELD, MUTATION_INPUT_ARG, MUTATION_TYPE, REVISION_FIELD } from '../schema/constants';
 import {
@@ -37,7 +37,7 @@ import {
     getDeleteEntityFieldName,
     getUpdateAllEntitiesFieldName,
     getUpdateEntitiesFieldName,
-    getUpdateEntityFieldName
+    getUpdateEntityFieldName,
 } from '../schema/names';
 import { compact, decapitalize, PlainObject } from '../utils/utils';
 import { BillingTypeGenerator } from './billing-type-generator';
@@ -52,11 +52,18 @@ import {
     QueryNodeField,
     QueryNodeListType,
     QueryNodeNonNullType,
-    QueryNodeObjectType
+    QueryNodeObjectType,
 } from './query-node-object-type';
 import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator';
-import { UpdateInputFieldContext, UpdateInputTypeGenerator, UpdateRootEntityInputType } from './update-input-types';
-import { createBillingEntityCategoryNode, createBillingEntityQuantityNode } from './utils/billing-nodes';
+import {
+    UpdateInputFieldContext,
+    UpdateInputTypeGenerator,
+    UpdateRootEntityInputType,
+} from './update-input-types';
+import {
+    createBillingEntityCategoryNode,
+    createBillingEntityQuantityNode,
+} from './utils/billing-nodes';
 import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
 import { getFilterNode } from './utils/filtering';
 import { mapToIDNodesUnoptimized } from './utils/map';
@@ -69,22 +76,24 @@ export class MutationTypeGenerator {
         private readonly updateTypeGenerator: UpdateInputTypeGenerator,
         private readonly listAugmentation: ListAugmentation,
         private readonly billingTypeGenerator: BillingTypeGenerator,
-        private readonly uniqueFieldArgumentsGenerator: UniqueFieldArgumentsGenerator
+        private readonly uniqueFieldArgumentsGenerator: UniqueFieldArgumentsGenerator,
     ) {}
 
     @memorize()
     generate(namespace: Namespace): QueryNodeObjectType {
         const namespaceFields = namespace.childNamespaces
-            .filter(namespace => namespace.allRootEntityTypes.length > 0)
+            .filter((namespace) => namespace.allRootEntityTypes.length > 0)
             .map(
                 (n): QueryNodeField => ({
                     name: n.name || '',
                     type: this.generate(n),
-                    resolve: () => new ObjectQueryNode([])
-                })
+                    resolve: () => new ObjectQueryNode([]),
+                }),
             );
 
-        const rootEntityFields = flatMap(namespace.rootEntityTypes, type => this.generateFields(type));
+        const rootEntityFields = flatMap(namespace.rootEntityTypes, (type) =>
+            this.generateFields(type),
+        );
         const namespaceDesc = namespace.isRoot
             ? `the root namespace`
             : `the namespace \`${namespace.dotSeparatedPath}\``;
@@ -92,7 +101,7 @@ export class MutationTypeGenerator {
         return {
             name: namespace.pascalCasePath + MUTATION_TYPE,
             description: `The Mutation type for ${namespaceDesc}\n\nFields are executed serially in the order they occur in the selection set (the result of the first field does not see the changes made by the second field). All mutations are executed atomically - if any of them fail, the complete operation is rolled back.`,
-            fields: [...namespaceFields, ...rootEntityFields]
+            fields: [...namespaceFields, ...rootEntityFields],
         };
     }
 
@@ -108,7 +117,7 @@ export class MutationTypeGenerator {
             this.generateDeleteField(rootEntityType),
             canCreatePluralFields ? this.generateDeleteManyField(rootEntityType) : undefined,
             this.generateDeleteAllField(rootEntityType),
-            this.billingTypeGenerator.getMutationField(rootEntityType)
+            this.billingTypeGenerator.getMutationField(rootEntityType),
         ]);
     }
 
@@ -120,13 +129,18 @@ export class MutationTypeGenerator {
             type: new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType)),
             args: {
                 [MUTATION_INPUT_ARG]: {
-                    type: new GraphQLNonNull(inputType.getInputType())
-                }
+                    type: new GraphQLNonNull(inputType.getInputType()),
+                },
             },
             isSerial: true,
             description: `Creates a new ${rootEntityType.name}`,
             resolve: (_, args, info) =>
-                this.generateCreateQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType, info)
+                this.generateCreateQueryNode(
+                    rootEntityType,
+                    args[MUTATION_INPUT_ARG],
+                    inputType,
+                    info,
+                ),
         };
     }
 
@@ -134,7 +148,7 @@ export class MutationTypeGenerator {
         rootEntityType: RootEntityType,
         input: PlainObject,
         inputType: CreateRootEntityInputType,
-        context: FieldContext
+        context: FieldContext,
     ): QueryNode {
         const newEntityIdVarNode = new VariableQueryNode('newEntityId');
         const createStatements = inputType.getCreateStatements(input, newEntityIdVarNode, context);
@@ -142,7 +156,7 @@ export class MutationTypeGenerator {
         // PreExecute creation and relation queries and return result
         return new WithPreExecutionQueryNode({
             resultNode: new EntityFromIdQueryNode(rootEntityType, newEntityIdVarNode),
-            preExecQueries: [...createStatements]
+            preExecQueries: [...createStatements],
         });
     }
 
@@ -151,16 +165,25 @@ export class MutationTypeGenerator {
 
         return {
             name: getCreateEntitiesFieldName(rootEntityType),
-            type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
+            type: new QueryNodeListType(
+                new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType)),
+            ),
             args: {
                 [MUTATION_INPUT_ARG]: {
-                    type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(inputType.getInputType())))
-                }
+                    type: new GraphQLNonNull(
+                        new GraphQLList(new GraphQLNonNull(inputType.getInputType())),
+                    ),
+                },
             },
             isSerial: true,
             description: `Creates multiple new ${rootEntityType.pluralName}`,
             resolve: (_, args, info) =>
-                this.generateCreateManyQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType, info)
+                this.generateCreateManyQueryNode(
+                    rootEntityType,
+                    args[MUTATION_INPUT_ARG],
+                    inputType,
+                    info,
+                ),
         };
     }
 
@@ -168,7 +191,7 @@ export class MutationTypeGenerator {
         rootEntityType: RootEntityType,
         inputs: ReadonlyArray<PlainObject>,
         inputType: CreateRootEntityInputType,
-        context: FieldContext
+        context: FieldContext,
     ): QueryNode {
         const idsVar = new VariableQueryNode('newEntityIds');
         const statements = inputType.getMultiCreateStatements(inputs, idsVar, context);
@@ -177,12 +200,12 @@ export class MutationTypeGenerator {
         const resultNode = new TransformListQueryNode({
             listNode: idsVar,
             itemVariable: idVar,
-            innerNode: new EntityFromIdQueryNode(rootEntityType, idVar)
+            innerNode: new EntityFromIdQueryNode(rootEntityType, idVar),
         });
 
         return new WithPreExecutionQueryNode({
             resultNode,
-            preExecQueries: statements
+            preExecQueries: statements,
         });
     }
 
@@ -191,16 +214,25 @@ export class MutationTypeGenerator {
 
         return {
             name: getUpdateEntitiesFieldName(rootEntityType),
-            type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
+            type: new QueryNodeListType(
+                new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType)),
+            ),
             args: {
                 [MUTATION_INPUT_ARG]: {
-                    type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(inputType.getInputType())))
-                }
+                    type: new GraphQLNonNull(
+                        new GraphQLList(new GraphQLNonNull(inputType.getInputType())),
+                    ),
+                },
             },
             isSerial: true,
             description: `Updates multiple existing ${rootEntityType.pluralName} (referenced by their ids)`,
             resolve: (_, args, info) =>
-                this.generateUpdateManyQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType, info)
+                this.generateUpdateManyQueryNode(
+                    rootEntityType,
+                    args[MUTATION_INPUT_ARG],
+                    inputType,
+                    info,
+                ),
         };
     }
 
@@ -208,7 +240,7 @@ export class MutationTypeGenerator {
         rootEntityType: RootEntityType,
         inputs: ReadonlyArray<PlainObject>,
         inputType: UpdateRootEntityInputType,
-        fieldContext: FieldContext
+        fieldContext: FieldContext,
     ): QueryNode {
         const ids = new Set<string>();
         for (const input of inputs) {
@@ -220,23 +252,27 @@ export class MutationTypeGenerator {
             if (ids.has(inputID)) {
                 throw createGraphQLError(
                     `${rootEntityType.name} with id "${inputID}" is included more than once in bulk update`,
-                    fieldContext
+                    fieldContext,
                 );
             }
             ids.add(inputID);
         }
 
-        const statements = flatMap(inputs, input =>
-            this.getUpdateStatements(rootEntityType, input, inputType, fieldContext)
+        const statements = flatMap(inputs, (input) =>
+            this.getUpdateStatements(rootEntityType, input, inputType, fieldContext),
         );
         const resultNode = new ListQueryNode(
             inputs.map(
-                input => new EntityFromIdQueryNode(rootEntityType, new LiteralQueryNode(input[ID_FIELD] as string))
-            )
+                (input) =>
+                    new EntityFromIdQueryNode(
+                        rootEntityType,
+                        new LiteralQueryNode(input[ID_FIELD] as string),
+                    ),
+            ),
         );
         return new WithPreExecutionQueryNode({
             resultNode,
-            preExecQueries: statements
+            preExecQueries: statements,
         });
     }
 
@@ -248,13 +284,18 @@ export class MutationTypeGenerator {
             type: this.outputTypeGenerator.generate(rootEntityType),
             args: {
                 [MUTATION_INPUT_ARG]: {
-                    type: new GraphQLNonNull(inputType.getInputType())
-                }
+                    type: new GraphQLNonNull(inputType.getInputType()),
+                },
             },
             isSerial: true,
             description: `Updates an existing ${rootEntityType.name}`,
             resolve: (_, args, info) =>
-                this.generateUpdateQueryNode(rootEntityType, args[MUTATION_INPUT_ARG], inputType, info)
+                this.generateUpdateQueryNode(
+                    rootEntityType,
+                    args[MUTATION_INPUT_ARG],
+                    inputType,
+                    info,
+                ),
         };
     }
 
@@ -262,7 +303,7 @@ export class MutationTypeGenerator {
         rootEntityType: RootEntityType,
         input: PlainObject,
         inputType: UpdateRootEntityInputType,
-        fieldContext: FieldContext
+        fieldContext: FieldContext,
     ): QueryNode {
         const checkResult = inputType.check(input, fieldContext);
         if (checkResult) {
@@ -273,8 +314,11 @@ export class MutationTypeGenerator {
 
         // PreExecute creation and relation queries and return result
         return new WithPreExecutionQueryNode({
-            resultNode: new EntityFromIdQueryNode(rootEntityType, new LiteralQueryNode(input[ID_FIELD])),
-            preExecQueries: statements
+            resultNode: new EntityFromIdQueryNode(
+                rootEntityType,
+                new LiteralQueryNode(input[ID_FIELD]),
+            ),
+            preExecQueries: statements,
         });
     }
 
@@ -282,27 +326,30 @@ export class MutationTypeGenerator {
         rootEntityType: RootEntityType,
         input: PlainObject,
         inputType: UpdateRootEntityInputType,
-        fieldContext: FieldContext
+        fieldContext: FieldContext,
     ): ReadonlyArray<PreExecQueryParms> {
         const currentEntityVariable = new VariableQueryNode('currentEntity');
-        const context: UpdateInputFieldContext = { ...fieldContext, currentEntityNode: currentEntityVariable };
+        const context: UpdateInputFieldContext = {
+            ...fieldContext,
+            currentEntityNode: currentEntityVariable,
+        };
         const updates = inputType.getProperties(input, context);
         const revision = inputType.getRevision(input);
         const affectedFields = inputType
             .getAffectedFields(input, context)
-            .map(field => new AffectedFieldInfoQueryNode(field));
+            .map((field) => new AffectedFieldInfoQueryNode(field));
 
         const listItemVar = new VariableQueryNode(decapitalize(rootEntityType.name));
         const filterNode = new BinaryOperationQueryNode(
             new RootEntityIDQueryNode(listItemVar),
             BinaryOperator.EQUAL,
-            new LiteralQueryNode(input[ID_FIELD])
+            new LiteralQueryNode(input[ID_FIELD]),
         );
         const listNode = new TransformListQueryNode({
             listNode: new EntitiesQueryNode(rootEntityType),
             filterNode: filterNode,
             maxCount: 1,
-            itemVariable: listItemVar
+            itemVariable: listItemVar,
         });
 
         const updateEntityNode = new UpdateEntitiesQueryNode({
@@ -311,7 +358,7 @@ export class MutationTypeGenerator {
             updates,
             currentEntityVariable,
             listNode,
-            revision
+            revision,
         });
         const updatedIdsVarNode = new VariableQueryNode('updatedIds');
         const updateEntityPreExec = new PreExecQueryParms({
@@ -319,14 +366,14 @@ export class MutationTypeGenerator {
             resultVariable: updatedIdsVarNode,
             resultValidator: new ErrorIfEmptyResultValidator({
                 errorMessage: `${rootEntityType.name} with id '${input[ID_FIELD]}' could not be found.`,
-                errorCode: NOT_FOUND_ERROR
-            })
+                errorCode: NOT_FOUND_ERROR,
+            }),
         });
 
         const relationStatements = inputType.getRelationStatements(
             input,
             new FirstOfListQueryNode(updatedIdsVarNode),
-            context
+            context,
         );
 
         const preExecQueryParms = [updateEntityPreExec, ...relationStatements];
@@ -341,20 +388,25 @@ export class MutationTypeGenerator {
                     query: new VariableAssignmentQueryNode({
                         variableValueNode: new EntityFromIdQueryNode(
                             rootEntityType,
-                            new FirstOfListQueryNode(updatedIdsVarNode)
+                            new FirstOfListQueryNode(updatedIdsVarNode),
                         ),
                         variableNode: entityVar,
                         resultNode: new CreateBillingEntityQueryNode({
                             rootEntityTypeName: rootEntityType.name,
-                            key: input[rootEntityType.billingEntityConfig.keyFieldName] as number | string,
+                            key: input[rootEntityType.billingEntityConfig.keyFieldName] as
+                                | number
+                                | string,
                             categoryNode: createBillingEntityCategoryNode(
                                 rootEntityType.billingEntityConfig,
-                                entityVar
+                                entityVar,
                             ),
-                            quantityNode: createBillingEntityQuantityNode(rootEntityType.billingEntityConfig, entityVar)
-                        })
-                    })
-                })
+                            quantityNode: createBillingEntityQuantityNode(
+                                rootEntityType.billingEntityConfig,
+                                entityVar,
+                            ),
+                        }),
+                    }),
+                }),
             );
         }
 
@@ -366,12 +418,13 @@ export class MutationTypeGenerator {
         const fieldBase: QueryNodeField = {
             name: getUpdateAllEntitiesFieldName(rootEntityType),
             type: makeNonNullableList(this.outputTypeGenerator.generate(rootEntityType)),
-            resolve: () => new EntitiesQueryNode(rootEntityType)
+            resolve: () => new EntitiesQueryNode(rootEntityType),
         };
 
         const fieldWithListArgs = this.listAugmentation.augment(fieldBase, rootEntityType);
 
-        const inputType = this.updateTypeGenerator.generateUpdateAllRootEntitiesInputType(rootEntityType);
+        const inputType =
+            this.updateTypeGenerator.generateUpdateAllRootEntitiesInputType(rootEntityType);
         if (!inputType.fields.length) {
             // this can occur for types that only define relations as updateAll does not support relations
             return undefined;
@@ -381,8 +434,8 @@ export class MutationTypeGenerator {
             args: {
                 ...fieldWithListArgs.args,
                 [MUTATION_INPUT_ARG]: {
-                    type: new GraphQLNonNull(inputType.getInputType())
-                }
+                    type: new GraphQLNonNull(inputType.getInputType()),
+                },
             },
             isSerial: true,
             description: `Updates ${rootEntityType.pluralName} that match a specified filter`,
@@ -392,8 +445,8 @@ export class MutationTypeGenerator {
                     fieldWithListArgs.resolve(_, args, info),
                     inputType,
                     args[MUTATION_INPUT_ARG],
-                    info
-                )
+                    info,
+                ),
         };
     }
 
@@ -402,7 +455,7 @@ export class MutationTypeGenerator {
         listNode: QueryNode,
         inputType: UpdateRootEntityInputType,
         input: PlainObject,
-        fieldContext: FieldContext
+        fieldContext: FieldContext,
     ): QueryNode {
         const checkResult = inputType.check(input, fieldContext);
         if (checkResult) {
@@ -410,23 +463,26 @@ export class MutationTypeGenerator {
         }
 
         const currentEntityVariable = new VariableQueryNode('currentEntity');
-        const context: UpdateInputFieldContext = { ...fieldContext, currentEntityNode: currentEntityVariable };
+        const context: UpdateInputFieldContext = {
+            ...fieldContext,
+            currentEntityNode: currentEntityVariable,
+        };
         const updates = inputType.getProperties(input, context);
         const affectedFields = inputType
             .getAffectedFields(input, context)
-            .map(field => new AffectedFieldInfoQueryNode(field));
+            .map((field) => new AffectedFieldInfoQueryNode(field));
 
         const updateEntityNode = new UpdateEntitiesQueryNode({
             rootEntityType,
             affectedFields,
             updates,
             currentEntityVariable,
-            listNode
+            listNode,
         });
         const updatedIdsVarNode = new VariableQueryNode('updatedIds');
         const updateEntityPreExec = new PreExecQueryParms({
             query: updateEntityNode,
-            resultVariable: updatedIdsVarNode
+            resultVariable: updatedIdsVarNode,
         });
 
         if (inputType.getRelationStatements(input, new UnknownValueQueryNode(), context).length) {
@@ -438,12 +494,12 @@ export class MutationTypeGenerator {
         const resultNode = new TransformListQueryNode({
             listNode: updatedIdsVarNode,
             itemVariable: idVar,
-            innerNode: new EntityFromIdQueryNode(rootEntityType, idVar)
+            innerNode: new EntityFromIdQueryNode(rootEntityType, idVar),
         });
 
         return new WithPreExecutionQueryNode({
             resultNode,
-            preExecQueries: [updateEntityPreExec]
+            preExecQueries: [updateEntityPreExec],
         });
     }
 
@@ -462,19 +518,20 @@ export class MutationTypeGenerator {
                 ...this.uniqueFieldArgumentsGenerator.getArgumentsForUniqueFields(rootEntityType),
                 [REVISION_FIELD]: {
                     description: `Set this argument to the value of "${rootEntityType.name}.${REVISION_FIELD}" to abort the transaction if this object has been modified in the meantime`,
-                    type: GraphQLID
-                }
+                    type: GraphQLID,
+                },
             },
             isSerial: true,
             description,
-            resolve: (source, args, info) => this.generateDeleteQueryNode(rootEntityType, args, info)
+            resolve: (source, args, info) =>
+                this.generateDeleteQueryNode(rootEntityType, args, info),
         };
     }
 
     private generateDeleteQueryNode(
         rootEntityType: RootEntityType,
         args: { [name: string]: any },
-        context: FieldContext
+        context: FieldContext,
     ): QueryNode {
         // collect the ids before the actual delete statements so the lists won't change by the statements
         const listNode = getEntitiesByUniqueFieldQuery(rootEntityType, args, context);
@@ -484,14 +541,14 @@ export class MutationTypeGenerator {
             // don't use optimizations here so we actually "see" the entities and don't just return the ids
             // this is relevant if there are accessGroup filters
             query: mapToIDNodesUnoptimized(listNode),
-            resultVariable: idsVariable
+            resultVariable: idsVariable,
         });
 
         const deleteEntitiesNode = new DeleteEntitiesQueryNode({
             rootEntityType,
             listNode: idsVariable,
             entitiesIdentifierKind: EntitiesIdentifierKind.ID,
-            revision
+            revision,
         });
 
         const removeEdgesStatements = getPreEntityRemovalStatements(rootEntityType, idsVariable);
@@ -500,34 +557,37 @@ export class MutationTypeGenerator {
         // and it won't exist if already deleted in the pre-exec
         return new WithPreExecutionQueryNode({
             preExecQueries: [idsStatement, ...removeEdgesStatements],
-            resultNode: new FirstOfListQueryNode(deleteEntitiesNode)
+            resultNode: new FirstOfListQueryNode(deleteEntitiesNode),
         });
     }
 
     private generateDeleteManyField(rootEntityType: RootEntityType): QueryNodeField {
         return {
             name: getDeleteEntitiesFieldName(rootEntityType),
-            type: new QueryNodeListType(new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType))),
+            type: new QueryNodeListType(
+                new QueryNodeNonNullType(this.outputTypeGenerator.generate(rootEntityType)),
+            ),
             args: {
                 ids: {
                     type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLID))),
-                    description: `The ids of the ${rootEntityType.pluralName} to be deleted`
-                }
+                    description: `The ids of the ${rootEntityType.pluralName} to be deleted`,
+                },
             },
             isSerial: true,
             description: `Deletes multiple ${rootEntityType.pluralName} by their ids.\n\nIDs that are not found are silently ignored.`,
-            resolve: (source, args, info) => this.generateDeleteManyQueryNode(rootEntityType, args.ids, info)
+            resolve: (source, args, info) =>
+                this.generateDeleteManyQueryNode(rootEntityType, args.ids, info),
         };
     }
 
     private generateDeleteManyQueryNode(
         rootEntityType: RootEntityType,
         ids: ReadonlyArray<string>,
-        context: FieldContext
+        context: FieldContext,
     ): QueryNode {
         // collect the ids before the actual delete statements so the lists won't change by the statements
         const listNode = new ListQueryNode(
-            ids.map(id => new EntityFromIdQueryNode(rootEntityType, new LiteralQueryNode(id)))
+            ids.map((id) => new EntityFromIdQueryNode(rootEntityType, new LiteralQueryNode(id))),
         );
         const idsVariable = new VariableQueryNode('ids');
         const idsStatement = new PreExecQueryParms({
@@ -535,15 +595,20 @@ export class MutationTypeGenerator {
             // this is relevant if there are accessGroup filters
             query: getFilterNode(
                 mapToIDNodesUnoptimized(listNode),
-                entityVar => new BinaryOperationQueryNode(entityVar, BinaryOperator.UNEQUAL, new NullQueryNode())
+                (entityVar) =>
+                    new BinaryOperationQueryNode(
+                        entityVar,
+                        BinaryOperator.UNEQUAL,
+                        new NullQueryNode(),
+                    ),
             ),
-            resultVariable: idsVariable
+            resultVariable: idsVariable,
         });
 
         const deleteEntitiesNode = new DeleteEntitiesQueryNode({
             rootEntityType,
             listNode: idsVariable,
-            entitiesIdentifierKind: EntitiesIdentifierKind.ID
+            entitiesIdentifierKind: EntitiesIdentifierKind.ID,
         });
 
         const removeEdgesStatements = getPreEntityRemovalStatements(rootEntityType, idsVariable);
@@ -552,7 +617,7 @@ export class MutationTypeGenerator {
         // and it won't exist if already deleted in the pre-exec
         return new WithPreExecutionQueryNode({
             preExecQueries: [idsStatement, ...removeEdgesStatements],
-            resultNode: deleteEntitiesNode
+            resultNode: deleteEntitiesNode,
         });
     }
 
@@ -561,7 +626,7 @@ export class MutationTypeGenerator {
         const fieldBase: QueryNodeField = {
             name: getDeleteAllEntitiesFieldName(rootEntityType),
             type: makeNonNullableList(this.outputTypeGenerator.generate(rootEntityType)),
-            resolve: () => new EntitiesQueryNode(rootEntityType)
+            resolve: () => new EntitiesQueryNode(rootEntityType),
         };
 
         const fieldWithListArgs = this.listAugmentation.augment(fieldBase, rootEntityType);
@@ -571,11 +636,17 @@ export class MutationTypeGenerator {
             isSerial: true,
             description: `Deletes ${rootEntityType.pluralName} that match a specified filter`,
             resolve: (source, args, info) =>
-                this.generateDeleteAllQueryNode(rootEntityType, fieldWithListArgs.resolve(source, args, info))
+                this.generateDeleteAllQueryNode(
+                    rootEntityType,
+                    fieldWithListArgs.resolve(source, args, info),
+                ),
         };
     }
 
-    private generateDeleteAllQueryNode(rootEntityType: RootEntityType, listNode: QueryNode): QueryNode {
+    private generateDeleteAllQueryNode(
+        rootEntityType: RootEntityType,
+        listNode: QueryNode,
+    ): QueryNode {
         return generateDeleteAllQueryNode(rootEntityType, listNode);
     }
 }

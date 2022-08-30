@@ -1,52 +1,64 @@
 {
-  "roles": [ "allusers", "accounting", "logistics" ],
+  "roles": ["allusers", "accounting", "logistics"],
   "rootEntities": {
     "foundation.Country": [
       {
         "@id": "1",
         "isoCode": "DE",
-        "description": [{
-          "languageIsoCode": "DE",
-          "translation": "Deutschland"
-        },{
-          "languageIsoCode": "EN",
-          "translation": "Germany"
-        }],
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Deutschland"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "Germany"
+          }
+        ],
         "totalInvestment": "EUR 50000000"
       },
       {
         "@id": "2",
         "isoCode": "GB",
-        "description": [{
-          "languageIsoCode": "DE",
-          "translation": "Vereinigtes Königreich"
-        },{
-          "languageIsoCode": "EN",
-          "translation": "United Kingdom"
-        }],
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Vereinigtes Königreich"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "United Kingdom"
+          }
+        ],
         "totalInvestment": "EUR 3000000"
       },
       {
         "@id": "3",
         "isoCode": "US",
-        "description": [{
-          "languageIsoCode": "DE",
-          "translation": "Vereinigte Staaten"
-        },{
-          "languageIsoCode": "EN",
-          "translation": "United States"
-        }]
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Vereinigte Staaten"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "United States"
+          }
+        ]
       },
       {
         "@id": "4",
         "isoCode": "CH",
-        "description": [{
-          "languageIsoCode": "DE",
-          "translation": "Schweiz"
-        },{
-          "languageIsoCode": "EN",
-          "translation": "Switzerland"
-        }]
+        "description": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Schweiz"
+          },
+          {
+            "languageIsoCode": "EN",
+            "translation": "Switzerland"
+          }
+        ]
       }
     ],
 
@@ -60,10 +72,12 @@
           "zipCode": "17624"
           //"country": "US" // schema is currently wrong (accepts CreateCountry instead of String)
         },
-        "contentInfo": [{
-          "languageIsoCode": "DE",
-          "translation": "Kerosin 1000L"
-        }],
+        "contentInfo": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Kerosin 1000L"
+          }
+        ],
         "dgInfo": {
           "unNumber": "1863",
           "flashpoint": "37 °C"
@@ -87,10 +101,12 @@
           "zipCode": "179094"
           //"country": "US" // schema is currently wrong (accepts CreateCountry instead of String)
         },
-        "contentInfo": [{
-          "languageIsoCode": "DE",
-          "translation": "Hartplastik-Bausteine"
-        }],
+        "contentInfo": [
+          {
+            "languageIsoCode": "DE",
+            "translation": "Hartplastik-Bausteine"
+          }
+        ],
         "items": [
           {
             "itemNumber": "2001"
@@ -121,7 +137,7 @@
       {
         "@id": "1",
         "name": "DHL",
-        "deliveries": [ "@{ids/logistics.delivery.Delivery/1}" ]
+        "deliveries": ["@{ids/logistics.delivery.Delivery/1}"]
       }
     ],
 

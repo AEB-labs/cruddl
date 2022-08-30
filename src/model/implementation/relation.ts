@@ -2,7 +2,7 @@ import { Field, RelationDeleteAction, RootEntityType } from '../index';
 
 enum RelationFieldSide {
     FROM_SIDE = 'FROM_SIDE',
-    TO_SIDE = 'TO_SIDE'
+    TO_SIDE = 'TO_SIDE',
 }
 
 function invertRelationFieldSide(side: RelationFieldSide) {
@@ -35,7 +35,12 @@ export class Relation {
      */
     readonly toField: Field | undefined;
 
-    constructor(params: { fromType: RootEntityType; fromField: Field; toType: RootEntityType; toField?: Field }) {
+    constructor(params: {
+        fromType: RootEntityType;
+        fromField: Field;
+        toType: RootEntityType;
+        toField?: Field;
+    }) {
         this.fromType = params.fromType;
         this.fromField = params.fromField;
         this.toType = params.toType;
@@ -148,13 +153,13 @@ export class RelationSide {
     toString() {
         const fromFieldName = this.relation.fromField ? `.${this.relation.fromField.name}` : '';
         const toFieldName = this.relation.toField ? `.${this.relation.toField.name}` : '';
-        return `relation ${this.relation.fromType.name}${fromFieldName}${this.isFromSide ? '->' : '<-'}${
-            this.relation.toType.name
-        }${toFieldName}`;
+        return `relation ${this.relation.fromType.name}${fromFieldName}${
+            this.isFromSide ? '->' : '<-'
+        }${this.relation.toType.name}${toFieldName}`;
     }
 }
 
 export enum Multiplicity {
     ONE = 'ONE',
-    MANY = 'MANY'
+    MANY = 'MANY',
 }

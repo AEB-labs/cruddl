@@ -1,8 +1,6 @@
 import { ChildEntityType, Model, Type } from '../implementation';
 
-export function collectEmbeddingEntityTypes(
-    type: ChildEntityType
-): {
+export function collectEmbeddingEntityTypes(type: ChildEntityType): {
     readonly embeddingEntityTypes: ReadonlySet<Type>;
     readonly otherEmbeddingTypes: ReadonlySet<Type>;
 } {
@@ -13,9 +11,15 @@ export function collectEmbeddingEntityTypes(
         const newTypes = new Set<Type>();
         for (const type of currentTypes) {
             const embeddingTypes: ReadonlyArray<Type> = type.model.types.filter(
-                t =>
+                (t) =>
                     t.isObjectType &&
-                    t.fields.some(f => f.type === type && !f.isParentField && !f.isRootField && !f.isCollectField)
+                    t.fields.some(
+                        (f) =>
+                            f.type === type &&
+                            !f.isParentField &&
+                            !f.isRootField &&
+                            !f.isCollectField,
+                    ),
             );
             for (const type of embeddingTypes) {
                 if (type.isChildEntityType || type.isRootEntityType) {
@@ -35,13 +39,11 @@ export function collectEmbeddingEntityTypes(
 
     return {
         embeddingEntityTypes,
-        otherEmbeddingTypes
+        otherEmbeddingTypes,
     };
 }
 
-export function collectEmbeddingRootEntityTypes(
-    type: ChildEntityType
-): {
+export function collectEmbeddingRootEntityTypes(type: ChildEntityType): {
     readonly embeddingRootEntityTypes: ReadonlySet<Type>;
     readonly otherEmbeddingTypes: ReadonlySet<Type>;
 } {
@@ -52,9 +54,15 @@ export function collectEmbeddingRootEntityTypes(
         const newTypes = new Set<Type>();
         for (const type of currentTypes) {
             const embeddingTypes: ReadonlyArray<Type> = type.model.types.filter(
-                t =>
+                (t) =>
                     t.isObjectType &&
-                    t.fields.some(f => f.type === type && !f.isParentField && !f.isRootField && !f.isCollectField)
+                    t.fields.some(
+                        (f) =>
+                            f.type === type &&
+                            !f.isParentField &&
+                            !f.isRootField &&
+                            !f.isCollectField,
+                    ),
             );
             for (const type of embeddingTypes) {
                 if (type.isRootEntityType) {
@@ -74,6 +82,6 @@ export function collectEmbeddingRootEntityTypes(
 
     return {
         embeddingRootEntityTypes,
-        otherEmbeddingTypes
+        otherEmbeddingTypes,
     };
 }

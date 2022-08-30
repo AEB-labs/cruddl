@@ -7,7 +7,11 @@ export class TransactionTimeoutError extends Error {
     readonly timeoutMs: number | undefined;
 
     constructor({ timeoutMs }: { readonly timeoutMs?: number } = {}) {
-        super(`Transaction exceeded timeout${timeoutMs ? ' of ' + timeoutMs : ''} and was rolled back`);
+        super(
+            `Transaction exceeded timeout${
+                timeoutMs ? ' of ' + timeoutMs : ''
+            } and was rolled back`,
+        );
         this.name = this.constructor.name;
         this.timeoutMs = timeoutMs;
     }
@@ -29,6 +33,8 @@ export class ConflictRetriesExhaustedError extends ErrorWithCause {
     readonly code = ConflictRetriesExhaustedError.CODE;
 
     constructor({ causedBy, retries }: { causedBy: unknown; retries: number }) {
-        super(`Operation detected conflicts and was aborted after ${retries} retries`, { causedBy });
+        super(`Operation detected conflicts and was aborted after ${retries} retries`, {
+            causedBy,
+        });
     }
 }

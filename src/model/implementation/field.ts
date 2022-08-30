@@ -25,7 +25,10 @@ import {
     RelationDeleteAction,
     TypeKind,
 } from '../config';
-import { collectEmbeddingEntityTypes, collectEmbeddingRootEntityTypes } from '../utils/emedding-entity-types';
+import {
+    collectEmbeddingEntityTypes,
+    collectEmbeddingRootEntityTypes,
+} from '../utils/emedding-entity-types';
 import { findRecursiveCascadePath } from '../utils/recursive-cascade';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
@@ -78,7 +81,10 @@ export class Field implements ModelComponent {
      */
     readonly isSystemField: boolean;
 
-    constructor(private readonly input: SystemFieldConfig, public readonly declaringType: ObjectType) {
+    constructor(
+        private readonly input: SystemFieldConfig,
+        public readonly declaringType: ObjectType,
+    ) {
         this.model = declaringType.model;
         this.name = input.name;
         this.description = input.description;
@@ -99,7 +105,9 @@ export class Field implements ModelComponent {
         this.isList = input.isList || false;
         this.calcMutationOperators = new Set(input.calcMutationOperators || []);
         this.roles =
-            input.permissions && input.permissions.roles ? new RolesSpecifier(input.permissions.roles) : undefined;
+            input.permissions && input.permissions.roles
+                ? new RolesSpecifier(input.permissions.roles)
+                : undefined;
         this.isSystemField = input.isSystemField || false;
         this.isAccessField = input.isAccessField ?? false;
     }
@@ -156,7 +164,9 @@ export class Field implements ModelComponent {
         if (!this.input.permissions || this.input.permissions.permissionProfileName == undefined) {
             return undefined;
         }
-        return this.declaringType.namespace.getPermissionProfile(this.input.permissions.permissionProfileName);
+        return this.declaringType.namespace.getPermissionProfile(
+            this.input.permissions.permissionProfileName,
+        );
     }
 
     public get inverseOf(): Field | undefined {
@@ -171,7 +181,9 @@ export class Field implements ModelComponent {
     }
 
     public get inverseField(): Field | undefined {
-        return this.type.isObjectType ? this.type.fields.find((field) => field.inverseOf === this) : undefined;
+        return this.type.isObjectType
+            ? this.type.fields.find((field) => field.inverseOf === this)
+            : undefined;
     }
 
     public get relation(): Relation | undefined {
@@ -184,7 +196,11 @@ export class Field implements ModelComponent {
 
     @memorize()
     public get relationSide(): RelationSide | undefined {
-        if (!this.isRelation || !this.declaringType.isRootEntityType || !this.type.isRootEntityType) {
+        if (
+            !this.isRelation ||
+            !this.declaringType.isRootEntityType ||
+            !this.type.isRootEntityType
+        ) {
             return undefined;
         }
         if (this.inverseOf) {
@@ -209,12 +225,12 @@ export class Field implements ModelComponent {
     public getRelationSideOrThrow(): RelationSide {
         if (this.type.kind != TypeKind.ROOT_ENTITY) {
             throw new Error(
-                `Expected the type of field "${this.declaringType.name}.${this.name}" to be a root entity, but "${this.type.name}" is a ${this.type.kind}`
+                `Expected the type of field "${this.declaringType.name}.${this.name}" to be a root entity, but "${this.type.name}" is a ${this.type.kind}`,
             );
         }
         if (this.declaringType.kind != TypeKind.ROOT_ENTITY) {
             throw new Error(
-                `Expected "${this.declaringType.name}" to be a root entity, but is ${this.declaringType.kind}`
+                `Expected "${this.declaringType.name}" to be a root entity, but is ${this.declaringType.kind}`,
             );
         }
         const relationSide = this.relationSide;
@@ -251,7 +267,9 @@ export class Field implements ModelComponent {
     getReferenceKeyFieldOrThrow(): Field {
         const keyField = this.referenceKeyField;
         if (!keyField) {
-            throw new Error(`Expected "${this.declaringType.name}.${this.name}" to be a reference but it is not`);
+            throw new Error(
+                `Expected "${this.declaringType.name}.${this.name}" to be a reference but it is not`,
+            );
         }
         return keyField;
     }
@@ -294,20 +312,30 @@ export class Field implements ModelComponent {
 
         // Leading underscores are reserved for internal names, like ArangoDB's _key field
         if (this.name.startsWith('_')) {
-            context.addMessage(ValidationMessage.error(`Field names cannot start with an underscore.`, this.astNode));
+            context.addMessage(
+                ValidationMessage.error(
+                    `Field names cannot start with an underscore.`,
+                    this.astNode,
+                ),
+            );
             return;
         }
 
         // some naming convention rules
 
         if (this.name.includes('_')) {
-            context.addMessage(ValidationMessage.warn(`Field names should not include underscores.`, this.astNode));
+            context.addMessage(
+                ValidationMessage.warn(`Field names should not include underscores.`, this.astNode),
+            );
             return;
         }
 
         if (!this.name.match(/^[a-z]/)) {
             context.addMessage(
-                ValidationMessage.warn(`Field names should start with a lowercase character.`, this.astNode)
+                ValidationMessage.warn(
+                    `Field names should start with a lowercase character.`,
+                    this.astNode,
+                ),
             );
         }
     }
@@ -317,8 +345,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.input.typeName}" not found.`,
-                    this.input.typeNameAST || this.astNode
-                )
+                    this.input.typeNameAST || this.astNode,
+                ),
             );
         }
     }
@@ -326,7 +354,12 @@ export class Field implements ModelComponent {
     private validateRootEntityType(context: ValidationContext) {
         // this does not fit anywhere else properly
         if (this.isReference && this.isRelation) {
-            context.addMessage(ValidationMessage.error(`@reference and @relation cannot be combined.`, this.astNode));
+            context.addMessage(
+                ValidationMessage.error(
+                    `@reference and @relation cannot be combined.`,
+                    this.astNode,
+                ),
+            );
         }
 
         if (this.type.kind !== TypeKind.ROOT_ENTITY) {
@@ -334,7 +367,13 @@ export class Field implements ModelComponent {
         }
 
         // root entities are not embeddable
-        if (!this.isRelation && !this.isReference && !this.isCollectField && !this.isParentField && !this.isRootField) {
+        if (
+            !this.isRelation &&
+            !this.isReference &&
+            !this.isCollectField &&
+            !this.isParentField &&
+            !this.isRootField
+        ) {
             const suggestions = [REFERENCE_DIRECTIVE];
 
             if (this.declaringType.kind === TypeKind.ROOT_ENTITY) {
@@ -351,13 +390,16 @@ export class Field implements ModelComponent {
             }
 
             const names = suggestions.map((n) => '@' + n);
-            const list = names.length === 1 ? names : names.slice(0, -1).join(', ') + ' or ' + names[names.length - 1];
+            const list =
+                names.length === 1
+                    ? names
+                    : names.slice(0, -1).join(', ') + ' or ' + names[names.length - 1];
 
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.type.name}" is a root entity type and cannot be embedded. Consider adding ${list}.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
         }
     }
@@ -371,8 +413,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Relations can only be defined on root entity types. Consider using @reference instead.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
         }
 
@@ -385,8 +427,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.type.name}" cannot be used with @relation because it is not a root entity type.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
             return;
         }
@@ -398,37 +440,37 @@ export class Field implements ModelComponent {
                 context.addMessage(
                     ValidationMessage.error(
                         `Field "${this.input.inverseOfFieldName}" does not exist on type "${this.type.name}".`,
-                        this.input.inverseOfASTNode || this.astNode
-                    )
+                        this.input.inverseOfASTNode || this.astNode,
+                    ),
                 );
             } else if (inverseOf.type && inverseOf.type !== this.declaringType) {
                 context.addMessage(
                     ValidationMessage.error(
                         `${inverseFieldDesc} has named type "${inverseOf.type.name}" but should be of type "${this.declaringType.name}".`,
-                        this.input.inverseOfASTNode || this.astNode
-                    )
+                        this.input.inverseOfASTNode || this.astNode,
+                    ),
                 );
             } else if (!inverseOf.isRelation) {
                 context.addMessage(
                     ValidationMessage.error(
                         `${inverseFieldDesc} does not have the @relation directive.`,
-                        this.input.inverseOfASTNode || this.astNode
-                    )
+                        this.input.inverseOfASTNode || this.astNode,
+                    ),
                 );
             } else if (inverseOf.inverseOf != undefined) {
                 context.addMessage(
                     ValidationMessage.error(
                         `${inverseFieldDesc} should not declare inverseOf itself.`,
-                        this.input.inverseOfASTNode || this.astNode
-                    )
+                        this.input.inverseOfASTNode || this.astNode,
+                    ),
                 );
             }
             if (this.input.relationDeleteAction) {
                 context.addMessage(
                     ValidationMessage.error(
                         `"onDelete" cannot be specified on inverse relations.`,
-                        this.input.relationDeleteActionASTNode || this.astNode
-                    )
+                        this.input.relationDeleteActionASTNode || this.astNode,
+                    ),
                 );
             }
         } else {
@@ -442,14 +484,14 @@ export class Field implements ModelComponent {
                         field !== this &&
                         field.isRelation &&
                         field.type === this.declaringType &&
-                        field.input.inverseOfFieldName == undefined
+                        field.input.inverseOfFieldName == undefined,
                 );
                 if (matchingRelation) {
                     context.addMessage(
                         ValidationMessage.warn(
                             `This field and "${matchingRelation.declaringType.name}.${matchingRelation.name}" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.`,
-                            this.astNode
-                        )
+                            this.astNode,
+                        ),
                     );
                 }
             } else if (inverseFields.length > 1) {
@@ -460,8 +502,8 @@ export class Field implements ModelComponent {
                     context.addMessage(
                         ValidationMessage.error(
                             `Multiple fields (${names}) declare inverseOf to "${this.declaringType.name}.${this.name}".`,
-                            inverseField.astNode
-                        )
+                            inverseField.astNode,
+                        ),
                     );
                 }
                 return; // no more errors that depend on the inverse fields
@@ -478,8 +520,8 @@ export class Field implements ModelComponent {
                     context.addMessage(
                         ValidationMessage.error(
                             `"CASCADE" cannot be used on recursive fields. Use "RESTRICT" instead.`,
-                            this.input.relationDeleteActionASTNode
-                        )
+                            this.input.relationDeleteActionASTNode,
+                        ),
                     );
                     return;
                 } else {
@@ -490,10 +532,10 @@ export class Field implements ModelComponent {
                                 `The path "${recursivePath
                                     .map((f) => f.name)
                                     .join(
-                                        '.'
+                                        '.',
                                     )}" is a loop with "onDelete: CASCADE" on each relation, which is not supported. Break the loop by replacing "CASCADE" with "RESTRICT" on any of these relations.`,
-                                this.input.relationDeleteActionASTNode
-                            )
+                                this.input.relationDeleteActionASTNode,
+                            ),
                         );
                         return;
                     }
@@ -517,8 +559,8 @@ export class Field implements ModelComponent {
                             } relation by adding a field with the @relation(inverseOf: "${
                                 this.name
                             }") directive to the target type "${this.type.name}".`,
-                            this.input.relationDeleteActionASTNode
-                        )
+                            this.input.relationDeleteActionASTNode,
+                        ),
                     );
                     return;
                 } else if (inverseField.isList) {
@@ -526,11 +568,11 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `"CASCADE" is only supported on 1-to-n and 1-to-1 relations. Use "RESTRICT" instead or change this to a 1-to-${
                                 this.isList ? 'n' : '1'
-                            } relation by changing the type of "${this.type.name}.${inverseField.name}" to "${
-                                inverseField.type.name
-                            }".`,
-                            this.input.relationDeleteActionASTNode
-                        )
+                            } relation by changing the type of "${this.type.name}.${
+                                inverseField.name
+                            }" to "${inverseField.type.name}".`,
+                            this.input.relationDeleteActionASTNode,
+                        ),
                     );
                 }
             }
@@ -551,8 +593,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `"${this.type.name}" cannot be used as @reference type because is not a root entity type.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
             return;
         }
@@ -561,8 +603,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `@reference is not supported with list types. Consider wrapping the reference in a child entity or value object type.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
         }
 
@@ -570,8 +612,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `"${this.type.name}" cannot be used as @reference type because it does not have a field annotated with @key.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
         }
 
@@ -587,8 +629,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `@${COLLECT_DIRECTIVE} and @${RELATION_DIRECTIVE} cannot be combined.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
             return;
         }
@@ -596,13 +638,18 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `@${COLLECT_DIRECTIVE} and @${REFERENCE_DIRECTIVE} cannot be combined.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
             return;
         }
         if (!this.collectPath) {
-            context.addMessage(ValidationMessage.error(`The path cannot be empty.`, this.input.collect.pathASTNode));
+            context.addMessage(
+                ValidationMessage.error(
+                    `The path cannot be empty.`,
+                    this.input.collect.pathASTNode,
+                ),
+            );
             return;
         }
         if (!this.collectPath.validate(context)) {
@@ -613,7 +660,10 @@ export class Field implements ModelComponent {
 
         if (!this.collectPath.resultIsList) {
             context.addMessage(
-                ValidationMessage.error(`The path does not result in a list.`, this.input.collect.pathASTNode)
+                ValidationMessage.error(
+                    `The path does not result in a list.`,
+                    this.input.collect.pathASTNode,
+                ),
             );
             return;
         }
@@ -635,8 +685,8 @@ export class Field implements ModelComponent {
                                 }" is of type "Boolean", so you may want to use "${
                                     this.aggregationOperator + '_TRUE'
                                 }".`,
-                                this.input.collect.aggregationOperatorASTNode
-                            )
+                                this.input.collect.aggregationOperatorASTNode,
+                            ),
                         );
                     } else if (lastSegment.isNullableSegment) {
                         // show extended hint - user might have wanted to use e.g. "COUNT_NOT_NULL".
@@ -646,18 +696,18 @@ export class Field implements ModelComponent {
                                     this.aggregationOperator
                                 }" is only allowed if the last path segment is a list field. If you want to exclude objects where "${
                                     lastSegment.field.name
-                                }" is null, use "${this.aggregationOperator + '_NOT_NULL'}; otherwise, remove "${
-                                    lastSegment.field.name
-                                }" from the path.`,
-                                this.input.collect.aggregationOperatorASTNode
-                            )
+                                }" is null, use "${
+                                    this.aggregationOperator + '_NOT_NULL'
+                                }; otherwise, remove "${lastSegment.field.name}" from the path.`,
+                                this.input.collect.aggregationOperatorASTNode,
+                            ),
                         );
                     } else {
                         context.addMessage(
                             ValidationMessage.error(
                                 `Aggregation operator "${this.aggregationOperator}" is only allowed if the last path segment is a list field. Please remove "${lastSegment.field.name}" from the path.`,
-                                this.input.collect.aggregationOperatorASTNode
-                            )
+                                this.input.collect.aggregationOperatorASTNode,
+                            ),
                         );
                     }
                     return;
@@ -667,13 +717,15 @@ export class Field implements ModelComponent {
                 if (lastSegment && lastSegment.field.type.name === GraphQLBoolean.name) {
                     context.addMessage(
                         ValidationMessage.warn(
-                            `Aggregation operator "${this.aggregationOperator}" only checks the number of items. "${
+                            `Aggregation operator "${
+                                this.aggregationOperator
+                            }" only checks the number of items. "${
                                 lastSegment.field.name
                             }" is of type "Boolean", so you may want to use the operator "${
                                 this.aggregationOperator + '_TRUE'
                             }" instead which specifically checks for boolean "true".`,
-                            this.input.collect.aggregationOperatorASTNode
-                        )
+                            this.input.collect.aggregationOperatorASTNode,
+                        ),
                     );
                 }
             }
@@ -681,25 +733,36 @@ export class Field implements ModelComponent {
                 let addendum = '';
                 const operatorName = this.aggregationOperator.toString();
                 if (operatorName.endsWith('_NOT_NULL')) {
-                    addendum = ` Consider using "${operatorName.substr(0, operatorName.length - '_NOT_NULL'.length)}`;
+                    addendum = ` Consider using "${operatorName.substr(
+                        0,
+                        operatorName.length - '_NOT_NULL'.length,
+                    )}`;
                 }
                 context.addMessage(
                     ValidationMessage.error(
                         `Aggregation operator "${this.aggregationOperator}" is only supported on nullable types, but the path does not result in a nullable type.` +
                             addendum,
-                        this.input.collect.aggregationOperatorASTNode
-                    )
+                        this.input.collect.aggregationOperatorASTNode,
+                    ),
                 );
                 return;
             }
-            if (resultingType && typeInfo.typeNames && !typeInfo.typeNames.includes(resultingType.name)) {
+            if (
+                resultingType &&
+                typeInfo.typeNames &&
+                !typeInfo.typeNames.includes(resultingType.name)
+            ) {
                 context.addMessage(
                     ValidationMessage.error(
-                        `Aggregation operator "${this.aggregationOperator}" is not supported on type "${
+                        `Aggregation operator "${
+                            this.aggregationOperator
+                        }" is not supported on type "${
                             resultingType.name
-                        }" (supported types: ${typeInfo.typeNames.map((t) => `"${t}"`).join(', ')}).`,
-                        this.input.collect.aggregationOperatorASTNode
-                    )
+                        }" (supported types: ${typeInfo.typeNames
+                            .map((t) => `"${t}"`)
+                            .join(', ')}).`,
+                        this.input.collect.aggregationOperatorASTNode,
+                    ),
                 );
                 return;
             }
@@ -708,8 +771,11 @@ export class Field implements ModelComponent {
                 if (!isDistinctAggregationSupported(resultingType)) {
                     let typeHint;
                     if (resultingType.isValueObjectType) {
-                        const offendingFields = getOffendingValueObjectFieldsForDistinctAggregation(resultingType);
-                        const offendingFieldNames = offendingFields.map((f) => `"${f.name}"`).join(', ');
+                        const offendingFields =
+                            getOffendingValueObjectFieldsForDistinctAggregation(resultingType);
+                        const offendingFieldNames = offendingFields
+                            .map((f) => `"${f.name}"`)
+                            .join(', ');
                         typeHint = `value object type "${resultingType.name}" because its field${
                             offendingFields.length !== 1 ? 's' : ''
                         } ${offendingFieldNames} has a type that does not support this operator`;
@@ -725,8 +791,8 @@ export class Field implements ModelComponent {
                     context.addMessage(
                         ValidationMessage.error(
                             `Aggregation operator "${this.aggregationOperator}" is not supported on ${typeHint}.`,
-                            this.input.collect.aggregationOperatorASTNode
-                        )
+                            this.input.collect.aggregationOperatorASTNode,
+                        ),
                     );
                     return;
                 }
@@ -736,14 +802,16 @@ export class Field implements ModelComponent {
                     !this.collectPath.resultIsNullable &&
                     !this.collectPath.resultMayContainDuplicateEntities
                 ) {
-                    const suggestedOperator = getAggregatorWithoutDistinct(this.aggregationOperator);
+                    const suggestedOperator = getAggregatorWithoutDistinct(
+                        this.aggregationOperator,
+                    );
                     if (this.aggregationOperator === AggregationOperator.DISTINCT) {
                         // this one can just be removed
                         context.addMessage(
                             ValidationMessage.error(
                                 `Aggregation operator "${this.aggregationOperator}" is not needed because the collect result can neither contain duplicate entities nor null values. Please remove the "${COLLECT_AGGREGATE_ARG}" argument".`,
-                                this.input.collect.aggregationOperatorASTNode
-                            )
+                                this.input.collect.aggregationOperatorASTNode,
+                            ),
                         );
                         return;
                     } else if (suggestedOperator) {
@@ -751,8 +819,8 @@ export class Field implements ModelComponent {
                         context.addMessage(
                             ValidationMessage.error(
                                 `Please use the operator "${suggestedOperator}" because the collect result can neither contain duplicate entities nor null values.".`,
-                                this.input.collect.aggregationOperatorASTNode
-                            )
+                                this.input.collect.aggregationOperatorASTNode,
+                            ),
                         );
                         return;
                     }
@@ -771,8 +839,8 @@ export class Field implements ModelComponent {
                 context.addMessage(
                     ValidationMessage.error(
                         `The aggregation results in type "${expectedResultingTypeName}", but this field is declared with type "${this.type.name}".`,
-                        this.astNode && this.astNode.type
-                    )
+                        this.astNode && this.astNode.type,
+                    ),
                 );
                 return;
             }
@@ -781,8 +849,8 @@ export class Field implements ModelComponent {
                 context.addMessage(
                     ValidationMessage.error(
                         `This aggregation field should not be declared as a list.`,
-                        this.astNode && this.astNode.type
-                    )
+                        this.astNode && this.astNode.type,
+                    ),
                 );
                 return;
             }
@@ -791,8 +859,8 @@ export class Field implements ModelComponent {
                 context.addMessage(
                     ValidationMessage.error(
                         `This aggregation field should be declared as a list because "${this.aggregationOperator}" results in a list.`,
-                        this.astNode && this.astNode.type
-                    )
+                        this.astNode && this.astNode.type,
+                    ),
                 );
                 return;
             }
@@ -805,12 +873,16 @@ export class Field implements ModelComponent {
                     context.addMessage(
                         ValidationMessage.error(
                             `The collect path results in entity extension type "${resultingType.name}", but entity extensions cannot be collected. You can either collect the parent entity by removing the last path segment, or collect values within the entity extension by adding a path segment.`,
-                            this.input.collect.pathASTNode
-                        )
+                            this.input.collect.pathASTNode,
+                        ),
                     );
                     return;
                 }
-                if (resultingType.isEnumType || resultingType.isScalarType || resultingType.isValueObjectType) {
+                if (
+                    resultingType.isEnumType ||
+                    resultingType.isScalarType ||
+                    resultingType.isValueObjectType
+                ) {
                     // this is a modeling design choice - it does not really make sense to "collect" non-entities without a link to the parent and without aggregating them
                     const typeKind = resultingType.isEnumType
                         ? 'enum'
@@ -824,16 +896,17 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `The collect path results in ${typeKind} type "${resultingType.name}", but ${typeKind}s cannot be collected without aggregating them. ` +
                                 suggestion,
-                            this.input.collect.pathASTNode
-                        )
+                            this.input.collect.pathASTNode,
+                        ),
                     );
                     return;
                 }
                 if (this.collectPath.resultMayContainDuplicateEntities) {
                     const minimumAmbiguousPathEndIndex = this.collectPath.segments.findIndex(
-                        (s) => s.resultMayContainDuplicateEntities
+                        (s) => s.resultMayContainDuplicateEntities,
                     );
-                    const firstAmbiguousSegment = this.collectPath.segments[minimumAmbiguousPathEndIndex];
+                    const firstAmbiguousSegment =
+                        this.collectPath.segments[minimumAmbiguousPathEndIndex];
                     const minimumAmbiguousPathPrefix =
                         minimumAmbiguousPathEndIndex >= 0
                             ? this.collectPath.path
@@ -842,7 +915,8 @@ export class Field implements ModelComponent {
                                   .join('.')
                             : '';
                     const path =
-                        minimumAmbiguousPathPrefix && minimumAmbiguousPathPrefix !== this.collectPath.path
+                        minimumAmbiguousPathPrefix &&
+                        minimumAmbiguousPathPrefix !== this.collectPath.path
                             ? `path prefix "${minimumAmbiguousPathPrefix}"`
                             : 'path';
                     const entityType = firstAmbiguousSegment
@@ -859,8 +933,8 @@ export class Field implements ModelComponent {
                     context.addMessage(
                         ValidationMessage.error(
                             `The ${path} can produce duplicate ${entityType}${reason}. Please set argument "${COLLECT_AGGREGATE_ARG}" to "${AggregationOperator.DISTINCT}" to filter out duplicates and null items if you don't want any other aggregation.`,
-                            this.input.collect.pathASTNode
-                        )
+                            this.input.collect.pathASTNode,
+                        ),
                     );
                     return;
                 }
@@ -875,8 +949,8 @@ export class Field implements ModelComponent {
                     context.addMessage(
                         ValidationMessage.error(
                             `The collect path can produce items that are null${fieldHint}. Please set argument "${COLLECT_AGGREGATE_ARG}" to "${AggregationOperator.DISTINCT}" to filter out null items if you don't want any other aggregation.`,
-                            this.input.collect.pathASTNode
-                        )
+                            this.input.collect.pathASTNode,
+                        ),
                     );
                     return;
                 }
@@ -885,8 +959,8 @@ export class Field implements ModelComponent {
                     context.addMessage(
                         ValidationMessage.error(
                             `The collect path results in type "${resultingType.name}", but this field is declared with type "${this.type.name}".`,
-                            this.astNode && this.astNode.type
-                        )
+                            this.astNode && this.astNode.type,
+                        ),
                     );
                     return;
                 }
@@ -895,8 +969,8 @@ export class Field implements ModelComponent {
                 context.addMessage(
                     ValidationMessage.error(
                         `This collect field should be a declared as a list.`,
-                        this.astNode && this.astNode.type
-                    )
+                        this.astNode && this.astNode.type,
+                    ),
                 );
                 return;
             }
@@ -913,8 +987,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Field "${this.declaringType.name}.${this.input.referenceKeyField}" not found.`,
-                    this.input.referenceKeyFieldASTNode
-                )
+                    this.input.referenceKeyFieldASTNode,
+                ),
             );
             return;
         }
@@ -923,8 +997,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `"${this.declaringType.name}.${this.input.referenceKeyField}" is a system field and cannot be used as keyField of a @reference.`,
-                    this.input.referenceKeyFieldASTNode
-                )
+                    this.input.referenceKeyFieldASTNode,
+                ),
             );
             return;
         }
@@ -940,8 +1014,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `The type of the keyField "${this.declaringType.name}.${this.input.referenceKeyField}" ("${keyField.type.name}") must be the same as the type of the @key-annotated field "${this.type.name}.${targetKeyField.name}" ("${targetKeyField.type.name}")`,
-                    this.input.referenceKeyFieldASTNode
-                )
+                    this.input.referenceKeyFieldASTNode,
+                ),
             );
             return;
         }
@@ -954,8 +1028,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `There are multiple references declared for keyField "${this.input.referenceKeyField}".`,
-                    this.input.referenceKeyFieldASTNode
-                )
+                    this.input.referenceKeyFieldASTNode,
+                ),
             );
         }
     }
@@ -969,8 +1043,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.type.name}" is an entity extension type and cannot be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
             return;
         }
@@ -980,8 +1054,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.type.name}" is an entity extension type and cannot be used in a list. Change the field type to "${this.type.name}" (without brackets), or use a child entity or value object type instead.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
         }
     }
@@ -995,8 +1069,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.type.name}" is a child entity type and cannot be used within value object types. Change "${this.declaringType.name}" to an entity extension type or use a value object type for "${this.name}".`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
             return;
         }
@@ -1005,8 +1079,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.type.name}" is a child entity type and can only be used in a list. Change the field type to "[${this.type.name}]", or use an entity extension or value object type instead.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
         }
     }
@@ -1018,8 +1092,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Permissions to @traversal fields cannot be restricted explicitly (permissions of traversed fields and types are applied automatically).`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
             return;
         }
@@ -1027,9 +1101,14 @@ export class Field implements ModelComponent {
         if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
             const message = `Permission profile and explicit role specifiers cannot be combined.`;
             context.addMessage(
-                ValidationMessage.error(message, permissions.permissionProfileNameAstNode || this.input.astNode)
+                ValidationMessage.error(
+                    message,
+                    permissions.permissionProfileNameAstNode || this.input.astNode,
+                ),
             );
-            context.addMessage(ValidationMessage.error(message, permissions.roles.astNode || this.input.astNode));
+            context.addMessage(
+                ValidationMessage.error(message, permissions.roles.astNode || this.input.astNode),
+            );
         }
 
         if (
@@ -1039,8 +1118,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Permission profile "${permissions.permissionProfileName}" not found.`,
-                    permissions.permissionProfileNameAstNode || this.input.astNode
-                )
+                    permissions.permissionProfileNameAstNode || this.input.astNode,
+                ),
             );
         }
 
@@ -1049,13 +1128,13 @@ export class Field implements ModelComponent {
             if (permissionProfile.permissions.some((p) => p.restrictToAccessGroups)) {
                 ValidationMessage.error(
                     `Permission profile "${permissions.permissionProfileName}" uses restrictToAccessGroup and therefore cannot be used on fields.`,
-                    permissions.permissionProfileNameAstNode || this.input.astNode
+                    permissions.permissionProfileNameAstNode || this.input.astNode,
                 );
             }
             if (permissionProfile.permissions.some((p) => p.restrictToAccessGroups)) {
                 ValidationMessage.error(
                     `Permission profile "${permissions.permissionProfileName}" uses restrictions and therefore cannot be used on fields.`,
-                    permissions.permissionProfileNameAstNode || this.input.astNode
+                    permissions.permissionProfileNameAstNode || this.input.astNode,
                 );
             }
         }
@@ -1074,8 +1153,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Default values are not supported on relations.`,
-                    this.input.defaultValueASTNode || this.astNode
-                )
+                    this.input.defaultValueASTNode || this.astNode,
+                ),
             );
             return;
         }
@@ -1084,8 +1163,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Default values are not supported on collect fields.`,
-                    this.input.defaultValueASTNode || this.astNode
-                )
+                    this.input.defaultValueASTNode || this.astNode,
+                ),
             );
             return;
         }
@@ -1094,8 +1173,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Default values are not supported on parent fields.`,
-                    this.input.defaultValueASTNode || this.astNode
-                )
+                    this.input.defaultValueASTNode || this.astNode,
+                ),
             );
             return;
         }
@@ -1104,8 +1183,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Default values are not supported on root fields.`,
-                    this.input.defaultValueASTNode || this.astNode
-                )
+                    this.input.defaultValueASTNode || this.astNode,
+                ),
             );
             return;
         }
@@ -1114,8 +1193,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Default values are not supported on reference fields.`,
-                    this.input.defaultValueASTNode || this.astNode
-                )
+                    this.input.defaultValueASTNode || this.astNode,
+                ),
             );
             return;
         }
@@ -1123,8 +1202,8 @@ export class Field implements ModelComponent {
         context.addMessage(
             ValidationMessage.info(
                 `Take care, there are no type checks for default values yet.`,
-                this.input.defaultValueASTNode || this.astNode
-            )
+                this.input.defaultValueASTNode || this.astNode,
+            ),
         );
     }
 
@@ -1135,20 +1214,27 @@ export class Field implements ModelComponent {
 
         if (this.isList) {
             context.addMessage(
-                ValidationMessage.error(`Calc mutations are not supported on list fields.`, this.astNode)
+                ValidationMessage.error(
+                    `Calc mutations are not supported on list fields.`,
+                    this.astNode,
+                ),
             );
             return;
         }
 
-        const supportedOperators = CALC_MUTATIONS_OPERATORS.filter((op) => op.supportedTypes.includes(this.type.name));
-        const supportedOperatorsDesc = supportedOperators.map((op) => '"' + op.name + '"').join(', ');
+        const supportedOperators = CALC_MUTATIONS_OPERATORS.filter((op) =>
+            op.supportedTypes.includes(this.type.name),
+        );
+        const supportedOperatorsDesc = supportedOperators
+            .map((op) => '"' + op.name + '"')
+            .join(', ');
 
         if (this.calcMutationOperators.size > 0 && !supportedOperators.length) {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.type.name}" does not support any calc mutation operators.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
             return;
         }
@@ -1164,8 +1250,8 @@ export class Field implements ModelComponent {
                 context.addMessage(
                     ValidationMessage.error(
                         `Calc mutation operator "${operator}" is not supported on type "${this.type.name}" (supported operators: ${supportedOperatorsDesc}).`,
-                        this.astNode
-                    )
+                        this.astNode,
+                    ),
                 );
             }
         }
@@ -1180,8 +1266,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `@${PARENT_DIRECTIVE} can only be used on fields of child entity types.`,
-                    this.input.parentDirectiveNode
-                )
+                    this.input.parentDirectiveNode,
+                ),
             );
             return;
         }
@@ -1190,8 +1276,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `@${PARENT_DIRECTIVE} and @${REFERENCE_DIRECTIVE} cannot be combined.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
             return;
         }
@@ -1200,34 +1286,42 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `@${PARENT_DIRECTIVE} and @${COLLECT_DIRECTIVE} cannot be combined.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
             return;
         }
 
         if (this.isList) {
             context.addMessage(
-                ValidationMessage.error(`A parent field cannot be a list.`, this.input.parentDirectiveNode)
+                ValidationMessage.error(
+                    `A parent field cannot be a list.`,
+                    this.input.parentDirectiveNode,
+                ),
             );
             return;
         }
 
         if (this.declaringType.fields.some((f) => f !== this && f.isParentField)) {
             context.addMessage(
-                ValidationMessage.error(`There can only be one parent field per type.`, this.input.astNode)
+                ValidationMessage.error(
+                    `There can only be one parent field per type.`,
+                    this.input.astNode,
+                ),
             );
             return;
         }
 
-        const { embeddingEntityTypes, otherEmbeddingTypes } = collectEmbeddingEntityTypes(this.declaringType);
+        const { embeddingEntityTypes, otherEmbeddingTypes } = collectEmbeddingEntityTypes(
+            this.declaringType,
+        );
 
         if (!embeddingEntityTypes.size) {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.declaringType.name}" is not used by any entity type and therefore cannot have a parent field.`,
-                    this.input.parentDirectiveNode
-                )
+                    this.input.parentDirectiveNode,
+                ),
             );
             return;
         }
@@ -1235,9 +1329,17 @@ export class Field implements ModelComponent {
         if (embeddingEntityTypes.has(this.declaringType)) {
             let suggestion = '';
             // maybe @parent can just be swapped out for @root?
-            if (this.type.isRootEntityType && !this.declaringType.fields.some((f) => f.isRootField)) {
-                const { embeddingRootEntityTypes } = collectEmbeddingRootEntityTypes(this.declaringType);
-                if (embeddingRootEntityTypes.size === 1 && Array.from(embeddingRootEntityTypes)[0] === this.type) {
+            if (
+                this.type.isRootEntityType &&
+                !this.declaringType.fields.some((f) => f.isRootField)
+            ) {
+                const { embeddingRootEntityTypes } = collectEmbeddingRootEntityTypes(
+                    this.declaringType,
+                );
+                if (
+                    embeddingRootEntityTypes.size === 1 &&
+                    Array.from(embeddingRootEntityTypes)[0] === this.type
+                ) {
                     suggestion = ' Use the @root directive instead.';
                 }
             }
@@ -1246,8 +1348,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.declaringType.name}" is a recursive child entity type and therefore cannot have a parent field.${suggestion}`,
-                    this.input.parentDirectiveNode
-                )
+                    this.input.parentDirectiveNode,
+                ),
             );
             return;
         }
@@ -1260,17 +1362,18 @@ export class Field implements ModelComponent {
                     context.addMessage(
                         ValidationMessage.error(
                             `Type "${this.declaringType.name}" is used in entity type "${otherTypes[0].name}" as well and thus cannot have a parent field.`,
-                            this.input.parentDirectiveNode
-                        )
+                            this.input.parentDirectiveNode,
+                        ),
                     );
                 } else {
                     const names = otherTypes.map((t) => `"${t.name}"`);
-                    const nameList = names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+                    const nameList =
+                        names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
                     context.addMessage(
                         ValidationMessage.error(
                             `Type "${this.declaringType.name}" is used in entity types ${nameList} as well and thus cannot have a parent field.`,
-                            this.input.parentDirectiveNode
-                        )
+                            this.input.parentDirectiveNode,
+                        ),
                     );
                 }
             } else {
@@ -1279,8 +1382,8 @@ export class Field implements ModelComponent {
                 context.addMessage(
                     ValidationMessage.error(
                         `Type "${this.declaringType.name}" is used in multiple entity types (${nameList}) and thus cannot have a parent field.`,
-                        this.input.parentDirectiveNode
-                    )
+                        this.input.parentDirectiveNode,
+                    ),
                 );
             }
             return;
@@ -1292,15 +1395,15 @@ export class Field implements ModelComponent {
                 context.addMessage(
                     ValidationMessage.error(
                         `Type "${this.declaringType.name}" is used in type "${this.type.name}", but the closest entity type in the hierarchy is "${embeddingEntityType.name}", so the type of this parent field should be "${embeddingEntityType.name}".`,
-                        this.input.parentDirectiveNode
-                    )
+                        this.input.parentDirectiveNode,
+                    ),
                 );
             } else {
                 context.addMessage(
                     ValidationMessage.error(
                         `Type "${this.declaringType.name}" is used in entity type "${embeddingEntityType.name}", so the type of this parent field should be "${embeddingEntityType.name}".`,
-                        this.input.parentDirectiveNode
-                    )
+                        this.input.parentDirectiveNode,
+                    ),
                 );
             }
             return;
@@ -1309,7 +1412,9 @@ export class Field implements ModelComponent {
         if (!this.type.isRootEntityType) {
             let rootNote = '';
             if (!this.declaringType.fields.some((f) => f.isRootField)) {
-                const { embeddingRootEntityTypes } = collectEmbeddingRootEntityTypes(this.declaringType);
+                const { embeddingRootEntityTypes } = collectEmbeddingRootEntityTypes(
+                    this.declaringType,
+                );
                 if (embeddingRootEntityTypes.size === 1) {
                     const rootType = Array.from(embeddingRootEntityTypes)[0];
                     rootNote = ` You could add a @root field (of type "${rootType.name}") instead.`;
@@ -1318,8 +1423,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.warn(
                     `Parent fields currently can't be selected within collect fields, so this field will probably be useless.${rootNote}`,
-                    this.input.parentDirectiveNode
-                )
+                    this.input.parentDirectiveNode,
+                ),
             );
         }
     }
@@ -1331,7 +1436,10 @@ export class Field implements ModelComponent {
 
         if (this.isParentField) {
             context.addMessage(
-                ValidationMessage.error(`@${PARENT_DIRECTIVE} and @${ROOT_DIRECTIVE} cannot be combined.`, this.astNode)
+                ValidationMessage.error(
+                    `@${PARENT_DIRECTIVE} and @${ROOT_DIRECTIVE} cannot be combined.`,
+                    this.astNode,
+                ),
             );
             return;
         }
@@ -1340,8 +1448,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `@${ROOT_DIRECTIVE} can only be used on fields of child entity types.`,
-                    this.input.rootDirectiveNode
-                )
+                    this.input.rootDirectiveNode,
+                ),
             );
             return;
         }
@@ -1350,8 +1458,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `@${ROOT_DIRECTIVE} and @${REFERENCE_DIRECTIVE} cannot be combined.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
             return;
         }
@@ -1360,20 +1468,28 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `@${ROOT_DIRECTIVE} and @${COLLECT_DIRECTIVE} cannot be combined.`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
             return;
         }
 
         if (this.isList) {
-            context.addMessage(ValidationMessage.error(`A root field cannot be a list.`, this.input.rootDirectiveNode));
+            context.addMessage(
+                ValidationMessage.error(
+                    `A root field cannot be a list.`,
+                    this.input.rootDirectiveNode,
+                ),
+            );
             return;
         }
 
         if (this.declaringType.fields.some((f) => f !== this && f.isRootField)) {
             context.addMessage(
-                ValidationMessage.error(`There can only be one root field per type.`, this.input.astNode)
+                ValidationMessage.error(
+                    `There can only be one root field per type.`,
+                    this.input.astNode,
+                ),
             );
             return;
         }
@@ -1384,8 +1500,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.declaringType.name}" is not used by any root entity type and therefore cannot have a root field.`,
-                    this.input.rootDirectiveNode
-                )
+                    this.input.rootDirectiveNode,
+                ),
             );
             return;
         }
@@ -1393,22 +1509,25 @@ export class Field implements ModelComponent {
         if (embeddingRootEntityTypes.size > 1) {
             // a little nicer error message
             if (embeddingRootEntityTypes.has(this.type)) {
-                const otherTypes = Array.from(embeddingRootEntityTypes).filter((t) => t !== this.type);
+                const otherTypes = Array.from(embeddingRootEntityTypes).filter(
+                    (t) => t !== this.type,
+                );
                 if (otherTypes.length === 1) {
                     context.addMessage(
                         ValidationMessage.error(
                             `Type "${this.declaringType.name}" is used in root entity type "${otherTypes[0].name}" as well and thus cannot have a root field.`,
-                            this.input.rootDirectiveNode
-                        )
+                            this.input.rootDirectiveNode,
+                        ),
                     );
                 } else {
                     const names = otherTypes.map((t) => `"${t.name}"`);
-                    const nameList = names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+                    const nameList =
+                        names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
                     context.addMessage(
                         ValidationMessage.error(
                             `Type "${this.declaringType.name}" is used in root entity types ${nameList} as well and thus cannot have a root field.`,
-                            this.input.rootDirectiveNode
-                        )
+                            this.input.rootDirectiveNode,
+                        ),
                     );
                 }
             } else {
@@ -1417,8 +1536,8 @@ export class Field implements ModelComponent {
                 context.addMessage(
                     ValidationMessage.error(
                         `Type "${this.declaringType.name}" is used in multiple root entity types (${nameList}) and thus cannot have a root field.`,
-                        this.input.rootDirectiveNode
-                    )
+                        this.input.rootDirectiveNode,
+                    ),
                 );
             }
             return;
@@ -1429,8 +1548,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Type "${this.declaringType.name}" is used in root entity type "${embeddingRootEntityType.name}", so the type of this root field should be "${embeddingRootEntityType.name}".`,
-                    this.input.rootDirectiveNode
-                )
+                    this.input.rootDirectiveNode,
+                ),
             );
             return;
         }
@@ -1441,31 +1560,46 @@ export class Field implements ModelComponent {
         if (this.isFlexSearchIndexed) {
             if (this.isReference) {
                 context.addMessage(
-                    ValidationMessage.error(`${notSupportedOn} references.`, this.input.isFlexSearchIndexedASTNode)
+                    ValidationMessage.error(
+                        `${notSupportedOn} references.`,
+                        this.input.isFlexSearchIndexedASTNode,
+                    ),
                 );
                 return;
             }
             if (this.isRelation) {
                 context.addMessage(
-                    ValidationMessage.error(`${notSupportedOn} relations.`, this.input.isFlexSearchIndexedASTNode)
+                    ValidationMessage.error(
+                        `${notSupportedOn} relations.`,
+                        this.input.isFlexSearchIndexedASTNode,
+                    ),
                 );
                 return;
             }
             if (this.isCollectField) {
                 context.addMessage(
-                    ValidationMessage.error(`${notSupportedOn} collect fields.`, this.input.isFlexSearchIndexedASTNode)
+                    ValidationMessage.error(
+                        `${notSupportedOn} collect fields.`,
+                        this.input.isFlexSearchIndexedASTNode,
+                    ),
                 );
                 return;
             }
             if (this.isParentField) {
                 context.addMessage(
-                    ValidationMessage.error(`${notSupportedOn} parent fields.`, this.input.isFlexSearchIndexedASTNode)
+                    ValidationMessage.error(
+                        `${notSupportedOn} parent fields.`,
+                        this.input.isFlexSearchIndexedASTNode,
+                    ),
                 );
                 return;
             }
             if (this.isRootField) {
                 context.addMessage(
-                    ValidationMessage.error(`${notSupportedOn} root fields.`, this.input.isFlexSearchIndexedASTNode)
+                    ValidationMessage.error(
+                        `${notSupportedOn} root fields.`,
+                        this.input.isFlexSearchIndexedASTNode,
+                    ),
                 );
                 return;
             }
@@ -1478,8 +1612,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `@flexSearchFulltext is not supported on type "${this.type.name}".`,
-                    this.input.isFlexSearchFulltextIndexedASTNode
-                )
+                    this.input.isFlexSearchFulltextIndexedASTNode,
+                ),
             );
             return;
         }
@@ -1487,28 +1621,32 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `${notSupportedOn} collect fields.`,
-                    this.input.isFlexSearchFulltextIndexedASTNode
-                )
+                    this.input.isFlexSearchFulltextIndexedASTNode,
+                ),
             );
             return;
         }
         if (
             this.isFlexSearchIndexed &&
             (this.type.isEntityExtensionType || this.type.isValueObjectType) &&
-            !this.type.fields.some((value) => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed)
+            !this.type.fields.some(
+                (value) => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed,
+            )
         ) {
             context.addMessage(
                 ValidationMessage.error(
                     `At least one field on type "${this.type.name}" must be annotated with @flexSearch or @flexSearchFulltext if @flexSearch is specified on the type declaration.`,
-                    this.input.isFlexSearchIndexedASTNode
-                )
+                    this.input.isFlexSearchIndexedASTNode,
+                ),
             );
         }
         if (
             this.name === ACCESS_GROUP_FIELD &&
             this.declaringType.isRootEntityType &&
             this.declaringType.permissionProfile &&
-            this.declaringType.permissionProfile.permissions.some((value) => value.restrictToAccessGroups) &&
+            this.declaringType.permissionProfile.permissions.some(
+                (value) => value.restrictToAccessGroups,
+            ) &&
             this.declaringType.isFlexSearchIndexed &&
             !this.isFlexSearchIndexed
         ) {
@@ -1516,8 +1654,8 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `The permission profile "${this.declaringType.permissionProfile.name}" uses "restrictToAccessGroups", ` +
                         `and this fields defining type is marked with "flexSearch: true", but this field is not marked with "@flexSearch".`,
-                    this.astNode
-                )
+                    this.astNode,
+                ),
             );
         }
         if (
@@ -1528,8 +1666,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `"${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true" is only supported on the types "String", "[String]" and object types.`,
-                    this.input.isFlexSearchIndexedASTNode
-                )
+                    this.input.isFlexSearchIndexedASTNode,
+                ),
             );
             return;
         }
@@ -1540,8 +1678,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `"${FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT}" is only supported on the types "String" and "[String]".`,
-                    this.input.flexSearchIndexCaseSensitiveASTNode
-                )
+                    this.input.flexSearchIndexCaseSensitiveASTNode,
+                ),
             );
             return;
         }
@@ -1552,8 +1690,8 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `"${FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT}" cannot be set to false on accessGroup and @accessField-annotated fields (and it is always implicitly true)`,
-                    this.input.flexSearchIndexCaseSensitiveASTNode
-                )
+                    this.input.flexSearchIndexCaseSensitiveASTNode,
+                ),
             );
             return;
         }
@@ -1567,26 +1705,32 @@ export class Field implements ModelComponent {
             context.addMessage(
                 ValidationMessage.error(
                     `Collect fields cannot be access fields`,
-                    this.input.accessFieldDirectiveASTNode
-                )
+                    this.input.accessFieldDirectiveASTNode,
+                ),
             );
         }
         if (this.isRootField) {
             context.addMessage(
-                ValidationMessage.error(`Root fields cannot be access fields`, this.input.accessFieldDirectiveASTNode)
+                ValidationMessage.error(
+                    `Root fields cannot be access fields`,
+                    this.input.accessFieldDirectiveASTNode,
+                ),
             );
         }
         if (this.isParentField) {
             context.addMessage(
-                ValidationMessage.error(`Parent fields cannot be access fields`, this.input.accessFieldDirectiveASTNode)
+                ValidationMessage.error(
+                    `Parent fields cannot be access fields`,
+                    this.input.accessFieldDirectiveASTNode,
+                ),
             );
         }
         if (this.type.isRootEntityType) {
             context.addMessage(
                 ValidationMessage.error(
                     `Fields to other root entities cannot be access fields`,
-                    this.input.accessFieldDirectiveASTNode
-                )
+                    this.input.accessFieldDirectiveASTNode,
+                ),
             );
         }
     }
@@ -1622,7 +1766,10 @@ export class Field implements ModelComponent {
      * or if it's a string/boolean/number
      */
     get isFlexSearchStringBased() {
-        return this.type.isScalarType && [GraphQLString.name, GraphQLI18nString.name].includes(this.type.name);
+        return (
+            this.type.isScalarType &&
+            [GraphQLString.name, GraphQLI18nString.name].includes(this.type.name)
+        );
     }
 
     get flexSearchFulltextAnalyzer(): string | undefined {
@@ -1636,7 +1783,7 @@ export class Field implements ModelComponent {
         const analyzer = this.flexSearchFulltextAnalyzer;
         if (!analyzer) {
             throw new Error(
-                `Expected field ${this.declaringType.name}.${this.name} to have a flexSearch fulltext language, but it does not`
+                `Expected field ${this.declaringType.name}.${this.name} to have a flexSearch fulltext language, but it does not`,
             );
         }
         return analyzer;
@@ -1659,7 +1806,9 @@ export class Field implements ModelComponent {
     }
 }
 
-function getAggregatorWithoutDistinct(aggregator: AggregationOperator): AggregationOperator | undefined {
+function getAggregatorWithoutDistinct(
+    aggregator: AggregationOperator,
+): AggregationOperator | undefined {
     switch (aggregator) {
         case AggregationOperator.DISTINCT:
             return undefined;
@@ -1794,6 +1943,6 @@ function getOffendingValueObjectFieldsForDistinctAggregation(type: ValueObjectTy
         (field) =>
             !field.type.isEnumType &&
             !field.type.isRootEntityType &&
-            !scalarTypesThatSupportDistinctAggregation.includes(field.type.name)
+            !scalarTypesThatSupportDistinctAggregation.includes(field.type.name),
     );
 }

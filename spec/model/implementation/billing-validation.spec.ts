@@ -27,19 +27,22 @@ describe('Billing validation', () => {
                 billingEntities: [
                     {
                         typeName: 'Mission',
-                        keyFieldName: 'title'
-                    }
-                ]
-            }
+                        keyFieldName: 'title',
+                    },
+                ],
+            },
         };
         const validationContext = new ValidationContext();
         const parsedProject = parseProject(
-            new Project([new Source(graphql, 'graphql.graphql'), new Source(JSON.stringify(validDef), 'billing.json')]),
-            new ValidationContext()
+            new Project([
+                new Source(graphql, 'graphql.graphql'),
+                new Source(JSON.stringify(validDef), 'billing.json'),
+            ]),
+            new ValidationContext(),
         );
         const model = createModel(parsedProject);
 
-        model.billingEntityTypes.forEach(value => value.validate(validationContext));
+        model.billingEntityTypes.forEach((value) => value.validate(validationContext));
 
         expect(validationContext.asResult().hasMessages()).is.false;
 
@@ -47,22 +50,22 @@ describe('Billing validation', () => {
             billing: {
                 billingEntities: [
                     {
-                        typeName: 'Hero'
-                    }
-                ]
-            }
+                        typeName: 'Hero',
+                    },
+                ],
+            },
         };
         const validationContext2 = new ValidationContext();
         const parsedProject2 = parseProject(
             new Project([
                 new Source(graphql, 'graphql.graphql'),
-                new Source(JSON.stringify(validDef2), 'billing.json')
+                new Source(JSON.stringify(validDef2), 'billing.json'),
             ]),
-            new ValidationContext()
+            new ValidationContext(),
         );
         const model2 = createModel(parsedProject2);
 
-        model2.billingEntityTypes.forEach(value => value.validate(validationContext2));
+        model2.billingEntityTypes.forEach((value) => value.validate(validationContext2));
 
         expect(validationContext2.asResult().hasMessages()).is.false;
     });
@@ -72,25 +75,28 @@ describe('Billing validation', () => {
                 billingEntities: [
                     {
                         typeName: 'MissionWithTypo',
-                        keyFieldName: 'title'
-                    }
-                ]
-            }
+                        keyFieldName: 'title',
+                    },
+                ],
+            },
         };
         const validationContext = new ValidationContext();
         const parsedProject = parseProject(
-            new Project([new Source(graphql, 'graphql.graphql'), new Source(JSON.stringify(wrongDef), 'billing.json')]),
-            new ValidationContext()
+            new Project([
+                new Source(graphql, 'graphql.graphql'),
+                new Source(JSON.stringify(wrongDef), 'billing.json'),
+            ]),
+            new ValidationContext(),
         );
         const model = createModel(parsedProject);
 
-        model.billingEntityTypes.forEach(value => value.validate(validationContext));
+        model.billingEntityTypes.forEach((value) => value.validate(validationContext));
 
         expect(validationContext.asResult().hasMessages()).is.true;
         expect(validationContext.asResult().hasWarnings()).is.false;
         expect(validationContext.asResult().getErrors().length).to.eq(1);
         expect(validationContext.asResult().getErrors()[0].message).to.contain(
-            'No rootEntity with the name "MissionWithTypo" is defined.'
+            'No rootEntity with the name "MissionWithTypo" is defined.',
         );
     });
 
@@ -100,25 +106,28 @@ describe('Billing validation', () => {
                 billingEntities: [
                     {
                         typeName: 'Mission',
-                        keyFieldName: 'titleWithTypo'
-                    }
-                ]
-            }
+                        keyFieldName: 'titleWithTypo',
+                    },
+                ],
+            },
         };
         const validationContext = new ValidationContext();
         const parsedProject = parseProject(
-            new Project([new Source(graphql, 'graphql.graphql'), new Source(JSON.stringify(wrongDef), 'billing.json')]),
-            new ValidationContext()
+            new Project([
+                new Source(graphql, 'graphql.graphql'),
+                new Source(JSON.stringify(wrongDef), 'billing.json'),
+            ]),
+            new ValidationContext(),
         );
         const model = createModel(parsedProject);
 
-        model.billingEntityTypes.forEach(value => value.validate(validationContext));
+        model.billingEntityTypes.forEach((value) => value.validate(validationContext));
 
         expect(validationContext.asResult().hasMessages()).is.true;
         expect(validationContext.asResult().hasWarnings()).is.false;
         expect(validationContext.asResult().getErrors().length).to.eq(1);
         expect(validationContext.asResult().getErrors()[0].message).to.contain(
-            'The field "titleWithTypo" is not defined in the type "Mission".'
+            'The field "titleWithTypo" is not defined in the type "Mission".',
         );
     });
 
@@ -127,25 +136,28 @@ describe('Billing validation', () => {
             billing: {
                 billingEntities: [
                     {
-                        typeName: 'Mission'
-                    }
-                ]
-            }
+                        typeName: 'Mission',
+                    },
+                ],
+            },
         };
         const validationContext = new ValidationContext();
         const parsedProject = parseProject(
-            new Project([new Source(graphql, 'graphql.graphql'), new Source(JSON.stringify(wrongDef), 'billing.json')]),
-            new ValidationContext()
+            new Project([
+                new Source(graphql, 'graphql.graphql'),
+                new Source(JSON.stringify(wrongDef), 'billing.json'),
+            ]),
+            new ValidationContext(),
         );
         const model = createModel(parsedProject);
 
-        model.billingEntityTypes.forEach(value => value.validate(validationContext));
+        model.billingEntityTypes.forEach((value) => value.validate(validationContext));
 
         expect(validationContext.asResult().hasMessages()).is.true;
         expect(validationContext.asResult().hasWarnings()).is.false;
         expect(validationContext.asResult().getErrors().length).to.eq(1);
         expect(validationContext.asResult().getErrors()[0].message).to.contain(
-            'The type "Mission" does not define a keyField and no "keyFieldName" is defined.'
+            'The type "Mission" does not define a keyField and no "keyFieldName" is defined.',
         );
     });
 
@@ -155,25 +167,28 @@ describe('Billing validation', () => {
                 billingEntities: [
                     {
                         typeName: 'Mission',
-                        keyFieldName: 'someFloat'
-                    }
-                ]
-            }
+                        keyFieldName: 'someFloat',
+                    },
+                ],
+            },
         };
         const validationContext = new ValidationContext();
         const parsedProject = parseProject(
-            new Project([new Source(graphql, 'graphql.graphql'), new Source(JSON.stringify(wrongDef), 'billing.json')]),
-            new ValidationContext()
+            new Project([
+                new Source(graphql, 'graphql.graphql'),
+                new Source(JSON.stringify(wrongDef), 'billing.json'),
+            ]),
+            new ValidationContext(),
         );
         const model = createModel(parsedProject);
 
-        model.billingEntityTypes.forEach(value => value.validate(validationContext));
+        model.billingEntityTypes.forEach((value) => value.validate(validationContext));
 
         expect(validationContext.asResult().hasMessages()).is.true;
         expect(validationContext.asResult().hasWarnings()).is.false;
         expect(validationContext.asResult().getErrors().length).to.eq(1);
         expect(validationContext.asResult().getErrors()[0].message).to.contain(
-            'The field "someFloat" in the type "Mission" is not a "String", "Int", or "ID".'
+            'The field "someFloat" in the type "Mission" is not a "String", "Int", or "ID".',
         );
     });
 
@@ -183,32 +198,35 @@ describe('Billing validation', () => {
                 billingEntities: [
                     {
                         typeName: 'Mission',
-                        keyFieldName: 'title'
+                        keyFieldName: 'title',
                     },
                     {
                         typeName: 'Mission',
-                        keyFieldName: 'title'
-                    }
-                ]
-            }
+                        keyFieldName: 'title',
+                    },
+                ],
+            },
         };
         const validationContext = new ValidationContext();
         const parsedProject = parseProject(
-            new Project([new Source(graphql, 'graphql.graphql'), new Source(JSON.stringify(wrongDef), 'billing.json')]),
-            new ValidationContext()
+            new Project([
+                new Source(graphql, 'graphql.graphql'),
+                new Source(JSON.stringify(wrongDef), 'billing.json'),
+            ]),
+            new ValidationContext(),
         );
         const model = createModel(parsedProject);
 
-        model.billingEntityTypes.forEach(value => value.validate(validationContext));
+        model.billingEntityTypes.forEach((value) => value.validate(validationContext));
 
         expect(validationContext.asResult().hasMessages()).is.true;
         expect(validationContext.asResult().hasWarnings()).is.false;
         expect(validationContext.asResult().getErrors().length).to.eq(2);
         expect(validationContext.asResult().getErrors()[0].message).to.contain(
-            'There are multiple billing configurations for the type "Mission".'
+            'There are multiple billing configurations for the type "Mission".',
         );
         expect(validationContext.asResult().getErrors()[1].message).to.contain(
-            'There are multiple billing configurations for the type "Mission".'
+            'There are multiple billing configurations for the type "Mission".',
         );
     });
 });

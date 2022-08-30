@@ -14,14 +14,12 @@ export class QuantifierFilterNode extends QueryNode {
     public readonly conditionNode: QueryNode;
     public readonly quantifier: Quantifier;
 
-    constructor(
-        config: {
-            readonly listNode: QueryNode
-            readonly itemVariable: VariableQueryNode
-            readonly conditionNode: QueryNode
-            readonly quantifier: Quantifier
-        }
-    ) {
+    constructor(config: {
+        readonly listNode: QueryNode;
+        readonly itemVariable: VariableQueryNode;
+        readonly conditionNode: QueryNode;
+        readonly quantifier: Quantifier;
+    }) {
         super();
         this.listNode = config.listNode;
         this.itemVariable = config.itemVariable;
@@ -30,6 +28,8 @@ export class QuantifierFilterNode extends QueryNode {
     }
 
     describe(): string {
-        return `${this.quantifier} of ${this.listNode.describe()} matches (${this.itemVariable.describe()} => ${this.conditionNode.describe()})`;
+        return `${
+            this.quantifier
+        } of ${this.listNode.describe()} matches (${this.itemVariable.describe()} => ${this.conditionNode.describe()})`;
     }
 }

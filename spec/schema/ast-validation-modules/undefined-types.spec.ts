@@ -24,7 +24,6 @@ const validSource = `
         `;
 
 describe('undefined-types validator', () => {
-
     it('points out missing types', () => {
         const validationResult = validate(invalidSource);
         expect(validationResult.hasErrors()).to.be.true;
@@ -36,5 +35,4 @@ describe('undefined-types validator', () => {
     it('accepts valid sources', () => {
         assertValidatorAccepts(validSource);
     });
-
 });

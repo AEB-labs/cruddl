@@ -1,14 +1,20 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
-import { CalcMutationsOperator, ChildEntityType, EntityExtensionType, Field, RootEntityType } from '../../model';
+import {
+    CalcMutationsOperator,
+    ChildEntityType,
+    EntityExtensionType,
+    Field,
+    RootEntityType,
+} from '../../model';
 import { CALC_MUTATIONS_OPERATORS, CalcMutationOperator, ID_FIELD } from '../../schema/constants';
 import {
     getAddChildEntitiesFieldName,
     getRemoveChildEntitiesFieldName,
     getUpdateAllInputTypeName,
     getUpdateChildEntitiesFieldName,
-    getUpdateInputTypeName
+    getUpdateInputTypeName,
 } from '../../schema/names';
 import { CreateInputTypeGenerator } from '../create-input-types';
 import { EnumTypeGenerator } from '../enum-type-generator';
@@ -25,26 +31,26 @@ import {
     UpdateFilterInputField,
     UpdateInputField,
     UpdateValueObjectInputField,
-    UpdateValueObjectListInputField
+    UpdateValueObjectListInputField,
 } from './input-fields';
 import {
     UpdateChildEntityInputType,
     UpdateEntityExtensionInputType,
     UpdateObjectInputType,
-    UpdateRootEntityInputType
+    UpdateRootEntityInputType,
 } from './input-types';
 import {
     AddEdgesInputField,
     CreateAndAddEdgesInputField,
     CreateAndSetEdgeInputField,
     RemoveEdgesInputField,
-    SetEdgeInputField
+    SetEdgeInputField,
 } from './relation-fields';
 
 export class UpdateInputTypeGenerator {
     constructor(
         private readonly enumTypeGenerator: EnumTypeGenerator,
-        private readonly createInputTypeGenerator: CreateInputTypeGenerator
+        private readonly createInputTypeGenerator: CreateInputTypeGenerator,
     ) {}
 
     @memorize()
@@ -64,7 +70,7 @@ export class UpdateInputTypeGenerator {
     @memorize()
     generateForRootEntityType(type: RootEntityType): UpdateRootEntityInputType {
         return new UpdateRootEntityInputType(type, getUpdateInputTypeName(type.name), () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field))
+            flatMap(type.fields, (field: Field) => this.generateFields(field)),
         );
     }
 
@@ -74,29 +80,32 @@ export class UpdateInputTypeGenerator {
             flatMap(type.fields, (field: Field) =>
                 this.generateFields(field, {
                     skipID: true,
-                    skipRelations: true // can't do this properly at the moment because it would need a dynamic number of pre-execs
-                })
-            )
+                    skipRelations: true, // can't do this properly at the moment because it would need a dynamic number of pre-execs
+                }),
+            ),
         );
     }
 
     @memorize()
     generateForEntityExtensionType(type: EntityExtensionType): UpdateEntityExtensionInputType {
         return new UpdateEntityExtensionInputType(type, getUpdateInputTypeName(type.name), () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field))
+            flatMap(type.fields, (field: Field) => this.generateFields(field)),
         );
     }
 
     @memorize()
     generateForChildEntityType(type: ChildEntityType): UpdateChildEntityInputType {
         return new UpdateChildEntityInputType(type, getUpdateInputTypeName(type.name), () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field))
+            flatMap(type.fields, (field: Field) => this.generateFields(field)),
         );
     }
 
     private generateFields(
         field: Field,
-        { skipID = false, skipRelations = false }: { skipID?: boolean; skipRelations?: boolean } = {}
+        {
+            skipID = false,
+            skipRelations = false,
+        }: { skipID?: boolean; skipRelations?: boolean } = {},
     ): UpdateInputField[] {
         if (field.isSystemField) {
             if (
@@ -121,29 +130,35 @@ export class UpdateInputTypeGenerator {
             }
 
             if (field.type.isChildEntityType) {
-                const inputType = new GraphQLList(new GraphQLNonNull(this.generate(field.type).getInputType()));
+                const inputType = new GraphQLList(
+                    new GraphQLNonNull(this.generate(field.type).getInputType()),
+                );
 
                 return [
                     new DummyUpdateInputField(
                         field,
                         getAddChildEntitiesFieldName(field.name),
                         new GraphQLList(
-                            new GraphQLNonNull(this.createInputTypeGenerator.generate(field.type).getInputType())
+                            new GraphQLNonNull(
+                                this.createInputTypeGenerator.generate(field.type).getInputType(),
+                            ),
                         ),
-                        { deprecationReason }
+                        { deprecationReason },
                     ),
                     new DummyUpdateInputField(
                         field,
                         getUpdateChildEntitiesFieldName(field.name),
-                        new GraphQLList(new GraphQLNonNull(this.generate(field.type).getInputType())),
-                        { deprecationReason }
+                        new GraphQLList(
+                            new GraphQLNonNull(this.generate(field.type).getInputType()),
+                        ),
+                        { deprecationReason },
                     ),
                     new DummyUpdateInputField(
                         field,
                         getRemoveChildEntitiesFieldName(field.name),
                         new GraphQLList(new GraphQLNonNull(GraphQLID)),
-                        { deprecationReason }
-                    )
+                        { deprecationReason },
+                    ),
                 ];
             }
 
@@ -173,7 +188,12 @@ export class UpdateInputTypeGenerator {
                 : field.type.graphQLScalarType;
             if (field.isList) {
                 // don't allow null values in lists
-                return [new BasicListUpdateInputField(field, new GraphQLList(new GraphQLNonNull(inputType)))];
+                return [
+                    new BasicListUpdateInputField(
+                        field,
+                        new GraphQLList(new GraphQLNonNull(inputType)),
+                    ),
+                ];
             } else if (field.referenceField) {
                 // this is the key field to a reference field - add some comments
                 return [
@@ -188,15 +208,15 @@ export class UpdateInputTypeGenerator {
                               '` of the `' +
                               field.referenceField.type.name +
                               '` to be referenced'
-                            : undefined
-                    )
+                            : undefined,
+                    ),
                 ];
             } else {
                 const calcMutationOperators = Array.from(field.calcMutationOperators).map(
-                    getCalcMutationOperatorOrThrow
+                    getCalcMutationOperatorOrThrow,
                 );
                 const calcMutationFields = calcMutationOperators.map(
-                    op => new CalcMutationInputField(field, inputType, op.operator, op.prefix)
+                    (op) => new CalcMutationInputField(field, inputType, op.operator, op.prefix),
                 );
                 // TODO this implementation does not work with multiple calcMutations or them mixed with a regular set, which worked before
                 // Either support this or at least throw an error in this case
@@ -223,14 +243,17 @@ export class UpdateInputTypeGenerator {
             return [
                 new ReplaceChildEntitiesInputField(
                     field,
-                    this.createInputTypeGenerator.generateForChildEntityType(field.type)
+                    this.createInputTypeGenerator.generateForChildEntityType(field.type),
                 ),
                 new AddChildEntitiesInputField(
                     field,
-                    this.createInputTypeGenerator.generateForChildEntityType(field.type)
+                    this.createInputTypeGenerator.generateForChildEntityType(field.type),
                 ),
-                new UpdateChildEntitiesInputField(field, this.generateForChildEntityType(field.type)),
-                new RemoveChildEntitiesInputField(field)
+                new UpdateChildEntitiesInputField(
+                    field,
+                    this.generateForChildEntityType(field.type),
+                ),
+                new RemoveChildEntitiesInputField(field),
             ];
         }
 
@@ -252,7 +275,14 @@ export class UpdateInputTypeGenerator {
 
             if (referenceKeyField === field) {
                 // if the key field *is* the reference field, this means that there is no explicit key field
-                return [new BasicUpdateInputField(referenceKeyField, scalarType, field.name, description)];
+                return [
+                    new BasicUpdateInputField(
+                        referenceKeyField,
+                        scalarType,
+                        field.name,
+                        description,
+                    ),
+                ];
             } else {
                 // there is a separate key field. We still generate this field (for backwards-compatibility), but users should use the key field instead
                 return [
@@ -261,8 +291,8 @@ export class UpdateInputTypeGenerator {
                         scalarType,
                         field.name,
                         description,
-                        `Use "${referenceKeyField.name}" instead.`
-                    )
+                        `Use "${referenceKeyField.name}" instead.`,
+                    ),
                 ];
             }
         }
@@ -277,26 +307,31 @@ export class UpdateInputTypeGenerator {
                 return [
                     new AddEdgesInputField(field),
                     new RemoveEdgesInputField(field),
-                    new CreateAndAddEdgesInputField(field, inputType)
+                    new CreateAndAddEdgesInputField(field, inputType),
                 ];
             } else {
-                return [new SetEdgeInputField(field), new CreateAndSetEdgeInputField(field, inputType)];
+                return [
+                    new SetEdgeInputField(field),
+                    new CreateAndSetEdgeInputField(field, inputType),
+                ];
             }
         }
 
-        throw new Error(`Field "${field.declaringType.name}.${field.name}" has an unexpected configuration`);
+        throw new Error(
+            `Field "${field.declaringType.name}.${field.name}" has an unexpected configuration`,
+        );
     }
 }
 
 function getCalcMutationOperatorOrThrow(
-    operator: CalcMutationsOperator
+    operator: CalcMutationsOperator,
 ): CalcMutationOperator & { operator: CalcMutationsOperator } {
-    const value = CALC_MUTATIONS_OPERATORS.find(op => op.name == operator);
+    const value = CALC_MUTATIONS_OPERATORS.find((op) => op.name == operator);
     if (!value) {
         throw new Error(`Calc mutation operator "${operator}" is not defined`);
     }
     return {
         ...value,
-        operator
+        operator,
     };
 }

@@ -72,25 +72,15 @@
       "allPapers": [
         {
           "key": "NoSQL",
-          "categories": [
-            "ITScience",
-            "Programming",
-            "BusinessInformatics"
-          ]
+          "categories": ["ITScience", "Programming", "BusinessInformatics"]
         },
         {
           "key": "OOM",
-          "categories": [
-            "ITScience",
-            "Programming"
-          ]
+          "categories": ["ITScience", "Programming"]
         },
         {
           "key": "Part",
-          "categories": [
-            "Programming",
-            "Telecommunications"
-          ]
+          "categories": ["Programming", "Telecommunications"]
         }
       ]
     }
@@ -110,16 +100,11 @@
       "allPapers": [
         {
           "key": "Part",
-          "categories": [
-            "Programming",
-            "Telecommunications"
-          ]
+          "categories": ["Programming", "Telecommunications"]
         },
         {
           "key": "Scal",
-          "categories": [
-            "Programming"
-          ]
+          "categories": ["Programming"]
         },
         {
           "key": "UML",

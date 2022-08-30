@@ -1,31 +1,31 @@
 {
-    "create": {
-        "data": {
-            "createDelivery": {
-                "itemCount": 0,
-                "allItems": []
-            }
-        }
-    },
-    "update": {
-        "data": {
-            "updateDelivery": {
-                "itemCount": 4,
-                "allItems": [
-                    {
-                        "itemNumber": "DI1.1.1"
-                    },
-                    {
-                        "itemNumber": "DI1.1.2"
-                    },
-                    {
-                        "itemNumber": "DI1.2.1"
-                    },
-                    {
-                        "itemNumber": "DI1.2.2"
-                    }
-                ]
-            }
-        }
+  "create": {
+    "data": {
+      "createDelivery": {
+        "itemCount": 0,
+        "allItems": []
+      }
     }
+  },
+  "update": {
+    "data": {
+      "updateDelivery": {
+        "itemCount": 4,
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.1"
+          },
+          {
+            "itemNumber": "DI1.1.2"
+          },
+          {
+            "itemNumber": "DI1.2.1"
+          },
+          {
+            "itemNumber": "DI1.2.2"
+          }
+        ]
+      }
+    }
+  }
 }

@@ -1,4 +1,24 @@
-import { ArgumentNode, ASTNode, FieldNode, FragmentDefinitionNode, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLType, isListType, isNonNullType, ListTypeNode, NamedTypeNode, NonNullTypeNode, SelectionNode, SelectionSetNode, TypeNode, ValueNode, VariableDefinitionNode, visit } from 'graphql';
+import {
+    ArgumentNode,
+    ASTNode,
+    FieldNode,
+    FragmentDefinitionNode,
+    GraphQLList,
+    GraphQLNamedType,
+    GraphQLNonNull,
+    GraphQLType,
+    isListType,
+    isNonNullType,
+    ListTypeNode,
+    NamedTypeNode,
+    NonNullTypeNode,
+    SelectionNode,
+    SelectionSetNode,
+    TypeNode,
+    ValueNode,
+    VariableDefinitionNode,
+    visit,
+} from 'graphql';
 import { compact, flatMap } from '../utils/utils';
 
 /**
@@ -8,25 +28,33 @@ import { compact, flatMap } from '../utils/utils';
  * @param selections an array of selection nodes, or undefined to not specify a SelectionSet node
  * @returns the field node
  */
-export function createFieldNode(name: string, alias?: string, selections?: ReadonlyArray<SelectionNode>): FieldNode {
+export function createFieldNode(
+    name: string,
+    alias?: string,
+    selections?: ReadonlyArray<SelectionNode>,
+): FieldNode {
     return {
         kind: 'Field',
         name: {
             kind: 'Name',
-            value: name
+            value: name,
         },
-        ...(alias ? {
-            alias: {
-                kind: 'Name',
-                value: alias
-            }
-        } : {}),
-        ...(selections ? {
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections
-            }
-        } : {})
+        ...(alias
+            ? {
+                  alias: {
+                      kind: 'Name',
+                      value: alias,
+                  },
+              }
+            : {}),
+        ...(selections
+            ? {
+                  selectionSet: {
+                      kind: 'SelectionSet',
+                      selections,
+                  },
+              }
+            : {}),
     };
 }
 
@@ -38,8 +66,14 @@ export function createFieldNode(name: string, alias?: string, selections?: Reado
  * @param innermostSelectionSet
  * @returns {SelectionSetNode}
  */
-export function createSelectionChain(fieldNames: ReadonlyArray<string>, innermostSelectionSet: SelectionSetNode): SelectionSetNode {
-    return cloneSelectionChain(fieldNames.map(name => createFieldNode(name)), innermostSelectionSet);
+export function createSelectionChain(
+    fieldNames: ReadonlyArray<string>,
+    innermostSelectionSet: SelectionSetNode,
+): SelectionSetNode {
+    return cloneSelectionChain(
+        fieldNames.map((name) => createFieldNode(name)),
+        innermostSelectionSet,
+    );
 }
 
 /**
@@ -52,7 +86,10 @@ export function createSelectionChain(fieldNames: ReadonlyArray<string>, innermos
  * @param innermostSelectionSet
  * @returns {SelectionSetNode}
  */
-export function cloneSelectionChain(fieldNodes: ReadonlyArray<FieldNode>, innermostSelectionSet?: SelectionSetNode): SelectionSetNode {
+export function cloneSelectionChain(
+    fieldNodes: ReadonlyArray<FieldNode>,
+    innermostSelectionSet?: SelectionSetNode,
+): SelectionSetNode {
     if (!fieldNodes.length && !innermostSelectionSet) {
         throw new Error(`Either provide innermostSelectionSet or a non-empty fieldNodes array`);
     }
@@ -64,9 +101,9 @@ export function cloneSelectionChain(fieldNodes: ReadonlyArray<FieldNode>, innerm
             selections: [
                 {
                     ...fieldNode,
-                    selectionSet: currentSelectionSet
-                }
-            ]
+                    selectionSet: currentSelectionSet,
+                },
+            ],
         };
     }
     return currentSelectionSet;
@@ -83,38 +120,41 @@ export function createTypeNode(type: GraphQLType): TypeNode {
     if (isListType(type)) {
         return {
             kind: 'ListType',
-            type: createTypeNode(type.ofType)
+            type: createTypeNode(type.ofType),
         };
     }
     if (isNonNullType(type)) {
         return {
             kind: 'NonNullType',
-            type: <NamedTypeNode | ListTypeNode>createTypeNode(type.ofType)
+            type: <NamedTypeNode | ListTypeNode>createTypeNode(type.ofType),
         };
     }
     return {
         kind: 'NamedType',
         name: {
             kind: 'Name',
-            value: type.name
-        }
+            value: type.name,
+        },
     };
 }
 
 /**
  * Creates a GraphQL syntax node that defines a variable of a given name and type
  */
-export function createVariableDefinitionNode(varName: string, type: GraphQLType): VariableDefinitionNode {
+export function createVariableDefinitionNode(
+    varName: string,
+    type: GraphQLType,
+): VariableDefinitionNode {
     return {
         kind: 'VariableDefinition',
         variable: {
             kind: 'Variable',
             name: {
                 kind: 'Name',
-                value: varName
-            }
+                value: varName,
+            },
         },
-        type: createTypeNode(type)
+        type: createTypeNode(type),
     };
 }
 
@@ -129,7 +169,10 @@ export function createVariableDefinitionNode(varName: string, type: GraphQLType)
  * @param argumentPath a dot-separated segment string
  * @param variableName
  */
-export function createNestedArgumentWithVariableNode(argumentPath: string, variableName: string): ArgumentNode {
+export function createNestedArgumentWithVariableNode(
+    argumentPath: string,
+    variableName: string,
+): ArgumentNode {
     const parts = argumentPath.split('.');
     const argName = parts.shift();
     if (!argName) {
@@ -140,8 +183,8 @@ export function createNestedArgumentWithVariableNode(argumentPath: string, varia
         kind: 'Variable',
         name: {
             kind: 'Name',
-            value: variableName
-        }
+            value: variableName,
+        },
     };
 
     for (const part of parts.reverse()) {
@@ -153,10 +196,10 @@ export function createNestedArgumentWithVariableNode(argumentPath: string, varia
                     value,
                     name: {
                         kind: 'Name',
-                        value: part
-                    }
-                }
-            ]
+                        value: part,
+                    },
+                },
+            ],
         };
     }
 
@@ -164,9 +207,9 @@ export function createNestedArgumentWithVariableNode(argumentPath: string, varia
         kind: 'Argument',
         name: {
             kind: 'Name',
-            value: argName
+            value: argName,
         },
-        value
+        value,
     };
 }
 
@@ -180,14 +223,20 @@ export function createNestedArgumentWithVariableNode(argumentPath: string, varia
  *     selectionSet: the modified selection set
  *     alias: the name of the field in the object that will be returned (alias if aliased, otherwise field name)
  */
-export function addFieldSelectionSafely(selectionSet: SelectionSetNode, field: string, fragments: { [fragmentName: string]: FragmentDefinitionNode } = {}): { alias: string, selectionSet: SelectionSetNode } {
+export function addFieldSelectionSafely(
+    selectionSet: SelectionSetNode,
+    field: string,
+    fragments: { [fragmentName: string]: FragmentDefinitionNode } = {},
+): { alias: string; selectionSet: SelectionSetNode } {
     // Do not consider fragments here because we do not know if the type of them always matches the actual type
-    const existing = selectionSet.selections.filter(sel => sel.kind == 'Field' && sel.name.value == field);
+    const existing = selectionSet.selections.filter(
+        (sel) => sel.kind == 'Field' && sel.name.value == field,
+    );
     if (existing.length) {
         const sel = <FieldNode>existing[0];
         return {
             selectionSet,
-            alias: sel.alias ? sel.alias.value : sel.name.value
+            alias: sel.alias ? sel.alias.value : sel.name.value,
         };
     }
 
@@ -196,7 +245,7 @@ export function addFieldSelectionSafely(selectionSet: SelectionSetNode, field: s
     if (aliasExistsInSelection(selectionSet, alias, fragments)) {
         let number = 0;
         do {
-            alias = (field + '') + number; // convert field to string, better safe than sorry
+            alias = field + '' + number; // convert field to string, better safe than sorry
             number++;
         } while (aliasExistsInSelection(selectionSet, alias, fragments));
     }
@@ -210,20 +259,22 @@ export function addFieldSelectionSafely(selectionSet: SelectionSetNode, field: s
                     kind: 'Field',
                     name: {
                         kind: 'Name',
-                        value: field
+                        value: field,
                     },
 
                     // simple conditional operator would set alias to undefined which is something different
-                    ...(alias == field ? {} : {
-                        alias: {
-                            kind: 'Name',
-                            value: alias
-                        }
-                    })
-                }
-            ]
+                    ...(alias == field
+                        ? {}
+                        : {
+                              alias: {
+                                  kind: 'Name',
+                                  value: alias,
+                              },
+                          }),
+                },
+            ],
         },
-        alias
+        alias,
     };
 }
 
@@ -235,7 +286,11 @@ export function addFieldSelectionSafely(selectionSet: SelectionSetNode, field: s
  * @param alias the name of the field or alias to check
  * @param fragments an array of fragment definitions for lookup of fragment spreads
  */
-export function aliasExistsInSelection(selectionSet: SelectionSetNode, alias: string, fragments: { [fragmentName: string]: FragmentDefinitionNode } = {}) {
+export function aliasExistsInSelection(
+    selectionSet: SelectionSetNode,
+    alias: string,
+    fragments: { [fragmentName: string]: FragmentDefinitionNode } = {},
+) {
     return findNodesByAliasInSelections(selectionSet.selections, alias, fragments).length > 0;
 }
 
@@ -246,7 +301,10 @@ export function aliasExistsInSelection(selectionSet: SelectionSetNode, alias: st
  * @param fragments an array of fragment definitions for lookup of fragment spreads
  * @return the field nodes
  */
-export function expandSelections(selections: ReadonlyArray<SelectionNode>, fragments: { [fragmentName: string]: FragmentDefinitionNode } = {}): ReadonlyArray<FieldNode> {
+export function expandSelections(
+    selections: ReadonlyArray<SelectionNode>,
+    fragments: { [fragmentName: string]: FragmentDefinitionNode } = {},
+): ReadonlyArray<FieldNode> {
     function findFragment(name: string): FragmentDefinitionNode {
         if (!(name in fragments)) {
             throw new Error(`Fragment ${name} is referenced but not defined`);
@@ -276,16 +334,23 @@ export function expandSelections(selections: ReadonlyArray<SelectionNode>, fragm
  * Inline fragments and fragment spread operators are crawled recursively. The type of fragments is not considered.
  * Multiple matching nodes are collected recusivily, according to GraphQL's field node merging logic
  */
-export function findNodesByAliasInSelections(selections: ReadonlyArray<SelectionNode>, alias: string, fragments: { [fragmentName: string]: FragmentDefinitionNode } = {}): ReadonlyArray<FieldNode> {
-    return expandSelections(selections, fragments).filter(node => getAliasOrName(node) == alias);
+export function findNodesByAliasInSelections(
+    selections: ReadonlyArray<SelectionNode>,
+    alias: string,
+    fragments: { [fragmentName: string]: FragmentDefinitionNode } = {},
+): ReadonlyArray<FieldNode> {
+    return expandSelections(selections, fragments).filter((node) => getAliasOrName(node) == alias);
 }
 
-
-export function addVariableDefinitionSafely(variableDefinitions: ReadonlyArray<VariableDefinitionNode>, name: string, type: GraphQLType): {
+export function addVariableDefinitionSafely(
+    variableDefinitions: ReadonlyArray<VariableDefinitionNode>,
     name: string,
-    variableDefinitions: ReadonlyArray<VariableDefinitionNode>
+    type: GraphQLType,
+): {
+    name: string;
+    variableDefinitions: ReadonlyArray<VariableDefinitionNode>;
 } {
-    const names = new Set(variableDefinitions.map(def => def.variable.name.value));
+    const names = new Set(variableDefinitions.map((def) => def.variable.name.value));
     let varName = name;
     if (names.has(name)) {
         let number = 0;
@@ -296,11 +361,8 @@ export function addVariableDefinitionSafely(variableDefinitions: ReadonlyArray<V
     }
 
     return {
-        variableDefinitions: [
-            ...variableDefinitions,
-            createVariableDefinitionNode(varName, type)
-        ],
-        name: varName
+        variableDefinitions: [...variableDefinitions, createVariableDefinitionNode(varName, type)],
+        name: varName,
     };
 }
 
@@ -310,21 +372,28 @@ export function addVariableDefinitionSafely(variableDefinitions: ReadonlyArray<V
  * @param typeNameTransformer a function that gets the old name and returns the new name
  * @returns {any}
  */
-export function renameTypes<T extends ASTNode>(root: T, typeNameTransformer: (name: string) => string): T {
+export function renameTypes<T extends ASTNode>(
+    root: T,
+    typeNameTransformer: (name: string) => string,
+): T {
     return visit(root, {
         NamedType(node: NamedTypeNode) {
             return {
                 ...node,
                 name: {
                     kind: 'Name',
-                    value: typeNameTransformer(node.name.value)
-                }
+                    value: typeNameTransformer(node.name.value),
+                },
             };
-        }
+        },
     });
 }
 
-export function collectFieldNodesInPath(selectionSet: SelectionSetNode, aliases: ReadonlyArray<string>, fragments: { [fragmentName: string]: FragmentDefinitionNode } = {}): ReadonlyArray<FieldNode> {
+export function collectFieldNodesInPath(
+    selectionSet: SelectionSetNode,
+    aliases: ReadonlyArray<string>,
+    fragments: { [fragmentName: string]: FragmentDefinitionNode } = {},
+): ReadonlyArray<FieldNode> {
     if (!aliases.length) {
         throw new Error(`Aliases must not be empty`);
     }
@@ -333,13 +402,21 @@ export function collectFieldNodesInPath(selectionSet: SelectionSetNode, aliases:
     const fieldNodesInPath: FieldNode[] = [];
     for (const alias of aliases) {
         if (!currentSelectionSets.length) {
-            throw new Error(`Expected field ${fieldNodesInPath.length ? fieldNodesInPath[fieldNodesInPath.length - 1].name.value : ''} to have sub-selection but it does not`);
+            throw new Error(
+                `Expected field ${
+                    fieldNodesInPath.length
+                        ? fieldNodesInPath[fieldNodesInPath.length - 1].name.value
+                        : ''
+                } to have sub-selection but it does not`,
+            );
         }
-        const matchingFieldNodes = flatMap(currentSelectionSets, selSet => findNodesByAliasInSelections(selSet.selections, alias, fragments));
+        const matchingFieldNodes = flatMap(currentSelectionSets, (selSet) =>
+            findNodesByAliasInSelections(selSet.selections, alias, fragments),
+        );
         if (!matchingFieldNodes.length) {
             throw new Error(`Field ${alias} expected but not found`);
         }
-        currentSelectionSets = compact(matchingFieldNodes.map(node => node.selectionSet));
+        currentSelectionSets = compact(matchingFieldNodes.map((node) => node.selectionSet));
         // those matching nodes all need to be compatible - except their selection sets (which will be merged)
         // As the consumer probably does not care about the selection set (this function here is there to process them, after all), this is probably ok
         fieldNodesInPath.push(matchingFieldNodes[0]);

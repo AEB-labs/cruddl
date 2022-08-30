@@ -16,10 +16,10 @@ export function getValueFromAST(valueNode: ValueNode): any {
         case ENUM:
             return valueNode.value;
         case LIST:
-            return [...valueNode.values.map(value => getValueFromAST(value))];
+            return [...valueNode.values.map((value) => getValueFromAST(value))];
         case OBJECT:
             const obj: PlainObject = {};
-            valueNode.fields.forEach(field => {
+            valueNode.fields.forEach((field) => {
                 obj[field.name.value] = getValueFromAST(field.value);
             });
             return obj;

@@ -4,13 +4,15 @@
 [![Build Status](https://github.com/AEB-labs/cruddl/workflows/CI/badge.svg)](https://github.com/AEB-labs/cruddl/actions?query=branch%3Amain)
 [![Package Quality](https://npm.packagequality.com/shield/cruddl.svg)](https://packagequality.com/#?package=cruddl)
 
-**cruddl** - create a cuddly GraphQL API for your database, using the GraphQL SDL to model your schema.
+**cruddl** - create a cuddly GraphQL API for your database, using the GraphQL SDL to model your
+schema.
 
-This TypeScript library creates an executable GraphQL schema from a model definition and provides queries and mutations
-to access a database. Currently, it supports the multi-model database [ArangoDB](https://www.arangodb.com/). The concept
-being inspired by existing projects like [prisma](https://github.com/graphcool/prisma) and
-[join-monster](https://github.com/stems/join-monster), cruddl exploits the expressiveness of the Arango Query Language
-(AQL) to generate one tailored query for each GraphQL request.
+This TypeScript library creates an executable GraphQL schema from a model definition and provides
+queries and mutations to access a database. Currently, it supports the multi-model database
+[ArangoDB](https://www.arangodb.com/). The concept being inspired by existing projects like
+[prisma](https://github.com/graphcool/prisma) and
+[join-monster](https://github.com/stems/join-monster), cruddl exploits the expressiveness of the
+Arango Query Language (AQL) to generate one tailored query for each GraphQL request.
 
 **[Try it online](https://aeb-labs.github.io/cruddl/)**
 
@@ -41,8 +43,8 @@ const db = new ArangoDBAdapter({
 });
 ```
 
-If you just want to explore the features, you can also use an in-memory database implementation - but don't use this for
-anything else.
+If you just want to explore the features, you can also use an in-memory database implementation -
+but don't use this for anything else.
 
 ```typescript
 import { InMemoryAdapter } from 'cruddl';
@@ -106,10 +108,11 @@ See the [modelling guide](docs/modelling.md) and the [api documentation](docs/ap
 
 ### Usage in a browser environment
 
-The core of cruddl perfectly works in a browser (e.g., using webpack), and this can be useful to generate a mock GraphQL
-schema on the fly or to validate a cruddl project. However, the ArangoDB adapter only works with node imports like
-`path`. Unless you configure webpack to provide mock modules for them, you will get an error when you import `cruddl` in
-a webpack environment. To solve this, you can import the core symbols from `cruddl/core` and the `InMemoryAdapter` from
+The core of cruddl perfectly works in a browser (e.g., using webpack), and this can be useful to
+generate a mock GraphQL schema on the fly or to validate a cruddl project. However, the ArangoDB
+adapter only works with node imports like `path`. Unless you configure webpack to provide mock
+modules for them, you will get an error when you import `cruddl` in a webpack environment. To solve
+this, you can import the core symbols from `cruddl/core` and the `InMemoryAdapter` from
 `cruddl/inmemory`.
 
 ## Running Tests

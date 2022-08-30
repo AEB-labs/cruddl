@@ -12,9 +12,7 @@
           }
         ],
         "message": "Invalid cursor \"this-is-not-json\" supplied to \"after\": Unexpected token h in JSON at position 1",
-        "path": [
-          "allPapers"
-        ]
+        "path": ["allPapers"]
       }
     ]
   },
@@ -34,9 +32,7 @@
           }
         ],
         "message": "Invalid cursor supplied to \"after\": Property \"title\" missing. Make sure this cursor has been obtained with the same orderBy clause.",
-        "path": [
-          "allPapers"
-        ]
+        "path": ["allPapers"]
       }
     ]
   },
@@ -53,9 +49,7 @@
           }
         ],
         "message": "The JSON value provided as \"after\" argument is not an object",
-        "path": [
-          "allPapers"
-        ]
+        "path": ["allPapers"]
       }
     ]
   }

@@ -18,16 +18,16 @@ export class UniqueFieldArgumentsGenerator {
         return {
             [ID_FIELD]: {
                 type: GraphQLID,
-                description: rootEntityType.getFieldOrThrow('id').description
+                description: rootEntityType.getFieldOrThrow('id').description,
             },
             ...(rootEntityType.keyField
                 ? {
                       [rootEntityType.keyField.name]: {
                           type: this.getAsGraphQLTypeOrThrow(rootEntityType.keyField.type),
-                          description: rootEntityType.keyField.description
-                      }
+                          description: rootEntityType.keyField.description,
+                      },
                   }
-                : {})
+                : {}),
         };
     }
 

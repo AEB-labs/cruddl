@@ -12,31 +12,31 @@ describe('GraphQLStringMap', () => {
                             kind: 'ObjectField',
                             name: {
                                 kind: 'Name',
-                                value: 'prop1'
+                                value: 'prop1',
                             },
                             value: {
                                 kind: 'StringValue',
-                                value: 'val1'
-                            }
+                                value: 'val1',
+                            },
                         },
                         {
                             kind: 'ObjectField',
                             name: {
                                 kind: 'Name',
-                                value: 'prop2'
+                                value: 'prop2',
                             },
                             value: {
                                 kind: 'StringValue',
-                                value: 'val2'
-                            }
-                        }
-                    ]
+                                value: 'val2',
+                            },
+                        },
+                    ],
                 },
-                undefined
+                undefined,
             );
             expect(parsed).to.deep.equal({
                 prop1: 'val1',
-                prop2: 'val2'
+                prop2: 'val2',
             });
         });
 
@@ -49,29 +49,29 @@ describe('GraphQLStringMap', () => {
                             kind: 'ObjectField',
                             name: {
                                 kind: 'Name',
-                                value: 'prop1'
+                                value: 'prop1',
                             },
                             value: {
                                 kind: 'StringValue',
-                                value: 'val1'
-                            }
+                                value: 'val1',
+                            },
                         },
                         {
                             kind: 'ObjectField',
                             name: {
                                 kind: 'Name',
-                                value: 'empty'
+                                value: 'empty',
                             },
                             value: {
-                                kind: 'NullValue'
-                            }
-                        }
-                    ]
+                                kind: 'NullValue',
+                            },
+                        },
+                    ],
                 },
-                undefined
+                undefined,
             );
             expect(parsed).to.deep.equal({
-                prop1: 'val1'
+                prop1: 'val1',
             });
         });
 
@@ -84,36 +84,36 @@ describe('GraphQLStringMap', () => {
                             kind: 'ObjectField',
                             name: {
                                 kind: 'Name',
-                                value: 'prop1'
+                                value: 'prop1',
                             },
                             value: {
                                 kind: 'StringValue',
-                                value: 'val1'
-                            }
+                                value: 'val1',
+                            },
                         },
                         {
                             kind: 'ObjectField',
                             name: {
                                 kind: 'Name',
-                                value: 'varField'
+                                value: 'varField',
                             },
                             value: {
                                 kind: 'Variable',
                                 name: {
                                     kind: 'Name',
-                                    value: 'var'
-                                }
-                            }
-                        }
-                    ]
+                                    value: 'var',
+                                },
+                            },
+                        },
+                    ],
                 },
                 {
-                    var: 'varValue'
-                }
+                    var: 'varValue',
+                },
             );
             expect(parsed).to.deep.equal({
                 prop1: 'val1',
-                varField: 'varValue'
+                varField: 'varValue',
             });
         });
 
@@ -126,35 +126,35 @@ describe('GraphQLStringMap', () => {
                             kind: 'ObjectField',
                             name: {
                                 kind: 'Name',
-                                value: 'prop1'
+                                value: 'prop1',
                             },
                             value: {
                                 kind: 'StringValue',
-                                value: 'val1'
-                            }
+                                value: 'val1',
+                            },
                         },
                         {
                             kind: 'ObjectField',
                             name: {
                                 kind: 'Name',
-                                value: 'varField'
+                                value: 'varField',
                             },
                             value: {
                                 kind: 'Variable',
                                 name: {
                                     kind: 'Name',
-                                    value: 'var'
-                                }
-                            }
-                        }
-                    ]
+                                    value: 'var',
+                                },
+                            },
+                        },
+                    ],
                 },
                 {
-                    var: null
-                }
+                    var: null,
+                },
             );
             expect(parsed).to.deep.equal({
-                prop1: 'val1'
+                prop1: 'val1',
             });
         });
 
@@ -163,9 +163,9 @@ describe('GraphQLStringMap', () => {
                 GraphQLStringMap.parseLiteral(
                     {
                         kind: 'IntValue',
-                        value: '123'
+                        value: '123',
                     },
-                    undefined
+                    undefined,
                 );
             }).to.throw('Expected object value');
         });
@@ -180,16 +180,16 @@ describe('GraphQLStringMap', () => {
                                 kind: 'ObjectField',
                                 name: {
                                     kind: 'Name',
-                                    value: 'intField'
+                                    value: 'intField',
                                 },
                                 value: {
                                     kind: 'IntValue',
-                                    value: '123'
-                                }
-                            }
-                        ]
+                                    value: '123',
+                                },
+                            },
+                        ],
                     },
-                    undefined
+                    undefined,
                 );
             }).to.throw('Expected value of property "intField" to be a string');
         });
@@ -204,21 +204,21 @@ describe('GraphQLStringMap', () => {
                                 kind: 'ObjectField',
                                 name: {
                                     kind: 'Name',
-                                    value: 'varField'
+                                    value: 'varField',
                                 },
                                 value: {
                                     kind: 'Variable',
                                     name: {
                                         kind: 'Name',
-                                        value: 'var'
-                                    }
-                                }
-                            }
-                        ]
+                                        value: 'var',
+                                    },
+                                },
+                            },
+                        ],
                     },
                     {
-                        var: 123
-                    }
+                        var: 123,
+                    },
                 );
             }).to.throw('Expected value of property "varField" to be a string');
         });
@@ -228,7 +228,7 @@ describe('GraphQLStringMap', () => {
         it('accepts a simple string map', () => {
             const input = {
                 prop1: 'value1',
-                prop2: 'value2'
+                prop2: 'value2',
             };
             const result = GraphQLStringMap.parseValue(input);
             expect(result).to.equal(input);
@@ -237,13 +237,13 @@ describe('GraphQLStringMap', () => {
         it('removes null properties', () => {
             const input = {
                 prop1: 'value1',
-                empty: null
+                empty: null,
             };
             const result = GraphQLStringMap.parseValue(input);
             expect(result).not.to.equal(input);
             expect(input.empty).to.equal(null);
             expect(result).to.deep.equal({
-                prop1: 'value1'
+                prop1: 'value1',
             });
         });
 
@@ -253,7 +253,7 @@ describe('GraphQLStringMap', () => {
 
         it('errors on non-string values', () => {
             expect(() => GraphQLStringMap.parseValue({ intProp: 123 })).to.throw(
-                'Expected value of property "intProp" to be a string'
+                'Expected value of property "intProp" to be a string',
             );
         });
     });

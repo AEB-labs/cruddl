@@ -11,8 +11,14 @@ mutation createEdges {
 
     updateDependents(
         input: [
-            { id: "@{ids/Dependent/1}", addAlternativeDependents: ["@{ids/AlternativeDependent/2}"] }
-            { id: "@{ids/Dependent/2}", addAlternativeDependents: ["@{ids/AlternativeDependent/3}"] }
+            {
+                id: "@{ids/Dependent/1}"
+                addAlternativeDependents: ["@{ids/AlternativeDependent/2}"]
+            }
+            {
+                id: "@{ids/Dependent/2}"
+                addAlternativeDependents: ["@{ids/AlternativeDependent/3}"]
+            }
         ]
     ) {
         key

@@ -19,7 +19,11 @@ e:
 
 `;
 
-const correspondingObject = { a: { b: { c: 'apfel' } }, d: ['test1', 'test2', 'test3'], e: [0, 1, 2] };
+const correspondingObject = {
+    a: { b: { c: 'apfel' } },
+    d: ['test1', 'test2', 'test3'],
+    e: [0, 1, 2],
+};
 
 describe('YAML parser and validator', () => {
     it('returns the right message locations', () => {
@@ -75,7 +79,8 @@ describe('YAML parser and validator', () => {
         const validationContext = new ValidationContext();
         const result = parseProjectSource(source, {}, validationContext);
 
-        expect(validationContext.asResult().hasErrors(), validationContext.asResult().toString()).to.be.false;
+        expect(validationContext.asResult().hasErrors(), validationContext.asResult().toString()).to
+            .be.false;
         expect(result).to.be.undefined;
     });
 
@@ -84,7 +89,7 @@ describe('YAML parser and validator', () => {
             'test.yaml',
             `
 i18n:
-  de: `
+  de: `,
         );
         const validationContext = new ValidationContext();
         const result = parseProjectSource(source, {}, validationContext);

@@ -72,7 +72,9 @@ export class CollectPath {
     }
 
     getFlatSegments(): ReadonlyArray<FieldSegment | RelationSegment> {
-        return flatMap(this.segments, seg => (seg.kind === 'collect' ? seg.path.getFlatSegments() : [seg]));
+        return flatMap(this.segments, (seg) =>
+            seg.kind === 'collect' ? seg.path.getFlatSegments() : [seg],
+        );
     }
 
     get resultingType(): Type | undefined {
@@ -113,7 +115,7 @@ export class CollectPath {
 
     @memorize()
     get traversesRootEntityTypes(): boolean {
-        return this.segments.some(s => s.field.type.isRootEntityType);
+        return this.segments.some((s) => s.field.type.isRootEntityType);
     }
 
     /**
@@ -126,7 +128,7 @@ export class CollectPath {
 
     private traversePath(
         addMessage: (mess: ValidationMessage) => void,
-        pathStack?: ReadonlyArray<CollectPath>
+        pathStack?: ReadonlyArray<CollectPath>,
     ): ReadonlyArray<CollectPathSegment> {
         const segmentSpecifiers = this.path.split('.');
         if (!this.path || !segmentSpecifiers.length) {
@@ -152,14 +154,19 @@ export class CollectPath {
                 addMessage(
                     ValidationMessage.error(
                         `Type "${currentType.name}" is not an object type and cannot be navigated into.`,
-                        segmentLocation
-                    )
+                        segmentLocation,
+                    ),
                 );
                 return [];
             }
 
             if (!segmentSpecifier) {
-                addMessage(ValidationMessage.error(`The path should consist of dot-separated segments.`, this.astNode));
+                addMessage(
+                    ValidationMessage.error(
+                        `The path should consist of dot-separated segments.`,
+                        this.astNode,
+                    ),
+                );
                 return [];
             }
             const parsed = parseSegmentSpecifier(segmentSpecifier);
@@ -167,8 +174,8 @@ export class CollectPath {
                 addMessage(
                     ValidationMessage.error(
                         `The path segment "${segmentSpecifier}" is invalid. It should be a field name, optionally followed by a depth specifier like {1,2}.`,
-                        segmentLocation
-                    )
+                        segmentLocation,
+                    ),
                 );
                 return [];
             }
@@ -178,8 +185,8 @@ export class CollectPath {
                 addMessage(
                     ValidationMessage.error(
                         `Type "${currentType.name}" does not have a field "${fieldName}".`,
-                        segmentLocation
-                    )
+                        segmentLocation,
+                    ),
                 );
                 return [];
             }
@@ -204,8 +211,8 @@ export class CollectPath {
                             addMessage(
                                 ValidationMessage.error(
                                     `Collect field "${field.name}" cannot be used here because it would cause a recursion.`,
-                                    segmentLocation
-                                )
+                                    segmentLocation,
+                                ),
                             );
                             return [];
                         }
@@ -225,8 +232,8 @@ export class CollectPath {
                 addMessage(
                     ValidationMessage.error(
                         `Field "${currentType.name}.${field.name}" is a reference and cannot be used in a collect path.`,
-                        segmentLocation
-                    )
+                        segmentLocation,
+                    ),
                 );
                 // when we support this, currentResultMayContainDuplicates should be set to true if previousResultIsList is true
                 return [];
@@ -237,8 +244,8 @@ export class CollectPath {
                 addMessage(
                     ValidationMessage.error(
                         `Field "${currentType.name}.${field.name}" is a parent field and cannot be used in a collect path.`,
-                        segmentLocation
-                    )
+                        segmentLocation,
+                    ),
                 );
                 return [];
             }
@@ -248,8 +255,8 @@ export class CollectPath {
                 addMessage(
                     ValidationMessage.error(
                         `Field "${currentType.name}.${field.name}" is a root field and cannot be used in a collect path.`,
-                        segmentLocation
-                    )
+                        segmentLocation,
+                    ),
                 );
                 return [];
             }
@@ -267,8 +274,8 @@ export class CollectPath {
                     addMessage(
                         ValidationMessage.error(
                             `The collect path of "${currentType.name}.${field.name}" has validation errors.`,
-                            this.astNode
-                        )
+                            this.astNode,
+                        ),
                     );
                     return [];
                 }
@@ -276,8 +283,8 @@ export class CollectPath {
                     addMessage(
                         ValidationMessage.error(
                             `Field "${currentType.name}.${field.name}" is an aggregation field and cannot be used in a collect path.`,
-                            segmentLocation
-                        )
+                            segmentLocation,
+                        ),
                     );
                     return [];
                 }
@@ -287,9 +294,9 @@ export class CollectPath {
                     field.collectPath.resultMayContainDuplicateEntities ||
                     (previousResultIsList &&
                         field.collectPath.segments.some(
-                            segment =>
+                            (segment) =>
                                 segment.kind === 'relation' &&
-                                segment.relationSide.targetMultiplicity === Multiplicity.MANY
+                                segment.relationSide.targetMultiplicity === Multiplicity.MANY,
                         ))
                 ) {
                     currentResultMayContainDuplicateEntities = true;
@@ -304,7 +311,7 @@ export class CollectPath {
                     resultIsNullable: currentResultIsNullable,
                     field,
                     resultingType: field.collectPath.resultingType,
-                    resultMayContainDuplicateEntities: currentResultMayContainDuplicateEntities
+                    resultMayContainDuplicateEntities: currentResultMayContainDuplicateEntities,
                 });
             } else if (field.type.isRootEntityType) {
                 const relationSide = field.relationSide;
@@ -313,8 +320,8 @@ export class CollectPath {
                     addMessage(
                         ValidationMessage.error(
                             `Field "${currentType.name}.${field.name}" is a root entity, but not a relation, and cannot be used in a collect path.`,
-                            segmentLocation
-                        )
+                            segmentLocation,
+                        ),
                     );
                     return [];
                 }
@@ -324,8 +331,8 @@ export class CollectPath {
                         addMessage(
                             ValidationMessage.error(
                                 `A depth specifier is only valid for recursive relation fields, and field "${currentType.name}.${field.name}" is not of type "${currentType.name}", but of type "${field.type.name}".`,
-                                segmentLocation
-                            )
+                                segmentLocation,
+                            ),
                         );
                         return [];
                     }
@@ -335,16 +342,16 @@ export class CollectPath {
                         addMessage(
                             ValidationMessage.error(
                                 `The maximum depth (${maxDepth}) cannot be lower than the minimum depth (${minDepth}).`,
-                                segmentLocation
-                            )
+                                segmentLocation,
+                            ),
                         );
                         return [];
                     } else if (maxDepth > 1 && !field.isList) {
                         addMessage(
                             ValidationMessage.error(
                                 `The maximum depth of "${currentType.name}.${field.name}" cannot be higher than 1 because it is a to-1 relation.`,
-                                segmentLocation
-                            )
+                                segmentLocation,
+                            ),
                         );
                         return [];
                     }
@@ -362,7 +369,12 @@ export class CollectPath {
                 // segment stays nullable even if this is a list (if there is no edge, we include NULL for consistency)
 
                 if (maxDepth === 0) {
-                    addMessage(ValidationMessage.error(`The maximum depth cannot be zero.`, segmentLocation));
+                    addMessage(
+                        ValidationMessage.error(
+                            `The maximum depth cannot be zero.`,
+                            segmentLocation,
+                        ),
+                    );
                 }
 
                 // following 1-to-n and then n-to-m means that one of the m entities may be reached via different entities of the n which all belong to the 1 entity
@@ -382,15 +394,15 @@ export class CollectPath {
                     resultingType: field.type,
                     isNullableSegment: !field.isNonNull,
                     resultIsNullable: currentResultIsNullable,
-                    resultMayContainDuplicateEntities: currentResultMayContainDuplicateEntities
+                    resultMayContainDuplicateEntities: currentResultMayContainDuplicateEntities,
                 });
             } else {
                 if (minDepth != undefined) {
                     addMessage(
                         ValidationMessage.error(
                             `A depth specifier is only valid for relation fields, and field "${currentType.name}.${field.name}" is not a relation.`,
-                            segmentLocation
-                        )
+                            segmentLocation,
+                        ),
                     );
                     return [];
                 }
@@ -403,7 +415,7 @@ export class CollectPath {
                     resultIsList: currentResultIsList,
                     isNullableSegment: !field.isNonNull,
                     resultIsNullable: currentResultIsNullable,
-                    resultMayContainDuplicateEntities: currentResultMayContainDuplicateEntities
+                    resultMayContainDuplicateEntities: currentResultMayContainDuplicateEntities,
                 });
             }
 
@@ -420,7 +432,7 @@ export class CollectPath {
 }
 
 function parseSegmentSpecifier(
-    specifier: string
+    specifier: string,
 ): { readonly fieldName: string; minDepth?: number; maxDepth?: number } | undefined {
     const matches = specifier.match(/^(\w+)({(\d+)(,(\s*\d))*})?$/);
     if (!matches) {
@@ -430,13 +442,11 @@ function parseSegmentSpecifier(
     return {
         fieldName,
         minDepth: minDepth != undefined ? Number(minDepth) : undefined,
-        maxDepth: maxDepth != undefined ? Number(maxDepth) : undefined
+        maxDepth: maxDepth != undefined ? Number(maxDepth) : undefined,
     };
 }
 
-export function getEffectiveCollectSegments(
-    path: CollectPath
-): {
+export function getEffectiveCollectSegments(path: CollectPath): {
     readonly relationSegments: ReadonlyArray<RelationSegment>;
     readonly fieldSegments: ReadonlyArray<FieldSegment>;
 } {
@@ -449,7 +459,9 @@ export function getEffectiveCollectSegments(
                 break;
             case 'relation':
                 if (fieldSegments.length) {
-                    throw new Error(`Unexpected field segment after relation segments in collect path "${path.path}"`);
+                    throw new Error(
+                        `Unexpected field segment after relation segments in collect path "${path.path}"`,
+                    );
                 }
                 relationSegments.push(segment);
                 break;
@@ -459,6 +471,6 @@ export function getEffectiveCollectSegments(
     }
     return {
         fieldSegments,
-        relationSegments
+        relationSegments,
     };
 }

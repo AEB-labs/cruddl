@@ -1,6 +1,13 @@
-import { ParsedProjectSource, ParsedProjectSourceBaseKind, PathLocationMap } from '../../../config/parsed-project';
+import {
+    ParsedProjectSource,
+    ParsedProjectSourceBaseKind,
+    PathLocationMap,
+} from '../../../config/parsed-project';
 import { ValidationMessage } from '../../../model';
-import { createRoleSpecifierEntry, InvalidRoleSpecifierError } from '../../../model/implementation/permission-profile';
+import {
+    createRoleSpecifierEntry,
+    InvalidRoleSpecifierError,
+} from '../../../model/implementation/permission-profile';
 import { flatMap } from '../../../utils/utils';
 import { ParsedSourceValidator } from '../ast-validator';
 
@@ -22,14 +29,18 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
         }
 
         return flatMap(Object.entries(data.permissionProfiles as any), ([name, profile]) =>
-            this.validatePermissionProfile({ profile, name, pathLocationMap: source.pathLocationMap })
+            this.validatePermissionProfile({
+                profile,
+                name,
+                pathLocationMap: source.pathLocationMap,
+            }),
         );
     }
 
     private validatePermissionProfile({
         profile,
         name,
-        pathLocationMap
+        pathLocationMap,
     }: {
         profile: any;
         name: string;
@@ -40,7 +51,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
         }
 
         return flatMap(Object.entries(profile.permissions), ([index, permission]) =>
-            this.validatePermission({ permission, name, pathLocationMap, index })
+            this.validatePermission({ permission, name, pathLocationMap, index }),
         );
     }
 
@@ -48,7 +59,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
         permission,
         name,
         index,
-        pathLocationMap
+        pathLocationMap,
     }: {
         permission: any;
         name: string;
@@ -76,8 +87,10 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
                     messages.push(
                         ValidationMessage.error(
                             e.message,
-                            pathLocationMap[`/permissionProfiles/${name}/permissions/${index}/roles/${roleIndex}`]
-                        )
+                            pathLocationMap[
+                                `/permissionProfiles/${name}/permissions/${index}/roles/${roleIndex}`
+                            ],
+                        ),
                     );
                 } else {
                     throw e;
@@ -86,7 +99,10 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
             roleIndex++;
         }
 
-        if (hasRoleExpressionWithoutCaptureGroup && Array.isArray(permission.restrictToAccessGroups)) {
+        if (
+            hasRoleExpressionWithoutCaptureGroup &&
+            Array.isArray(permission.restrictToAccessGroups)
+        ) {
             let accessGroupIndex = 0;
             for (const accessGroupExpression of permission.restrictToAccessGroups) {
                 if (
@@ -99,8 +115,8 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
                             'Can only use placeholders (like $1) in restrictToAccessGroups when all role expressions are regular expressions with capturing groups',
                             pathLocationMap[
                                 `/permissionProfiles/${name}/permissions/${index}/restrictToAccessGroups/${accessGroupIndex}`
-                            ]
-                        )
+                            ],
+                        ),
                     );
                 }
                 accessGroupIndex++;

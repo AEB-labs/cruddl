@@ -4,7 +4,7 @@ import {
     FragmentDefinitionNode,
     GraphQLIncludeDirective,
     GraphQLSkipDirective,
-    SelectionNode
+    SelectionNode,
 } from 'graphql';
 import { getArgumentValues } from './argument-values';
 
@@ -27,7 +27,7 @@ export function resolveSelections(
     context: {
         readonly variableValues: { readonly [key: string]: unknown };
         readonly fragments: { readonly [key: string]: FragmentDefinitionNode | undefined };
-    }
+    },
 ): ReadonlyArray<FieldNode> {
     const visitedFragmentNames = new Set<string>();
     const nodes: FieldNode[] = [];
@@ -77,8 +77,11 @@ export function resolveSelections(
  * @param variableValues variables supplied to the query
  * @returns true if the node should be included, false if it should be skipped
  */
-export function shouldIncludeNode(directives: ReadonlyArray<DirectiveNode>, variableValues: { [key: string]: any }) {
-    const skipNode = directives.find(d => d.name.value == GraphQLSkipDirective.name);
+export function shouldIncludeNode(
+    directives: ReadonlyArray<DirectiveNode>,
+    variableValues: { [key: string]: any },
+) {
+    const skipNode = directives.find((d) => d.name.value == GraphQLSkipDirective.name);
     if (skipNode) {
         const { if: skipIf } = getArgumentValues(GraphQLSkipDirective, skipNode, variableValues);
         if (skipIf === true) {
@@ -86,9 +89,13 @@ export function shouldIncludeNode(directives: ReadonlyArray<DirectiveNode>, vari
         }
     }
 
-    const includeNode = directives.find(d => d.name.value == GraphQLIncludeDirective.name);
+    const includeNode = directives.find((d) => d.name.value == GraphQLIncludeDirective.name);
     if (includeNode) {
-        const { if: includeIf } = getArgumentValues(GraphQLIncludeDirective, includeNode, variableValues);
+        const { if: includeIf } = getArgumentValues(
+            GraphQLIncludeDirective,
+            includeNode,
+            variableValues,
+        );
         if (includeIf === false) {
             return false;
         }

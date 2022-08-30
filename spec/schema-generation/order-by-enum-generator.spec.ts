@@ -13,14 +13,14 @@ describe('OrderByEnumGenerator', () => {
                     fields: [
                         {
                             name: 'field',
-                            typeName: 'String'
-                        }
-                    ]
-                }
-            ]
+                            typeName: 'String',
+                        },
+                    ],
+                },
+            ],
         });
         const enumType = generator.generate(model.getObjectTypeOrThrow('Test'));
-        expect(enumType!.values.map(v => v.name)).to.deep.equal([
+        expect(enumType!.values.map((v) => v.name)).to.deep.equal([
             'id_ASC',
             'id_DESC',
             'createdAt_ASC',
@@ -28,7 +28,7 @@ describe('OrderByEnumGenerator', () => {
             'updatedAt_ASC',
             'updatedAt_DESC',
             'field_ASC',
-            'field_DESC'
+            'field_DESC',
         ]);
     });
 
@@ -43,20 +43,20 @@ describe('OrderByEnumGenerator', () => {
                         {
                             name: 'list',
                             typeName: 'String',
-                            isList: true
-                        }
-                    ]
-                }
-            ]
+                            isList: true,
+                        },
+                    ],
+                },
+            ],
         });
         const enumType = generator.generate(model.getObjectTypeOrThrow('Test'));
-        expect(enumType!.values.map(v => v.name)).to.deep.equal([
+        expect(enumType!.values.map((v) => v.name)).to.deep.equal([
             'id_ASC',
             'id_DESC',
             'createdAt_ASC',
             'createdAt_DESC',
             'updatedAt_ASC',
-            'updatedAt_DESC'
+            'updatedAt_DESC',
         ]);
     });
 
@@ -68,14 +68,14 @@ describe('OrderByEnumGenerator', () => {
                 fields: [
                     {
                         name: 'dangerousGoodsInfo',
-                        typeName: 'DangerousGoodsInfo'
+                        typeName: 'DangerousGoodsInfo',
                     },
                     {
                         name: 'shipment',
                         typeName: 'Shipment',
-                        isRelation: true
-                    }
-                ]
+                        isRelation: true,
+                    },
+                ],
             },
             {
                 name: 'DangerousGoodsInfo',
@@ -83,9 +83,9 @@ describe('OrderByEnumGenerator', () => {
                 fields: [
                     {
                         name: 'isDangerousGoods',
-                        typeName: 'Boolean'
-                    }
-                ]
+                        typeName: 'Boolean',
+                    },
+                ],
             },
             {
                 name: 'Shipment',
@@ -95,11 +95,11 @@ describe('OrderByEnumGenerator', () => {
                         name: 'delivery',
                         typeName: 'Delivery',
                         isRelation: true,
-                        inverseOfFieldName: 'shipment'
-                    }
-                ]
-            }
-        ]
+                        inverseOfFieldName: 'shipment',
+                    },
+                ],
+            },
+        ],
     });
 
     const deliveryType = shipmentDeliveryModel.getObjectTypeOrThrow('Delivery');
@@ -107,7 +107,7 @@ describe('OrderByEnumGenerator', () => {
     it('includes root entity traversal fields', () => {
         const generator = new OrderByEnumGenerator();
         const enumType = generator.generate(deliveryType);
-        expect(enumType!.values.map(v => v.name)).to.deep.equal([
+        expect(enumType!.values.map((v) => v.name)).to.deep.equal([
             'id_ASC',
             'id_DESC',
             'createdAt_ASC',
@@ -129,14 +129,14 @@ describe('OrderByEnumGenerator', () => {
             'shipment_delivery_updatedAt_ASC',
             'shipment_delivery_updatedAt_DESC',
             'shipment_delivery_dangerousGoodsInfo_isDangerousGoods_ASC',
-            'shipment_delivery_dangerousGoodsInfo_isDangerousGoods_DESC'
+            'shipment_delivery_dangerousGoodsInfo_isDangerousGoods_DESC',
         ]);
     });
 
     it('cuts off root entity traversal fields if specified', () => {
         const generator = new OrderByEnumGenerator({ maxRootEntityDepth: 1 });
         const enumType = generator.generate(deliveryType);
-        expect(enumType!.values.map(v => v.name)).to.deep.equal([
+        expect(enumType!.values.map((v) => v.name)).to.deep.equal([
             'id_ASC',
             'id_DESC',
             'createdAt_ASC',
@@ -150,14 +150,14 @@ describe('OrderByEnumGenerator', () => {
             'shipment_createdAt_ASC',
             'shipment_createdAt_DESC',
             'shipment_updatedAt_ASC',
-            'shipment_updatedAt_DESC'
+            'shipment_updatedAt_DESC',
         ]);
     });
 
     it('does not generate root entity traversal fields if specified as 0', () => {
         const generator = new OrderByEnumGenerator({ maxRootEntityDepth: 0 });
         const enumType = generator.generate(deliveryType);
-        expect(enumType!.values.map(v => v.name)).to.deep.equal([
+        expect(enumType!.values.map((v) => v.name)).to.deep.equal([
             'id_ASC',
             'id_DESC',
             'createdAt_ASC',
@@ -165,16 +165,18 @@ describe('OrderByEnumGenerator', () => {
             'updatedAt_ASC',
             'updatedAt_DESC',
             'dangerousGoodsInfo_isDangerousGoods_ASC',
-            'dangerousGoodsInfo_isDangerousGoods_DESC'
+            'dangerousGoodsInfo_isDangerousGoods_DESC',
         ]);
     });
 
     it('marks all root entity traversal fields as deprecated', () => {
         const generator = new OrderByEnumGenerator();
         const enumType = generator.generate(deliveryType);
-        expect(enumType!.getValueOrThrow('dangerousGoodsInfo_isDangerousGoods_ASC').deprecationReason).to.be.undefined;
+        expect(
+            enumType!.getValueOrThrow('dangerousGoodsInfo_isDangerousGoods_ASC').deprecationReason,
+        ).to.be.undefined;
         expect(enumType!.getValueOrThrow('shipment_updatedAt_ASC').deprecationReason).to.equal(
-            'OrderBy values that include relations or references are deprecated'
+            'OrderBy values that include relations or references are deprecated',
         );
     });
 
@@ -187,11 +189,11 @@ describe('OrderByEnumGenerator', () => {
                     {
                         name: 'rel',
                         typeName: 'Delivery',
-                        isRelation: true
-                    }
-                ]
+                        isRelation: true,
+                    },
+                ],
             },
-            shipmentDeliveryModel
+            shipmentDeliveryModel,
         );
 
         const generator = new OrderByEnumGenerator({ maxRootEntityDepth: 0 });

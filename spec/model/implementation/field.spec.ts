@@ -4,7 +4,7 @@ import {
     expectSingleErrorToInclude,
     expectSingleWarningToInclude,
     expectToBeValid,
-    validate
+    validate,
 } from './validation-utils';
 
 describe('Field', () => {
@@ -16,9 +16,9 @@ describe('Field', () => {
                 fields: [
                     {
                         name: 'name',
-                        typeName: 'String'
-                    }
-                ]
+                        typeName: 'String',
+                    },
+                ],
             },
             {
                 name: 'Country',
@@ -27,9 +27,9 @@ describe('Field', () => {
                 fields: [
                     {
                         name: 'isoCode',
-                        typeName: 'String'
-                    }
-                ]
+                        typeName: 'String',
+                    },
+                ],
             },
             {
                 name: 'Shipment',
@@ -39,30 +39,30 @@ describe('Field', () => {
                         name: 'deliveries',
                         typeName: 'Delivery',
                         isList: true,
-                        isRelation: true
+                        isRelation: true,
                     },
                     {
                         name: 'delivery',
                         typeName: 'Delivery',
-                        isRelation: true
+                        isRelation: true,
                     },
                     {
                         name: 'deliveryNonRelation',
-                        typeName: 'Delivery'
+                        typeName: 'Delivery',
                     },
                     {
                         name: 'deliveryWithInverseOf',
                         typeName: 'Delivery',
                         isRelation: true,
-                        inverseOfFieldName: 'shipment'
+                        inverseOfFieldName: 'shipment',
                     },
                     {
                         name: 'handlingUnits',
                         typeName: 'HandlingUnit',
                         isRelation: true,
-                        isList: true
-                    }
-                ]
+                        isList: true,
+                    },
+                ],
             },
             {
                 name: 'Delivery',
@@ -71,29 +71,29 @@ describe('Field', () => {
                     {
                         name: 'shipment',
                         typeName: 'Shipment',
-                        isRelation: true
+                        isRelation: true,
                     },
                     {
                         name: 'lineItems',
                         typeName: 'DeliveryLineItem',
-                        isList: true
-                    }
-                ]
+                        isList: true,
+                    },
+                ],
             },
             {
                 name: 'HandlingUnit',
                 kind: TypeKind.ROOT_ENTITY,
-                fields: []
+                fields: [],
             },
             {
                 name: 'Item',
                 kind: TypeKind.CHILD_ENTITY,
-                fields: []
+                fields: [],
             },
             {
                 name: 'DangerousGoodsInfo',
                 kind: TypeKind.ENTITY_EXTENSION,
-                fields: []
+                fields: [],
             },
             {
                 name: 'DeliveryLineItem',
@@ -102,10 +102,10 @@ describe('Field', () => {
                     {
                         name: 'parent',
                         isParentField: true,
-                        typeName: 'Delivery'
-                    }
-                ]
-            }
+                        typeName: 'Delivery',
+                    },
+                ],
+            },
         ],
         permissionProfiles: [
             {
@@ -114,21 +114,21 @@ describe('Field', () => {
                         permissions: [
                             {
                                 roles: ['accounting'],
-                                access: 'readWrite'
-                            }
-                        ]
+                                access: 'readWrite',
+                            },
+                        ],
                     },
                     accounting: {
                         permissions: [
                             {
                                 roles: ['accounting'],
-                                access: 'readWrite'
-                            }
-                        ]
-                    }
-                }
-            }
-        ]
+                                access: 'readWrite',
+                            },
+                        ],
+                    },
+                },
+            },
+        ],
     });
     const shipmentType = model.getRootEntityTypeOrThrow('Shipment');
     const deliveryType = model.getRootEntityTypeOrThrow('Delivery');
@@ -142,9 +142,9 @@ describe('Field', () => {
             const field = new Field(
                 {
                     name: 'deliveryNumber',
-                    typeName: 'String'
+                    typeName: 'String',
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectToBeValid(field);
@@ -154,9 +154,9 @@ describe('Field', () => {
             const field = new Field(
                 {
                     name: 'address',
-                    typeName: 'Address'
+                    typeName: 'Address',
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectToBeValid(field);
@@ -168,9 +168,9 @@ describe('Field', () => {
             const field = new Field(
                 {
                     name: 'deliveryNumber',
-                    typeName: 'UndefinedType'
+                    typeName: 'UndefinedType',
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectSingleErrorToInclude(field, 'UndefinedType');
@@ -181,9 +181,9 @@ describe('Field', () => {
             const field = new Field(
                 {
                     name: 'deliveryNumber',
-                    typeName: 'Undefined'
+                    typeName: 'Undefined',
                 },
-                deliveryType
+                deliveryType,
             );
             expect(field.type).not.to.be.undefined;
             expect(field.type.name).to.equal('Undefined');
@@ -196,9 +196,9 @@ describe('Field', () => {
             const field = new Field(
                 {
                     name: '',
-                    typeName: 'String'
+                    typeName: 'String',
                 },
-                deliveryType
+                deliveryType,
             );
             expectSingleErrorToInclude(field, `Field name is empty.`);
         });
@@ -208,9 +208,9 @@ describe('Field', () => {
             const field = new Field(
                 {
                     name: 'a',
-                    typeName: 'String'
+                    typeName: 'String',
                 },
-                deliveryType
+                deliveryType,
             );
             expectToBeValid(field);
         });
@@ -219,9 +219,9 @@ describe('Field', () => {
             const field = new Field(
                 {
                     name: 'some_field_name',
-                    typeName: 'String'
+                    typeName: 'String',
                 },
-                deliveryType
+                deliveryType,
             );
             expectSingleWarningToInclude(field, `Field names should not include underscores.`);
         });
@@ -230,9 +230,9 @@ describe('Field', () => {
             const field = new Field(
                 {
                     name: '_internal',
-                    typeName: 'String'
+                    typeName: 'String',
                 },
-                deliveryType
+                deliveryType,
             );
             expectSingleErrorToInclude(field, `Field names cannot start with an underscore.`);
         });
@@ -241,11 +241,14 @@ describe('Field', () => {
             const field = new Field(
                 {
                     name: 'ThisIsNotAFieldName',
-                    typeName: 'String'
+                    typeName: 'String',
                 },
-                deliveryType
+                deliveryType,
             );
-            expectSingleWarningToInclude(field, `Field names should start with a lowercase character.`);
+            expectSingleWarningToInclude(
+                field,
+                `Field names should start with a lowercase character.`,
+            );
         });
     });
 
@@ -254,9 +257,9 @@ describe('Field', () => {
             const field = new Field(
                 {
                     name: 'country',
-                    typeName: 'Country'
+                    typeName: 'Country',
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectSingleErrorToInclude(field, 'root entity');
@@ -268,9 +271,9 @@ describe('Field', () => {
                     name: 'country',
                     typeName: 'Country',
                     isRelation: true,
-                    isReference: true
+                    isReference: true,
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectSingleErrorToInclude(field, '@reference and @relation cannot be combined');
@@ -283,13 +286,13 @@ describe('Field', () => {
                 {
                     name: 'handlingUnit',
                     typeName: 'HandlingUnit',
-                    isRelation: true
+                    isRelation: true,
                 },
-                addressType
+                addressType,
             );
             expectSingleErrorToInclude(
                 field,
-                'Relations can only be defined on root entity types. Consider using @reference instead'
+                'Relations can only be defined on root entity types. Consider using @reference instead',
             );
         });
 
@@ -298,14 +301,14 @@ describe('Field', () => {
                 {
                     name: 'address',
                     typeName: 'Address',
-                    isRelation: true
+                    isRelation: true,
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectSingleErrorToInclude(
                 field,
-                'Type "Address" cannot be used with @relation because it is not a root entity type'
+                'Type "Address" cannot be used with @relation because it is not a root entity type',
             );
         });
 
@@ -317,7 +320,9 @@ describe('Field', () => {
 
             it('provides the other field as inverseField', () => {
                 const field = deliveryType.getFieldOrThrow('shipment'); // need a field woven into the model here
-                expect(field.inverseField).to.equal(shipmentType.getFieldOrThrow('deliveryWithInverseOf'));
+                expect(field.inverseField).to.equal(
+                    shipmentType.getFieldOrThrow('deliveryWithInverseOf'),
+                );
             });
 
             it('resolves inverseField to undefined if there is none', () => {
@@ -336,15 +341,15 @@ describe('Field', () => {
                                     name: 'packager',
                                     typeName: 'Person',
                                     isRelation: true,
-                                    inverseOfFieldName: 'delivery'
+                                    inverseOfFieldName: 'delivery',
                                 },
                                 {
                                     name: 'shipper',
                                     typeName: 'Person',
                                     isRelation: true,
-                                    inverseOfFieldName: 'delivery'
-                                }
-                            ]
+                                    inverseOfFieldName: 'delivery',
+                                },
+                            ],
                         },
                         {
                             name: 'Person',
@@ -353,11 +358,11 @@ describe('Field', () => {
                                 {
                                     name: 'delivery',
                                     typeName: 'Delivery',
-                                    isRelation: true
-                                }
-                            ]
-                        }
-                    ]
+                                    isRelation: true,
+                                },
+                            ],
+                        },
+                    ],
                 });
 
                 const field = m.getRootEntityTypeOrThrow('Person').getFieldOrThrow('delivery');
@@ -366,7 +371,7 @@ describe('Field', () => {
                 for (const message of result.messages) {
                     expect(message.severity).to.equal(Severity.Error);
                     expect(message.message).to.equal(
-                        'Multiple fields ("Delivery.packager", "Delivery.shipper") declare inverseOf to "Person.delivery".'
+                        'Multiple fields ("Delivery.packager", "Delivery.shipper") declare inverseOf to "Person.delivery".',
                     );
                 }
             });
@@ -377,7 +382,7 @@ describe('Field', () => {
                 expect(result.messages.length, result.toString()).to.equal(1);
                 expect(result.messages[0].severity).to.equal(Severity.Warning);
                 expect(result.messages[0].message).to.equal(
-                    'This field and "Delivery.shipment" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.'
+                    'This field and "Delivery.shipment" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.',
                 );
             });
         });
@@ -389,9 +394,9 @@ describe('Field', () => {
                         name: 'shipment',
                         typeName: 'Shipment',
                         isRelation: true,
-                        inverseOfFieldName: 'delivery'
+                        inverseOfFieldName: 'delivery',
                     },
-                    deliveryType
+                    deliveryType,
                 );
 
                 it('accepts', () => {
@@ -409,9 +414,9 @@ describe('Field', () => {
                         name: 'shipment',
                         typeName: 'Shipment',
                         isRelation: true,
-                        inverseOfFieldName: 'deliveries'
+                        inverseOfFieldName: 'deliveries',
                     },
-                    deliveryType
+                    deliveryType,
                 );
 
                 it('accepts', () => {
@@ -429,12 +434,15 @@ describe('Field', () => {
                         name: 'shipment',
                         typeName: 'Shipment',
                         isRelation: true,
-                        inverseOfFieldName: 'undefinedField'
+                        inverseOfFieldName: 'undefinedField',
                     },
-                    deliveryType
+                    deliveryType,
                 );
 
-                expectSingleErrorToInclude(field, 'Field "undefinedField" does not exist on type "Shipment"');
+                expectSingleErrorToInclude(
+                    field,
+                    'Field "undefinedField" does not exist on type "Shipment"',
+                );
             });
 
             it('rejects inverseOf to non-relation field', () => {
@@ -443,14 +451,14 @@ describe('Field', () => {
                         name: 'shipment',
                         typeName: 'Shipment',
                         isRelation: true,
-                        inverseOfFieldName: 'deliveryNonRelation'
+                        inverseOfFieldName: 'deliveryNonRelation',
                     },
-                    deliveryType
+                    deliveryType,
                 );
 
                 expectSingleErrorToInclude(
                     field,
-                    'Field "Shipment.deliveryNonRelation" used as inverse field of "Delivery.shipment" does not have the @relation directive'
+                    'Field "Shipment.deliveryNonRelation" used as inverse field of "Delivery.shipment" does not have the @relation directive',
                 );
             });
 
@@ -460,14 +468,14 @@ describe('Field', () => {
                         name: 'shipment',
                         typeName: 'Shipment',
                         isRelation: true,
-                        inverseOfFieldName: 'deliveryWithInverseOf'
+                        inverseOfFieldName: 'deliveryWithInverseOf',
                     },
-                    deliveryType
+                    deliveryType,
                 );
 
                 expectSingleErrorToInclude(
                     field,
-                    'Field "Shipment.deliveryWithInverseOf" used as inverse field of "Delivery.shipment" should not declare inverseOf itself'
+                    'Field "Shipment.deliveryWithInverseOf" used as inverse field of "Delivery.shipment" should not declare inverseOf itself',
                 );
             });
 
@@ -477,14 +485,14 @@ describe('Field', () => {
                         name: 'shipment',
                         typeName: 'Shipment',
                         isRelation: true,
-                        inverseOfFieldName: 'handlingUnits'
+                        inverseOfFieldName: 'handlingUnits',
                     },
-                    deliveryType
+                    deliveryType,
                 );
 
                 expectSingleErrorToInclude(
                     field,
-                    'Field "Shipment.handlingUnits" used as inverse field of "Delivery.shipment" has named type "HandlingUnit" but should be of type "Delivery"'
+                    'Field "Shipment.handlingUnits" used as inverse field of "Delivery.shipment" has named type "HandlingUnit" but should be of type "Delivery"',
                 );
             });
 
@@ -494,9 +502,9 @@ describe('Field', () => {
                         name: 'shipment',
                         typeName: 'Shipment',
                         isRelation: true,
-                        inverseOfFieldName: 'delivery'
+                        inverseOfFieldName: 'delivery',
                     },
-                    deliveryType
+                    deliveryType,
                 );
 
                 expect(field.inverseField).to.be.undefined;
@@ -510,9 +518,9 @@ describe('Field', () => {
                 {
                     name: 'country',
                     typeName: 'Country',
-                    isReference: true
+                    isReference: true,
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectToBeValid(field);
@@ -523,14 +531,14 @@ describe('Field', () => {
                 {
                     name: 'handlingUnit',
                     typeName: 'HandlingUnit',
-                    isReference: true
+                    isReference: true,
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectSingleErrorToInclude(
                 field,
-                `"HandlingUnit" cannot be used as @reference type because it does not have a field annotated with @key`
+                `"HandlingUnit" cannot be used as @reference type because it does not have a field annotated with @key`,
             );
         });
 
@@ -539,14 +547,14 @@ describe('Field', () => {
                 {
                     name: 'address',
                     typeName: 'Address',
-                    isReference: true
+                    isReference: true,
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectSingleErrorToInclude(
                 field,
-                `"Address" cannot be used as @reference type because is not a root entity type.`
+                `"Address" cannot be used as @reference type because is not a root entity type.`,
             );
         });
 
@@ -556,14 +564,14 @@ describe('Field', () => {
                     name: 'countries',
                     typeName: 'Country',
                     isReference: true,
-                    isList: true
+                    isList: true,
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectSingleErrorToInclude(
                 field,
-                `@reference is not supported with list types. Consider wrapping the reference in a child entity or value object type.`
+                `@reference is not supported with list types. Consider wrapping the reference in a child entity or value object type.`,
             );
         });
     });
@@ -573,9 +581,9 @@ describe('Field', () => {
             const field = new Field(
                 {
                     name: 'items',
-                    typeName: 'DangerousGoodsInfo'
+                    typeName: 'DangerousGoodsInfo',
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectToBeValid(field);
@@ -585,9 +593,9 @@ describe('Field', () => {
             const field = new Field(
                 {
                     name: 'items',
-                    typeName: 'DangerousGoodsInfo'
+                    typeName: 'DangerousGoodsInfo',
                 },
-                itemType
+                itemType,
             );
 
             expectToBeValid(field);
@@ -597,9 +605,9 @@ describe('Field', () => {
             const field = new Field(
                 {
                     name: 'items',
-                    typeName: 'DangerousGoodsInfo'
+                    typeName: 'DangerousGoodsInfo',
                 },
-                dangerousGoodsInfoType
+                dangerousGoodsInfoType,
             );
 
             expectToBeValid(field);
@@ -609,14 +617,14 @@ describe('Field', () => {
             const field = new Field(
                 {
                     name: 'items',
-                    typeName: 'DangerousGoodsInfo'
+                    typeName: 'DangerousGoodsInfo',
                 },
-                addressType
+                addressType,
             );
 
             expectSingleErrorToInclude(
                 field,
-                `Type "DangerousGoodsInfo" is an entity extension type and cannot be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`
+                `Type "DangerousGoodsInfo" is an entity extension type and cannot be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`,
             );
         });
 
@@ -625,14 +633,14 @@ describe('Field', () => {
                 {
                     name: 'items',
                     typeName: 'DangerousGoodsInfo',
-                    isList: true
+                    isList: true,
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectSingleErrorToInclude(
                 field,
-                `Type "DangerousGoodsInfo" is an entity extension type and cannot be used in a list. Change the field type to "DangerousGoodsInfo" (without brackets), or use a child entity or value object type instead.`
+                `Type "DangerousGoodsInfo" is an entity extension type and cannot be used in a list. Change the field type to "DangerousGoodsInfo" (without brackets), or use a child entity or value object type instead.`,
             );
         });
     });
@@ -643,9 +651,9 @@ describe('Field', () => {
                 {
                     name: 'items',
                     typeName: 'Item',
-                    isList: true
+                    isList: true,
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectToBeValid(field);
@@ -656,9 +664,9 @@ describe('Field', () => {
                 {
                     name: 'items',
                     typeName: 'Item',
-                    isList: true
+                    isList: true,
                 },
-                itemType
+                itemType,
             );
 
             expectToBeValid(field);
@@ -669,9 +677,9 @@ describe('Field', () => {
                 {
                     name: 'items',
                     typeName: 'Item',
-                    isList: true
+                    isList: true,
                 },
-                dangerousGoodsInfoType
+                dangerousGoodsInfoType,
             );
 
             expectToBeValid(field);
@@ -682,14 +690,14 @@ describe('Field', () => {
                 {
                     name: 'items',
                     typeName: 'Item',
-                    isList: true
+                    isList: true,
                 },
-                addressType
+                addressType,
             );
 
             expectSingleErrorToInclude(
                 field,
-                `Type "Item" is a child entity type and cannot be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`
+                `Type "Item" is a child entity type and cannot be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`,
             );
         });
 
@@ -698,14 +706,14 @@ describe('Field', () => {
                 {
                     name: 'items',
                     typeName: 'Item',
-                    isList: false
+                    isList: false,
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectSingleErrorToInclude(
                 field,
-                `Type "Item" is a child entity type and can only be used in a list. Change the field type to "[Item]", or use an entity extension or value object type instead.`
+                `Type "Item" is a child entity type and can only be used in a list. Change the field type to "[Item]", or use an entity extension or value object type instead.`,
             );
         });
     });
@@ -716,9 +724,9 @@ describe('Field', () => {
                 {
                     name: 'amount',
                     typeName: 'Int',
-                    defaultValue: 123
+                    defaultValue: 123,
                 },
-                itemType
+                itemType,
             );
 
             const res = validate(field);
@@ -731,9 +739,9 @@ describe('Field', () => {
                 {
                     name: 'address',
                     typeName: 'Address',
-                    defaultValue: 123
+                    defaultValue: 123,
                 },
-                deliveryType
+                deliveryType,
             );
 
             const res = validate(field);
@@ -749,10 +757,10 @@ describe('Field', () => {
                     name: 'totalAmount',
                     typeName: 'Int',
                     permissions: {
-                        permissionProfileName: 'accounting'
-                    }
+                        permissionProfileName: 'accounting',
+                    },
                 },
-                deliveryType
+                deliveryType,
             );
 
             it('accepts', () => {
@@ -760,7 +768,9 @@ describe('Field', () => {
             });
 
             it('resolves permission profile', () => {
-                expect(field.permissionProfile).to.equal(model.rootNamespace.getPermissionProfileOrThrow('accounting'));
+                expect(field.permissionProfile).to.equal(
+                    model.rootNamespace.getPermissionProfileOrThrow('accounting'),
+                );
             });
         });
 
@@ -772,11 +782,11 @@ describe('Field', () => {
                     permissions: {
                         roles: {
                             read: ['accounting'],
-                            readWrite: ['admin']
-                        }
-                    }
+                            readWrite: ['admin'],
+                        },
+                    },
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectToBeValid(field);
@@ -791,18 +801,20 @@ describe('Field', () => {
                         permissionProfileName: 'accounting',
                         roles: {
                             read: ['accounting'],
-                            readWrite: ['admin']
-                        }
-                    }
+                            readWrite: ['admin'],
+                        },
+                    },
                 },
-                deliveryType
+                deliveryType,
             );
 
             const result = validate(field);
             expect(result.messages.length).to.equal(2);
             for (const message of result.messages) {
                 expect(message.severity).to.equal(Severity.Error);
-                expect(message.message).to.equal(`Permission profile and explicit role specifiers cannot be combined.`);
+                expect(message.message).to.equal(
+                    `Permission profile and explicit role specifiers cannot be combined.`,
+                );
             }
         });
 
@@ -812,10 +824,10 @@ describe('Field', () => {
                     name: 'totalAmount',
                     typeName: 'Int',
                     permissions: {
-                        permissionProfileName: 'undefined'
-                    }
+                        permissionProfileName: 'undefined',
+                    },
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectSingleErrorToInclude(field, `Permission profile "undefined" not found`);
@@ -828,9 +840,12 @@ describe('Field', () => {
                 {
                     name: 'amount',
                     typeName: 'Int',
-                    calcMutationOperators: [CalcMutationsOperator.ADD, CalcMutationsOperator.MULTIPLY]
+                    calcMutationOperators: [
+                        CalcMutationsOperator.ADD,
+                        CalcMutationsOperator.MULTIPLY,
+                    ],
                 },
-                itemType
+                itemType,
             );
 
             expectToBeValid(field);
@@ -841,9 +856,9 @@ describe('Field', () => {
                 {
                     name: 'log',
                     typeName: 'String',
-                    calcMutationOperators: [CalcMutationsOperator.APPEND]
+                    calcMutationOperators: [CalcMutationsOperator.APPEND],
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectToBeValid(field);
@@ -854,12 +869,15 @@ describe('Field', () => {
                 {
                     name: 'isConfirmed',
                     typeName: 'Boolean',
-                    calcMutationOperators: [CalcMutationsOperator.APPEND]
+                    calcMutationOperators: [CalcMutationsOperator.APPEND],
                 },
-                deliveryType
+                deliveryType,
             );
 
-            expectSingleErrorToInclude(field, `Type "Boolean" does not support any calc mutation operators.`);
+            expectSingleErrorToInclude(
+                field,
+                `Type "Boolean" does not support any calc mutation operators.`,
+            );
         });
 
         it('rejects APPEND on Int', () => {
@@ -867,14 +885,14 @@ describe('Field', () => {
                 {
                     name: 'amount',
                     typeName: 'Int',
-                    calcMutationOperators: [CalcMutationsOperator.APPEND]
+                    calcMutationOperators: [CalcMutationsOperator.APPEND],
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectSingleErrorToInclude(
                 field,
-                `Calc mutation operator "APPEND" is not supported on type "Int" (supported operators: "MULTIPLY", "DIVIDE", "ADD", "SUBTRACT", "MODULO").`
+                `Calc mutation operator "APPEND" is not supported on type "Int" (supported operators: "MULTIPLY", "DIVIDE", "ADD", "SUBTRACT", "MODULO").`,
             );
         });
 
@@ -883,14 +901,14 @@ describe('Field', () => {
                 {
                     name: 'deliveryNumber',
                     typeName: 'String',
-                    calcMutationOperators: [CalcMutationsOperator.MULTIPLY]
+                    calcMutationOperators: [CalcMutationsOperator.MULTIPLY],
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectSingleErrorToInclude(
                 field,
-                `Calc mutation operator "MULTIPLY" is not supported on type "String" (supported operators: "APPEND", "PREPEND").`
+                `Calc mutation operator "MULTIPLY" is not supported on type "String" (supported operators: "APPEND", "PREPEND").`,
             );
         });
 
@@ -900,9 +918,9 @@ describe('Field', () => {
                     name: 'amount',
                     typeName: 'String',
                     isList: true,
-                    calcMutationOperators: [CalcMutationsOperator.APPEND]
+                    calcMutationOperators: [CalcMutationsOperator.APPEND],
                 },
-                deliveryType
+                deliveryType,
             );
 
             expectSingleErrorToInclude(field, `Calc mutations are not supported on list fields.`);

@@ -1,92 +1,92 @@
 {
-    "permissionProfiles": {
-        "restricted": {
-            "permissions": [
-                {
-                    "roles": ["admin"],
-                    "access": "readWrite"
-                },
-                {
-                    "roles": ["accounting"],
-                    "access": "readWrite",
-                    "restrictions": [
-                        {
-                            "field": "accessGroup",
-                            "value": "accounting"
-                        }
-                    ]
-                },
-                {
-                    "roles": ["logistics"],
-                    "access": "readWrite",
-                    "restrictions": [
-                        {
-                            "field": "accessGroup",
-                            "value": "logistics"
-                        }
-                    ]
-                },
-                {
-                    "roles": ["logistics-reader"],
-                    "access": "read",
-                    "restrictions": [
-                        {
-                            "field": "accessGroup",
-                            "value": "logistics"
-                        }
-                    ]
-                },
-                {
-                    "roles": ["logistics-reader", "logistics", "accounting", "admin"],
-                    "access": "readWrite",
-                    "restrictions": [
-                        {
-                            "field": "accessGroup",
-                            "value": "public"
-                        }
-                    ]
-                },
-                {
-                    "roles": ["/^forwarder-(.+)$/"],
-                    "access": "readWrite",
-                    "restrictions": [
-                        {
-                            "field": "accessGroup",
-                            "valueTemplate": "forwarded-by-$1"
-                        }
-                    ]
-                },
-                {
-                    "roles": ["/^forwarder-(.+)$/"],
-                    "access": "readWrite",
-                    "restrictions": [
-                        {
-                            "field": "accessGroup",
-                            "value": "forwarded-by-anyone"
-                        }
-                    ]
-                },
-                {
-                    "roles": ["customer"],
-                    "access": "read",
-                    "restrictions": [
-                        {
-                            "field": "customerName",
-                            "value": "public"
-                        }
-                    ]
-                },
-                {
-                    "roles": ["customer"],
-                    "access": "readWrite",
-                    "restrictions": [
-                        {
-                            "field": "customerName",
-                            "claim": "customerName"
-                        }
-                    ]
-                }
-            ]
+  "permissionProfiles": {
+    "restricted": {
+      "permissions": [
+        {
+          "roles": ["admin"],
+          "access": "readWrite"
+        },
+        {
+          "roles": ["accounting"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "accessGroup",
+              "value": "accounting"
+            }
+          ]
+        },
+        {
+          "roles": ["logistics"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "accessGroup",
+              "value": "logistics"
+            }
+          ]
+        },
+        {
+          "roles": ["logistics-reader"],
+          "access": "read",
+          "restrictions": [
+            {
+              "field": "accessGroup",
+              "value": "logistics"
+            }
+          ]
+        },
+        {
+          "roles": ["logistics-reader", "logistics", "accounting", "admin"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "accessGroup",
+              "value": "public"
+            }
+          ]
+        },
+        {
+          "roles": ["/^forwarder-(.+)$/"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "accessGroup",
+              "valueTemplate": "forwarded-by-$1"
+            }
+          ]
+        },
+        {
+          "roles": ["/^forwarder-(.+)$/"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "accessGroup",
+              "value": "forwarded-by-anyone"
+            }
+          ]
+        },
+        {
+          "roles": ["customer"],
+          "access": "read",
+          "restrictions": [
+            {
+              "field": "customerName",
+              "value": "public"
+            }
+          ]
+        },
+        {
+          "roles": ["customer"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "customerName",
+              "claim": "customerName"
+            }
+          ]
         }
+      ]
     }
+  }
 }

@@ -30,7 +30,7 @@ export class DummyCreateInputField implements CreateInputField {
         readonly inputType: GraphQLInputType | TypedInputObjectType<CreateInputField>,
         opts: {
             readonly deprecationReason?: string;
-        } = {}
+        } = {},
     ) {
         this.deprecationReason = opts.deprecationReason;
     }
@@ -53,7 +53,7 @@ export class BasicCreateInputField implements CreateInputField {
         public readonly field: Field,
         public _description: string | undefined,
         public readonly inputType: GraphQLInputType | CreateObjectInputType,
-        public readonly deprecationReason?: string
+        public readonly deprecationReason?: string,
     ) {
         if (!_description) {
             this._description = this.field.description;
@@ -76,7 +76,7 @@ export class BasicCreateInputField implements CreateInputField {
         value = this.coerceValue(value, context);
 
         return {
-            [this.field.name]: value
+            [this.field.name]: value,
         };
     }
 
@@ -113,12 +113,16 @@ export class BasicListCreateInputField extends BasicCreateInputField {
         // null is not a valid list value - if the user specified it, coerce it to [] to not have a mix of [] and
         // null in the database
         let listValue = Array.isArray(value) ? value : [];
-        return listValue.map(itemValue => super.coerceValue(itemValue, context));
+        return listValue.map((itemValue) => super.coerceValue(itemValue, context));
     }
 }
 
 export class CreateObjectInputField extends BasicCreateInputField {
-    constructor(field: Field, public readonly objectInputType: CreateObjectInputType, inputType?: GraphQLInputType) {
+    constructor(
+        field: Field,
+        public readonly objectInputType: CreateObjectInputType,
+        inputType?: GraphQLInputType,
+    ) {
         super(field, undefined, inputType || objectInputType.getInputType());
     }
 
@@ -146,7 +150,7 @@ export class CreateReferenceInputField extends BasicCreateInputField {
         private readonly _name: string,
         description: string | undefined,
         inputType: GraphQLInputType | CreateObjectInputType,
-        deprecationReason?: string
+        deprecationReason?: string,
     ) {
         super(field, description, inputType, deprecationReason);
     }
@@ -161,7 +165,7 @@ export class CreateReferenceInputField extends BasicCreateInputField {
         if (this.field.name !== this.name && this.field.name in context.objectValue) {
             throw createGraphQLError(
                 `Cannot set both "${this.field.name}" and "${this.name}" because they refer to the same reference`,
-                context
+                context,
             );
         }
     }
@@ -169,7 +173,11 @@ export class CreateReferenceInputField extends BasicCreateInputField {
 
 export class ObjectListCreateInputField extends BasicCreateInputField {
     constructor(field: Field, public readonly objectInputType: CreateObjectInputType) {
-        super(field, undefined, new GraphQLList(new GraphQLNonNull(objectInputType.getInputType())));
+        super(
+            field,
+            undefined,
+            new GraphQLList(new GraphQLNonNull(objectInputType.getInputType())),
+        );
     }
 
     protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
@@ -183,9 +191,11 @@ export class ObjectListCreateInputField extends BasicCreateInputField {
             return undefined;
         }
         if (!Array.isArray(value)) {
-            throw new Error(`Expected value for "${this.name}" to be an array, but is "${typeof value}"`);
+            throw new Error(
+                `Expected value for "${this.name}" to be an array, but is "${typeof value}"`,
+            );
         }
-        return value.map(value => this.objectInputType.prepareValue(value, context));
+        return value.map((value) => this.objectInputType.prepareValue(value, context));
     }
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
@@ -194,10 +204,14 @@ export class ObjectListCreateInputField extends BasicCreateInputField {
             return;
         }
         if (!Array.isArray(value)) {
-            throw new Error(`Expected value for "${this.name}" to be an array, but is "${typeof value}"`);
+            throw new Error(
+                `Expected value for "${this.name}" to be an array, but is "${typeof value}"`,
+            );
         }
 
-        value.forEach(value => this.objectInputType.collectAffectedFields(value, fields, context));
+        value.forEach((value) =>
+            this.objectInputType.collectAffectedFields(value, fields, context),
+        );
     }
 }
 

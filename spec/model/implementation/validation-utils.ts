@@ -1,6 +1,9 @@
 import { expect } from 'chai';
 import { Severity, ValidationResult } from '../../../src/model';
-import { ModelComponent, ValidationContext } from '../../../src/model/validation/validation-context';
+import {
+    ModelComponent,
+    ValidationContext,
+} from '../../../src/model/validation/validation-context';
 
 export function validate(component: ModelComponent): ValidationResult {
     const context = new ValidationContext();
@@ -21,7 +24,11 @@ export function expectSingleWarningToInclude(component: ModelComponent, errorPar
     expectSingleMessageToInclude(component, errorPart, Severity.Warning);
 }
 
-export function expectSingleMessageToInclude(component: ModelComponent, errorPart: string, severity: Severity) {
+export function expectSingleMessageToInclude(
+    component: ModelComponent,
+    errorPart: string,
+    severity: Severity,
+) {
     const result = validate(component);
     expect(result.messages.length, result.toString()).to.equal(1);
     const message = result.messages[0];

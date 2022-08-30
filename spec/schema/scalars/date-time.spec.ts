@@ -8,7 +8,7 @@ describe('GraphQLDateTime', () => {
         '2004-02-29T14:50:00Z', // leap year
         '2018-08-21T14:50:00.123Z',
         '2018-08-21T14:50:00.123456Z',
-        '2018-08-21T14:50:00.123456789Z'
+        '2018-08-21T14:50:00.123456789Z',
     ];
 
     // these coercions are important to have canonical representations of all instants so that search and equality works properly
@@ -27,7 +27,7 @@ describe('GraphQLDateTime', () => {
         ['1982-06-30T23:59:60.123Z', '1982-06-30T23:59:59.123Z'], // so it just subtracts one second in leap seconds
         ['1982-07-01T23:59:60Z', '1982-07-01T23:59:59Z'], // leap seconds are also normalized where there can't possibly be any
         ['2018-08-21T24:00:00Z', '2018-08-22T00:00:00Z'], // 24:00:00 wraps
-        ['2018-08-21T14:50Z', '2018-08-21T14:50:00Z'] // second part is added
+        ['2018-08-21T14:50Z', '2018-08-21T14:50:00Z'], // second part is added
     ];
 
     const invalidStrings = [
@@ -42,7 +42,7 @@ describe('GraphQLDateTime', () => {
         '2018-08-21',
         '2018-02-29T14:50:00Z', // no leap year
         '2018-08-21T14:50:00.1234567890Z', // too many fraction digits
-        '2018-08-21T24:00:01Z'
+        '2018-08-21T24:00:01Z',
     ];
 
     for (const str of validStrings) {
@@ -59,13 +59,17 @@ describe('GraphQLDateTime', () => {
 
     for (const str of invalidStrings) {
         it(`rejects ${str}`, () => {
-            expect(() => GraphQLDateTime.parseValue(str)).to.throw(`Invalid ISO 8601 DateTime: ${str}`);
+            expect(() => GraphQLDateTime.parseValue(str)).to.throw(
+                `Invalid ISO 8601 DateTime: ${str}`,
+            );
         });
     }
 
     it('rejects values without timezone', () => {
         const str = '2018-08-21T14:50:00';
-        expect(() => GraphQLDateTime.parseValue(str)).to.throw(`DateTime is missing timezone specifier (should be UTC): ${str}`);
+        expect(() => GraphQLDateTime.parseValue(str)).to.throw(
+            `DateTime is missing timezone specifier (should be UTC): ${str}`,
+        );
     });
 
     it('rejects other timezones than UTC', () => {

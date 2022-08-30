@@ -15,10 +15,10 @@ query queryOne {
 
 # the create should fail because the update also failed
 mutation updateMissingAndCreateAnother {
-    updatePaper(input: { id: "nonexisting"  }) {
+    updatePaper(input: { id: "nonexisting" }) {
         key
     }
-    createPaper(input: { key: "two"}) {
+    createPaper(input: { key: "two" }) {
         key
     }
 }
@@ -34,7 +34,7 @@ query queryStillOne {
 
 # this should work (make sure creating actually works)
 mutation createAnother {
-    createPaper(input: { key: "two"}) {
+    createPaper(input: { key: "two" }) {
         key
     }
 }

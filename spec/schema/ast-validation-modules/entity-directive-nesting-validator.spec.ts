@@ -1,7 +1,6 @@
 import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
 
 describe('entity directive nesting validator', () => {
-
     it('accepts field of @rootEntity type as @relation', () => {
         assertValidatorAccepts(`
             type Foo @rootEntity { fooo: String }
@@ -24,24 +23,33 @@ describe('entity directive nesting validator', () => {
     });
 
     it('rejects field of @rootEntity type without @relation or @reference', () => {
-        assertValidatorRejects(`
+        assertValidatorRejects(
+            `
             type Foo @rootEntity { fooo: String }      
             type Bar @rootEntity { foo: Foo }
-        `, 'Type "Foo" is a root entity type and cannot be embedded. Consider adding @reference or @relation.');
+        `,
+            'Type "Foo" is a root entity type and cannot be embedded. Consider adding @reference or @relation.',
+        );
     });
 
     it('rejects list of @rootEntity type without @relation or @reference', () => {
-        assertValidatorRejects(`
+        assertValidatorRejects(
+            `
             type Foo @rootEntity { fooo: String }
             type Bar @rootEntity { foo: [Foo] }
-        `, 'Type "Foo" is a root entity type and cannot be embedded. Consider adding @reference or @relation.');
+        `,
+            'Type "Foo" is a root entity type and cannot be embedded. Consider adding @reference or @relation.',
+        );
     });
 
     it('rejects non nullable list of @rootEntity type without @relation or @reference', () => {
-        assertValidatorRejects(`
+        assertValidatorRejects(
+            `
             type Foo @rootEntity { fooo: String }
             type Bar @rootEntity { foo: [Foo!]! }
-        `, 'Type "Foo" is a root entity type and cannot be embedded. Consider adding @reference or @relation.');
+        `,
+            'Type "Foo" is a root entity type and cannot be embedded. Consider adding @reference or @relation.',
+        );
     });
 
     it('accepts nesting @valueObjects', () => {
@@ -66,24 +74,33 @@ describe('entity directive nesting validator', () => {
     });
 
     it('rejects nesting an entity into @valueObjects', () => {
-        assertValidatorRejects(`
+        assertValidatorRejects(
+            `
             type Foo @childEntity { fooo: String }
             type Bar @valueObject { foo: Foo }
-        `, 'Type "Foo" is a child entity type and cannot be used within value object types. Change "Bar" to an entity extension type or use a value object type for "foo".');
+        `,
+            'Type "Foo" is a child entity type and cannot be used within value object types. Change "Bar" to an entity extension type or use a value object type for "foo".',
+        );
     });
 
     it('rejects nesting an entity list into @valueObjects', () => {
-        assertValidatorRejects(`
+        assertValidatorRejects(
+            `
             type Foo @childEntity { fooo: String }
             type Bar @valueObject { foo: [Foo] }
-        `, 'Type "Foo" is a child entity type and cannot be used within value object types. Change "Bar" to an entity extension type or use a value object type for "foo".');
+        `,
+            'Type "Foo" is a child entity type and cannot be used within value object types. Change "Bar" to an entity extension type or use a value object type for "foo".',
+        );
     });
 
     it('rejects nesting an non-null entity list into @valueObjects', () => {
-        assertValidatorRejects(`
+        assertValidatorRejects(
+            `
             type Foo @childEntity { fooo: String }
             type Bar @valueObject { foo: [Foo!]! }
-        `, 'Type "Foo" is a child entity type and cannot be used within value object types. Change "Bar" to an entity extension type or use a value object type for "foo".');
+        `,
+            'Type "Foo" is a child entity type and cannot be used within value object types. Change "Bar" to an entity extension type or use a value object type for "foo".',
+        );
     });
 
     it('accepts valueObjects with reference to @rootEntity', () => {
@@ -94,10 +111,12 @@ describe('entity directive nesting validator', () => {
     });
 
     it('rejects @childEntity field usage without list', () => {
-        assertValidatorRejects(`
+        assertValidatorRejects(
+            `
             type Foo @childEntity { fooo: String }
             type Bar @rootEntity { foo: Foo }
-        `, 'Type "Foo" is a child entity type and can only be used in a list. Change the field type to "[Foo]", or use an entity extension or value object type instead.');
+        `,
+            'Type "Foo" is a child entity type and can only be used in a list. Change the field type to "[Foo]", or use an entity extension or value object type instead.',
+        );
     });
-
 });

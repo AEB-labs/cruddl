@@ -1,9 +1,9 @@
 {
-    "billing": {
-        "billingEntities": [
-            {
-                "typeName": "Delivery"
-            }
-        ]
-    }
+  "billing": {
+    "billingEntities": [
+      {
+        "typeName": "Delivery"
+      }
+    ]
+  }
 }

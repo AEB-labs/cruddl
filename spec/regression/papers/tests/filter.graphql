@@ -1,91 +1,104 @@
 query {
-    eq: allPapers(filter: { key: "OOM"}, orderBy: key_ASC) {
+    eq: allPapers(filter: { key: "OOM" }, orderBy: key_ASC) {
         key
     }
-    neq: allPapers(filter: { key_not: "OOM"}, orderBy: key_ASC) {
+    neq: allPapers(filter: { key_not: "OOM" }, orderBy: key_ASC) {
         key
     }
-    gt: allPapers(filter: { key_gt: "OOM"}, orderBy: key_ASC) {
+    gt: allPapers(filter: { key_gt: "OOM" }, orderBy: key_ASC) {
         key
     }
-    gte: allPapers(filter: { key_gte: "OOM"}, orderBy: key_ASC) {
+    gte: allPapers(filter: { key_gte: "OOM" }, orderBy: key_ASC) {
         key
     }
-    lt: allPapers(filter: { key_lt: "OOM"}, orderBy: key_ASC) {
+    lt: allPapers(filter: { key_lt: "OOM" }, orderBy: key_ASC) {
         key
     }
-    lte: allPapers(filter: { key_lte: "OOM"}, orderBy: key_ASC) {
+    lte: allPapers(filter: { key_lte: "OOM" }, orderBy: key_ASC) {
         key
     }
-    in: allPapers(filter: { key_in: [ "OOM", "Part" ]}, orderBy: key_ASC) {
+    in: allPapers(filter: { key_in: ["OOM", "Part"] }, orderBy: key_ASC) {
         key
     }
-    not_in: allPapers(filter: { key_not_in: [ "OOM", "Part" ]}, orderBy: key_ASC) {
+    not_in: allPapers(filter: { key_not_in: ["OOM", "Part"] }, orderBy: key_ASC) {
         key
     }
-    contains: allPapers(filter: { key_contains: "a"}, orderBy: key_ASC) {
+    contains: allPapers(filter: { key_contains: "a" }, orderBy: key_ASC) {
         key
     }
-    contains_empty_string: allPapers(filter: { key_contains: ""}, orderBy: key_ASC) {
+    contains_empty_string: allPapers(filter: { key_contains: "" }, orderBy: key_ASC) {
         key
     }
-    not_contains: allPapers(filter: { key_not_contains: "a"}, orderBy: key_ASC) {
+    not_contains: allPapers(filter: { key_not_contains: "a" }, orderBy: key_ASC) {
         key
     }
-    not_contains_empty_string: allPapers(filter: { key_not_contains: ""}, orderBy: key_ASC) {
+    not_contains_empty_string: allPapers(filter: { key_not_contains: "" }, orderBy: key_ASC) {
         key
     }
-    starts_with: allPapers(filter: { key_starts_with: "O"}, orderBy: key_ASC) {
+    starts_with: allPapers(filter: { key_starts_with: "O" }, orderBy: key_ASC) {
         key
     }
-    not_starts_with: allPapers(filter: { key_not_starts_with: "O"}, orderBy: key_ASC) {
+    not_starts_with: allPapers(filter: { key_not_starts_with: "O" }, orderBy: key_ASC) {
         key
     }
-    ends_with: allPapers(filter: { key_ends_with: "M"}, orderBy: key_ASC) {
+    ends_with: allPapers(filter: { key_ends_with: "M" }, orderBy: key_ASC) {
         key
     }
-    not_ends_with: allPapers(filter: { key_not_ends_with: "M"}, orderBy: key_ASC) {
+    not_ends_with: allPapers(filter: { key_not_ends_with: "M" }, orderBy: key_ASC) {
         key
     }
-    like_prefix: allPapers(filter: { key_like: "o%"}, orderBy: key_ASC) {
+    like_prefix: allPapers(filter: { key_like: "o%" }, orderBy: key_ASC) {
         key
     }
-    like_underscore: allPapers(filter: { key_like: "OO_"}, orderBy: key_ASC) {
+    like_underscore: allPapers(filter: { key_like: "OO_" }, orderBy: key_ASC) {
         key
     }
-    like_not_matching: allPapers(filter: { key_like: "OOM_"}, orderBy: key_ASC) {
+    like_not_matching: allPapers(filter: { key_like: "OOM_" }, orderBy: key_ASC) {
         key
     }
-    like_upper_matching_lower_prefix: allPapers(filter: { key_like: "PART%"}, orderBy: key_ASC) {
+    like_upper_matching_lower_prefix: allPapers(filter: { key_like: "PART%" }, orderBy: key_ASC) {
         key
     }
-    like_lower_matching_upper_prefix: allPapers(filter: { key_like: "part%"}, orderBy: key_ASC) {
+    like_lower_matching_upper_prefix: allPapers(filter: { key_like: "part%" }, orderBy: key_ASC) {
         key
     }
-    like_upper_matching_lower_exact: allPapers(filter: { key_like: "PART"}, orderBy: key_ASC) {
+    like_upper_matching_lower_exact: allPapers(filter: { key_like: "PART" }, orderBy: key_ASC) {
         key
     }
-    like_lower_matching_upper_exact: allPapers(filter: { key_like: "part"}, orderBy: key_ASC) {
+    like_lower_matching_upper_exact: allPapers(filter: { key_like: "part" }, orderBy: key_ASC) {
         key
     }
-    like_upper_matching_lower_pattern: allPapers(filter: { key_like: "%PART"}, orderBy: key_ASC) {
+    like_upper_matching_lower_pattern: allPapers(filter: { key_like: "%PART" }, orderBy: key_ASC) {
         key
     }
-    like_lower_matching_upper_pattern: allPapers(filter: { key_like: "%part"}, orderBy: key_ASC) {
+    like_lower_matching_upper_pattern: allPapers(filter: { key_like: "%part" }, orderBy: key_ASC) {
         key
     }
-    not_like: allPapers(filter: { key_not_like: "O%"}, orderBy: key_ASC) {
+    not_like: allPapers(filter: { key_not_like: "O%" }, orderBy: key_ASC) {
         key
     }
-    or: allPapers(filter: {OR: [{title: "Unified modeling language reference manual, the"}, {title: "Scalable SQL and NoSQL data stores"}]},
-        orderBy: title_ASC) {
+    or: allPapers(
+        filter: {
+            OR: [
+                { title: "Unified modeling language reference manual, the" }
+                { title: "Scalable SQL and NoSQL data stores" }
+            ]
+        }
+        orderBy: title_ASC
+    ) {
         title
     }
 
-    enum_in: allUsers(filter: { category_in: [ Telecommunications, Programming ]}, orderBy: lastName_ASC) {
+    enum_in: allUsers(
+        filter: { category_in: [Telecommunications, Programming] }
+        orderBy: lastName_ASC
+    ) {
         lastName
     }
-    enum_not_in: allUsers(filter: { category_not_in: [ Telecommunications, Programming ]}, orderBy: lastName_ASC) {
+    enum_not_in: allUsers(
+        filter: { category_not_in: [Telecommunications, Programming] }
+        orderBy: lastName_ASC
+    ) {
         lastName
     }
 
@@ -98,5 +111,4 @@ query {
         lastName
         category
     }
-
 }

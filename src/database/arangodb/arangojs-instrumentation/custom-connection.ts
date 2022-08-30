@@ -23,7 +23,7 @@ export class CustomConnection extends Connection {
             headers,
             ...urlInfo
         }: RequestOptions,
-        transform?: (res: ArangojsResponse) => T
+        transform?: (res: ArangojsResponse) => T,
     ): Promise<T> {
         let requestInstrumentation: RequestInstrumentation | undefined;
         if (
@@ -56,7 +56,7 @@ export class CustomConnection extends Connection {
             const extraHeaders: { [key: string]: string } = {
                 ...(this as any)._headers,
                 'content-type': contentType,
-                'x-arango-version': String((this as any)._arangoVersion)
+                'x-arango-version': String((this as any)._arangoVersion),
             };
             if (this._transactionId) {
                 extraHeaders['x-arango-trx-id'] = this._transactionId;
@@ -71,9 +71,9 @@ export class CustomConnection extends Connection {
                     method,
                     expectBinary,
                     body,
-                    requestInstrumentation
+                    requestInstrumentation,
                 },
-                stack: (undefined as unknown) as () => string | undefined,
+                stack: undefined as unknown as () => string | undefined,
                 reject,
                 resolve: (res: ArangojsResponse) => {
                     const contentType = res.headers['content-type'];
@@ -118,26 +118,18 @@ export class CustomConnection extends Connection {
                         if (!expectBinary) res.body = parsedBody;
                         resolve(transform ? transform(res) : (res as any));
                     }
-                }
+                },
             };
 
             if (this._precaptureStackTraces) {
                 if (typeof Error.captureStackTrace === 'function') {
                     const capture = {} as { readonly stack: string };
                     Error.captureStackTrace(capture);
-                    task.stack = () =>
-                        `\n${capture.stack
-                            .split('\n')
-                            .slice(3)
-                            .join('\n')}`;
+                    task.stack = () => `\n${capture.stack.split('\n').slice(3).join('\n')}`;
                 } else {
                     const capture = generateStackTrace() as { readonly stack: string };
                     if (Object.prototype.hasOwnProperty.call(capture, 'stack')) {
-                        task.stack = () =>
-                            `\n${capture.stack
-                                .split('\n')
-                                .slice(4)
-                                .join('\n')}`;
+                        task.stack = () => `\n${capture.stack.split('\n').slice(4).join('\n')}`;
                     }
                 }
             }
@@ -148,11 +140,13 @@ export class CustomConnection extends Connection {
     }
 
     addToHostList(urls: string | string[]): number[] {
-        const cleanUrls = (Array.isArray(urls) ? urls : [urls]).map(url => normalizeUrl(url));
-        const newUrls = cleanUrls.filter(url => this._urls.indexOf(url) === -1);
+        const cleanUrls = (Array.isArray(urls) ? urls : [urls]).map((url) => normalizeUrl(url));
+        const newUrls = cleanUrls.filter((url) => this._urls.indexOf(url) === -1);
         this._urls.push(...newUrls);
-        this._hosts.push(...newUrls.map((url: string) => createRequest(url, this._agentOptions, this._agent)));
-        return cleanUrls.map(url => this._urls.indexOf(url));
+        this._hosts.push(
+            ...newUrls.map((url: string) => createRequest(url, this._agentOptions, this._agent)),
+        );
+        return cleanUrls.map((url) => this._urls.indexOf(url));
     }
 }
 

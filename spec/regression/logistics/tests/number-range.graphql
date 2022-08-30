@@ -1,37 +1,25 @@
 mutation firstIncrement {
-    updateNumberRange(input: {
-        id: "@{ids/NumberRange/1}",
-        addTo_number: 1
-    }) {
+    updateNumberRange(input: { id: "@{ids/NumberRange/1}", addTo_number: 1 }) {
         number
     }
 }
 
 mutation secondIncrement {
-    updateNumberRange(input: {
-        id: "@{ids/NumberRange/1}",
-        addTo_number: 5
-    }) {
+    updateNumberRange(input: { id: "@{ids/NumberRange/1}", addTo_number: 5 }) {
         number
     }
 }
 
 mutation twoOperatorsCombinedError {
-    updateNumberRange(input: {
-        id: "@{ids/NumberRange/1}",
-        addTo_number: 2,
-        multiplyWith_number: 5
-    }) {
+    updateNumberRange(
+        input: { id: "@{ids/NumberRange/1}", addTo_number: 2, multiplyWith_number: 5 }
+    ) {
         number
     }
 }
 
 mutation operatorCombinedWithPlainUpdateError {
-    updateNumberRange(input: {
-        id: "@{ids/NumberRange/1}",
-        number: 2,
-        multiplyWith_number: 5
-    }) {
+    updateNumberRange(input: { id: "@{ids/NumberRange/1}", number: 2, multiplyWith_number: 5 }) {
         number
     }
 }

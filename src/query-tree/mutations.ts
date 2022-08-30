@@ -11,7 +11,7 @@ export class CreateEntityQueryNode extends QueryNode {
     constructor(
         public readonly rootEntityType: RootEntityType,
         public readonly objectNode: QueryNode,
-        public readonly affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>
+        public readonly affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>,
     ) {
         super();
     }
@@ -20,7 +20,7 @@ export class CreateEntityQueryNode extends QueryNode {
         return `create ${
             this.rootEntityType.name
         } entity with values ${this.objectNode.describe()} (affects fields ${this.affectedFields
-            .map(f => f.describe())
+            .map((f) => f.describe())
             .join(', ')})`;
     }
 }
@@ -32,7 +32,7 @@ export class CreateEntitiesQueryNode extends QueryNode {
     constructor(
         public readonly rootEntityType: RootEntityType,
         public readonly objectsNode: QueryNode,
-        public readonly affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>
+        public readonly affectedFields: ReadonlyArray<AffectedFieldInfoQueryNode>,
     ) {
         super();
     }
@@ -41,7 +41,7 @@ export class CreateEntitiesQueryNode extends QueryNode {
         return `create ${
             this.rootEntityType.name
         } entities with values ${this.objectsNode.describe()} (affects fields ${this.affectedFields
-            .map(f => f.describe())
+            .map((f) => f.describe())
             .join(', ')})`;
     }
 }
@@ -110,8 +110,8 @@ export class UpdateEntitiesQueryNode extends QueryNode {
             '\n) ' +
             (this.revision ? ` with revision check for "${JSON.stringify(this.revision)}"` : '') +
             `with values (${this.currentEntityVariable.describe()} => {\n` +
-            indent(this.updates.map(p => p.describe()).join(',\n')) +
-            `\n} (affects fields ${this.affectedFields.map(f => f.describe()).join(', ')})`
+            indent(this.updates.map((p) => p.describe()).join(',\n')) +
+            `\n} (affects fields ${this.affectedFields.map((f) => f.describe()).join(', ')})`
         );
     }
 }
@@ -128,12 +128,12 @@ export class SetFieldQueryNode extends PropertySpecification {
 export enum EntitiesIdentifierKind {
     ENTITY = 'ENTITY',
     // only use this node if the ids are retrieved from an EntitiesQueryNode where the permission profiles for reading are already applied
-    ID = 'ID'
+    ID = 'ID',
 }
 
 export enum DeleteEntitiesResultValue {
     OLD_ENTITIES = 'OLD_ENTITIES',
-    COUNT = 'COUNT'
+    COUNT = 'COUNT',
 }
 
 /**
@@ -153,7 +153,8 @@ export class DeleteEntitiesQueryNode extends QueryNode {
         this.rootEntityType = params.rootEntityType;
         this.listNode = params.listNode;
         this.revision = params.revision;
-        this.entitiesIdentifierKind = params.entitiesIdentifierKind || EntitiesIdentifierKind.ENTITY;
+        this.entitiesIdentifierKind =
+            params.entitiesIdentifierKind || EntitiesIdentifierKind.ENTITY;
         this.resultValue = params.resultValue || DeleteEntitiesResultValue.OLD_ENTITIES;
     }
 
@@ -188,7 +189,9 @@ export class AddEdgesQueryNode extends QueryNode {
 
     describe() {
         return (
-            `add edges to ${this.relation}: [\n` + indent(this.edges.map(edge => edge.describe()).join(',\n')) + `\n]`
+            `add edges to ${this.relation}: [\n` +
+            indent(this.edges.map((edge) => edge.describe()).join(',\n')) +
+            `\n]`
         );
     }
 }
@@ -213,7 +216,11 @@ export class RemoveEdgesQueryNode extends QueryNode {
  * No multiplicity constraints are checked.
  */
 export class SetEdgeQueryNode extends QueryNode {
-    constructor(params: { relation: Relation; existingEdge: PartialEdgeIdentifier; newEdge: EdgeIdentifier }) {
+    constructor(params: {
+        relation: Relation;
+        existingEdge: PartialEdgeIdentifier;
+        newEdge: EdgeIdentifier;
+    }) {
         super();
         this.relation = params.relation;
         this.existingEdge = params.existingEdge;
@@ -225,7 +232,9 @@ export class SetEdgeQueryNode extends QueryNode {
     readonly newEdge: EdgeIdentifier;
 
     describe() {
-        return `replace edge ${this.existingEdge.describe()} by ${this.newEdge.describe()} in ${this.relation}`;
+        return `replace edge ${this.existingEdge.describe()} by ${this.newEdge.describe()} in ${
+            this.relation
+        }`;
     }
 }
 

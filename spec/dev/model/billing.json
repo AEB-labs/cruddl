@@ -1,19 +1,19 @@
 {
-    "billing": {
-        "billingEntities": [
-            {
-                "typeName": "Hero",
-                "keyFieldName": "name",
-                "categoryMapping": {
-                    "fieldName": "morality",
-                    "values": {
-                        "GOOD": "good",
-                        "EVIL": "evil"
-                    },
-                    "defaultValue": "evil"
-                },
-                "quantityFieldName": "skills"
-            }
-        ]
-    }
+  "billing": {
+    "billingEntities": [
+      {
+        "typeName": "Hero",
+        "keyFieldName": "name",
+        "categoryMapping": {
+          "fieldName": "morality",
+          "values": {
+            "GOOD": "good",
+            "EVIL": "evil"
+          },
+          "defaultValue": "evil"
+        },
+        "quantityFieldName": "skills"
+      }
+    ]
+  }
 }

@@ -1,23 +1,26 @@
 import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
 
 describe('roles-on-non-root-entity-types validator', () => {
-
     it('rejects value objects with @roles', () => {
-        assertValidatorRejects(`
+        assertValidatorRejects(
+            `
             type ValueObject @valueObject @roles {
                 foo: String
             }
         `,
-            '@roles is only allowed on fields and on root entity types.');
+            '@roles is only allowed on fields and on root entity types.',
+        );
     });
 
     it('rejects entity extensions with @roles', () => {
-        assertValidatorRejects(`
+        assertValidatorRejects(
+            `
             type ValueObject @entityExtension @roles {
                 foo: String
             }
         `,
-            '@roles is only allowed on fields and on root entity types.');
+            '@roles is only allowed on fields and on root entity types.',
+        );
     });
 
     it('accepts value objects without roles', () => {
@@ -34,6 +37,5 @@ describe('roles-on-non-root-entity-types validator', () => {
                 foo: String
             }
         `);
-    })
-
+    });
 });

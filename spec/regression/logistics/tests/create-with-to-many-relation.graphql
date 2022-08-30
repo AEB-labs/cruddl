@@ -1,14 +1,16 @@
 mutation create {
-    createDelivery(input: {
-        deliveryNumber: "1234-test-create-with-relations",
-        handlingUnits:["@{ids/HandlingUnit/1}"]
-    }) {
+    createDelivery(
+        input: {
+            deliveryNumber: "1234-test-create-with-relations"
+            handlingUnits: ["@{ids/HandlingUnit/1}"]
+        }
+    ) {
         deliveryNumber
     }
 }
 
 query check {
-    allDeliveries(filter:{deliveryNumber:"1234-test-create-with-relations"}) {
+    allDeliveries(filter: { deliveryNumber: "1234-test-create-with-relations" }) {
         deliveryNumber
         handlingUnits {
             huNumber

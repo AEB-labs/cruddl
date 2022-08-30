@@ -61,15 +61,19 @@ export class FieldPath implements ModelComponent {
         let lastField: Field | undefined;
         for (const segmentSpecifier of segmentSpecifiers) {
             const segmentLocation = this.config.location
-                ? locationWithinStringArgument(this.config.location, currentOffset, segmentSpecifier.length)
+                ? locationWithinStringArgument(
+                      this.config.location,
+                      currentOffset,
+                      segmentSpecifier.length,
+                  )
                 : undefined;
 
             if (!currentType.isObjectType) {
                 addMessage(
                     ValidationMessage.error(
                         `Type "${currentType.name}" is not an object type and cannot be navigated into.`,
-                        segmentLocation
-                    )
+                        segmentLocation,
+                    ),
                 );
                 return [];
             }
@@ -77,15 +81,18 @@ export class FieldPath implements ModelComponent {
                 addMessage(
                     ValidationMessage.error(
                         `Field "${lastField.declaringType.name}.${lastField.name}" is a list and cannot be navigated into.`,
-                        segmentLocation
-                    )
+                        segmentLocation,
+                    ),
                 );
                 return [];
             }
 
             if (!segmentSpecifier) {
                 addMessage(
-                    ValidationMessage.error(`The path should consist of dot-separated segments.`, this.config.location)
+                    ValidationMessage.error(
+                        `The path should consist of dot-separated segments.`,
+                        this.config.location,
+                    ),
                 );
                 return [];
             }
@@ -95,8 +102,8 @@ export class FieldPath implements ModelComponent {
                 addMessage(
                     ValidationMessage.error(
                         `Type "${currentType.name}" does not have a field "${fieldName}".`,
-                        segmentLocation
-                    )
+                        segmentLocation,
+                    ),
                 );
                 return [];
             }
@@ -106,8 +113,8 @@ export class FieldPath implements ModelComponent {
                 addMessage(
                     ValidationMessage.error(
                         `Field "${currentType.name}.${field.name}" is a parent field and cannot be used in a field path.`,
-                        segmentLocation
-                    )
+                        segmentLocation,
+                    ),
                 );
                 return [];
             }
@@ -115,8 +122,8 @@ export class FieldPath implements ModelComponent {
                 addMessage(
                     ValidationMessage.error(
                         `Field "${currentType.name}.${field.name}" is a root field and cannot be used in a field path.`,
-                        segmentLocation
-                    )
+                        segmentLocation,
+                    ),
                 );
                 return [];
             }
@@ -125,8 +132,8 @@ export class FieldPath implements ModelComponent {
                 addMessage(
                     ValidationMessage.error(
                         `Field "${currentType.name}.${field.name}" is a collect field, but collect fields cannot be used in this path.`,
-                        segmentLocation
-                    )
+                        segmentLocation,
+                    ),
                 );
             }
 
@@ -138,8 +145,8 @@ export class FieldPath implements ModelComponent {
                     addMessage(
                         ValidationMessage.error(
                             `Field "${currentType.name}.${field.name}" resolves to a different root entity, but this path cannot traverse root entity boundaries.`,
-                            segmentLocation
-                        )
+                            segmentLocation,
+                        ),
                     );
                     return [];
                 }

@@ -33,5 +33,6 @@ type Root2 @rootEntity {
     name: String @key
     roots: [Root] @relation
     rootGrandchildren: [Grandchild] @collect(path: "roots.children.children")
-    rootExtensionGrandchildren: [ExtensionGrandchild] @collect(path: "roots.children.extension.children")
+    rootExtensionGrandchildren: [ExtensionGrandchild]
+        @collect(path: "roots.children.extension.children")
 }

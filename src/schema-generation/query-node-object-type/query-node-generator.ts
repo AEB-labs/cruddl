@@ -14,7 +14,7 @@ import {
     TypeCheckQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-    WithPreExecutionQueryNode
+    WithPreExecutionQueryNode,
 } from '../../query-tree';
 import { groupByEquivalence } from '../../utils/group-by-equivalence';
 import { decapitalize, flatMap } from '../../utils/utils';
@@ -26,7 +26,11 @@ export function buildConditionalObjectQueryNode(
     sourceNode: QueryNode,
     type: QueryNodeObjectType,
     selectionSet: ReadonlyArray<FieldSelection>,
-    context: FieldContext = { selectionStack: [], selectionTokenStack: [], selectionToken: new SelectionToken() }
+    context: FieldContext = {
+        selectionStack: [],
+        selectionTokenStack: [],
+        selectionToken: new SelectionToken(),
+    },
 ) {
     if (sourceNode instanceof ObjectQueryNode) {
         // shortcut, especially useful for namespace nodes where we always pass through an empty object but ignore it
@@ -42,7 +46,7 @@ export function buildConditionalObjectQueryNode(
         return new ConditionalQueryNode(
             new TypeCheckQueryNode(sourceNode, BasicType.NULL),
             new NullQueryNode(),
-            buildObjectQueryNode(sourceNode, type, selectionSet, context)
+            buildObjectQueryNode(sourceNode, type, selectionSet, context),
         );
     }
 
@@ -55,8 +59,8 @@ export function buildConditionalObjectQueryNode(
         resultNode: new ConditionalQueryNode(
             new TypeCheckQueryNode(variableNode, BasicType.NULL),
             new NullQueryNode(),
-            buildObjectQueryNode(variableNode, type, selectionSet, context)
-        )
+            buildObjectQueryNode(variableNode, type, selectionSet, context),
+        ),
     });
 }
 
@@ -76,7 +80,7 @@ function buildObjectQueryNode(
     sourceNode: QueryNode,
     type: QueryNodeObjectType,
     selections: ReadonlyArray<FieldSelection>,
-    context: FieldContext
+    context: FieldContext,
 ) {
     // de-duplicate pure fields if they are completely identical
     const fieldMap = getFieldMap(type);
@@ -89,11 +93,15 @@ function buildObjectQueryNode(
     });
     const variableAssignments: [VariableQueryNode, QueryNode][] = [];
     let resultNode: QueryNode = new ObjectQueryNode(
-        flatMap(distinctFieldRequests, selections => {
+        flatMap(distinctFieldRequests, (selections) => {
             const fieldRequest = selections[0].fieldRequest;
             if (fieldRequest.fieldName === '__typename') {
                 return selections.map(
-                    s => new PropertySpecification(s.propertyName, new LiteralQueryNode(fieldRequest.parentType.name))
+                    (s) =>
+                        new PropertySpecification(
+                            s.propertyName,
+                            new LiteralQueryNode(fieldRequest.parentType.name),
+                        ),
                 );
             }
 
@@ -106,7 +114,7 @@ function buildObjectQueryNode(
                 ...context,
                 selectionStack: [...context.selectionStack, selections[0]],
                 selectionTokenStack: [...context.selectionTokenStack, selectionToken],
-                selectionToken
+                selectionToken,
             };
             const fieldQueryNode = buildFieldQueryNode(sourceNode, field, fieldRequest, newContext);
             if (selections.length === 1) {
@@ -114,15 +122,17 @@ function buildObjectQueryNode(
             } else {
                 const variableNode = new VariableQueryNode(field.name);
                 variableAssignments.push([variableNode, fieldQueryNode]);
-                return selections.map(s => new PropertySpecification(s.propertyName, variableNode));
+                return selections.map(
+                    (s) => new PropertySpecification(s.propertyName, variableNode),
+                );
             }
-        })
+        }),
     );
     for (const [variableNode, variableValueNode] of variableAssignments) {
         resultNode = new VariableAssignmentQueryNode({
             variableNode,
             variableValueNode,
-            resultNode
+            resultNode,
         });
     }
     return resultNode;
@@ -131,7 +141,7 @@ function buildFieldQueryNodeWithTransform(
     sourceNode: QueryNode,
     field: QueryNodeField,
     fieldRequest: FieldRequest,
-    context: FieldContext
+    context: FieldContext,
 ): QueryNode {
     const transformListQueryNode = buildFieldQueryNode0(sourceNode, field, fieldRequest, context);
     if (field.transform) {
@@ -145,7 +155,7 @@ function buildFieldQueryNode0(
     sourceNode: QueryNode,
     field: QueryNodeField,
     fieldRequest: FieldRequest,
-    context: FieldContext
+    context: FieldContext,
 ): QueryNode {
     const fieldQueryNode = field.resolve(sourceNode, fieldRequest.args, context);
 
@@ -160,16 +170,31 @@ function buildFieldQueryNode0(
         // This is no longer necessary because createFieldNode() already does this where necessary (only for simple field lookups)
         // All other code should return lists where lists are expected
 
-        return buildTransformListQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, context);
+        return buildTransformListQueryNode(
+            fieldQueryNode,
+            queryTreeObjectType,
+            fieldRequest.selectionSet,
+            context,
+        );
     }
 
     // object
     if (field.skipNullCheck) {
-        return buildObjectQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, context);
+        return buildObjectQueryNode(
+            fieldQueryNode,
+            queryTreeObjectType,
+            fieldRequest.selectionSet,
+            context,
+        );
     } else {
         // This is necessary because we want to return `null` if a field is null, and not pass `null` through as
         // `source`, just as the graphql engine would do, too.
-        return buildConditionalObjectQueryNode(fieldQueryNode, queryTreeObjectType, fieldRequest.selectionSet, context);
+        return buildConditionalObjectQueryNode(
+            fieldQueryNode,
+            queryTreeObjectType,
+            fieldRequest.selectionSet,
+            context,
+        );
     }
 }
 
@@ -177,7 +202,7 @@ function buildFieldQueryNode(
     sourceNode: QueryNode,
     field: QueryNodeField,
     fieldRequest: FieldRequest,
-    context: FieldContext
+    context: FieldContext,
 ): QueryNode {
     const node = buildFieldQueryNodeWithTransform(sourceNode, field, fieldRequest, context);
     if (!field.isSerial) {
@@ -189,10 +214,10 @@ function buildFieldQueryNode(
         preExecQueries: [
             new PreExecQueryParms({
                 query: node,
-                resultVariable: variableNode
-            })
+                resultVariable: variableNode,
+            }),
         ],
-        resultNode: variableNode
+        resultNode: variableNode,
     });
 }
 
@@ -200,11 +225,14 @@ function buildTransformListQueryNode(
     listNode: QueryNode,
     itemType: QueryNodeObjectType,
     selectionSet: ReadonlyArray<FieldSelection>,
-    context: FieldContext
+    context: FieldContext,
 ): QueryNode {
     // if we can, just extend a given TransformListNode so that other cruddl optimizations can operate
     // (e.g. projection indirection)
-    if (listNode instanceof TransformListQueryNode && listNode.innerNode === listNode.itemVariable) {
+    if (
+        listNode instanceof TransformListQueryNode &&
+        listNode.innerNode === listNode.itemVariable
+    ) {
         return new TransformListQueryNode({
             listNode: listNode.listNode,
             itemVariable: listNode.itemVariable,
@@ -212,7 +240,7 @@ function buildTransformListQueryNode(
             innerNode: buildObjectQueryNode(listNode.itemVariable, itemType, selectionSet, context),
             maxCount: listNode.maxCount,
             orderBy: listNode.orderBy,
-            skip: listNode.skip
+            skip: listNode.skip,
         });
     }
 
@@ -221,7 +249,7 @@ function buildTransformListQueryNode(
     return new TransformListQueryNode({
         listNode,
         innerNode,
-        itemVariable
+        itemVariable,
     });
 }
 

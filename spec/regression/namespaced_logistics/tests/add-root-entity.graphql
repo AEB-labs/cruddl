@@ -1,14 +1,11 @@
 mutation add {
     foundation {
-        createCountry(input: {
-            description: [
-                {
-                    languageIsoCode: "en",
-                    translation: "Norway"
-                }
-            ]
-            isoCode: "NO"
-        }) {
+        createCountry(
+            input: {
+                description: [{ languageIsoCode: "en", translation: "Norway" }]
+                isoCode: "NO"
+            }
+        ) {
             isoCode
         }
     }

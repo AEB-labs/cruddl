@@ -4,7 +4,7 @@ import { arrayToObject, flatMap } from '../../utils/utils';
 
 function stringify(val: any) {
     if (val === undefined) {
-        return "undefined";
+        return 'undefined';
     }
     return JSON.stringify(val);
 }
@@ -34,7 +34,7 @@ export class JSCodeBuildingContext {
 
     private static DEFAULT_LABEL = 'tmp';
 
-    private static getSafeLabel(label: string|undefined): string {
+    private static getSafeLabel(label: string | undefined): string {
         if (label) {
             // avoid collisions with collection names, functions and keywords
             label = 'v_' + label;
@@ -77,7 +77,9 @@ export class JSCodeBuildingContext {
     }
 
     getBoundValueMap() {
-        return arrayToObject(this.boundValues, (_, index) => JSCodeBuildingContext.getBoundValueName(index));
+        return arrayToObject(this.boundValues, (_, index) =>
+            JSCodeBuildingContext.getBoundValueName(index),
+        );
     }
 
     getPreExecInjectedVariablesMap(): Map<JSQueryResultVariable, string> {
@@ -100,7 +102,7 @@ export abstract class JSFragment {
         return {
             code,
             boundValues: context.getBoundValueMap(),
-            usedResultVariables: context.getPreExecInjectedVariablesMap()
+            usedResultVariables: context.getPreExecInjectedVariablesMap(),
         };
     }
 
@@ -108,8 +110,8 @@ export abstract class JSFragment {
         return false;
     }
 
-    abstract toStringWithContext(context: JSCodeBuildingContext): string
-    abstract toColoredStringWithContext(context: JSCodeBuildingContext): string
+    abstract toStringWithContext(context: JSCodeBuildingContext): string;
+    abstract toColoredStringWithContext(context: JSCodeBuildingContext): string;
     abstract getCodeWithContext(context: JSCodeBuildingContext): string;
 }
 
@@ -154,7 +156,6 @@ export class JSVariable extends JSFragment {
 }
 
 export class JSQueryResultVariable extends JSVariable {
-
     getCodeWithContext(context: JSCodeBuildingContext): string {
         return 'boundValues[' + JSON.stringify(context.getOrAddVariable(this)) + ']';
     }
@@ -184,15 +185,15 @@ export class JSCompoundFragment extends JSFragment {
     }
 
     isEmpty() {
-        return this.fragments.length == 0 || this.fragments.every(fr => fr.isEmpty());
+        return this.fragments.length == 0 || this.fragments.every((fr) => fr.isEmpty());
     }
 
     toStringWithContext(context: JSCodeBuildingContext): string {
-        return this.fragments.map(fr => fr.toStringWithContext(context)).join('');
+        return this.fragments.map((fr) => fr.toStringWithContext(context)).join('');
     }
 
     toColoredStringWithContext(context: JSCodeBuildingContext): string {
-        return this.fragments.map(fr => fr.toColoredStringWithContext(context)).join('');
+        return this.fragments.map((fr) => fr.toColoredStringWithContext(context)).join('');
     }
 
     getCodeWithContext(context: JSCodeBuildingContext): string {
@@ -236,7 +237,10 @@ export class JSIndentationFragment extends JSFragment {
     }
 }
 
-export function js(strings: ReadonlyArray<string>, ...values: (JSFragment|string|number|boolean)[]): JSFragment {
+export function js(
+    strings: ReadonlyArray<string>,
+    ...values: (JSFragment | string | number | boolean)[]
+): JSFragment {
     let snippets = [...strings];
     let fragments: JSFragment[] = [];
     while (snippets.length || values.length) {
@@ -249,10 +253,16 @@ export function js(strings: ReadonlyArray<string>, ...values: (JSFragment|string
                 fragments.push(...value.fragments);
             } else if (value instanceof JSFragment) {
                 fragments.push(value);
-            } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+            } else if (
+                typeof value === 'string' ||
+                typeof value === 'number' ||
+                typeof value === 'boolean'
+            ) {
                 fragments.push(new JSBoundValue(value));
             } else {
-                throw new Error(`js: Received a value that is neither a JSFragment, nor a primitive`)
+                throw new Error(
+                    `js: Received a value that is neither a JSFragment, nor a primitive`,
+                );
             }
         }
     }
@@ -322,7 +332,7 @@ export namespace js {
     }
 
     export function integer(number: number): JSFragment {
-        return code(JSON.stringify(Number(number)))
+        return code(JSON.stringify(Number(number)));
     }
 
     export function isSafeIdentifier(str: string) {
@@ -342,12 +352,12 @@ export namespace js {
  * into JSFragments.
  */
 export class JSCompoundQuery extends JSFragment {
-
     constructor(
         public readonly preExecQueries: JSCompoundQuery[],
         public readonly jsQuery: JSFragment,
-        public readonly resultVar: JSQueryResultVariable|undefined,
-        public readonly resultValidator: QueryResultValidator|undefined) {
+        public readonly resultVar: JSQueryResultVariable | undefined,
+        public readonly resultValidator: QueryResultValidator | undefined,
+    ) {
         super();
     }
 
@@ -361,13 +371,16 @@ export class JSCompoundQuery extends JSFragment {
         return this.getExecutableQueriesRecursive(resultVarToNameMap);
     }
 
-    private getExecutableQueriesRecursive(resultVarToNameMap: Map<JSQueryResultVariable, string>): JSExecutableQuery[] {
-        const executableQueries = flatMap(this.preExecQueries, JSQuery =>
-            JSQuery.getExecutableQueriesRecursive(resultVarToNameMap));
+    private getExecutableQueriesRecursive(
+        resultVarToNameMap: Map<JSQueryResultVariable, string>,
+    ): JSExecutableQuery[] {
+        const executableQueries = flatMap(this.preExecQueries, (JSQuery) =>
+            JSQuery.getExecutableQueriesRecursive(resultVarToNameMap),
+        );
 
         const { code, boundValues, usedResultVariables } = this.jsQuery.getCode();
 
-        const usedResultNames: {[p: string]: string} = {};
+        const usedResultNames: { [p: string]: string } = {};
         usedResultVariables.forEach((bindParamName, JSVariable) => {
             const usedResultName = resultVarToNameMap.get(JSVariable);
             if (!usedResultName) {
@@ -378,46 +391,75 @@ export class JSCompoundQuery extends JSFragment {
 
         let queryResultName = undefined;
         if (this.resultVar) {
-            queryResultName = "query_result_" + resultVarToNameMap.size;
+            queryResultName = 'query_result_' + resultVarToNameMap.size;
             resultVarToNameMap.set(this.resultVar, queryResultName);
         }
 
         let queryResultValidator = undefined;
         if (this.resultValidator) {
-            queryResultValidator = {[this.resultValidator.getValidatorName()]: this.resultValidator.getValidatorData()};
+            queryResultValidator = {
+                [this.resultValidator.getValidatorName()]: this.resultValidator.getValidatorData(),
+            };
         }
 
-        const executableQuery = new JSExecutableQuery(code, boundValues, usedResultNames, queryResultName, queryResultValidator);
-        return [
-            ...executableQueries,
-            executableQuery
-        ];
+        const executableQuery = new JSExecutableQuery(
+            code,
+            boundValues,
+            usedResultNames,
+            queryResultName,
+            queryResultValidator,
+        );
+        return [...executableQueries, executableQuery];
     }
 
     //TODO Refactor the following three methods. JSCompoundQuery isn't a real JSFragment.
     //TODO Include read/write accessed collections in output
     toStringWithContext(context: JSCodeBuildingContext): string {
-        let descriptions = this.preExecQueries.map(JSQuery => JSQuery.toStringWithContext(context));
-        const varDescription = this.resultVar ? this.resultVar.toStringWithContext(context) + ' = ' : '';
-        const validatorDescription = this.resultValidator ? ' validate result ' + this.resultValidator.describe(): '';
-        const execDescription = varDescription + 'execute(\n' +
-            js.indent(this.jsQuery).toStringWithContext(context) + '\n)' + validatorDescription + ';';
+        let descriptions = this.preExecQueries.map((JSQuery) =>
+            JSQuery.toStringWithContext(context),
+        );
+        const varDescription = this.resultVar
+            ? this.resultVar.toStringWithContext(context) + ' = '
+            : '';
+        const validatorDescription = this.resultValidator
+            ? ' validate result ' + this.resultValidator.describe()
+            : '';
+        const execDescription =
+            varDescription +
+            'execute(\n' +
+            js.indent(this.jsQuery).toStringWithContext(context) +
+            '\n)' +
+            validatorDescription +
+            ';';
         descriptions.push(execDescription);
-        return descriptions.join('\n')
+        return descriptions.join('\n');
     }
 
     toColoredStringWithContext(context: JSCodeBuildingContext): string {
-        let descriptions = this.preExecQueries.map(JSQuery => JSQuery.toColoredStringWithContext(context));
-        const varDescription = this.resultVar ? this.resultVar.toColoredStringWithContext(context) + ' = ' : '';
-        const validatorDescription = this.resultValidator ? ' validate result ' + this.resultValidator.describe(): '';
-        const execDescription = varDescription + 'execute(\n' +
-            js.indent(this.jsQuery).toColoredStringWithContext(context) + '\n)' + validatorDescription + ';';
+        let descriptions = this.preExecQueries.map((JSQuery) =>
+            JSQuery.toColoredStringWithContext(context),
+        );
+        const varDescription = this.resultVar
+            ? this.resultVar.toColoredStringWithContext(context) + ' = '
+            : '';
+        const validatorDescription = this.resultValidator
+            ? ' validate result ' + this.resultValidator.describe()
+            : '';
+        const execDescription =
+            varDescription +
+            'execute(\n' +
+            js.indent(this.jsQuery).toColoredStringWithContext(context) +
+            '\n)' +
+            validatorDescription +
+            ';';
         descriptions.push(execDescription);
-        return descriptions.join('\n')
+        return descriptions.join('\n');
     }
 
     getCodeWithContext(context: JSCodeBuildingContext): string {
-        throw new Error('Unsupported Operation. JSCompoundQuery can not provide a single JS statement.')
+        throw new Error(
+            'Unsupported Operation. JSCompoundQuery can not provide a single JS statement.',
+        );
     }
 }
 
@@ -427,9 +469,9 @@ export class JSCompoundQuery extends JSFragment {
 export class JSExecutableQuery {
     constructor(
         public readonly code: string,
-        public readonly boundValues: {[p: string]: any},
-        public readonly usedPreExecResultNames: {[p: string]: string},
+        public readonly boundValues: { [p: string]: any },
+        public readonly usedPreExecResultNames: { [p: string]: string },
         public readonly resultName?: string,
-        public readonly resultValidator?: {[name:string]:any}) {
-    }
+        public readonly resultValidator?: { [name: string]: any },
+    ) {}
 }

@@ -2,7 +2,7 @@ import { Database } from 'arangojs';
 import { ERROR_QUERY_NOT_FOUND } from './error-codes';
 
 interface CancellationManagerConfig {
-    readonly database: Database
+    readonly database: Database;
 }
 
 export class CancellationManager {
@@ -14,7 +14,7 @@ export class CancellationManager {
 
     async cancelQuery(transactionID: string) {
         const queries = await this.database.listRunningQueries();
-        const query = queries.find(q => q.query.startsWith(`/*id:${transactionID}*/`));
+        const query = queries.find((q) => q.query.startsWith(`/*id:${transactionID}*/`));
         if (!query) {
             return;
         }

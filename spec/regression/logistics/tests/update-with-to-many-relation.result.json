@@ -82,8 +82,7 @@
     "data": {
       "Delivery": {
         "deliveryNumber": "1000173",
-        "handlingUnits": [
-        ]
+        "handlingUnits": []
       }
     }
   }

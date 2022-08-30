@@ -176,7 +176,7 @@ export class Project {
 
     async executeTTLCleanup(
         databaseAdapter: DatabaseAdapter,
-        executionOptions: ExecutionOptions
+        executionOptions: ExecutionOptions,
     ): Promise<{ [name: string]: number }> {
         const result = await this.executeTTLCleanupExt(databaseAdapter, executionOptions);
         const resultMap: Record<string, number> = {};
@@ -194,12 +194,16 @@ export class Project {
 
     async executeTTLCleanupExt(
         databaseAdapter: DatabaseAdapter,
-        executionOptions: ExecutionOptions
+        executionOptions: ExecutionOptions,
     ): Promise<TTLCleanupResult> {
-        const ttlTypes = this.getModel().rootEntityTypes.flatMap((rootEntityType) => rootEntityType.timeToLiveTypes);
+        const ttlTypes = this.getModel().rootEntityTypes.flatMap(
+            (rootEntityType) => rootEntityType.timeToLiveTypes,
+        );
         const resultTypes: TTLCleanupTypeResult[] = [];
         for (const ttlType of ttlTypes) {
-            resultTypes.push(await this.executeTTLCleanupForType(ttlType, databaseAdapter, executionOptions));
+            resultTypes.push(
+                await this.executeTTLCleanupForType(ttlType, databaseAdapter, executionOptions),
+            );
         }
         return {
             types: resultTypes,
@@ -211,15 +215,21 @@ export class Project {
     private async executeTTLCleanupForType(
         type: TimeToLiveType,
         databaseAdapter: DatabaseAdapter,
-        executionOptions: ExecutionOptions
+        executionOptions: ExecutionOptions,
     ): Promise<TTLCleanupTypeResult> {
-        let limit = executionOptions.timeToLiveOptions?.cleanupLimit ?? executionOptions.timeToLiveCleanupLimit;
+        let limit =
+            executionOptions.timeToLiveOptions?.cleanupLimit ??
+            executionOptions.timeToLiveCleanupLimit;
         let hasReducedLimit = false;
         let lastLimitReductionCause: Error | undefined = undefined;
         while (true) {
             const queryTree = getQueryNodeForTTLType(type, limit);
             try {
-                const deletedObjectsCount = await this.execute(databaseAdapter, queryTree, executionOptions);
+                const deletedObjectsCount = await this.execute(
+                    databaseAdapter,
+                    queryTree,
+                    executionOptions,
+                );
                 return {
                     type,
                     deletedObjectsCount,
@@ -238,7 +248,8 @@ export class Project {
                 ) {
                     const isResourceLimitError =
                         error instanceof TransactionTimeoutError ||
-                        (error instanceof TransactionError && (error.cause as any).errorNum === ERROR_RESOURCE_LIMIT);
+                        (error instanceof TransactionError &&
+                            (error.cause as any).errorNum === ERROR_RESOURCE_LIMIT);
                     if (isResourceLimitError) {
                         limit = Math.floor(limit / 2);
                         hasReducedLimit = true;
@@ -262,21 +273,29 @@ export class Project {
 
     async getTTLInfo(
         databaseAdapter: DatabaseAdapter,
-        executionOptions: ExecutionOptions
+        executionOptions: ExecutionOptions,
     ): Promise<ReadonlyArray<TTLInfo>> {
-        const ttlTypes = this.getModel().rootEntityTypes.flatMap((rootEntityType) => rootEntityType.timeToLiveTypes);
+        const ttlTypes = this.getModel().rootEntityTypes.flatMap(
+            (rootEntityType) => rootEntityType.timeToLiveTypes,
+        );
         const queryTree = new ListQueryNode(
             ttlTypes.map((ttlType) =>
                 getTTLInfoQueryNode(
                     ttlType,
-                    executionOptions.timeToLiveOptions?.overdueDelta || executionOptions.timeToLiveOverdueDelta || 3
-                )
-            )
+                    executionOptions.timeToLiveOptions?.overdueDelta ||
+                        executionOptions.timeToLiveOverdueDelta ||
+                        3,
+                ),
+            ),
         );
         return await this.execute(databaseAdapter, queryTree, executionOptions);
     }
 
-    private async execute(databaseAdapter: DatabaseAdapter, queryTree: QueryNode, executionOptions: ExecutionOptions) {
+    private async execute(
+        databaseAdapter: DatabaseAdapter,
+        queryTree: QueryNode,
+        executionOptions: ExecutionOptions,
+    ) {
         const res = databaseAdapter.executeExt
             ? await databaseAdapter.executeExt({
                   queryTree,

@@ -8,7 +8,10 @@ describe('arango-search-helper', () => {
         it('creates simple view definition', () => {
             const model = createSimpleModel(gql`
                 type Delivery
-                    @rootEntity(flexSearch: true, flexSearchOrder: [{ field: "deliveryNumber", direction: DESC }]) {
+                    @rootEntity(
+                        flexSearch: true
+                        flexSearchOrder: [{ field: "deliveryNumber", direction: DESC }]
+                    ) {
                     deliveryNumber: String @flexSearch
                 }
             `);
@@ -28,7 +31,10 @@ describe('arango-search-helper', () => {
                 type Delivery
                     @rootEntity(
                         flexSearch: true
-                        flexSearchOrder: [{ field: "id", direction: DESC }, { field: "deliveryNumber", direction: ASC }]
+                        flexSearchOrder: [
+                            { field: "id", direction: DESC }
+                            { field: "deliveryNumber", direction: ASC }
+                        ]
                     ) {
                     deliveryNumber: String @flexSearch
                 }
@@ -45,7 +51,11 @@ describe('arango-search-helper', () => {
 
         it('leaves id fields in value objects in primary sort alone', () => {
             const model = createSimpleModel(gql`
-                type Delivery @rootEntity(flexSearch: true, flexSearchOrder: [{ field: "value.id", direction: DESC }]) {
+                type Delivery
+                    @rootEntity(
+                        flexSearch: true
+                        flexSearchOrder: [{ field: "value.id", direction: DESC }]
+                    ) {
                     deliveryNumber: String @flexSearch
                     value: Value
                 }

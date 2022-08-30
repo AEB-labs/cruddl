@@ -28,7 +28,7 @@ describe('known object type directive validator', () => {
                 foo: String
             }
         `,
-            'Add one of @rootEntity, @childEntity, @entityExtension or @valueObject.'
+            'Add one of @rootEntity, @childEntity, @entityExtension or @valueObject.',
         );
     });
 });

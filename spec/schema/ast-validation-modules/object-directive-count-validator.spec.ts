@@ -39,20 +39,25 @@ const modelWithoutDirectiveFlaws = `
         `;
 
 describe('object directive count validator', () => {
-
     it('finds types without directive', () => {
-        assertValidatorRejects(modelWithTypeWithoutDirective,'Add one of @rootEntity, @childEntity, @entityExtension or @valueObject.');
+        assertValidatorRejects(
+            modelWithTypeWithoutDirective,
+            'Add one of @rootEntity, @childEntity, @entityExtension or @valueObject.',
+        );
     });
 
     it('finds types with too many directive', () => {
         const validationResult = validate(modelWithTypeWithToManyDirectives);
         expect(validationResult.getErrors().length, validationResult.toString()).to.equal(2);
-        expect(validationResult.getErrors()[0].message).to.equal('Only one of @rootEntity, @childEntity, @entityExtension or @valueObject can be used.');
-        expect(validationResult.getErrors()[1].message).to.equal('Only one of @rootEntity, @childEntity, @entityExtension or @valueObject can be used.');
+        expect(validationResult.getErrors()[0].message).to.equal(
+            'Only one of @rootEntity, @childEntity, @entityExtension or @valueObject can be used.',
+        );
+        expect(validationResult.getErrors()[1].message).to.equal(
+            'Only one of @rootEntity, @childEntity, @entityExtension or @valueObject can be used.',
+        );
     });
 
     it('accepts correct type directives', () => {
         assertValidatorAccepts(modelWithoutDirectiveFlaws);
-    })
-
+    });
 });

@@ -1,332 +1,347 @@
 {
-    "equals": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                }
-            ]
+  "equals": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
         }
-    },
-    "equals_number": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000522"
-                }
-            ]
-        }
-    },
-    "in": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                },
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
-    "in_null": {
-        "data": {
-            "flexSearchCountries": [
-                {
-                    "isoCode": "CH"
-                },
-                {
-                    "isoCode": "DE"
-                },
-                {
-                    "isoCode": "US"
-                }
-            ]
-        }
-    },
-    "not_in_null": {
-        "data": {
-            "flexSearchCountries": [
-                {
-                    "isoCode": "DE"
-                }
-            ]
-        }
-    },
-    "gte_string": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                },
-                {
-                    "deliveryNumber": "1000522"
-                }
-            ]
-        }
-    },
-    "lte_string": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                },
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
-    "lt_includes_null": {
-        "data": {
-            "flexSearchCountries": [
-                {
-                    "isoCode": "CH",
-                    "someKey": null
-                },
-                {
-                    "isoCode": "US",
-                    "someKey": null
-                }
-            ]
-        }
-    },
-    "lte_includes_null": {
-        "data": {
-            "flexSearchCountries": [
-                {
-                    "isoCode": "CH",
-                    "someKey": null
-                },
-                {
-                    "isoCode": "DE",
-                    "someKey": "1"
-                },
-                {
-                    "isoCode": "US",
-                    "someKey": null
-                }
-            ]
-        }
-    },
-    "eq_does_not_include_null": {
-        "data": {
-            "flexSearchCountries": [
-                {
-                    "isoCode": "DE",
-                    "someKey": "1"
-                }
-            ]
-        }
-    },
-    "equals_enum": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                }
-            ]
-        }
-    },
-    "equals_id": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                }
-            ]
-        }
-    },
-    "valueObject": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
-    "entityExtension": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                }
-            ]
-        }
-    },
-    "post_filter_below_max": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
-    "post_and_legacy_filter_throws": {
-        "errors": [
-            {
-                "message": "Cannot combine filter and postFilter. Use only postFilter.",
-                "locations": [
-                    {
-                        "line": 100,
-                        "column": 5
-                    }
-                ],
-                "path": ["flexSearchDeliveries"]
-            }
-        ],
-        "data": {
-            "flexSearchDeliveries": null
-        }
-    },
-    "legacy_filter_below_max": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                }
-            ]
-        }
-    },
-    "meta_below_max": {
-        "data": {
-            "_flexSearchDeliveriesMeta": {
-                "count": 1
-            }
-        }
-    },
-    "order_below_max": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                }
-            ]
-        }
-    },
-    "post_filter_above_max": {
-        "errors": [
-            {
-                "message": "Too many objects.",
-                "locations": [
-                    {
-                        "line": 134,
-                        "column": 5
-                    }
-                ],
-                "path": ["flexSearchDeliveries"]
-            }
-        ],
-        "data": {
-            "flexSearchDeliveries": null
-        }
-    },
-    "legacy_filter_above_max": {
-        "errors": [
-            {
-                "message": "Too many objects.",
-                "locations": [
-                    {
-                        "line": 140,
-                        "column": 5
-                    }
-                ],
-                "path": ["flexSearchDeliveries"]
-            }
-        ],
-        "data": {
-            "flexSearchDeliveries": null
-        }
-    },
-    "meta_above_max": {
-        "errors": [
-            {
-                "message": "Too many objects.",
-                "locations": [
-                    {
-                        "line": 146,
-                        "column": 5
-                    }
-                ],
-                "path": ["_flexSearchDeliveriesMeta"]
-            }
-        ],
-        "data": null
-    },
-    "order_above_max": {
-        "errors": [
-            {
-                "message": "Too many objects.",
-                "locations": [
-                    {
-                        "line": 152,
-                        "column": 5
-                    }
-                ],
-                "path": ["flexSearchDeliveries"]
-            }
-        ],
-        "data": {
-            "flexSearchDeliveries": null
-        }
-    },
-    "recursion_successfull": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                }
-            ]
-        }
-    },
-    "recursion_error": {
-        "errors": [
-            {
-                "message": "Recursive filters can only be defined for 1 level of recursion.",
-                "locations": [
-                    {
-                        "line": 164,
-                        "column": 5
-                    }
-                ],
-                "path": ["flexSearchDeliveries"]
-            }
-        ],
-        "data": {
-            "flexSearchDeliveries": null
-        }
-    },
-    "starts_with": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000521"
-                },
-                {
-                    "deliveryNumber": "1000522"
-                }
-            ]
-        }
-    },
-    "null_starts_with": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173"
-                }
-            ]
-        }
-    },
-    "string_aggregation": {
-        "data": {
-            "flexSearchDeliveries": [
-                {
-                    "deliveryNumber": "1000173",
-                    "serialNumbers": ["12345", "67890"]
-                }
-            ]
-        }
+      ]
     }
+  },
+  "equals_number": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "in": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "in_null": {
+    "data": {
+      "flexSearchCountries": [
+        {
+          "isoCode": "CH"
+        },
+        {
+          "isoCode": "DE"
+        },
+        {
+          "isoCode": "US"
+        }
+      ]
+    }
+  },
+  "not_in_null": {
+    "data": {
+      "flexSearchCountries": [
+        {
+          "isoCode": "DE"
+        }
+      ]
+    }
+  },
+  "gte_string": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "lte_string": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "lt_includes_null": {
+    "data": {
+      "flexSearchCountries": [
+        {
+          "isoCode": "CH",
+          "someKey": null
+        },
+        {
+          "isoCode": "US",
+          "someKey": null
+        }
+      ]
+    }
+  },
+  "lte_includes_null": {
+    "data": {
+      "flexSearchCountries": [
+        {
+          "isoCode": "CH",
+          "someKey": null
+        },
+        {
+          "isoCode": "DE",
+          "someKey": "1"
+        },
+        {
+          "isoCode": "US",
+          "someKey": null
+        }
+      ]
+    }
+  },
+  "eq_does_not_include_null": {
+    "data": {
+      "flexSearchCountries": [
+        {
+          "isoCode": "DE",
+          "someKey": "1"
+        }
+      ]
+    }
+  },
+  "equals_enum": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "equals_id": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "valueObject": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "entityExtension": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "post_filter_below_max": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "post_and_legacy_filter_throws": {
+    "errors": [
+      {
+        "message": "Cannot combine filter and postFilter. Use only postFilter.",
+        "locations": [
+          {
+            "line": 100,
+            "column": 5
+          }
+        ],
+        "path": [
+          "flexSearchDeliveries"
+        ]
+      }
+    ],
+    "data": {
+      "flexSearchDeliveries": null
+    }
+  },
+  "legacy_filter_below_max": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "meta_below_max": {
+    "data": {
+      "_flexSearchDeliveriesMeta": {
+        "count": 1
+      }
+    }
+  },
+  "order_below_max": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "post_filter_above_max": {
+    "errors": [
+      {
+        "message": "Too many objects.",
+        "locations": [
+          {
+            "line": 137,
+            "column": 5
+          }
+        ],
+        "path": [
+          "flexSearchDeliveries"
+        ]
+      }
+    ],
+    "data": {
+      "flexSearchDeliveries": null
+    }
+  },
+  "legacy_filter_above_max": {
+    "errors": [
+      {
+        "message": "Too many objects.",
+        "locations": [
+          {
+            "line": 143,
+            "column": 5
+          }
+        ],
+        "path": [
+          "flexSearchDeliveries"
+        ]
+      }
+    ],
+    "data": {
+      "flexSearchDeliveries": null
+    }
+  },
+  "meta_above_max": {
+    "errors": [
+      {
+        "message": "Too many objects.",
+        "locations": [
+          {
+            "line": 149,
+            "column": 5
+          }
+        ],
+        "path": [
+          "_flexSearchDeliveriesMeta"
+        ]
+      }
+    ],
+    "data": null
+  },
+  "order_above_max": {
+    "errors": [
+      {
+        "message": "Too many objects.",
+        "locations": [
+          {
+            "line": 155,
+            "column": 5
+          }
+        ],
+        "path": [
+          "flexSearchDeliveries"
+        ]
+      }
+    ],
+    "data": {
+      "flexSearchDeliveries": null
+    }
+  },
+  "recursion_successfull": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "recursion_error": {
+    "errors": [
+      {
+        "message": "Recursive filters can only be defined for 1 level of recursion.",
+        "locations": [
+          {
+            "line": 167,
+            "column": 5
+          }
+        ],
+        "path": [
+          "flexSearchDeliveries"
+        ]
+      }
+    ],
+    "data": {
+      "flexSearchDeliveries": null
+    }
+  },
+  "starts_with": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "null_starts_with": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "string_aggregation": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "serialNumbers": [
+            "12345",
+            "67890"
+          ]
+        }
+      ]
+    }
+  }
 }

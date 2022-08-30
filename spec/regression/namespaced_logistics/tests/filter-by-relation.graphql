@@ -1,10 +1,12 @@
 mutation addRelation1 {
     logistics {
         delivery {
-            updateHandlingUnit(input: {
-                id: "@{ids/logistics.delivery.HandlingUnit/1}",
-                delivery: "@{ids/logistics.delivery.Delivery/1}"
-            }) {
+            updateHandlingUnit(
+                input: {
+                    id: "@{ids/logistics.delivery.HandlingUnit/1}"
+                    delivery: "@{ids/logistics.delivery.Delivery/1}"
+                }
+            ) {
                 huNumber
             }
         }
@@ -15,10 +17,12 @@ mutation addRelation1 {
 mutation addRelation2 {
     logistics {
         delivery {
-            updateHandlingUnit(input: {
-                id: "@{ids/logistics.delivery.HandlingUnit/2}",
-                delivery: "@{ids/logistics.delivery.Delivery/2}"
-            }) {
+            updateHandlingUnit(
+                input: {
+                    id: "@{ids/logistics.delivery.HandlingUnit/2}"
+                    delivery: "@{ids/logistics.delivery.Delivery/2}"
+                }
+            ) {
                 huNumber
             }
         }
@@ -28,7 +32,7 @@ mutation addRelation2 {
 query q {
     logistics {
         delivery {
-            allHandlingUnits(filter: { delivery: { deliveryNumber: "1000173"}}) {
+            allHandlingUnits(filter: { delivery: { deliveryNumber: "1000173" } }) {
                 huNumber
                 delivery {
                     deliveryNumber

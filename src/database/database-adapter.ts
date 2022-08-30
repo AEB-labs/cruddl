@@ -162,7 +162,7 @@ export interface DatabaseAdapter {
      * Tokenizes a List of expressions
      */
     tokenizeExpressions(
-        tokenizations: ReadonlyArray<FlexSearchTokenizable>
+        tokenizations: ReadonlyArray<FlexSearchTokenizable>,
     ): Promise<ReadonlyArray<FlexSearchTokenization>>;
 }
 

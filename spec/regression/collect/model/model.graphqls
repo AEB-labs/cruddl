@@ -4,8 +4,10 @@ type Shipment @rootEntity {
 
     deliveries: [Delivery] @relation
 
-    allOuterHandlingUnits: [HandlingUnit] @collect(path: "deliveries.handlingUnits", aggregate: DISTINCT)
-    allHandlingUnits: [HandlingUnit] @collect(path: "deliveries.allHandlingUnits", aggregate: DISTINCT)
+    allOuterHandlingUnits: [HandlingUnit]
+        @collect(path: "deliveries.handlingUnits", aggregate: DISTINCT)
+    allHandlingUnits: [HandlingUnit]
+        @collect(path: "deliveries.allHandlingUnits", aggregate: DISTINCT)
     allOrders: [Order] @collect(path: "deliveries.order", aggregate: DISTINCT)
     allDeliveryContents: [DeliveryContent] @collect(path: "deliveries.deliveryContents")
     allItems: [DeliveryItem] @collect(path: "deliveries.deliveryContents.items")
@@ -16,7 +18,8 @@ type Shipment @rootEntity {
     allDeliveriesHaveOrders: Boolean @collect(path: "deliveries.order", aggregate: NONE_NULL)
     allDeliveriesArePayed: Boolean @collect(path: "deliveries.order.payedAt", aggregate: NONE_NULL)
     numberOfDeliveriesWithoutOrder: Int @collect(path: "deliveries.order", aggregate: COUNT_NULL)
-    numberOfDeliveriesWithoutPayedOrder: Int @collect(path: "deliveries.order.payedAt", aggregate: COUNT_NULL)
+    numberOfDeliveriesWithoutPayedOrder: Int
+        @collect(path: "deliveries.order.payedAt", aggregate: COUNT_NULL)
     #numberOfUnpayedOrders: Int @collect(path: "allOrders.payedAt", aggregate: COUNT_NULL) # waiting for DISTINCT aggregations to be supported in collect paths
 
     startedDispatchingAt: DateTime @collect(path: "deliveries.dispatchedAt", aggregate: MIN)
@@ -35,7 +38,8 @@ type Delivery @rootEntity {
     order: Order @relation
 
     allItems: [DeliveryItem] @collect(path: "deliveryContents.items")
-    allItemNumbers: [String] @collect(path: "deliveryContents.items.itemNumber", aggregate: DISTINCT)
+    allItemNumbers: [String]
+        @collect(path: "deliveryContents.items.itemNumber", aggregate: DISTINCT)
     allHandlingUnits: [HandlingUnit] @collect(path: "handlingUnits.childHandlingUnits{0,2}")
     allHandlingUnits0to1: [HandlingUnit] @collect(path: "handlingUnits.childHandlingUnits{0,1}")
     allHandlingUnits0to2: [HandlingUnit] @collect(path: "handlingUnits.childHandlingUnits{0,2}")
@@ -52,20 +56,30 @@ type Delivery @rootEntity {
     hasNoItems: Boolean @collect(path: "allItems", aggregate: NONE)
 
     hasDangerousGoods: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: SOME_TRUE)
-    hasNonDangerousGoods: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: SOME_NOT_TRUE)
-    hasOnlyDangerousGoods: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: EVERY_TRUE)
+    hasNonDangerousGoods: Boolean
+        @collect(path: "allItems.isDangerousGoods", aggregate: SOME_NOT_TRUE)
+    hasOnlyDangerousGoods: Boolean
+        @collect(path: "allItems.isDangerousGoods", aggregate: EVERY_TRUE)
     hasNoDangerousGoods: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: NONE_TRUE)
     dangerousItemCount: Int @collect(path: "allItems.isDangerousGoods", aggregate: COUNT_TRUE)
-    nonDangerousItemCount: Int @collect(path: "allItems.isDangerousGoods", aggregate: COUNT_NOT_TRUE)
+    nonDangerousItemCount: Int
+        @collect(path: "allItems.isDangerousGoods", aggregate: COUNT_NOT_TRUE)
 
-    hasMissingDangerousGoodsFlag: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: SOME_NULL)
-    hasSomeDangerousGoodsFlag: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: SOME_NOT_NULL)
-    hasAllDangerousGoodsFlags: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: NONE_NULL)
-    hasNoDangerousGoodsFlag: Boolean @collect(path: "allItems.isDangerousGoods", aggregate: EVERY_NULL)
-    missingDangerousGoodsFlagCount: Int @collect(path: "allItems.isDangerousGoods", aggregate: COUNT_NULL)
-    setDangerousGoodsFlagCount: Int @collect(path: "allItems.isDangerousGoods", aggregate: COUNT_NOT_NULL)
+    hasMissingDangerousGoodsFlag: Boolean
+        @collect(path: "allItems.isDangerousGoods", aggregate: SOME_NULL)
+    hasSomeDangerousGoodsFlag: Boolean
+        @collect(path: "allItems.isDangerousGoods", aggregate: SOME_NOT_NULL)
+    hasAllDangerousGoodsFlags: Boolean
+        @collect(path: "allItems.isDangerousGoods", aggregate: NONE_NULL)
+    hasNoDangerousGoodsFlag: Boolean
+        @collect(path: "allItems.isDangerousGoods", aggregate: EVERY_NULL)
+    missingDangerousGoodsFlagCount: Int
+        @collect(path: "allItems.isDangerousGoods", aggregate: COUNT_NULL)
+    setDangerousGoodsFlagCount: Int
+        @collect(path: "allItems.isDangerousGoods", aggregate: COUNT_NOT_NULL)
 
-    allWarehouseSlots: [WarehouseSlot] @collect(path: "handlingUnits.warehouseSlot", aggregate: DISTINCT)
+    allWarehouseSlots: [WarehouseSlot]
+        @collect(path: "handlingUnits.warehouseSlot", aggregate: DISTINCT)
 }
 
 type HandlingUnit @rootEntity {
