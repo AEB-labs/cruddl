@@ -202,7 +202,7 @@ export class RegressionSuite {
             : {};
 
         if (meta.waitForArangoSearch && this.databaseSpecifier === 'arangodb') {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 2000));
         }
 
         let actualResult: any;
