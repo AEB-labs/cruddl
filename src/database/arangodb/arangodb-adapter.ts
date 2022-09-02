@@ -718,7 +718,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 )
         );
 
-        const cursor = await this.db.query(generateTokenizationQuery(tokenizationsFiltered));
+        const aqlFragment = generateTokenizationQuery(tokenizationsFiltered);
+        const queryCode = aqlFragment.getCode();
+        const cursor = await this.db.query(queryCode.code, queryCode.boundValues);
 
         const result = await cursor.next();
         const resultArray: FlexSearchTokenization[] = [];

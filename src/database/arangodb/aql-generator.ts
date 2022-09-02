@@ -1762,12 +1762,11 @@ function isStringCaseInsensitive(str: string) {
     return str.toLowerCase() === str.toUpperCase();
 }
 
-export function generateTokenizationQuery(tokensFiltered: ReadonlyArray<FlexSearchTokenizable>) {
-    const fragments: string[] = [];
+export function generateTokenizationQuery(tokensFiltered: ReadonlyArray<FlexSearchTokenizable>): AQLFragment {
+    const fragments: AQLFragment[] = [];
     for (let i = 0; i < tokensFiltered.length; i++) {
         const value = tokensFiltered[i];
-        fragments.push(`token_${i}: TOKENS("${value.expression}", "${value.analyzer}")`);
+        fragments.push(aql`${aql.identifier('token_' + i)}: TOKENS(${value.expression}, ${value.analyzer})`);
     }
-    const query = `RETURN { ${fragments.join(',\n')} }`;
-    return query;
+    return aql`RETURN { ${aql.join(fragments, aql`',\n`)} }`;
 }
