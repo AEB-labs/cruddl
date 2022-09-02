@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "rimraf dist && tsc --skipLibCheck && cpy src/schema/preparation/source-validation-modules/schema dist/src/schema/preparation/source-validation-modules/schema && dependency-check ./package.json --no-dev --ignore-module @arangodb --ignore-module internal",
+    "build": "rimraf dist && tsc --skipLibCheck && cpy --flat src/schema/preparation/source-validation-modules/schema dist/src/schema/preparation/source-validation-modules/schema && dependency-check ./package.json --no-dev --ignore-module @arangodb --ignore-module internal",
     "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit --skipLibCheck",
     "test": "rimraf dist && tsc --noEmit --skipLibCheck && mocha ./spec/**/*.spec.ts",
