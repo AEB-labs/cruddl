@@ -18,7 +18,8 @@
     "start_arangodb": "arangodb --starter.mode=single --starter.local --starter.port=8528 --starter.data-dir=./db start",
     "stop_arangodb": "arangodb --starter.mode=single --starter.local --starter.port=8528 --starter.data-dir=./db stop",
     "compile-json-schema": "ajv --all-errors true compile -s src/schema/preparation/source-validation-modules/schema/schema.json -o src/schema/preparation/source-validation-modules/schema/validate-schema.js",
-    "mrproper": "rimraf dist db node_modules package-lock.json"
+    "mrproper": "rimraf dist db node_modules package-lock.json",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
