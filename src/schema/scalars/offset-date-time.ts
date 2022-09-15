@@ -49,7 +49,7 @@ const formatter = new DateTimeFormatterBuilder()
     .appendOffset('+HH:MM', '+00:00')
     .toFormatter(ResolverStyle.STRICT);
 
-function parseOffsetDateTime(value: string): ZonedDateTime {
+function parseOffsetDateTime(value: unknown): ZonedDateTime {
     if (typeof value !== 'string') {
         throw new Error(`should be a string`);
     }
@@ -75,16 +75,30 @@ function parseOffsetDateTime(value: string): ZonedDateTime {
     return zonedDateTime.withFixedOffsetZone();
 }
 
+function coerce(value: unknown): ZonedDateTime {
+    if (value instanceof ZonedDateTime) {
+        return value;
+    }
+
+    if (
+        typeof value !== 'object' ||
+        !value ||
+        typeof (value as any).timestamp !== 'string' ||
+        typeof (value as any).offset !== 'string'
+    ) {
+        throw new Error(
+            `Expected object with "timestamp" and "offset" string field, got ${typeof value}`,
+        );
+    }
+    return buildFromStoredValue(value as StoredOffsetDateTime);
+}
+
 function buildFromStoredValue(value: StoredOffsetDateTime) {
     return ZonedDateTime.ofInstant(Instant.parse(value.timestamp), ZoneOffset.of(value.offset));
 }
 
-function printOffsetDateTime(value: ZonedDateTime | StoredOffsetDateTime) {
-    if (!(value instanceof ZonedDateTime)) {
-        value = buildFromStoredValue(value);
-    }
-
-    return value.format(formatter);
+function printOffsetDateTime(value: unknown) {
+    return coerce(value).format(formatter);
 }
 
 function tryParseLocalDateTime(str: string): LocalDateTime | undefined {

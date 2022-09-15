@@ -1,3 +1,4 @@
+import { resolveReadonlyArrayThunk } from 'graphql';
 import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
 import {
     BasicType,
@@ -20,7 +21,7 @@ import { groupByEquivalence } from '../../utils/group-by-equivalence';
 import { decapitalize, flatMap } from '../../utils/utils';
 import { FieldContext, SelectionToken } from './context';
 import { QueryNodeField, QueryNodeObjectType } from './definition';
-import { extractQueryTreeObjectType, isListTypeIgnoringNonNull, resolveThunk } from './utils';
+import { extractQueryTreeObjectType, isListTypeIgnoringNonNull } from './utils';
 
 export function buildConditionalObjectQueryNode(
     sourceNode: QueryNode,
@@ -71,7 +72,7 @@ function getFieldMap(type: QueryNodeObjectType) {
     if (fieldMap) {
         return fieldMap;
     }
-    fieldMap = new Map(resolveThunk(type.fields).map((f): [string, QueryNodeField] => [f.name, f]));
+    fieldMap = new Map(resolveReadonlyArrayThunk(type.fields).map((f): [string, QueryNodeField] => [f.name, f]));
     typeFieldMaps.set(type, fieldMap);
     return fieldMap;
 }

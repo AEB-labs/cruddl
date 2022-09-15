@@ -1,18 +1,55 @@
-import { DocumentNode, getLocation, GraphQLError, GraphQLSchema, parse } from 'graphql';
+import {
+    DocumentNode,
+    getLocation,
+    GraphQLError,
+    GraphQLSchema,
+    parse,
+    Kind as GraphQLKind,
+} from 'graphql';
 import { parse as JSONparse } from 'json-source-map';
 import { compact } from 'lodash';
-import { Kind, load, YAMLAnchorReference, YamlMap, YAMLMapping, YAMLNode, YAMLScalar, YAMLSequence } from 'yaml-ast-parser';
+import {
+    Kind as YAMLKind,
+    load,
+    YAMLAnchorReference,
+    YamlMap,
+    YAMLMapping,
+    YAMLNode,
+    YAMLScalar,
+    YAMLSequence,
+} from 'yaml-ast-parser';
 import { globalContext } from '../config/global';
-import { ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSource, ParsedProjectSourceBaseKind } from '../config/parsed-project';
+import {
+    ParsedGraphQLProjectSource,
+    ParsedObjectProjectSource,
+    ParsedProject,
+    ParsedProjectSource,
+    ParsedProjectSourceBaseKind,
+} from '../config/parsed-project';
 import { DatabaseAdapter } from '../database/database-adapter';
-import { createModel, Model, Severity, SourcePosition, ValidationContext, ValidationMessage, ValidationResult } from '../model';
+import {
+    createModel,
+    Model,
+    Severity,
+    SourcePosition,
+    ValidationContext,
+    ValidationMessage,
+    ValidationResult,
+} from '../model';
 import { MessageLocation } from '../model/';
 import { Project, ProjectOptions } from '../project/project';
 import { ProjectSource, SourceType } from '../project/source';
 import { SchemaGenerator } from '../schema-generation';
 import { flatMap, PlainObject } from '../utils/utils';
-import { validateParsedProjectSource, validatePostMerge, validateSource } from './preparation/ast-validator';
-import { executePreMergeTransformationPipeline, SchemaTransformationContext } from './preparation/transformation-pipeline';
+import {
+    validateParsedProjectSource,
+    validatePostMerge,
+    validateSource,
+} from './preparation/ast-validator';
+import {
+    executePreMergeTransformationPipeline,
+    SchemaTransformationContext,
+} from './preparation/transformation-pipeline';
 import { getLineEndPosition } from './schema-utils';
 import jsonLint = require('json-lint');
 import stripJsonComments = require('strip-json-comments');
@@ -108,7 +145,7 @@ export function getModel(project: Project): Model {
 }
 
 function mergeSchemaDefinition(parsedProject: ParsedProject): DocumentNode {
-    const emptyDocument: DocumentNode = { kind: 'Document', definitions: [] };
+    const emptyDocument: DocumentNode = { kind: GraphQLKind.DOCUMENT, definitions: [] };
     const graphqlDocuments = parsedProject.sources.map((s) => {
         if (s.kind === ParsedProjectSourceBaseKind.GRAPHQL) {
             return s.document;
@@ -127,7 +164,7 @@ function mergeSchemaDefinition(parsedProject: ParsedProject): DocumentNode {
  */
 function mergeAST(doc1: DocumentNode, doc2: DocumentNode): DocumentNode {
     return {
-        kind: 'Document',
+        kind: GraphQLKind.DOCUMENT,
         definitions: [...doc1.definitions, ...doc2.definitions],
     };
 }
@@ -359,7 +396,7 @@ function extractAllPaths(
     curPath: ReadonlyArray<string | number>,
 ): { path: ReadonlyArray<string | number>; node: YAMLNode }[] {
     switch (node.kind) {
-        case Kind.MAP:
+        case YAMLKind.MAP:
             const mapNode = node as YamlMap;
             const mergedMap = (
                 [] as { path: ReadonlyArray<string | number>; node: YAMLNode }[]
@@ -367,7 +404,7 @@ function extractAllPaths(
                 ...mapNode.mappings.map((childNode) => extractAllPaths(childNode, [...curPath])),
             );
             return [...mergedMap];
-        case Kind.MAPPING:
+        case YAMLKind.MAPPING:
             const mappingNode = node as YAMLMapping;
             if (mappingNode.value) {
                 return [
@@ -376,14 +413,14 @@ function extractAllPaths(
                 ];
             }
             break;
-        case Kind.SCALAR:
+        case YAMLKind.SCALAR:
             const scalarNode = node as YAMLScalar;
-            if (scalarNode.parent && scalarNode.parent.kind == Kind.SEQ) {
+            if (scalarNode.parent && scalarNode.parent.kind == YAMLKind.SEQ) {
                 return [{ path: curPath, node: scalarNode }];
             } else {
                 return [{ path: curPath, node: scalarNode.parent }];
             }
-        case Kind.SEQ:
+        case YAMLKind.SEQ:
             const seqNode = node as YAMLSequence;
             const mergedSequence = (
                 [] as { path: ReadonlyArray<string | number>; node: YAMLNode }[]
@@ -393,8 +430,8 @@ function extractAllPaths(
                 ),
             );
             return [...mergedSequence];
-        case Kind.INCLUDE_REF:
-        case Kind.ANCHOR_REF:
+        case YAMLKind.INCLUDE_REF:
+        case YAMLKind.ANCHOR_REF:
             const refNode = node as YAMLAnchorReference;
             return extractAllPaths(refNode.value, [...curPath]);
     }
@@ -441,7 +478,7 @@ function recursiveObjectExtraction(
         return object;
     }
     switch (node.kind) {
-        case Kind.MAP:
+        case YAMLKind.MAP:
             const mapNode = node as YamlMap;
             mapNode.mappings.forEach((val) => {
                 object[val.key.value] = recursiveObjectExtraction(
@@ -452,9 +489,9 @@ function recursiveObjectExtraction(
                 );
             });
             return object;
-        case Kind.MAPPING:
+        case YAMLKind.MAPPING:
             throw new Error('Should never be reached since a mapping can not exist without a map.');
-        case Kind.SCALAR:
+        case YAMLKind.SCALAR:
             const scalarNode = node as YAMLScalar;
             // check whether string or number scalar
             if (
@@ -466,12 +503,12 @@ function recursiveObjectExtraction(
             } else {
                 return Number(scalarNode.value);
             }
-        case Kind.SEQ:
+        case YAMLKind.SEQ:
             const seqNode = node as YAMLSequence;
             return seqNode.items.map((val) =>
                 recursiveObjectExtraction(val, {}, validationContext, source),
             );
-        case Kind.INCLUDE_REF:
+        case YAMLKind.INCLUDE_REF:
             validationContext.addMessage(
                 ValidationMessage.error(
                     `Include references are not supported`,
@@ -479,7 +516,7 @@ function recursiveObjectExtraction(
                 ),
             );
             return undefined;
-        case Kind.ANCHOR_REF:
+        case YAMLKind.ANCHOR_REF:
             validationContext.addMessage(
                 ValidationMessage.error(
                     `Anchor references are not supported`,

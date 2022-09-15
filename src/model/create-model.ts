@@ -10,6 +10,7 @@ import {
     GraphQLList,
     GraphQLNonNull,
     GraphQLString,
+    Kind,
     ObjectTypeDefinitionNode,
     ObjectValueNode,
     StringValueNode,
@@ -23,16 +24,6 @@ import {
     ParsedProject,
     ParsedProjectSourceBaseKind,
 } from '../config/parsed-project';
-import {
-    ENUM,
-    ENUM_TYPE_DEFINITION,
-    LIST,
-    LIST_TYPE,
-    NON_NULL_TYPE,
-    OBJECT,
-    OBJECT_TYPE_DEFINITION,
-    STRING,
-} from '../graphql/kinds';
 import { getValueFromAST } from '../graphql/value-from-ast';
 import {
     ACCESS_FIELD_DIRECTIVE,
@@ -159,8 +150,8 @@ function createTypeInputs(
             schemaPart.document.definitions.map((definition) => {
                 // Only look at object types and enums (scalars are not supported yet, they need to be implemented somehow, e.g. via regex check)
                 if (
-                    definition.kind != OBJECT_TYPE_DEFINITION &&
-                    definition.kind !== ENUM_TYPE_DEFINITION
+                    definition.kind != Kind.OBJECT_TYPE_DEFINITION &&
+                    definition.kind !== Kind.ENUM_TYPE_DEFINITION
                 ) {
                     context.addMessage(
                         ValidationMessage.error(
@@ -177,7 +168,7 @@ function createTypeInputs(
                 };
 
                 switch (definition.kind) {
-                    case ENUM_TYPE_DEFINITION:
+                    case Kind.ENUM_TYPE_DEFINITION:
                         const enumTypeInput: EnumTypeConfig = {
                             ...common,
                             namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
@@ -186,7 +177,7 @@ function createTypeInputs(
                             values: createEnumValues(definition.values || []),
                         };
                         return enumTypeInput;
-                    case OBJECT_TYPE_DEFINITION:
+                    case Kind.OBJECT_TYPE_DEFINITION:
                         return createObjectTypeInput(definition, schemaPart, context, options);
                     default:
                         return undefined;
@@ -549,8 +540,9 @@ function createFieldInput(
                 ? (relationDeleteActionASTNode.value.value as RelationDeleteAction)
                 : undefined,
         isList:
-            fieldNode.type.kind === LIST_TYPE ||
-            (fieldNode.type.kind === NON_NULL_TYPE && fieldNode.type.type.kind === LIST_TYPE),
+            fieldNode.type.kind === Kind.LIST_TYPE ||
+            (fieldNode.type.kind === Kind.NON_NULL_TYPE &&
+                fieldNode.type.type.kind === Kind.LIST_TYPE),
         isReference: !!referenceDirectiveASTNode,
         referenceKeyField: referenceKeyFieldASTNode ? referenceKeyFieldASTNode.value : undefined,
         referenceKeyFieldASTNode,
@@ -607,12 +599,12 @@ function getCalcMutationOperators(
         );
         return [];
     }
-    if (calcMutationsArg.value.kind === ENUM) {
+    if (calcMutationsArg.value.kind === Kind.ENUM) {
         return [calcMutationsArg.value.value as CalcMutationsOperator];
-    } else if (calcMutationsArg.value.kind === LIST) {
+    } else if (calcMutationsArg.value.kind === Kind.LIST) {
         return compact(
             calcMutationsArg.value.values.map((val) => {
-                if (val.kind !== ENUM) {
+                if (val.kind !== Kind.ENUM) {
                     context.addMessage(
                         ValidationMessage.error(
                             VALIDATION_ERROR_EXPECTED_ENUM_OR_LIST_OF_ENUMS,
@@ -659,12 +651,12 @@ function createRootEntityBasedIndices(
     if (!indicesArg) {
         return [];
     }
-    if (indicesArg.value.kind === OBJECT) {
+    if (indicesArg.value.kind === Kind.OBJECT) {
         return [buildIndexDefinitionFromObjectValue(indicesArg.value)];
-    } else if (indicesArg.value.kind === LIST) {
+    } else if (indicesArg.value.kind === Kind.LIST) {
         return compact(
             indicesArg.value.values.map((val) => {
-                if (val.kind !== OBJECT) {
+                if (val.kind !== Kind.OBJECT) {
                     context.addMessage(
                         ValidationMessage.error(VALIDATION_ERROR_INVALID_ARGUMENT_TYPE, val.loc),
                     );
@@ -737,7 +729,7 @@ function buildIndexDefinitionFromObjectValue(
 }
 
 function mapIndexDefinition(index: ObjectValueNode): IndexDefinitionConfig {
-    const { id, name, ...value } = valueFromAST(index, indexDefinitionInputObjectType);
+    const { id, name, ...value } = valueFromAST(index, indexDefinitionInputObjectType) as any;
     const fieldsField = index.fields.find((f) => f.name.value === 'fields');
     const fieldASTNodes =
         fieldsField && fieldsField.value.kind === 'ListValue'
@@ -794,7 +786,7 @@ function getNamespacePath(
         return sourceNamespacePath;
     }
     const directiveNamespaceArg = getNodeByName(directiveNamespace.arguments, NAMESPACE_NAME_ARG);
-    return directiveNamespaceArg && directiveNamespaceArg.value.kind === STRING
+    return directiveNamespaceArg && directiveNamespaceArg.value.kind === Kind.STRING
         ? directiveNamespaceArg.value.value.split(NAMESPACE_SEPARATOR)
         : [];
 }
@@ -858,10 +850,10 @@ function getRolesOfArg(rolesArg: ArgumentNode | undefined, context: ValidationCo
     }
     let roles: ReadonlyArray<string> | undefined = undefined;
     if (rolesArg) {
-        if (rolesArg.value.kind === LIST) {
+        if (rolesArg.value.kind === Kind.LIST) {
             roles = compact(
                 rolesArg.value.values.map((val) => {
-                    if (val.kind !== STRING) {
+                    if (val.kind !== Kind.STRING) {
                         context.addMessage(
                             ValidationMessage.error(
                                 VALIDATION_ERROR_EXPECTED_STRING_OR_LIST_OF_STRINGS,
@@ -874,7 +866,7 @@ function getRolesOfArg(rolesArg: ArgumentNode | undefined, context: ValidationCo
                     }
                 }),
             );
-        } else if (rolesArg.value.kind === STRING) {
+        } else if (rolesArg.value.kind === Kind.STRING) {
             roles = [rolesArg.value.value];
         } else {
             context.addMessage(
@@ -894,7 +886,7 @@ function getPermissionProfileAstNode(
 ): StringValueNode | undefined {
     let permissionProfileNameAstNode = undefined;
     if (permissionProfileArg) {
-        if (permissionProfileArg.value.kind !== STRING) {
+        if (permissionProfileArg.value.kind !== Kind.STRING) {
             context.addMessage(
                 ValidationMessage.error(
                     VALIDATION_ERROR_INVALID_PERMISSION_PROFILE,
@@ -920,7 +912,7 @@ function getInverseOfASTNode(
     if (!inverseOfArg) {
         return undefined;
     }
-    if (inverseOfArg.value.kind !== STRING) {
+    if (inverseOfArg.value.kind !== Kind.STRING) {
         context.addMessage(
             ValidationMessage.error(
                 VALIDATION_ERROR_INVERSE_OF_ARG_MUST_BE_STRING,
@@ -955,7 +947,7 @@ function getReferenceKeyFieldASTNode(
     if (!keyFieldArg) {
         return undefined;
     }
-    if (keyFieldArg.value.kind !== STRING) {
+    if (keyFieldArg.value.kind !== Kind.STRING) {
         // should be caught by the graphql validator anyway...
         context.addMessage(
             ValidationMessage.error(
@@ -983,7 +975,7 @@ function getCollectConfig(
         );
         return undefined;
     }
-    if (pathArg.value.kind !== STRING) {
+    if (pathArg.value.kind !== Kind.STRING) {
         // should be caught by the graphql validator anyway...
         context.addMessage(
             ValidationMessage.error(

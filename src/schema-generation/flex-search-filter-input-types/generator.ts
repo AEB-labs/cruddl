@@ -1,61 +1,18 @@
-import { GraphQLEnumType, GraphQLString, Thunk } from 'graphql';
+import { GraphQLEnumType, GraphQLString, resolveReadonlyArrayThunk } from 'graphql';
+import { ThunkReadonlyArray } from 'graphql/type/definition';
 import memorize from 'memorize-decorator';
 import { EnumType, Field, ObjectType, ScalarType, Type } from '../../model';
-import {
-    BinaryOperator,
-    BinaryOperatorWithAnalyzer,
-    LiteralQueryNode,
-    QueryNode,
-    RuntimeErrorQueryNode,
-} from '../../query-tree';
+import { BinaryOperator, BinaryOperatorWithAnalyzer, LiteralQueryNode, QueryNode, RuntimeErrorQueryNode } from '../../query-tree';
 import { FlexSearchComplexOperatorQueryNode } from '../../query-tree/flex-search';
-import {
-    INPUT_FIELD_CONTAINS_ALL_PREFIXES,
-    INPUT_FIELD_CONTAINS_ALL_WORDS,
-    INPUT_FIELD_CONTAINS_ANY_PREFIX,
-    INPUT_FIELD_CONTAINS_ANY_WORD,
-    INPUT_FIELD_CONTAINS_PHRASE,
-    INPUT_FIELD_EQUAL,
-    INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES,
-    INPUT_FIELD_NOT_CONTAINS_ALL_WORDS,
-    INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX,
-    INPUT_FIELD_NOT_CONTAINS_ANY_WORD,
-    INPUT_FIELD_NOT_CONTAINS_PHRASE,
-} from '../../schema/constants';
+import { INPUT_FIELD_CONTAINS_ALL_PREFIXES, INPUT_FIELD_CONTAINS_ALL_WORDS, INPUT_FIELD_CONTAINS_ANY_PREFIX, INPUT_FIELD_CONTAINS_ANY_WORD, INPUT_FIELD_CONTAINS_PHRASE, INPUT_FIELD_EQUAL, INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES, INPUT_FIELD_NOT_CONTAINS_ALL_WORDS, INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX, INPUT_FIELD_NOT_CONTAINS_ANY_WORD, INPUT_FIELD_NOT_CONTAINS_PHRASE } from '../../schema/constants';
 import { getFlexSearchFilterTypeName } from '../../schema/names';
 import { GraphQLI18nString } from '../../schema/scalars/string-map';
 import { flatMap } from '../../utils/utils';
 import { EnumTypeGenerator } from '../enum-type-generator';
-import {
-    ENUM_FILTER_FIELDS,
-    FILTER_OPERATORS,
-    NUMERIC_FILTER_FIELDS,
-} from '../filter-input-types/constants';
-import { resolveThunk } from '../query-node-object-type';
-import {
-    binaryNotOpWithAnalyzer,
-    binaryOpWithAnaylzer,
-    noAnalyzerWasSuppliedError,
-    not,
-} from '../utils/input-types';
-import {
-    FLEX_SEARCH_FILTER_FIELDS_BY_TYPE,
-    FLEX_SEARCH_FILTER_OPERATORS,
-    STRING_FLEX_SEARCH_FILTER_FIELDS,
-    STRING_FLEX_SEARCH_FILTER_OPERATORS,
-    STRING_TEXT_ANALYZER_FILTER_FIELDS,
-} from './constants';
-import {
-    FlexSearchAndFilterField,
-    FlexSearchEntityExtensionFilterField,
-    FlexSearchFilterField,
-    FlexSearchI18nStringLocalizedFilterField,
-    FlexSearchNestedObjectFilterField,
-    FlexSearchOrFilterField,
-    FlexSearchScalarOrEnumFieldFilterField,
-    FlexSearchScalarOrEnumFilterField,
-    I18nStringLocalizedFilterLanguageField,
-} from './filter-fields';
+import { ENUM_FILTER_FIELDS, FILTER_OPERATORS, NUMERIC_FILTER_FIELDS } from '../filter-input-types/constants';
+import { binaryNotOpWithAnalyzer, binaryOpWithAnaylzer, noAnalyzerWasSuppliedError, not } from '../utils/input-types';
+import { FLEX_SEARCH_FILTER_FIELDS_BY_TYPE, FLEX_SEARCH_FILTER_OPERATORS, STRING_FLEX_SEARCH_FILTER_FIELDS, STRING_FLEX_SEARCH_FILTER_OPERATORS, STRING_TEXT_ANALYZER_FILTER_FIELDS } from './constants';
+import { FlexSearchAndFilterField, FlexSearchEntityExtensionFilterField, FlexSearchFilterField, FlexSearchI18nStringLocalizedFilterField, FlexSearchNestedObjectFilterField, FlexSearchOrFilterField, FlexSearchScalarOrEnumFieldFilterField, FlexSearchScalarOrEnumFilterField, I18nStringLocalizedFilterLanguageField } from './filter-fields';
 import { FlexSearchFilterObjectType } from './filter-types';
 
 export class FlexSearchFilterTypeGenerator {
@@ -81,11 +38,11 @@ export class FlexSearchFilterTypeGenerator {
 
     private generateFlexSearchFilterType(
         type: Type,
-        fields: Thunk<ReadonlyArray<FlexSearchFilterField>>,
+        fields: ThunkReadonlyArray<FlexSearchFilterField>,
         isAggregation: boolean,
     ): FlexSearchFilterObjectType {
         function getFields(): ReadonlyArray<FlexSearchFilterField> {
-            const filterFields = [...resolveThunk(fields)];
+            const filterFields = [...resolveReadonlyArrayThunk(fields)];
             if (!isAggregation) {
                 return filterFields.concat([
                     new FlexSearchAndFilterField(filterType),

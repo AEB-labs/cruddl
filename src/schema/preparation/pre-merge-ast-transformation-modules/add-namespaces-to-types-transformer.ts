@@ -1,5 +1,4 @@
-import { ASTNode, DocumentNode, ObjectTypeDefinitionNode } from 'graphql';
-import { ARGUMENT, DIRECTIVE, STRING } from '../../../graphql/kinds';
+import { ASTNode, DocumentNode, Kind, ObjectTypeDefinitionNode } from 'graphql';
 import {
     NAMESPACE_DIRECTIVE,
     NAMESPACE_NAME_ARG,
@@ -30,14 +29,14 @@ export class AddNamespacesToTypesTransformer implements ASTTransformer {
                     directives: [
                         ...(def.directives ? def.directives : []),
                         {
-                            kind: DIRECTIVE,
+                            kind: Kind.DIRECTIVE,
                             name: buildNameNode(NAMESPACE_DIRECTIVE),
                             arguments: [
                                 {
-                                    kind: ARGUMENT,
+                                    kind: Kind.ARGUMENT,
                                     name: buildNameNode(NAMESPACE_NAME_ARG),
                                     value: {
-                                        kind: STRING,
+                                        kind: Kind.STRING,
                                         value: context.namespacePath.join(NAMESPACE_SEPARATOR),
                                     },
                                 },

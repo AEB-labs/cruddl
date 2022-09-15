@@ -9,7 +9,6 @@ import {
     GraphQLUnionType,
     isListType,
     isNonNullType,
-    Thunk,
 } from 'graphql';
 import {
     QueryNodeListType,
@@ -54,8 +53,4 @@ export function makeNonNullableList<T extends QueryNodeNullableType>(
     type: T,
 ): QueryNodeNonNullType<QueryNodeListType<QueryNodeNonNullType<T>>> {
     return new QueryNodeNonNullType(new QueryNodeListType(new QueryNodeNonNullType(type)));
-}
-
-export function resolveThunk<T>(thunk: Thunk<T>): T {
-    return thunk instanceof Function ? thunk() : thunk;
 }

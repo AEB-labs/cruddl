@@ -9,6 +9,7 @@ import {
     GraphQLType,
     isListType,
     isNonNullType,
+    Kind,
     ListTypeNode,
     NamedTypeNode,
     NonNullTypeNode,
@@ -34,15 +35,15 @@ export function createFieldNode(
     selections?: ReadonlyArray<SelectionNode>,
 ): FieldNode {
     return {
-        kind: 'Field',
+        kind: Kind.FIELD,
         name: {
-            kind: 'Name',
+            kind: Kind.NAME,
             value: name,
         },
         ...(alias
             ? {
                   alias: {
-                      kind: 'Name',
+                      kind: Kind.NAME,
                       value: alias,
                   },
               }
@@ -50,7 +51,7 @@ export function createFieldNode(
         ...(selections
             ? {
                   selectionSet: {
-                      kind: 'SelectionSet',
+                      kind: Kind.SELECTION_SET,
                       selections,
                   },
               }
@@ -97,7 +98,7 @@ export function cloneSelectionChain(
     let currentSelectionSet: SelectionSetNode = innermostSelectionSet!;
     for (const fieldNode of Array.from(fieldNodes).reverse()) {
         currentSelectionSet = {
-            kind: 'SelectionSet',
+            kind: Kind.SELECTION_SET,
             selections: [
                 {
                     ...fieldNode,
@@ -119,20 +120,20 @@ export function createTypeNode(type: GraphQLType): TypeNode;
 export function createTypeNode(type: GraphQLType): TypeNode {
     if (isListType(type)) {
         return {
-            kind: 'ListType',
+            kind: Kind.LIST_TYPE,
             type: createTypeNode(type.ofType),
         };
     }
     if (isNonNullType(type)) {
         return {
-            kind: 'NonNullType',
+            kind: Kind.NON_NULL_TYPE,
             type: <NamedTypeNode | ListTypeNode>createTypeNode(type.ofType),
         };
     }
     return {
-        kind: 'NamedType',
+        kind: Kind.NAMED_TYPE,
         name: {
-            kind: 'Name',
+            kind: Kind.NAME,
             value: type.name,
         },
     };
@@ -146,11 +147,11 @@ export function createVariableDefinitionNode(
     type: GraphQLType,
 ): VariableDefinitionNode {
     return {
-        kind: 'VariableDefinition',
+        kind: Kind.VARIABLE_DEFINITION,
         variable: {
-            kind: 'Variable',
+            kind: Kind.VARIABLE,
             name: {
-                kind: 'Name',
+                kind: Kind.NAME,
                 value: varName,
             },
         },
@@ -180,22 +181,22 @@ export function createNestedArgumentWithVariableNode(
     }
 
     let value: ValueNode = {
-        kind: 'Variable',
+        kind: Kind.VARIABLE,
         name: {
-            kind: 'Name',
+            kind: Kind.NAME,
             value: variableName,
         },
     };
 
     for (const part of parts.reverse()) {
         value = {
-            kind: 'ObjectValue',
+            kind: Kind.OBJECT,
             fields: [
                 {
-                    kind: 'ObjectField',
+                    kind: Kind.OBJECT_FIELD,
                     value,
                     name: {
-                        kind: 'Name',
+                        kind: Kind.NAME,
                         value: part,
                     },
                 },
@@ -204,9 +205,9 @@ export function createNestedArgumentWithVariableNode(
     }
 
     return {
-        kind: 'Argument',
+        kind: Kind.ARGUMENT,
         name: {
-            kind: 'Name',
+            kind: Kind.NAME,
             value: argName,
         },
         value,
@@ -256,9 +257,9 @@ export function addFieldSelectionSafely(
             selections: [
                 ...selectionSet.selections,
                 {
-                    kind: 'Field',
+                    kind: Kind.FIELD,
                     name: {
-                        kind: 'Name',
+                        kind: Kind.NAME,
                         value: field,
                     },
 
@@ -267,7 +268,7 @@ export function addFieldSelectionSafely(
                         ? {}
                         : {
                               alias: {
-                                  kind: 'Name',
+                                  kind: Kind.NAME,
                                   value: alias,
                               },
                           }),
@@ -381,7 +382,7 @@ export function renameTypes<T extends ASTNode>(
             return {
                 ...node,
                 name: {
-                    kind: 'Name',
+                    kind: Kind.NAME,
                     value: typeNameTransformer(node.name.value),
                 },
             };

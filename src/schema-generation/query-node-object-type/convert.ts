@@ -1,22 +1,10 @@
-import {
-    GraphQLFieldConfig,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLObjectType,
-    GraphQLOutputType,
-    Thunk,
-} from 'graphql';
+import { GraphQLFieldConfig, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLOutputType, resolveReadonlyArrayThunk } from 'graphql';
+import { ThunkReadonlyArray } from 'graphql/type/definition';
 import { chain, uniq, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
-import {
-    QueryNodeField,
-    QueryNodeListType,
-    QueryNodeNonNullType,
-    QueryNodeObjectType,
-    QueryNodeOutputType,
-} from './definition';
+import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeOutputType } from './definition';
 import { fieldResolver } from './field-resolver';
-import { isGraphQLOutputType, resolveThunk } from './utils';
+import { isGraphQLOutputType } from './utils';
 
 export class QueryNodeObjectTypeConverter {
     @memorize()
@@ -58,10 +46,10 @@ export class QueryNodeObjectTypeConverter {
 }
 
 function resolveAndCheckFields(
-    fieldsThunk: Thunk<ReadonlyArray<QueryNodeField>>,
+    fieldsThunk: ThunkReadonlyArray<QueryNodeField>,
     typeName: string,
 ): ReadonlyArray<QueryNodeField> {
-    const fields = resolveThunk(fieldsThunk);
+    const fields = resolveReadonlyArrayThunk(fieldsThunk);
     if (uniqBy(fields, (f) => f.name).length !== fields.length) {
         throw new Error(
             `Output type "${typeName}" has duplicate fields: ${uniq(

@@ -72,16 +72,16 @@ describe('project', () => {
             const execSchema = project.createSchema(dbAdapter);
 
             logs = [];
-            const result = await graphql(
-                execSchema,
-                `
+            await graphql({
+                schema: execSchema,
+                source: `
                     {
                         allTests {
                             name
                         }
                     }
                 `,
-            );
+            });
             expect(logs.length).to.be.greaterThan(0);
         });
     });

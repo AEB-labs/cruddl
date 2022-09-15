@@ -1,45 +1,21 @@
-import { GraphQLEnumType, GraphQLScalarType, GraphQLString, Thunk } from 'graphql';
+import { GraphQLEnumType, GraphQLString, resolveReadonlyArrayThunk } from 'graphql';
+import { ThunkReadonlyArray } from 'graphql/type/definition';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { EnumType, Field, ScalarType, Type } from '../../model/index';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConstBoolQueryNode,
-    NullQueryNode,
-    QueryNode,
-} from '../../query-tree';
+import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, NullQueryNode, QueryNode } from '../../query-tree';
 import { INPUT_FIELD_EQUAL } from '../../schema/constants';
 import { getFilterTypeName } from '../../schema/names';
 import { GraphQLI18nString, GraphQLStringMap } from '../../schema/scalars/string-map';
 import { AnyValue, objectEntries } from '../../utils/utils';
 import { EnumTypeGenerator } from '../enum-type-generator';
-import { resolveThunk } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { and } from '../utils/input-types';
-import {
-    ENUM_FILTER_FIELDS,
-    FILTER_FIELDS_BY_TYPE,
-    FILTER_OPERATORS,
-    NUMERIC_FILTER_FIELDS,
-    QUANTIFIERS,
-} from './constants';
-import {
-    AndFilterField,
-    EntityExtensionFilterField,
-    FilterField,
-    ListFilterField,
-    NestedObjectFilterField,
-    OrFilterField,
-    QuantifierFilterField,
-    ScalarOrEnumFieldFilterField,
-    ScalarOrEnumFilterField,
-    StringMapEntryFilterField,
-    StringMapSomeValueFilterField,
-} from './filter-fields';
+import { ENUM_FILTER_FIELDS, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, NUMERIC_FILTER_FIELDS, QUANTIFIERS } from './constants';
+import { AndFilterField, EntityExtensionFilterField, FilterField, ListFilterField, NestedObjectFilterField, OrFilterField, QuantifierFilterField, ScalarOrEnumFieldFilterField, ScalarOrEnumFilterField, StringMapEntryFilterField, StringMapSomeValueFilterField } from './filter-fields';
 
 export class FilterObjectType extends TypedInputObjectType<FilterField> {
-    constructor(typeName: string, fields: Thunk<ReadonlyArray<FilterField>>, description?: string) {
+    constructor(typeName: string, fields: ThunkReadonlyArray<FilterField>, description?: string) {
         super(
             getFilterTypeName(typeName),
             fields,
@@ -96,12 +72,12 @@ export class FilterTypeGenerator {
 
     private generateFilterType(
         typeName: string,
-        fields: Thunk<ReadonlyArray<FilterField>>,
+        fields: ThunkReadonlyArray<FilterField>,
         description?: string,
     ): FilterObjectType {
         function getFields(): ReadonlyArray<FilterField> {
             return [
-                ...resolveThunk(fields),
+                ...resolveReadonlyArrayThunk(fields),
                 new AndFilterField(filterType),
                 new OrFilterField(filterType),
             ];

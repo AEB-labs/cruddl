@@ -6,6 +6,7 @@ import {
     FieldDefinitionNode,
     InputObjectTypeDefinitionNode,
     InputValueDefinitionNode,
+    Kind,
     NamedTypeNode,
     NameNode,
     ObjectTypeDefinitionNode,
@@ -13,16 +14,6 @@ import {
     TypeDefinitionNode,
     TypeNode,
 } from 'graphql';
-import {
-    ENUM_TYPE_DEFINITION,
-    INPUT_OBJECT_TYPE_DEFINITION,
-    LIST_TYPE,
-    NAME,
-    NAMED_TYPE,
-    NON_NULL_TYPE,
-    OBJECT_TYPE_DEFINITION,
-    SCALAR_TYPE_DEFINITION,
-} from '../graphql/kinds';
 import { SourcePosition } from '../model/validation';
 import { ProjectSource } from '../project/source';
 import {
@@ -40,13 +31,13 @@ import { CORE_SCALARS } from './graphql-base';
  */
 export function getObjectTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
     return <ObjectTypeDefinitionNode[]>(
-        model.definitions.filter((def) => def.kind === OBJECT_TYPE_DEFINITION)
+        model.definitions.filter((def) => def.kind === Kind.OBJECT_TYPE_DEFINITION)
     );
 }
 
 export function getEnumTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
     return <ObjectTypeDefinitionNode[]>(
-        model.definitions.filter((def) => def.kind === ENUM_TYPE_DEFINITION)
+        model.definitions.filter((def) => def.kind === Kind.ENUM_TYPE_DEFINITION)
     );
 }
 
@@ -59,7 +50,7 @@ export function getRootEntityTypes(model: DocumentNode): ReadonlyArray<ObjectTyp
     return <ObjectTypeDefinitionNode[]>(
         model.definitions.filter(
             (def) =>
-                def.kind === OBJECT_TYPE_DEFINITION &&
+                def.kind === Kind.OBJECT_TYPE_DEFINITION &&
                 def.directives &&
                 def.directives.some((directive) => directive.name.value === ROOT_ENTITY_DIRECTIVE),
         )
@@ -75,7 +66,7 @@ export function getChildEntityTypes(model: DocumentNode): ReadonlyArray<ObjectTy
     return <ObjectTypeDefinitionNode[]>(
         model.definitions.filter(
             (def) =>
-                def.kind === OBJECT_TYPE_DEFINITION &&
+                def.kind === Kind.OBJECT_TYPE_DEFINITION &&
                 def.directives &&
                 def.directives.some((directive) => directive.name.value === CHILD_ENTITY_DIRECTIVE),
         )
@@ -93,7 +84,7 @@ export function getEntityExtensionTypes(
     return <ObjectTypeDefinitionNode[]>(
         model.definitions.filter(
             (def) =>
-                def.kind === OBJECT_TYPE_DEFINITION &&
+                def.kind === Kind.OBJECT_TYPE_DEFINITION &&
                 def.directives &&
                 def.directives.some(
                     (directive) => directive.name.value === ENTITY_EXTENSION_DIRECTIVE,
@@ -111,7 +102,7 @@ export function getValueObjectTypes(model: DocumentNode): ReadonlyArray<ObjectTy
     return <ObjectTypeDefinitionNode[]>(
         model.definitions.filter(
             (def) =>
-                def.kind === OBJECT_TYPE_DEFINITION &&
+                def.kind === Kind.OBJECT_TYPE_DEFINITION &&
                 def.directives &&
                 def.directives.some((directive) => directive.name.value === VALUE_OBJECT_DIRECTIVE),
         )
@@ -124,18 +115,18 @@ function getScalarFieldsOfObjectDefinition(
 ): ReadonlyArray<FieldDefinitionNode> {
     return (objectDefinition.fields || []).filter((field) => {
         switch (field.type.kind) {
-            case NAMED_TYPE:
+            case Kind.NAMED_TYPE:
                 return (
                     getNamedTypeDefinitionAST(ast, field.type.name.value).kind ===
-                    SCALAR_TYPE_DEFINITION
+                    Kind.SCALAR_TYPE_DEFINITION
                 );
-            case NON_NULL_TYPE:
-                if (field.type.type.kind !== NAMED_TYPE) {
+            case Kind.NON_NULL_TYPE:
+                if (field.type.type.kind !== Kind.NAMED_TYPE) {
                     return false;
                 }
                 return (
                     getNamedTypeDefinitionAST(ast, field.type.type.name.value).kind ===
-                    SCALAR_TYPE_DEFINITION
+                    Kind.SCALAR_TYPE_DEFINITION
                 );
             default:
                 return false;
@@ -153,7 +144,7 @@ function getNamedTypeDefinitionASTIfExists(
     | InputObjectTypeDefinitionNode
     | undefined {
     const scalar = CORE_SCALARS.definitions.find(
-        (def) => def.kind == SCALAR_TYPE_DEFINITION && def.name.value == name,
+        (def) => def.kind == Kind.SCALAR_TYPE_DEFINITION && def.name.value == name,
     );
     if (scalar) {
         return scalar as ScalarTypeDefinitionNode;
@@ -165,10 +156,10 @@ function getNamedTypeDefinitionASTIfExists(
     }
     const type = ast.definitions.find(
         (def) =>
-            (def.kind === OBJECT_TYPE_DEFINITION ||
-                def.kind === SCALAR_TYPE_DEFINITION ||
-                def.kind === ENUM_TYPE_DEFINITION ||
-                def.kind === INPUT_OBJECT_TYPE_DEFINITION) &&
+            (def.kind === Kind.OBJECT_TYPE_DEFINITION ||
+                def.kind === Kind.SCALAR_TYPE_DEFINITION ||
+                def.kind === Kind.ENUM_TYPE_DEFINITION ||
+                def.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION) &&
             def.name.value === name,
     );
     if (!type) {
@@ -194,20 +185,20 @@ export function getNamedTypeDefinitionAST(
 
 export function getTypeNameIgnoringNonNullAndList(typeNode: TypeNode): string {
     switch (typeNode.kind) {
-        case NON_NULL_TYPE:
-        case LIST_TYPE:
+        case Kind.NON_NULL_TYPE:
+        case Kind.LIST_TYPE:
             return getTypeNameIgnoringNonNullAndList(typeNode.type);
-        case NAMED_TYPE:
+        case Kind.NAMED_TYPE:
             return typeNode.name.value;
     }
 }
 
 export function getNamedTypeNodeIgnoringNonNullAndList(typeNode: TypeNode): NamedTypeNode {
     switch (typeNode.kind) {
-        case NON_NULL_TYPE:
-        case LIST_TYPE:
+        case Kind.NON_NULL_TYPE:
+        case Kind.LIST_TYPE:
             return getNamedTypeNodeIgnoringNonNullAndList(typeNode.type);
-        case NAMED_TYPE:
+        case Kind.NAMED_TYPE:
             return typeNode;
     }
 }
@@ -218,20 +209,21 @@ export function getNamedInputTypeDefinitionAST(
 ): InputObjectTypeDefinitionNode | ScalarTypeDefinitionNode {
     return ast.definitions.find(
         (def) =>
-            (def.kind === INPUT_OBJECT_TYPE_DEFINITION || def.kind === SCALAR_TYPE_DEFINITION) &&
+            (def.kind === Kind.INPUT_OBJECT_TYPE_DEFINITION ||
+                def.kind === Kind.SCALAR_TYPE_DEFINITION) &&
             def.name.value === name,
     ) as InputObjectTypeDefinitionNode | ScalarTypeDefinitionNode;
 }
 
 export function buildScalarDefinitionNode(name: string): ScalarTypeDefinitionNode {
     return {
-        kind: SCALAR_TYPE_DEFINITION,
-        name: { kind: NAME, value: name },
+        kind: Kind.SCALAR_TYPE_DEFINITION,
+        name: { kind: Kind.NAME, value: name },
     };
 }
 
 export function buildNameNode(name: string): NameNode {
-    return { kind: NAME, value: name };
+    return { kind: Kind.NAME, value: name };
 }
 
 export function findDirectiveWithName(
