@@ -1,13 +1,6 @@
-import {
-    GraphQLEnumType,
-    GraphQLFieldConfigArgumentMap,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLObjectType,
-    GraphQLScalarType,
-    GraphQLUnionType,
-    Thunk,
-} from 'graphql';
+import { GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType } from 'graphql';
+import { GraphQLOutputType } from 'graphql/index';
+import { ThunkReadonlyArray } from 'graphql/type/definition';
 import { QueryNode } from '../../query-tree';
 import { FieldContext } from './context';
 
@@ -58,7 +51,7 @@ export interface QueryNodeField {
 export interface QueryNodeObjectType {
     name: string;
     description?: string;
-    fields: Thunk<ReadonlyArray<QueryNodeField>>;
+    fields: ThunkReadonlyArray<QueryNodeField>;
 }
 
 export class QueryNodeNonNullType<T extends QueryNodeNullableType> {
@@ -77,8 +70,8 @@ export type QueryNodeNamedOutputType =
 export type QueryNodeNullableType =
     | QueryNodeNamedOutputType
     | QueryNodeListType<any>
-    | GraphQLList<any>;
+    | GraphQLList<GraphQLOutputType>;
 export type QueryNodeOutputType =
     | QueryNodeNullableType
     | QueryNodeNonNullType<any>
-    | GraphQLNonNull<any>;
+    | GraphQLNonNull<GraphQLOutputType>;

@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { Kind } from 'graphql';
 import { GraphQLStringMap } from '../../../src/schema/scalars/string-map';
 
 describe('GraphQLStringMap', () => {
@@ -6,27 +7,27 @@ describe('GraphQLStringMap', () => {
         it('parses simple string maps', () => {
             const parsed = GraphQLStringMap.parseLiteral(
                 {
-                    kind: 'ObjectValue',
+                    kind: Kind.OBJECT,
                     fields: [
                         {
-                            kind: 'ObjectField',
+                            kind: Kind.OBJECT_FIELD,
                             name: {
-                                kind: 'Name',
+                                kind: Kind.NAME,
                                 value: 'prop1',
                             },
                             value: {
-                                kind: 'StringValue',
+                                kind: Kind.STRING,
                                 value: 'val1',
                             },
                         },
                         {
-                            kind: 'ObjectField',
+                            kind: Kind.OBJECT_FIELD,
                             name: {
-                                kind: 'Name',
+                                kind: Kind.NAME,
                                 value: 'prop2',
                             },
                             value: {
-                                kind: 'StringValue',
+                                kind: Kind.STRING,
                                 value: 'val2',
                             },
                         },
@@ -43,27 +44,27 @@ describe('GraphQLStringMap', () => {
         it('removes null values', () => {
             const parsed = GraphQLStringMap.parseLiteral(
                 {
-                    kind: 'ObjectValue',
+                    kind: Kind.OBJECT,
                     fields: [
                         {
-                            kind: 'ObjectField',
+                            kind: Kind.OBJECT_FIELD,
                             name: {
-                                kind: 'Name',
+                                kind: Kind.NAME,
                                 value: 'prop1',
                             },
                             value: {
-                                kind: 'StringValue',
+                                kind: Kind.STRING,
                                 value: 'val1',
                             },
                         },
                         {
-                            kind: 'ObjectField',
+                            kind: Kind.OBJECT_FIELD,
                             name: {
-                                kind: 'Name',
+                                kind: Kind.NAME,
                                 value: 'empty',
                             },
                             value: {
-                                kind: 'NullValue',
+                                kind: Kind.NULL,
                             },
                         },
                     ],
@@ -78,29 +79,29 @@ describe('GraphQLStringMap', () => {
         it('takes strings from variables', () => {
             const parsed = GraphQLStringMap.parseLiteral(
                 {
-                    kind: 'ObjectValue',
+                    kind: Kind.OBJECT,
                     fields: [
                         {
-                            kind: 'ObjectField',
+                            kind: Kind.OBJECT_FIELD,
                             name: {
-                                kind: 'Name',
+                                kind: Kind.NAME,
                                 value: 'prop1',
                             },
                             value: {
-                                kind: 'StringValue',
+                                kind: Kind.STRING,
                                 value: 'val1',
                             },
                         },
                         {
-                            kind: 'ObjectField',
+                            kind: Kind.OBJECT_FIELD,
                             name: {
-                                kind: 'Name',
+                                kind: Kind.NAME,
                                 value: 'varField',
                             },
                             value: {
-                                kind: 'Variable',
+                                kind: Kind.VARIABLE,
                                 name: {
-                                    kind: 'Name',
+                                    kind: Kind.NAME,
                                     value: 'var',
                                 },
                             },
@@ -120,29 +121,29 @@ describe('GraphQLStringMap', () => {
         it('ignores nulls from variables', () => {
             const parsed = GraphQLStringMap.parseLiteral(
                 {
-                    kind: 'ObjectValue',
+                    kind: Kind.OBJECT,
                     fields: [
                         {
-                            kind: 'ObjectField',
+                            kind: Kind.OBJECT_FIELD,
                             name: {
-                                kind: 'Name',
+                                kind: Kind.NAME,
                                 value: 'prop1',
                             },
                             value: {
-                                kind: 'StringValue',
+                                kind: Kind.STRING,
                                 value: 'val1',
                             },
                         },
                         {
-                            kind: 'ObjectField',
+                            kind: Kind.OBJECT_FIELD,
                             name: {
-                                kind: 'Name',
+                                kind: Kind.NAME,
                                 value: 'varField',
                             },
                             value: {
-                                kind: 'Variable',
+                                kind: Kind.VARIABLE,
                                 name: {
-                                    kind: 'Name',
+                                    kind: Kind.NAME,
                                     value: 'var',
                                 },
                             },
@@ -162,7 +163,7 @@ describe('GraphQLStringMap', () => {
             expect(() => {
                 GraphQLStringMap.parseLiteral(
                     {
-                        kind: 'IntValue',
+                        kind: Kind.INT,
                         value: '123',
                     },
                     undefined,
@@ -174,16 +175,16 @@ describe('GraphQLStringMap', () => {
             expect(() => {
                 GraphQLStringMap.parseLiteral(
                     {
-                        kind: 'ObjectValue',
+                        kind: Kind.OBJECT,
                         fields: [
                             {
-                                kind: 'ObjectField',
+                                kind: Kind.OBJECT_FIELD,
                                 name: {
-                                    kind: 'Name',
+                                    kind: Kind.NAME,
                                     value: 'intField',
                                 },
                                 value: {
-                                    kind: 'IntValue',
+                                    kind: Kind.INT,
                                     value: '123',
                                 },
                             },
@@ -198,18 +199,18 @@ describe('GraphQLStringMap', () => {
             expect(() => {
                 GraphQLStringMap.parseLiteral(
                     {
-                        kind: 'ObjectValue',
+                        kind: Kind.OBJECT,
                         fields: [
                             {
-                                kind: 'ObjectField',
+                                kind: Kind.OBJECT_FIELD,
                                 name: {
-                                    kind: 'Name',
+                                    kind: Kind.NAME,
                                     value: 'varField',
                                 },
                                 value: {
-                                    kind: 'Variable',
+                                    kind: Kind.VARIABLE,
                                     name: {
-                                        kind: 'Name',
+                                        kind: Kind.NAME,
                                         value: 'var',
                                     },
                                 },

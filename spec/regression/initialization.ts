@@ -105,7 +105,13 @@ export async function initTestData(
                 namespace,
             )} }`;
             const variables = { input: dataSet };
-            const result = await graphql(schema, query, {}, context, variables);
+            const result = await graphql({
+                schema,
+                source: query,
+                rootValue: {},
+                contextValue: context,
+                variableValues: variables,
+            });
             if (result.errors) {
                 throw new Error(
                     `GraphQL error while inserting ${rootEntityName}: ${JSON.stringify(
@@ -150,7 +156,7 @@ function wrapNamespaceForQuery(stuff: string, namespace: string[]) {
 
 function retrieveIdFromResult(result: ExecutionResult, namespace: string[]) {
     const ns = [...namespace];
-    let node = result.data!;
+    let node = result.data as any;
     while (ns.length) {
         const nextNode = node[ns.shift()!];
         if (!nextNode) {

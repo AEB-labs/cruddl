@@ -88,7 +88,7 @@ describe('mutation', () => {
         const schema = project.createSchema(db);
         await db.updateSchema(project.getModel());
 
-        const createResult: any = await graphql(schema, createDelivery, {});
+        const createResult: any = await graphql({ schema, source: createDelivery, rootValue: {} });
         expectNoErrors(createResult);
         const id = createResult.data.createDelivery.id;
         const createCreatedAt = createResult.data.createDelivery.createdAt;
@@ -99,7 +99,11 @@ describe('mutation', () => {
         await sleep(1);
 
         const preparedUpdateDelivery = updateDelivery.replace('%id%', id);
-        const updateResult: any = await graphql(schema, preparedUpdateDelivery, {});
+        const updateResult: any = await graphql({
+            schema,
+            source: preparedUpdateDelivery,
+            rootValue: {},
+        });
         expectNoErrors(updateResult);
 
         const updateCreatedAt = updateResult.data.updateDelivery.createdAt;
@@ -115,7 +119,11 @@ describe('mutation', () => {
         await sleep(1);
 
         // create item
-        const createItemResult: any = await graphql(schema, createDeliveryItem, {});
+        const createItemResult: any = await graphql({
+            schema,
+            source: createDeliveryItem,
+            rootValue: {},
+        });
         expectNoErrors(createItemResult);
         const createItemCreatedAt = createItemResult.data.createDeliveryItem.createdAt;
         const createItemUpdatedAt = createItemResult.data.createDeliveryItem.updatedAt;
@@ -127,11 +135,11 @@ describe('mutation', () => {
         const preparedUpdateDeliveryRelationOnly = updateDeliveryRelationOnly
             .replace('%id%', id)
             .replace('%itemId%', itemId);
-        const updateDeliveryRelationOnlyResult: any = await execute(
+        const updateDeliveryRelationOnlyResult: any = await execute({
             schema,
-            parse(preparedUpdateDeliveryRelationOnly),
-            {},
-        );
+            document: parse(preparedUpdateDeliveryRelationOnly),
+            rootValue: {},
+        });
         const updateDeliveryRelationOnlyUpdatedAt =
             updateDeliveryRelationOnlyResult.data.updateDelivery.updatedAt;
         // updatedAt must not have been changed, because only a relation was modified.
@@ -142,11 +150,11 @@ describe('mutation', () => {
             '%itemId%',
             itemId,
         );
-        const updateDeliveryItemRelationOnlyResult: any = await execute(
+        const updateDeliveryItemRelationOnlyResult: any = await execute({
             schema,
-            parse(preparedUpdateDeliveryItemRelationOnly),
-            {},
-        );
+            document: parse(preparedUpdateDeliveryItemRelationOnly),
+            rootValue: {},
+        });
         const updateItemCreatedAt =
             updateDeliveryItemRelationOnlyResult.data.updateDeliveryItem.createdAt;
         const updateItemUpdatedAt =
@@ -158,7 +166,11 @@ describe('mutation', () => {
 
         // check persistence of delivery updated at
         const preparedSelectDelivery = selectDelivery.replace('%id%', id);
-        const selectResult: any = await graphql(schema, preparedSelectDelivery, {});
+        const selectResult: any = await graphql({
+            schema,
+            source: preparedSelectDelivery,
+            rootValue: {},
+        });
         expectNoErrors(selectResult);
         const selectCreatedAt = selectResult.data.Delivery.createdAt;
         const selectUpdatedAt = selectResult.data.Delivery.updatedAt;

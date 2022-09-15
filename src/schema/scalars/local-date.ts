@@ -1,7 +1,7 @@
 import { GraphQLScalarType } from 'graphql';
 import { LocalDate } from '@js-joda/core';
 
-function parseLocalDate(value: any): LocalDate {
+function parseLocalDate(value: unknown): LocalDate {
     if (typeof value !== 'string') {
         throw new Error(`should be a string`);
     }
@@ -15,7 +15,7 @@ function parseLocalDate(value: any): LocalDate {
     }
 }
 
-function coerceLocalDate(value: string): string {
+function coerceLocalDate(value: unknown): string {
     return parseLocalDate(value).toString();
 }
 

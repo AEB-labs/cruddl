@@ -1,4 +1,4 @@
-import { Thunk } from 'graphql';
+import { ThunkReadonlyArray } from 'graphql/type/definition';
 import { Field } from '../../model';
 import {
     BinaryOperationQueryNode,
@@ -35,7 +35,7 @@ export class FlexSearchFilterObjectType extends TypedInputObjectType<FlexSearchF
 }
 
 export class FlexSearchI18nStringLocalizedFilterObjectType extends FlexSearchFilterObjectType {
-    constructor(fields: Thunk<ReadonlyArray<FlexSearchFilterField>>) {
+    constructor(fields: ThunkReadonlyArray<FlexSearchFilterField>) {
         super(
             `I18nStringLocalizedFilter`,
             fields,

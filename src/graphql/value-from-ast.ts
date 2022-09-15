@@ -1,5 +1,4 @@
-import { ValueNode } from 'graphql';
-import { BOOLEAN, ENUM, FLOAT, INT, LIST, OBJECT, STRING } from './kinds';
+import { Kind, ValueNode } from 'graphql';
 import { PlainObject } from '../utils/utils';
 
 /**
@@ -9,15 +8,15 @@ import { PlainObject } from '../utils/utils';
  */
 export function getValueFromAST(valueNode: ValueNode): any {
     switch (valueNode.kind) {
-        case STRING:
-        case INT:
-        case FLOAT:
-        case BOOLEAN:
-        case ENUM:
+        case Kind.STRING:
+        case Kind.INT:
+        case Kind.FLOAT:
+        case Kind.BOOLEAN:
+        case Kind.ENUM:
             return valueNode.value;
-        case LIST:
+        case Kind.LIST:
             return [...valueNode.values.map((value) => getValueFromAST(value))];
-        case OBJECT:
+        case Kind.OBJECT:
             const obj: PlainObject = {};
             valueNode.fields.forEach((field) => {
                 obj[field.name.value] = getValueFromAST(field.value);

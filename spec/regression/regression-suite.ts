@@ -214,25 +214,25 @@ export class RegressionSuite {
                 if (context && context.operations && context.operations[operationName]) {
                     operationContext = context.operations[operationName];
                 }
-                let operationResult = await graphql(
-                    this.schema,
-                    gqlSource,
-                    {} /* root */,
-                    operationContext,
+                let operationResult = await graphql({
+                    schema: this.schema,
+                    source: gqlSource,
+                    rootValue: {},
+                    contextValue: operationContext,
                     variableValues,
                     operationName,
-                );
+                });
                 operationResult = JSON.parse(JSON.stringify(operationResult)); // serialize e.g. errors as they would be in a GraphQL server
                 actualResult[operationName] = operationResult;
             }
         } else {
-            actualResult = await graphql(
-                this.schema,
-                gqlSource,
-                {} /* root */,
-                context,
+            actualResult = await graphql({
+                schema: this.schema,
+                source: gqlSource,
+                rootValue: {},
+                contextValue: context,
                 variableValues,
-            );
+            });
             actualResult = JSON.parse(JSON.stringify(actualResult)); // serialize e.g. errors as they would be in a GraphQL server
         }
 

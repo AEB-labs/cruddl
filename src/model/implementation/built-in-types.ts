@@ -43,7 +43,7 @@ const graphQLTypes: ReadonlyArray<GraphQLScalarType> = [
     GraphQLDecimal3,
 ];
 
-const numberTypes = [
+const numberTypes: ReadonlyArray<GraphQLScalarType> = [
     GraphQLInt,
     GraphQLInt53,
     GraphQLFloat,

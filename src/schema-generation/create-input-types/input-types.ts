@@ -1,4 +1,4 @@
-import { Thunk } from 'graphql';
+import { ThunkReadonlyArray } from 'graphql/type/definition';
 import { fromPairs, toPairs } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import {
@@ -42,7 +42,7 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
     constructor(
         type: ObjectType,
         name: string,
-        fields: Thunk<ReadonlyArray<CreateInputField>>,
+        fields: ThunkReadonlyArray<CreateInputField>,
         description: string,
     ) {
         super(name, fields, description);
@@ -87,7 +87,7 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
 export class CreateRootEntityInputType extends CreateObjectInputType {
     constructor(
         public readonly rootEntityType: RootEntityType,
-        fields: Thunk<ReadonlyArray<CreateInputField>>,
+        fields: ThunkReadonlyArray<CreateInputField>,
     ) {
         super(
             rootEntityType,
@@ -219,7 +219,7 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
 export class CreateChildEntityInputType extends CreateObjectInputType {
     constructor(
         public readonly childEntityType: ChildEntityType,
-        fields: Thunk<ReadonlyArray<CreateInputField>>,
+        fields: ThunkReadonlyArray<CreateInputField>,
     ) {
         super(
             childEntityType,
@@ -242,7 +242,7 @@ export class CreateChildEntityInputType extends CreateObjectInputType {
 export class CreateEntityExtensionInputType extends CreateObjectInputType {
     constructor(
         public readonly entityExtensionType: EntityExtensionType,
-        fields: Thunk<ReadonlyArray<CreateInputField>>,
+        fields: ThunkReadonlyArray<CreateInputField>,
     ) {
         super(
             entityExtensionType,
@@ -256,7 +256,7 @@ export class CreateEntityExtensionInputType extends CreateObjectInputType {
 export class ValueObjectInputType extends CreateObjectInputType {
     constructor(
         public readonly valueObjectType: ValueObjectType,
-        fields: Thunk<ReadonlyArray<CreateInputField>>,
+        fields: ThunkReadonlyArray<CreateInputField>,
     ) {
         super(
             valueObjectType,

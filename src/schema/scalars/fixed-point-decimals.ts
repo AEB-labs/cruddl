@@ -36,7 +36,7 @@ function createFixedPointDecimalType(decimals: number) {
     }
 
     function parseFixedPointDecimal(valueNode: ValueNode) {
-        if (valueNode.kind !== 'IntValue' && valueNode.kind !== 'FloatValue') {
+        if (valueNode.kind !== Kind.INT && valueNode.kind !== 'FloatValue') {
             throw new GraphQLError(
                 `${typeName} cannot represent non numeric value: `.concat(print(valueNode)),
                 valueNode,

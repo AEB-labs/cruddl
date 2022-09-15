@@ -2,13 +2,12 @@ import {
     GraphQLInputFieldConfig,
     GraphQLInputFieldConfigMap,
     GraphQLInputObjectType,
-    GraphQLInputType,
-    Thunk,
+    GraphQLInputType, resolveReadonlyArrayThunk
 } from 'graphql';
+import { ThunkReadonlyArray } from 'graphql/type/definition';
 import { chain, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Constructor } from '../utils/utils';
-import { resolveThunk } from './query-node-object-type';
 
 export interface TypedInputFieldBase<TField extends TypedInputFieldBase<TField>> {
     readonly name: string;
@@ -20,7 +19,7 @@ export interface TypedInputFieldBase<TField extends TypedInputFieldBase<TField>>
 export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
     constructor(
         public readonly name: string,
-        private readonly _fields: Thunk<ReadonlyArray<TField>>,
+        private readonly _fields: ThunkReadonlyArray<TField>,
         public readonly description?: string,
     ) {}
 
@@ -81,10 +80,10 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
 }
 
 function resolveAndCheckFields<TField extends TypedInputFieldBase<TField>>(
-    thunk: Thunk<ReadonlyArray<TField>>,
+    thunk: ThunkReadonlyArray<TField>,
     typeName: string,
 ): ReadonlyArray<TField> {
-    const fields = resolveThunk(thunk);
+    const fields = resolveReadonlyArrayThunk(thunk);
     if (uniqBy(fields, (field) => field.name).length !== fields.length) {
         throw new Error(
             `Input type "${typeName}" has duplicate fields (fields: ${fields

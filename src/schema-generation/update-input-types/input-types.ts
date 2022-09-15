@@ -1,56 +1,15 @@
-import { GraphQLID, GraphQLInputFieldConfigMap, Thunk } from 'graphql';
+import { GraphQLID, GraphQLInputFieldConfigMap } from 'graphql';
+import { ThunkReadonlyArray } from 'graphql/type/definition';
 import { groupBy } from 'lodash';
-import {
-    ChildEntityType,
-    EntityExtensionType,
-    Field,
-    ObjectType,
-    RootEntityType,
-} from '../../model';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConcatListsQueryNode,
-    ConditionalQueryNode,
-    FieldQueryNode,
-    LiteralQueryNode,
-    MergeObjectsQueryNode,
-    ObjectQueryNode,
-    PreExecQueryParms,
-    QueryNode,
-    RuntimeErrorQueryNode,
-    SafeListQueryNode,
-    SetFieldQueryNode,
-    TransformListQueryNode,
-    UnaryOperationQueryNode,
-    UnaryOperator,
-    VariableQueryNode,
-} from '../../query-tree';
+import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType } from '../../model';
+import { BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, FieldQueryNode, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, SafeListQueryNode, SetFieldQueryNode, TransformListQueryNode, UnaryOperationQueryNode, UnaryOperator, VariableQueryNode } from '../../query-tree';
 import { ENTITY_UPDATED_AT, ID_FIELD, REVISION_FIELD } from '../../schema/constants';
-import {
-    getAddChildEntitiesFieldName,
-    getRemoveChildEntitiesFieldName,
-    getReplaceChildEntitiesFieldName,
-    getUpdateChildEntitiesFieldName,
-} from '../../schema/names';
-import {
-    AnyValue,
-    decapitalize,
-    flatMap,
-    joinWithAnd,
-    objectEntries,
-    PlainObject,
-} from '../../utils/utils';
+import { getAddChildEntitiesFieldName, getRemoveChildEntitiesFieldName, getReplaceChildEntitiesFieldName, getUpdateChildEntitiesFieldName } from '../../schema/names';
+import { AnyValue, decapitalize, flatMap, joinWithAnd, objectEntries, PlainObject } from '../../utils/utils';
 import { createGraphQLError } from '../graphql-errors';
 import { FieldContext } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
-import {
-    AddChildEntitiesInputField,
-    ReplaceChildEntitiesInputField,
-    UpdateChildEntitiesInputField,
-    UpdateInputField,
-    UpdateInputFieldContext,
-} from './input-fields';
+import { AddChildEntitiesInputField, ReplaceChildEntitiesInputField, UpdateChildEntitiesInputField, UpdateInputField, UpdateInputFieldContext } from './input-fields';
 import { isRelationUpdateField } from './relation-fields';
 
 function getCurrentISODate() {
@@ -67,7 +26,7 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
     constructor(
         protected readonly objectType: ObjectType,
         name: string,
-        fields: Thunk<ReadonlyArray<UpdateInputField>>,
+        fields: ThunkReadonlyArray<UpdateInputField>,
     ) {
         super(name, fields);
         this.childEntityFields = this.objectType.fields.filter(
@@ -273,7 +232,7 @@ export class UpdateRootEntityInputType extends UpdateObjectInputType {
     constructor(
         public readonly rootEntityType: RootEntityType,
         name: string,
-        fields: Thunk<ReadonlyArray<UpdateInputField>>,
+        fields: ThunkReadonlyArray<UpdateInputField>,
     ) {
         super(rootEntityType, name, fields);
         this.description = `The update type for the root entity type \`${rootEntityType.name}\`.\n\nThe \`${ENTITY_UPDATED_AT}\` field is updated automatically unless only relations are updated. If fields are omitted, their value is left unchanged. Explicitly set fields to \`null\` to clear their value.`;
@@ -328,7 +287,7 @@ export class UpdateEntityExtensionInputType extends UpdateObjectInputType {
     constructor(
         public readonly entityExtensionType: EntityExtensionType,
         name: string,
-        fields: Thunk<ReadonlyArray<UpdateInputField>>,
+        fields: ThunkReadonlyArray<UpdateInputField>,
     ) {
         super(entityExtensionType, name, fields);
         this.description = `The update type for the entity extension type \`${entityExtensionType.name}\`.\n\nIf fields are omitted, their value is left unchanged. Explicitly set fields to \`null\` to clear their value.`;
@@ -342,7 +301,7 @@ export class UpdateChildEntityInputType extends UpdateObjectInputType {
     constructor(
         private readonly childEntityType: ChildEntityType,
         name: string,
-        fields: Thunk<ReadonlyArray<UpdateInputField>>,
+        fields: ThunkReadonlyArray<UpdateInputField>,
     ) {
         super(childEntityType, name, fields);
         this.updatedAtField = this.childEntityType.getFieldOrThrow(ENTITY_UPDATED_AT);

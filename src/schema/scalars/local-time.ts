@@ -1,7 +1,7 @@
 import { GraphQLScalarType } from 'graphql';
 import { LocalTime } from '@js-joda/core';
 
-function parseLocalTime(value: any): LocalTime {
+function parseLocalTime(value: unknown): LocalTime {
     if (typeof value !== 'string') {
         throw new Error(`should be a string`);
     }
@@ -15,7 +15,7 @@ function parseLocalTime(value: any): LocalTime {
     }
 }
 
-function coerceLocalTime(value: string): string {
+function coerceLocalTime(value: unknown): string {
     return parseLocalTime(value).toString();
 }
 

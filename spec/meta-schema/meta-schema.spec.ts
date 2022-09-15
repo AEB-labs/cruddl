@@ -366,8 +366,13 @@ describe('Meta schema API', () => {
 
     const metaSchema = getMetaSchema(project);
 
-    async function execute(doc: DocumentNode, context?: any) {
-        const { data, errors } = await graphql(metaSchema, print(doc), {}, context);
+    async function execute(doc: DocumentNode, contextValue?: unknown) {
+        const { data, errors } = await graphql({
+            schema: metaSchema,
+            source: print(doc),
+            rootValue: {},
+            contextValue,
+        });
         if (errors) {
             throw new Error(JSON.stringify(errors));
         }
@@ -890,8 +895,8 @@ describe('Meta schema API', () => {
     });
 
     it('can query localization with generic provider', async () => {
-        const result = await execute(localizationQuery);
-        const addressType = result!.valueObjectType;
+        const result = (await execute(localizationQuery)) as any;
+        const addressType = result.valueObjectType;
         expect(addressType.localization).to.deep.equal({
             label: 'Address',
             labelPlural: 'Addresses',
@@ -905,8 +910,8 @@ describe('Meta schema API', () => {
     });
 
     it('can query localization with provided language', async () => {
-        const result = await execute(localizationQuery, { locale: ['de', 'en'] });
-        const addressType = result!.valueObjectType;
+        const result = (await execute(localizationQuery, { locale: ['de', 'en'] })) as any;
+        const addressType = result.valueObjectType;
         expect(addressType.localization).to.deep.equal({
             label: 'Adresse',
             labelPlural: 'Adressen',
