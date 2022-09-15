@@ -8,7 +8,6 @@ import {
 } from 'graphql';
 import { chain, uniq, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
-import { aliasBasedResolver } from '../../graphql/alias-based-resolvers';
 import {
     QueryNodeField,
     QueryNodeListType,
@@ -16,6 +15,7 @@ import {
     QueryNodeObjectType,
     QueryNodeOutputType,
 } from './definition';
+import { fieldResolver } from './field-resolver';
 import { isGraphQLOutputType, resolveThunk } from './utils';
 
 export class QueryNodeObjectTypeConverter {
@@ -32,7 +32,7 @@ export class QueryNodeObjectTypeConverter {
                             description: field.description,
                             deprecationReason: field.deprecationReason,
                             args: field.args,
-                            resolve: aliasBasedResolver,
+                            resolve: fieldResolver,
                             type: this.convertToGraphQLType(field.type),
                         }),
                     )

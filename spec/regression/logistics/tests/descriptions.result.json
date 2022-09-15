@@ -3,163 +3,6 @@
     "__schema": {
       "types": [
         {
-          "name": "Query",
-          "description": "The Query type for the root namespace",
-          "fields": [
-            {
-              "name": "BillingEntity",
-              "description": "Finds a BillingEntity by id",
-              "deprecationReason": null
-            },
-            {
-              "name": "allBillingEntities",
-              "description": null,
-              "deprecationReason": null
-            },
-            {
-              "name": "_allBillingEntitiesMeta",
-              "description": null,
-              "deprecationReason": null
-            },
-            {
-              "name": "Country",
-              "description": "Finds a Country by id or isoCode.\n\nYou should pass a non-null value to exactly one of the arguments.",
-              "deprecationReason": null
-            },
-            {
-              "name": "allCountries",
-              "description": null,
-              "deprecationReason": null
-            },
-            {
-              "name": "_allCountriesMeta",
-              "description": null,
-              "deprecationReason": null
-            },
-            {
-              "name": "flexSearchCountries",
-              "description": "Queries for Countries using FlexSearch.",
-              "deprecationReason": null
-            },
-            {
-              "name": "_flexSearchCountriesMeta",
-              "description": "Queries for Countries using FlexSearch.",
-              "deprecationReason": null
-            },
-            {
-              "name": "Delivery",
-              "description": "Finds a Delivery by id or deliveryNumber.\n\nYou should pass a non-null value to exactly one of the arguments.\n\nA delivery",
-              "deprecationReason": null
-            },
-            {
-              "name": "allDeliveries",
-              "description": "A delivery",
-              "deprecationReason": null
-            },
-            {
-              "name": "_allDeliveriesMeta",
-              "description": "A delivery",
-              "deprecationReason": null
-            },
-            {
-              "name": "flexSearchDeliveries",
-              "description": "Queries for Deliveries using FlexSearch.",
-              "deprecationReason": null
-            },
-            {
-              "name": "_flexSearchDeliveriesMeta",
-              "description": "Queries for Deliveries using FlexSearch.",
-              "deprecationReason": null
-            },
-            {
-              "name": "Forwarder",
-              "description": "Finds a Forwarder by id or name.\n\nYou should pass a non-null value to exactly one of the arguments.",
-              "deprecationReason": null
-            },
-            {
-              "name": "allForwarders",
-              "description": null,
-              "deprecationReason": null
-            },
-            {
-              "name": "_allForwardersMeta",
-              "description": null,
-              "deprecationReason": null
-            },
-            {
-              "name": "OnlyRelations",
-              "description": "Finds a OnlyRelations by id",
-              "deprecationReason": null
-            },
-            {
-              "name": "allOnlyRelations",
-              "description": null,
-              "deprecationReason": null
-            },
-            {
-              "name": "_allOnlyRelationsMeta",
-              "description": null,
-              "deprecationReason": null
-            },
-            {
-              "name": "HandlingUnit",
-              "description": "Finds a HandlingUnit by id or id.\n\nYou should pass a non-null value to exactly one of the arguments.",
-              "deprecationReason": null
-            },
-            {
-              "name": "allHandlingUnits",
-              "description": null,
-              "deprecationReason": null
-            },
-            {
-              "name": "_allHandlingUnitsMeta",
-              "description": null,
-              "deprecationReason": null
-            },
-            {
-              "name": "flexSearchHandlingUnits",
-              "description": "Queries for HandlingUnits using FlexSearch.",
-              "deprecationReason": null
-            },
-            {
-              "name": "_flexSearchHandlingUnitsMeta",
-              "description": "Queries for HandlingUnits using FlexSearch.",
-              "deprecationReason": null
-            },
-            {
-              "name": "NumberRange",
-              "description": "Finds a NumberRange by id or name.\n\nYou should pass a non-null value to exactly one of the arguments.",
-              "deprecationReason": null
-            },
-            {
-              "name": "allNumberRanges",
-              "description": null,
-              "deprecationReason": null
-            },
-            {
-              "name": "_allNumberRangesMeta",
-              "description": null,
-              "deprecationReason": null
-            },
-            {
-              "name": "SecretKey",
-              "description": "Finds a SecretKey by id or key.\n\nYou should pass a non-null value to exactly one of the arguments.",
-              "deprecationReason": null
-            },
-            {
-              "name": "allSecretKeys",
-              "description": null,
-              "deprecationReason": null
-            },
-            {
-              "name": "_allSecretKeysMeta",
-              "description": null,
-              "deprecationReason": null
-            }
-          ],
-          "inputFields": null
-        },
-        {
           "name": "BillingEntity",
           "description": null,
           "fields": [
@@ -7442,318 +7285,6 @@
           "inputFields": null
         },
         {
-          "name": "Mutation",
-          "description": "The Mutation type for the root namespace\n\nFields are executed serially in the order they occur in the selection set (the result of the first field does not see the changes made by the second field). All mutations are executed atomically - if any of them fail, the complete operation is rolled back.",
-          "fields": [
-            {
-              "name": "createBillingEntity",
-              "description": "Creates a new BillingEntity",
-              "deprecationReason": null
-            },
-            {
-              "name": "createBillingEntities",
-              "description": "Creates multiple new BillingEntities",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateBillingEntity",
-              "description": "Updates an existing BillingEntity",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateBillingEntities",
-              "description": "Updates multiple existing BillingEntities (referenced by their ids)",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateAllBillingEntities",
-              "description": "Updates BillingEntities that match a specified filter",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteBillingEntity",
-              "description": "Deletes a BillingEntity by id",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteBillingEntities",
-              "description": "Deletes multiple BillingEntities by their ids.\n\nIDs that are not found are silently ignored.",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteAllBillingEntities",
-              "description": "Deletes BillingEntities that match a specified filter",
-              "deprecationReason": null
-            },
-            {
-              "name": "createCountry",
-              "description": "Creates a new Country",
-              "deprecationReason": null
-            },
-            {
-              "name": "createCountries",
-              "description": "Creates multiple new Countries",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateCountry",
-              "description": "Updates an existing Country",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateCountries",
-              "description": "Updates multiple existing Countries (referenced by their ids)",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateAllCountries",
-              "description": "Updates Countries that match a specified filter",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteCountry",
-              "description": "Deletes a Country by id or isoCode.\n\nYou should pass a non-null value to exactly one of the arguments.",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteCountries",
-              "description": "Deletes multiple Countries by their ids.\n\nIDs that are not found are silently ignored.",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteAllCountries",
-              "description": "Deletes Countries that match a specified filter",
-              "deprecationReason": null
-            },
-            {
-              "name": "createDelivery",
-              "description": "Creates a new Delivery",
-              "deprecationReason": null
-            },
-            {
-              "name": "createDeliveries",
-              "description": "Creates multiple new Deliveries",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateDelivery",
-              "description": "Updates an existing Delivery",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateDeliveries",
-              "description": "Updates multiple existing Deliveries (referenced by their ids)",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateAllDeliveries",
-              "description": "Updates Deliveries that match a specified filter",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteDelivery",
-              "description": "Deletes a Delivery by id or deliveryNumber.\n\nYou should pass a non-null value to exactly one of the arguments.",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteDeliveries",
-              "description": "Deletes multiple Deliveries by their ids.\n\nIDs that are not found are silently ignored.",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteAllDeliveries",
-              "description": "Deletes Deliveries that match a specified filter",
-              "deprecationReason": null
-            },
-            {
-              "name": "confirmBillingForDelivery",
-              "description": "Confirms a Delivery to be exported to billing.",
-              "deprecationReason": null
-            },
-            {
-              "name": "createForwarder",
-              "description": "Creates a new Forwarder",
-              "deprecationReason": null
-            },
-            {
-              "name": "createForwarders",
-              "description": "Creates multiple new Forwarders",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateForwarder",
-              "description": "Updates an existing Forwarder",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateForwarders",
-              "description": "Updates multiple existing Forwarders (referenced by their ids)",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateAllForwarders",
-              "description": "Updates Forwarders that match a specified filter",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteForwarder",
-              "description": "Deletes a Forwarder by id or name.\n\nYou should pass a non-null value to exactly one of the arguments.",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteForwarders",
-              "description": "Deletes multiple Forwarders by their ids.\n\nIDs that are not found are silently ignored.",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteAllForwarders",
-              "description": "Deletes Forwarders that match a specified filter",
-              "deprecationReason": null
-            },
-            {
-              "name": "createOnlyRelations",
-              "description": "Creates a new OnlyRelations",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateOnlyRelations",
-              "description": "Updates an existing OnlyRelations",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteOnlyRelations",
-              "description": "Deletes a OnlyRelations by id",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteAllOnlyRelations",
-              "description": "Deletes OnlyRelations that match a specified filter",
-              "deprecationReason": null
-            },
-            {
-              "name": "createHandlingUnit",
-              "description": "Creates a new HandlingUnit",
-              "deprecationReason": null
-            },
-            {
-              "name": "createHandlingUnits",
-              "description": "Creates multiple new HandlingUnits",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateHandlingUnit",
-              "description": "Updates an existing HandlingUnit",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateHandlingUnits",
-              "description": "Updates multiple existing HandlingUnits (referenced by their ids)",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateAllHandlingUnits",
-              "description": "Updates HandlingUnits that match a specified filter",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteHandlingUnit",
-              "description": "Deletes a HandlingUnit by id or id.\n\nYou should pass a non-null value to exactly one of the arguments.",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteHandlingUnits",
-              "description": "Deletes multiple HandlingUnits by their ids.\n\nIDs that are not found are silently ignored.",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteAllHandlingUnits",
-              "description": "Deletes HandlingUnits that match a specified filter",
-              "deprecationReason": null
-            },
-            {
-              "name": "createNumberRange",
-              "description": "Creates a new NumberRange",
-              "deprecationReason": null
-            },
-            {
-              "name": "createNumberRanges",
-              "description": "Creates multiple new NumberRanges",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateNumberRange",
-              "description": "Updates an existing NumberRange",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateNumberRanges",
-              "description": "Updates multiple existing NumberRanges (referenced by their ids)",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateAllNumberRanges",
-              "description": "Updates NumberRanges that match a specified filter",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteNumberRange",
-              "description": "Deletes a NumberRange by id or name.\n\nYou should pass a non-null value to exactly one of the arguments.",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteNumberRanges",
-              "description": "Deletes multiple NumberRanges by their ids.\n\nIDs that are not found are silently ignored.",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteAllNumberRanges",
-              "description": "Deletes NumberRanges that match a specified filter",
-              "deprecationReason": null
-            },
-            {
-              "name": "createSecretKey",
-              "description": "Creates a new SecretKey",
-              "deprecationReason": null
-            },
-            {
-              "name": "createSecretKeys",
-              "description": "Creates multiple new SecretKeys",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateSecretKey",
-              "description": "Updates an existing SecretKey",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateSecretKeys",
-              "description": "Updates multiple existing SecretKeys (referenced by their ids)",
-              "deprecationReason": null
-            },
-            {
-              "name": "updateAllSecretKeys",
-              "description": "Updates SecretKeys that match a specified filter",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteSecretKey",
-              "description": "Deletes a SecretKey by id or key.\n\nYou should pass a non-null value to exactly one of the arguments.",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteSecretKeys",
-              "description": "Deletes multiple SecretKeys by their ids.\n\nIDs that are not found are silently ignored.",
-              "deprecationReason": null
-            },
-            {
-              "name": "deleteAllSecretKeys",
-              "description": "Deletes SecretKeys that match a specified filter",
-              "deprecationReason": null
-            }
-          ],
-          "inputFields": null
-        },
-        {
           "name": "CreateBillingEntityInput",
           "description": "The create type for the root entity type `BillingEntity`.\n\nThe fields `id`, `createdAt`, and `updatedAt` are set automatically.",
           "fields": null,
@@ -9448,6 +8979,475 @@
           "name": "__DirectiveLocation",
           "description": "A Directive can be adjacent to many parts of the GraphQL language, a __DirectiveLocation describes one such possible adjacencies.",
           "fields": null,
+          "inputFields": null
+        },
+        {
+          "name": "Query",
+          "description": "The Query type for the root namespace",
+          "fields": [
+            {
+              "name": "BillingEntity",
+              "description": "Finds a BillingEntity by id",
+              "deprecationReason": null
+            },
+            {
+              "name": "allBillingEntities",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
+              "name": "_allBillingEntitiesMeta",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
+              "name": "Country",
+              "description": "Finds a Country by id or isoCode.\n\nYou should pass a non-null value to exactly one of the arguments.",
+              "deprecationReason": null
+            },
+            {
+              "name": "allCountries",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
+              "name": "_allCountriesMeta",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
+              "name": "flexSearchCountries",
+              "description": "Queries for Countries using FlexSearch.",
+              "deprecationReason": null
+            },
+            {
+              "name": "_flexSearchCountriesMeta",
+              "description": "Queries for Countries using FlexSearch.",
+              "deprecationReason": null
+            },
+            {
+              "name": "Delivery",
+              "description": "Finds a Delivery by id or deliveryNumber.\n\nYou should pass a non-null value to exactly one of the arguments.\n\nA delivery",
+              "deprecationReason": null
+            },
+            {
+              "name": "allDeliveries",
+              "description": "A delivery",
+              "deprecationReason": null
+            },
+            {
+              "name": "_allDeliveriesMeta",
+              "description": "A delivery",
+              "deprecationReason": null
+            },
+            {
+              "name": "flexSearchDeliveries",
+              "description": "Queries for Deliveries using FlexSearch.",
+              "deprecationReason": null
+            },
+            {
+              "name": "_flexSearchDeliveriesMeta",
+              "description": "Queries for Deliveries using FlexSearch.",
+              "deprecationReason": null
+            },
+            {
+              "name": "Forwarder",
+              "description": "Finds a Forwarder by id or name.\n\nYou should pass a non-null value to exactly one of the arguments.",
+              "deprecationReason": null
+            },
+            {
+              "name": "allForwarders",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
+              "name": "_allForwardersMeta",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
+              "name": "OnlyRelations",
+              "description": "Finds a OnlyRelations by id",
+              "deprecationReason": null
+            },
+            {
+              "name": "allOnlyRelations",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
+              "name": "_allOnlyRelationsMeta",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
+              "name": "HandlingUnit",
+              "description": "Finds a HandlingUnit by id or id.\n\nYou should pass a non-null value to exactly one of the arguments.",
+              "deprecationReason": null
+            },
+            {
+              "name": "allHandlingUnits",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
+              "name": "_allHandlingUnitsMeta",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
+              "name": "flexSearchHandlingUnits",
+              "description": "Queries for HandlingUnits using FlexSearch.",
+              "deprecationReason": null
+            },
+            {
+              "name": "_flexSearchHandlingUnitsMeta",
+              "description": "Queries for HandlingUnits using FlexSearch.",
+              "deprecationReason": null
+            },
+            {
+              "name": "NumberRange",
+              "description": "Finds a NumberRange by id or name.\n\nYou should pass a non-null value to exactly one of the arguments.",
+              "deprecationReason": null
+            },
+            {
+              "name": "allNumberRanges",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
+              "name": "_allNumberRangesMeta",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
+              "name": "SecretKey",
+              "description": "Finds a SecretKey by id or key.\n\nYou should pass a non-null value to exactly one of the arguments.",
+              "deprecationReason": null
+            },
+            {
+              "name": "allSecretKeys",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
+              "name": "_allSecretKeysMeta",
+              "description": null,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null
+        },
+        {
+          "name": "Mutation",
+          "description": "The Mutation type for the root namespace\n\nFields are executed serially in the order they occur in the selection set (the result of the first field does not see the changes made by the second field). All mutations are executed atomically - if any of them fail, the complete operation is rolled back.",
+          "fields": [
+            {
+              "name": "createBillingEntity",
+              "description": "Creates a new BillingEntity",
+              "deprecationReason": null
+            },
+            {
+              "name": "createBillingEntities",
+              "description": "Creates multiple new BillingEntities",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateBillingEntity",
+              "description": "Updates an existing BillingEntity",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateBillingEntities",
+              "description": "Updates multiple existing BillingEntities (referenced by their ids)",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateAllBillingEntities",
+              "description": "Updates BillingEntities that match a specified filter",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteBillingEntity",
+              "description": "Deletes a BillingEntity by id",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteBillingEntities",
+              "description": "Deletes multiple BillingEntities by their ids.\n\nIDs that are not found are silently ignored.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteAllBillingEntities",
+              "description": "Deletes BillingEntities that match a specified filter",
+              "deprecationReason": null
+            },
+            {
+              "name": "createCountry",
+              "description": "Creates a new Country",
+              "deprecationReason": null
+            },
+            {
+              "name": "createCountries",
+              "description": "Creates multiple new Countries",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateCountry",
+              "description": "Updates an existing Country",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateCountries",
+              "description": "Updates multiple existing Countries (referenced by their ids)",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateAllCountries",
+              "description": "Updates Countries that match a specified filter",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteCountry",
+              "description": "Deletes a Country by id or isoCode.\n\nYou should pass a non-null value to exactly one of the arguments.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteCountries",
+              "description": "Deletes multiple Countries by their ids.\n\nIDs that are not found are silently ignored.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteAllCountries",
+              "description": "Deletes Countries that match a specified filter",
+              "deprecationReason": null
+            },
+            {
+              "name": "createDelivery",
+              "description": "Creates a new Delivery",
+              "deprecationReason": null
+            },
+            {
+              "name": "createDeliveries",
+              "description": "Creates multiple new Deliveries",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateDelivery",
+              "description": "Updates an existing Delivery",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateDeliveries",
+              "description": "Updates multiple existing Deliveries (referenced by their ids)",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateAllDeliveries",
+              "description": "Updates Deliveries that match a specified filter",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteDelivery",
+              "description": "Deletes a Delivery by id or deliveryNumber.\n\nYou should pass a non-null value to exactly one of the arguments.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteDeliveries",
+              "description": "Deletes multiple Deliveries by their ids.\n\nIDs that are not found are silently ignored.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteAllDeliveries",
+              "description": "Deletes Deliveries that match a specified filter",
+              "deprecationReason": null
+            },
+            {
+              "name": "confirmBillingForDelivery",
+              "description": "Confirms a Delivery to be exported to billing.",
+              "deprecationReason": null
+            },
+            {
+              "name": "createForwarder",
+              "description": "Creates a new Forwarder",
+              "deprecationReason": null
+            },
+            {
+              "name": "createForwarders",
+              "description": "Creates multiple new Forwarders",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateForwarder",
+              "description": "Updates an existing Forwarder",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateForwarders",
+              "description": "Updates multiple existing Forwarders (referenced by their ids)",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateAllForwarders",
+              "description": "Updates Forwarders that match a specified filter",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteForwarder",
+              "description": "Deletes a Forwarder by id or name.\n\nYou should pass a non-null value to exactly one of the arguments.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteForwarders",
+              "description": "Deletes multiple Forwarders by their ids.\n\nIDs that are not found are silently ignored.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteAllForwarders",
+              "description": "Deletes Forwarders that match a specified filter",
+              "deprecationReason": null
+            },
+            {
+              "name": "createOnlyRelations",
+              "description": "Creates a new OnlyRelations",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateOnlyRelations",
+              "description": "Updates an existing OnlyRelations",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteOnlyRelations",
+              "description": "Deletes a OnlyRelations by id",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteAllOnlyRelations",
+              "description": "Deletes OnlyRelations that match a specified filter",
+              "deprecationReason": null
+            },
+            {
+              "name": "createHandlingUnit",
+              "description": "Creates a new HandlingUnit",
+              "deprecationReason": null
+            },
+            {
+              "name": "createHandlingUnits",
+              "description": "Creates multiple new HandlingUnits",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateHandlingUnit",
+              "description": "Updates an existing HandlingUnit",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateHandlingUnits",
+              "description": "Updates multiple existing HandlingUnits (referenced by their ids)",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateAllHandlingUnits",
+              "description": "Updates HandlingUnits that match a specified filter",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteHandlingUnit",
+              "description": "Deletes a HandlingUnit by id or id.\n\nYou should pass a non-null value to exactly one of the arguments.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteHandlingUnits",
+              "description": "Deletes multiple HandlingUnits by their ids.\n\nIDs that are not found are silently ignored.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteAllHandlingUnits",
+              "description": "Deletes HandlingUnits that match a specified filter",
+              "deprecationReason": null
+            },
+            {
+              "name": "createNumberRange",
+              "description": "Creates a new NumberRange",
+              "deprecationReason": null
+            },
+            {
+              "name": "createNumberRanges",
+              "description": "Creates multiple new NumberRanges",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateNumberRange",
+              "description": "Updates an existing NumberRange",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateNumberRanges",
+              "description": "Updates multiple existing NumberRanges (referenced by their ids)",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateAllNumberRanges",
+              "description": "Updates NumberRanges that match a specified filter",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteNumberRange",
+              "description": "Deletes a NumberRange by id or name.\n\nYou should pass a non-null value to exactly one of the arguments.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteNumberRanges",
+              "description": "Deletes multiple NumberRanges by their ids.\n\nIDs that are not found are silently ignored.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteAllNumberRanges",
+              "description": "Deletes NumberRanges that match a specified filter",
+              "deprecationReason": null
+            },
+            {
+              "name": "createSecretKey",
+              "description": "Creates a new SecretKey",
+              "deprecationReason": null
+            },
+            {
+              "name": "createSecretKeys",
+              "description": "Creates multiple new SecretKeys",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateSecretKey",
+              "description": "Updates an existing SecretKey",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateSecretKeys",
+              "description": "Updates multiple existing SecretKeys (referenced by their ids)",
+              "deprecationReason": null
+            },
+            {
+              "name": "updateAllSecretKeys",
+              "description": "Updates SecretKeys that match a specified filter",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteSecretKey",
+              "description": "Deletes a SecretKey by id or key.\n\nYou should pass a non-null value to exactly one of the arguments.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteSecretKeys",
+              "description": "Deletes multiple SecretKeys by their ids.\n\nIDs that are not found are silently ignored.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deleteAllSecretKeys",
+              "description": "Deletes SecretKeys that match a specified filter",
+              "deprecationReason": null
+            }
+          ],
           "inputFields": null
         }
       ]

@@ -1,49 +1,18 @@
 import { DocumentNode, getLocation, GraphQLError, GraphQLSchema, parse } from 'graphql';
 import { parse as JSONparse } from 'json-source-map';
 import { compact } from 'lodash';
-import {
-    Kind,
-    load,
-    YAMLAnchorReference,
-    YamlMap,
-    YAMLMapping,
-    YAMLNode,
-    YAMLScalar,
-    YAMLSequence,
-} from 'yaml-ast-parser';
+import { Kind, load, YAMLAnchorReference, YamlMap, YAMLMapping, YAMLNode, YAMLScalar, YAMLSequence } from 'yaml-ast-parser';
 import { globalContext } from '../config/global';
-import {
-    ParsedGraphQLProjectSource,
-    ParsedObjectProjectSource,
-    ParsedProject,
-    ParsedProjectSource,
-    ParsedProjectSourceBaseKind,
-} from '../config/parsed-project';
+import { ParsedGraphQLProjectSource, ParsedObjectProjectSource, ParsedProject, ParsedProjectSource, ParsedProjectSourceBaseKind } from '../config/parsed-project';
 import { DatabaseAdapter } from '../database/database-adapter';
-import {
-    createModel,
-    Model,
-    Severity,
-    SourcePosition,
-    ValidationContext,
-    ValidationMessage,
-    ValidationResult,
-} from '../model';
+import { createModel, Model, Severity, SourcePosition, ValidationContext, ValidationMessage, ValidationResult } from '../model';
 import { MessageLocation } from '../model/';
 import { Project, ProjectOptions } from '../project/project';
 import { ProjectSource, SourceType } from '../project/source';
 import { SchemaGenerator } from '../schema-generation';
 import { flatMap, PlainObject } from '../utils/utils';
-import {
-    validateParsedProjectSource,
-    validatePostMerge,
-    validateSource,
-} from './preparation/ast-validator';
-import {
-    executePreMergeTransformationPipeline,
-    executeSchemaTransformationPipeline,
-    SchemaTransformationContext,
-} from './preparation/transformation-pipeline';
+import { validateParsedProjectSource, validatePostMerge, validateSource } from './preparation/ast-validator';
+import { executePreMergeTransformationPipeline, SchemaTransformationContext } from './preparation/transformation-pipeline';
 import { getLineEndPosition } from './schema-utils';
 import jsonLint = require('json-lint');
 import stripJsonComments = require('strip-json-comments');
@@ -122,8 +91,7 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
         };
 
         const generator = new SchemaGenerator(schemaContext);
-        const graphQLSchema = generator.generate(model);
-        return executeSchemaTransformationPipeline(graphQLSchema, schemaContext, model);
+        return generator.generate(model);
     } finally {
         globalContext.unregisterContext();
     }
