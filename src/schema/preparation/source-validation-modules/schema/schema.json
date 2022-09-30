@@ -115,7 +115,7 @@
       "properties": {
         "roles": {
           "type": "array",
-          "minLength": 1,
+          "minItems": 1,
           "items": {
             "type": "string",
             "pattern": ".+"
@@ -139,7 +139,7 @@
         },
         "restrictToAccessGroups": {
           "type": "array",
-          "minLength": 1,
+          "minItems": 1,
           "items": {
             "type": "string",
             "pattern": ".+"
@@ -275,8 +275,8 @@
     },
     "FieldLocalization": {
       "type": "object",
-            "additionalProperties": false,
-            "properties": {
+      "additionalProperties": false,
+      "properties": {
         "label": {
           "type": "string"
         },
@@ -286,8 +286,8 @@
       }
     },
     "EnumValueLocalization": {
-            "type": "object",
-            "additionalProperties": false,
+      "type": "object",
+      "additionalProperties": false,
       "properties": {
         "label": {
           "type": "string"
