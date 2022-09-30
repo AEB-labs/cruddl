@@ -1,5 +1,5 @@
-import ajv from 'ajv';
+import { ValidateFunction } from 'ajv';
 
-declare const validate: ajv.ValidateFunction;
+declare const validate: ValidateFunction;
 
 export = validate;
