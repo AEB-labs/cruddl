@@ -174,12 +174,14 @@
       ]
     },
     "PermissionRestrictionWithValue": {
+      "type": "object",
       "required": ["value"],
       "properties": {
         "value": {}
       }
     },
     "PermissionRestrictionWithValueTemplate": {
+      "type": "object",
       "required": ["valueTemplate"],
       "properties": {
         "valueTemplate": {
@@ -188,6 +190,7 @@
       }
     },
     "PermissionRestrictionWithClaim": {
+      "type": "object",
       "required": ["claim"],
       "properties": {
         "claim": {
@@ -201,6 +204,7 @@
       "additionalProperties": false,
       "properties": {
         "types": {
+          "type": "object",
           "patternProperties": {
             "^[a-zA-Z0-9_]+$": {
               "$ref": "#/definitions/TypeLocalization"
@@ -208,6 +212,7 @@
           }
         },
         "fields": {
+          "type": "object",
           "patternProperties": {
             "^[a-zA-Z0-9_]+$": {
               "anyOf": [
@@ -228,6 +233,7 @@
       "additionalProperties": false,
       "properties": {
         "fields": {
+          "type": "object",
           "patternProperties": {
             "^[a-zA-Z0-9_]+$": {
               "anyOf": [
@@ -242,6 +248,7 @@
           }
         },
         "values": {
+          "type": "object",
           "patternProperties": {
             "^[a-zA-Z0-9_]+$": {
               "anyOf": [
