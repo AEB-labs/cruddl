@@ -59,8 +59,7 @@ const project = new Project({
         },
     ],
     getExecutionOptions: ({ context }) => ({ authContext: { authRoles: ['users'] } }),
-    //@ts-ignore
-    getOperationIdentifier: ({ context }) => context as object, // each operation is executed with an unique context object
+    getOperationIdentifier: ({ context }) => context as object, // each operation is executed with a unique context object
 });
 
 try {
@@ -71,7 +70,7 @@ try {
         context: ({ req }) => req, // pass request as context so we have a unique context object for each operation
     });
     server.listen(4000, () => console.log('Server is running on http://localhost:4000/'));
-} catch (error) {
+} catch (error: any) {
     console.log("Did you create the 'test' database?");
     console.log(error.stack);
 }
