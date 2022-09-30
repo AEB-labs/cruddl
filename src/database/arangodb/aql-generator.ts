@@ -73,7 +73,14 @@ import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize } from '../../utils/utils';
 import { FlexSearchTokenizable } from '../database-adapter';
 import { analyzeLikePatternPrefix } from '../like-helpers';
-import { aql, AQLCompoundQuery, AQLFragment, AQLQueryResultVariable, AQLVariable } from './aql';
+import {
+    aql,
+    AQLCollection,
+    AQLCompoundQuery,
+    AQLFragment,
+    AQLQueryResultVariable,
+    AQLVariable,
+} from './aql';
 import {
     billingCollectionName,
     getCollectionNameForRelation,
@@ -82,14 +89,28 @@ import {
 import { getFlexSearchViewNameForRootEntity } from './schema-migration/arango-search-helpers';
 
 enum AccessType {
-    READ,
-    WRITE,
+    /**
+     * A collection that is used in a read-only operation and is explicitly specified in the AQL
+     */
+    EXPLICIT_READ = 'EXPLICIT_READ',
+
+    /**
+     * A collection that is used in a read-only operation but is not explicitly mentioned in the AQL
+     * (e.g. the target document collection of an edge traversal)
+     */
+    IMPLICIT_READ = 'IMPLICIT_READ',
+
+    /**
+     * A collection that is used in a write operation and is explicitly specified in the AQL
+     */
+    WRITE = 'WRITE',
 }
 
 class QueryContext {
     private variableMap = new Map<VariableQueryNode, AQLFragment>();
     private preExecQueries: AQLCompoundQuery[] = [];
-    private readAccessedCollections = new Set<string>();
+    private explicitlyReadAccessedCollections = new Set<string>();
+    private implicitlyReadAccessedCollections = new Set<string>();
     private writeAccessedCollections = new Set<string>();
     private extensions: Map<unknown, unknown> | undefined;
 
@@ -104,8 +125,9 @@ class QueryContext {
                 newContext.variableMap.set(varNode, aqlVar);
             }
         });
-        newContext.readAccessedCollections = this.readAccessedCollections;
+        newContext.explicitlyReadAccessedCollections = this.explicitlyReadAccessedCollections;
         newContext.writeAccessedCollections = this.writeAccessedCollections;
+        newContext.implicitlyReadAccessedCollections = this.implicitlyReadAccessedCollections;
         return newContext;
     }
 
@@ -122,8 +144,9 @@ class QueryContext {
         newContext.variableMap = new Map(this.variableMap);
         newContext.variableMap.set(variableNode, aqlVariable);
         newContext.preExecQueries = this.preExecQueries;
-        newContext.readAccessedCollections = this.readAccessedCollections;
+        newContext.explicitlyReadAccessedCollections = this.explicitlyReadAccessedCollections;
         newContext.writeAccessedCollections = this.writeAccessedCollections;
+        newContext.implicitlyReadAccessedCollections = this.implicitlyReadAccessedCollections;
         return newContext;
     }
 
@@ -199,8 +222,11 @@ class QueryContext {
      */
     addCollectionAccess(collection: string, accessType: AccessType): void {
         switch (accessType) {
-            case AccessType.READ:
-                this.readAccessedCollections.add(collection);
+            case AccessType.EXPLICIT_READ:
+                this.explicitlyReadAccessedCollections.add(collection);
+                break;
+            case AccessType.IMPLICIT_READ:
+                this.implicitlyReadAccessedCollections.add(collection);
                 break;
             case AccessType.WRITE:
                 this.writeAccessedCollections.add(collection);
@@ -211,8 +237,9 @@ class QueryContext {
     withExtension(key: unknown, value: unknown): QueryContext {
         const newContext = new QueryContext();
         newContext.variableMap = this.variableMap;
-        newContext.readAccessedCollections = this.readAccessedCollections;
+        newContext.explicitlyReadAccessedCollections = this.explicitlyReadAccessedCollections;
         newContext.writeAccessedCollections = this.writeAccessedCollections;
+        newContext.implicitlyReadAccessedCollections = this.implicitlyReadAccessedCollections;
         newContext.extensions = new Map([
             ...(this.extensions ? this.extensions.entries() : []),
             [key, value],
@@ -242,12 +269,34 @@ class QueryContext {
         return this.preExecQueries;
     }
 
-    getReadAccessedCollections(): string[] {
-        return Array.from(this.readAccessedCollections);
+    /**
+     * Gets the names of all collections that are read by this query, be it explicit or implicit
+     */
+    getReadAccessedCollections(): ReadonlyArray<string> {
+        const set = new Set([
+            ...this.explicitlyReadAccessedCollections,
+            ...this.implicitlyReadAccessedCollections,
+        ]);
+        return Array.from(set);
     }
 
-    getWriteAccessedCollections(): string[] {
+    getWriteAccessedCollections(): ReadonlyArray<string> {
         return Array.from(this.writeAccessedCollections);
+    }
+
+    /**
+     * Gets the names of all collections that are read by this query, but are not explicitly
+     * referenced within it (to be used with the WITH statement)
+     */
+    getImplicitlyReadAccessedCollections(): ReadonlyArray<string> {
+        const set = new Set(this.implicitlyReadAccessedCollections);
+        for (const collection of this.explicitlyReadAccessedCollections) {
+            set.delete(collection);
+        }
+        for (const collection of this.writeAccessedCollections) {
+            set.delete(collection);
+        }
+        return Array.from(set);
     }
 }
 
@@ -271,7 +320,21 @@ function createAQLCompoundQuery(
         );
     }
 
-    const aqlQuery = aql.lines(...variableAssignments, aql`RETURN ${processNode(node, context)}`);
+    const statements = [...variableAssignments, aql`RETURN ${processNode(node, context)}`];
+
+    // do this after processNode is called so the context is populated
+    const implicitlyReadAccessedCollections = context.getImplicitlyReadAccessedCollections();
+    let withStatements: AQLFragment[];
+    if (implicitlyReadAccessedCollections.length) {
+        const collectionFragments = implicitlyReadAccessedCollections.map(
+            (collectionName) => new AQLCollection(collectionName),
+        );
+        withStatements = [aql`WITH ${aql.join(collectionFragments, aql`, `)}`];
+    } else {
+        withStatements = [];
+    }
+
+    const aqlQuery = aql.lines(...[...withStatements, ...statements]);
     const preExecQueries = context.getPreExecuteQueries();
     const readAccessedCollections = context.getReadAccessedCollections();
     const writeAccessedCollections = context.getWriteAccessedCollections();
@@ -406,7 +469,7 @@ register(WithPreExecutionQueryNode, (node, context) => {
 });
 
 register(EntityFromIdQueryNode, (node, context) => {
-    const collection = getCollectionForType(node.rootEntityType, AccessType.READ, context);
+    const collection = getCollectionForType(node.rootEntityType, AccessType.EXPLICIT_READ, context);
     return aql`DOCUMENT(${collection}, ${processNode(node.idNode, context)})`;
 });
 
@@ -460,7 +523,7 @@ register(FlexSearchQueryNode, (node, context) => {
         .introduceVariable(node.itemVariable)
         .withExtension(inFlexSearchFilterSymbol, true);
     const viewName = getFlexSearchViewNameForRootEntity(node.rootEntityType!);
-    context.addCollectionAccess(viewName, AccessType.READ);
+    context.addCollectionAccess(viewName, AccessType.EXPLICIT_READ);
     return aqlExt.parenthesizeList(
         aql`FOR ${itemContext.getVariable(node.itemVariable)}`,
         aql`IN ${aql.collection(viewName)}`,
@@ -1226,7 +1289,7 @@ function getQuantifierFilterUsingArrayComparisonOperator(
 }
 
 register(EntitiesQueryNode, (node, context) => {
-    return getCollectionForType(node.rootEntityType, AccessType.READ, context);
+    return getCollectionForType(node.rootEntityType, AccessType.EXPLICIT_READ, context);
 });
 
 register(FollowEdgeQueryNode, (node, context) => {
@@ -1439,7 +1502,7 @@ function getRelationTraversalFragment({
             segment.maxDepth
         } ${dir} ${currentObjectFrag} ${getCollectionForRelation(
             segment.relationSide.relation,
-            AccessType.READ,
+            AccessType.EXPLICIT_READ,
             context,
         )}${pruneFrag}${filterFrag}`;
         if (segment.isListSegment || (alwaysProduceList && segmentIndex === segments.length - 1)) {
@@ -1457,6 +1520,11 @@ function getRelationTraversalFragment({
             );
             currentObjectFrag = nullableVar;
         }
+
+        context.addCollectionAccess(
+            getCollectionNameForRootEntity(segment.relationSide.targetType),
+            AccessType.IMPLICIT_READ,
+        );
 
         segmentIndex++;
     }
@@ -1642,7 +1710,11 @@ register(RemoveEdgesQueryNode, (node, context) => {
                   context,
               )}`
             : aql``,
-        aql`FOR ${edgeVar} IN ${getCollectionForRelation(node.relation, AccessType.READ, context)}`,
+        aql`FOR ${edgeVar} IN ${getCollectionForRelation(
+            node.relation,
+            AccessType.EXPLICIT_READ,
+            context,
+        )}`,
         edgeFilter,
         aql`REMOVE ${edgeVar} IN ${getCollectionForRelation(
             node.relation,
@@ -1850,9 +1922,13 @@ function getSimpleFollowEdgeFragment(
     context: QueryContext,
 ): AQLFragment {
     const dir = node.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
+    context.addCollectionAccess(
+        getCollectionNameForRootEntity(node.relationSide.targetType),
+        AccessType.IMPLICIT_READ,
+    );
     return aql`${dir} ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(
         node.relationSide.relation,
-        AccessType.READ,
+        AccessType.EXPLICIT_READ,
         context,
     )}`;
 }
@@ -1861,11 +1937,15 @@ function isStringCaseInsensitive(str: string) {
     return str.toLowerCase() === str.toUpperCase();
 }
 
-export function generateTokenizationQuery(tokensFiltered: ReadonlyArray<FlexSearchTokenizable>): AQLFragment {
+export function generateTokenizationQuery(
+    tokensFiltered: ReadonlyArray<FlexSearchTokenizable>,
+): AQLFragment {
     const fragments: AQLFragment[] = [];
     for (let i = 0; i < tokensFiltered.length; i++) {
         const value = tokensFiltered[i];
-        fragments.push(aql`${aql.identifier('token_' + i)}: TOKENS(${value.expression}, ${value.analyzer})`);
+        fragments.push(
+            aql`${aql.identifier('token_' + i)}: TOKENS(${value.expression}, ${value.analyzer})`,
+        );
     }
     return aql`RETURN { ${aql.join(fragments, aql`',\n`)} }`;
 }
