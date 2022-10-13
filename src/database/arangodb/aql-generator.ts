@@ -285,18 +285,14 @@ class QueryContext {
     }
 
     /**
-     * Gets the names of all collections that are read by this query, but are not explicitly
-     * referenced within it (to be used with the WITH statement)
+     * Gets the names of all collections that are read by this query, but are not necessarily
+     * referenced explicitly within it (to be used with the WITH statement)
      */
     getImplicitlyReadAccessedCollections(): ReadonlyArray<string> {
-        const set = new Set(this.implicitlyReadAccessedCollections);
-        for (const collection of this.explicitlyReadAccessedCollections) {
-            set.delete(collection);
-        }
-        for (const collection of this.writeAccessedCollections) {
-            set.delete(collection);
-        }
-        return Array.from(set);
+        return Array.from(this.implicitlyReadAccessedCollections);
+        // note: we could remove the explicitly accessed collections here, but this is currently a
+        // bit hard because the collection sets are shared across the whole transaction and not
+        // scoped to a single query
     }
 }
 
