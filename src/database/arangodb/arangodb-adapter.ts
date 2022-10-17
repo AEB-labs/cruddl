@@ -652,8 +652,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         try {
             transactionResult = await this.db.executeTransaction(
                 {
-                    read: aqlQuery.readAccessedCollections,
-                    write: aqlQuery.writeAccessedCollections,
+                    read: aqlQuery.readAccessedCollections.slice(),
+                    write: aqlQuery.writeAccessedCollections.slice(),
                 },
                 this.arangoExecutionFunction,
                 {

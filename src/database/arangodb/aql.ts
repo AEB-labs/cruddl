@@ -428,8 +428,8 @@ export class AQLCompoundQuery extends AQLFragment {
         public readonly aqlQuery: AQLFragment,
         public readonly resultVar: AQLQueryResultVariable | undefined,
         public readonly resultValidator: QueryResultValidator | undefined,
-        public readonly readAccessedCollections: string[],
-        public readonly writeAccessedCollections: string[],
+        public readonly readAccessedCollections: ReadonlyArray<string>,
+        public readonly writeAccessedCollections: ReadonlyArray<string>,
     ) {
         super();
     }
