@@ -19,7 +19,10 @@
         "path": [
           "Delivery",
           "totalValue"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Forwarder objects (in Delivery.forwarder)",
@@ -32,7 +35,10 @@
         "path": [
           "Delivery",
           "forwarder"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Delivery.totalValue",
@@ -46,7 +52,10 @@
           "allDeliveries",
           0,
           "totalValue"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Delivery.totalValue",
@@ -60,7 +69,10 @@
           "HandlingUnit",
           "delivery",
           "totalValue"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Country.totalInvestment",
@@ -73,7 +85,10 @@
         "path": [
           "Country",
           "totalInvestment"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {
@@ -113,7 +128,10 @@
         "path": [
           "_allForwardersMeta",
           "count"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Forwarder objects",
@@ -125,7 +143,10 @@
         ],
         "path": [
           "allForwarders"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {
@@ -147,7 +168,10 @@
         ],
         "path": [
           "direct"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read SecretKey.key",
@@ -159,7 +183,10 @@
         ],
         "path": [
           "simple"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Delivery.totalValue",
@@ -171,7 +198,10 @@
         ],
         "path": [
           "startsWith"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Delivery.totalValue",
@@ -183,7 +213,10 @@
         ],
         "path": [
           "throughRelation"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Forwarder objects (in Delivery.forwarder)",
@@ -195,7 +228,10 @@
         ],
         "path": [
           "toUnaccessibleEntity"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {
@@ -218,7 +254,10 @@
         ],
         "path": [
           "direct"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Delivery.totalValue",
@@ -230,7 +269,10 @@
         ],
         "path": [
           "throughRelation"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {
@@ -250,7 +292,10 @@
         ],
         "path": [
           "createDelivery"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": null
@@ -267,7 +312,10 @@
         ],
         "path": [
           "updateDelivery"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to update Forwarder objects, Not authorized to read Forwarder objects",
@@ -279,7 +327,10 @@
         ],
         "path": [
           "updateForwarder"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Skipped because other mutations reported errors",
@@ -291,7 +342,10 @@
         ],
         "path": [
           "update2"
-        ]
+        ],
+        "extensions": {
+          "code": "ATOMICITY_SKIP"
+        }
       }
     ],
     "data": {
@@ -312,7 +366,10 @@
         ],
         "path": [
           "deleteForwarder"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {

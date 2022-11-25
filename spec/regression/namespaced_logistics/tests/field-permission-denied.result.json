@@ -25,7 +25,10 @@
           "delivery",
           "Delivery",
           "totalValue"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Forwarder objects (in Delivery.forwarder)",
@@ -40,7 +43,10 @@
           "delivery",
           "Delivery",
           "forwarder"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Delivery.totalValue",
@@ -56,7 +62,10 @@
           "allDeliveries",
           0,
           "totalValue"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Delivery.totalValue",
@@ -72,7 +81,10 @@
           "HandlingUnit",
           "delivery",
           "totalValue"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Country.totalInvestment",
@@ -86,7 +98,10 @@
           "foundation",
           "Country",
           "totalInvestment"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {
@@ -132,7 +147,10 @@
         "path": [
           "logistics",
           "allForwarders"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Forwarder objects",
@@ -146,7 +164,10 @@
           "logistics",
           "_allForwardersMeta",
           "count"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {
@@ -172,7 +193,10 @@
           "logistics",
           "delivery",
           "direct"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Delivery.totalValue",
@@ -186,7 +210,10 @@
           "logistics",
           "delivery",
           "startsWith"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Delivery.totalValue",
@@ -200,7 +227,10 @@
           "logistics",
           "delivery",
           "throughRelation"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Forwarder objects (in Delivery.forwarder)",
@@ -214,7 +244,10 @@
           "logistics",
           "delivery",
           "toUnaccessibleEntity"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read SecretKey.key",
@@ -227,7 +260,10 @@
         "path": [
           "simple",
           "SecretKey"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {
@@ -258,7 +294,10 @@
           "logistics",
           "delivery",
           "direct"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to read Delivery.totalValue",
@@ -272,7 +311,10 @@
           "logistics",
           "delivery",
           "throughRelation"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {
@@ -298,7 +340,10 @@
           "logistics",
           "delivery",
           "createDelivery"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Not authorized to create Forwarder objects, Not authorized to read Forwarder objects",
@@ -311,7 +356,10 @@
         "path": [
           "logistics",
           "createForwarder"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {
@@ -332,7 +380,10 @@
           "logistics",
           "delivery",
           "updateDelivery"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       },
       {
         "message": "Skipped because other mutations reported errors",
@@ -346,7 +397,10 @@
           "logistics",
           "delivery",
           "update2"
-        ]
+        ],
+        "extensions": {
+          "code": "ATOMICITY_SKIP"
+        }
       },
       {
         "message": "Not authorized to update Forwarder objects, Not authorized to read Forwarder objects",
@@ -359,7 +413,10 @@
         "path": [
           "logistics",
           "updateForwarder"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {
@@ -385,7 +442,10 @@
         "path": [
           "logistics",
           "deleteForwarder"
-        ]
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {

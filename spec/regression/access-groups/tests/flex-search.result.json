@@ -9,7 +9,12 @@
             "column": 5
           }
         ],
-        "path": ["flexSearchFiles"]
+        "path": [
+          "flexSearchFiles"
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {
