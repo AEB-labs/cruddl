@@ -72,10 +72,23 @@ export function extractRuntimeError(value: RuntimeErrorValue): RuntimeError {
 export class RuntimeError extends Error {
     readonly code: string | undefined;
 
+    /**
+     * Extensions to be used when formatting this as a graphql error
+     */
+    readonly extensions: Record<string, unknown> | undefined;
+
     constructor(message: string, args: { readonly code?: string } = {}) {
         super(message);
         this.name = this.constructor.name;
         this.code = args.code;
+
+        if (args.code) {
+            // this is used by the GraphQLError constructor to populate the extensions
+            // (otherwise, the code would not be reported to the client)
+            this.extensions = {
+                code: args.code,
+            };
+        }
     }
 }
 

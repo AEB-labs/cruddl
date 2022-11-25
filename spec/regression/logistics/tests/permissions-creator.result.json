@@ -16,7 +16,12 @@
             "column": 5
           }
         ],
-        "path": ["updateDelivery"]
+        "path": [
+          "updateDelivery"
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {
@@ -33,7 +38,12 @@
             "column": 5
           }
         ],
-        "path": ["deleteDelivery"]
+        "path": [
+          "deleteDelivery"
+        ],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
       }
     ],
     "data": {

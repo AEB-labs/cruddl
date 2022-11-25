@@ -220,7 +220,10 @@
         ],
         "path": [
           "flexSearchDeliveries"
-        ]
+        ],
+        "extensions": {
+          "code": "FLEX_SEARCH_TOO_MANY_OBJECTS"
+        }
       }
     ],
     "data": {
@@ -239,7 +242,10 @@
         ],
         "path": [
           "flexSearchDeliveries"
-        ]
+        ],
+        "extensions": {
+          "code": "FLEX_SEARCH_TOO_MANY_OBJECTS"
+        }
       }
     ],
     "data": {
@@ -258,7 +264,10 @@
         ],
         "path": [
           "_flexSearchDeliveriesMeta"
-        ]
+        ],
+        "extensions": {
+          "code": "FLEX_SEARCH_TOO_MANY_OBJECTS"
+        }
       }
     ],
     "data": null
@@ -275,7 +284,10 @@
         ],
         "path": [
           "flexSearchDeliveries"
-        ]
+        ],
+        "extensions": {
+          "code": "FLEX_SEARCH_TOO_MANY_OBJECTS"
+        }
       }
     ],
     "data": {
