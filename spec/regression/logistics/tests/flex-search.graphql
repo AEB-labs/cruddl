@@ -42,6 +42,12 @@ query equals_null {
 }
 
 query expression {
+    flexSearchDeliveries(flexSearchExpression: "10005") {
+        deliveryNumber
+    }
+}
+
+query expressionFulltext {
     flexSearchDeliveries(flexSearchExpression: "all") {
         deliveryNumber
     }
