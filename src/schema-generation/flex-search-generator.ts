@@ -1,5 +1,6 @@
 import { GraphQLFieldConfigArgumentMap, GraphQLString } from 'graphql';
 import { Field, RootEntityType } from '../model/implementation';
+import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../model/implementation/flex-search';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -271,6 +272,7 @@ export class FlexSearchGenerator {
             const identityNode = new FlexSearchStartsWithQueryNode(
                 new FieldPathQueryNode(itemVariable, path.concat(field)),
                 new LiteralQueryNode(expression),
+                field.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER
             );
             const fullTextQueryNode = new FlexSearchComplexOperatorQueryNode(
                 expression,
