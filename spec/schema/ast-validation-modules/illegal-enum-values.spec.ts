@@ -17,18 +17,6 @@ describe('enum declaration validation', () => {
         `);
     });
 
-    it('rejects true as enum value name', () => {
-        assertValidatorRejects(
-            gql`
-                enum Color {
-                    OK
-                    true
-                }
-            `,
-            'Enums cannot define value "true".',
-        );
-    });
-
     it('warns about lowercase enum values', () => {
         assertValidatorWarns(
             gql`

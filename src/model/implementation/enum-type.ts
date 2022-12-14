@@ -50,8 +50,9 @@ export class EnumValue implements ModelComponent {
 
     validate(context: ValidationContext) {
         if (this.value === 'true' || this.value === 'false' || this.value === 'null') {
-            // this is a graphql restriction, but there is no validator for this
-            // see https://github.com/graphql/graphql-js/issues/3221
+            // this is a graphql restriction, but the validator has only been introduced in
+            // graphql-js version 16. Can be removed once we drop support for graphql 15.
+            // see https://github.com/graphql/graphql-js/pull/3223
             context.addMessage(
                 ValidationMessage.error(`Enums cannot define value "${this.value}".`, this.astNode),
             );
