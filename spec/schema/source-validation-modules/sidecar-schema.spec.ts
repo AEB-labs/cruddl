@@ -76,10 +76,10 @@ describe('sidecar-schema validator', () => {
     it('reports errors in json files', () => {
         const messages = getValidatorMessages(new ProjectSource('test.json', invalidValue));
         expect(messages.length).to.equal(4);
-        expect(messages[0].message).to.equal('should be equal to one of the allowed values');
-        expect(messages[1].message).to.equal('should be array');
-        expect(messages[2].message).to.equal('should match exactly one schema in oneOf');
-        expect(messages[3].message).to.equal('should be array');
+        expect(messages[0].message).to.equal('must be equal to one of the allowed values');
+        expect(messages[1].message).to.equal('must be array');
+        expect(messages[2].message).to.equal('must match exactly one schema in oneOf');
+        expect(messages[3].message).to.equal('must be array');
         expect(JSON.parse(JSON.stringify(messages[3].location))).to.deep.equal({
             _end: 364,
             _start: 352,
@@ -97,7 +97,7 @@ describe('sidecar-schema validator', () => {
             new ProjectSource('file.json', JSON.stringify({ unsupportedRootField: {} })),
         );
         expect(messages.length).to.equal(1);
-        expect(messages[0].message).to.equal('should NOT have additional properties');
+        expect(messages[0].message).to.equal('must NOT have additional properties');
         expect(messages[0].severity).to.equal(Severity.Warning);
     });
 
@@ -106,10 +106,10 @@ describe('sidecar-schema validator', () => {
             new ProjectSource('test.json', invalidValueWithComments),
         );
         expect(messages.length).to.equal(4);
-        expect(messages[0].message).to.equal('should be equal to one of the allowed values');
-        expect(messages[1].message).to.equal('should be array');
-        expect(messages[2].message).to.equal('should match exactly one schema in oneOf');
-        expect(messages[3].message).to.equal('should be array');
+        expect(messages[0].message).to.equal('must be equal to one of the allowed values');
+        expect(messages[1].message).to.equal('must be array');
+        expect(messages[2].message).to.equal('must match exactly one schema in oneOf');
+        expect(messages[3].message).to.equal('must be array');
         expect(JSON.parse(JSON.stringify(messages[3].location))).to.deep.equal({
             _end: 419,
             _start: 407,
