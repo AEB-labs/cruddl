@@ -9,7 +9,7 @@
     "build": "rimraf dist && tsc --skipLibCheck && cpy --flat src/schema/preparation/source-validation-modules/schema dist/src/schema/preparation/source-validation-modules/schema && dependency-check ./package.json --no-dev --ignore-module @arangodb --ignore-module internal",
     "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit --skipLibCheck",
-    "test": "rimraf dist && tsc --noEmit --skipLibCheck && mocha ./spec/**/*.spec.ts",
+    "test": "rimraf dist && tsc --noEmit --skipLibCheck && mocha './spec/**/*.spec.ts'",
     "test:dropdb": "ts-node ./spec/regression/drop-test-db.ts",
     "test:perf": "node cruddl-bench",
     "test:coverage": "nyc --reporter=text-summary npm test",
