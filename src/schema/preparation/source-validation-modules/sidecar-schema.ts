@@ -22,8 +22,8 @@ export class SidecarSchemaValidator implements ParsedSourceValidator {
 
             // we allow top-level additional properties because they indicate new features, so it might be ok to omit them
             const isWarning =
-                !err.instancePath.includes('.') &&
-                err.message === 'should NOT have additional properties';
+                err.instancePath === '' &&
+                err.message === 'must NOT have additional properties';
             if (isWarning) {
                 if (path in source.pathLocationMap) {
                     const loc = source.pathLocationMap[path];
