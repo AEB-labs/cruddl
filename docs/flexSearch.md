@@ -120,8 +120,8 @@ query {
 }
 ```
 
-The query also accepts the pagination arguments `first`, `skip` and `after`, the sorting argument
-`orderBy` and the regular filtering argument `filter`. Because the ArangoSearch-index cannot be used
+The query also accepts the pagination arguments `first`, `skip` and `after` and the sorting argument
+`orderBy`. The regular filter argument is available as `postFilter`. Because the ArangoSearch-index cannot be used
 for sorting and regular filtering, these can be very slow for large amounts of data. To prevent slow
 queries, cruddl returns an error in these cases.
 
