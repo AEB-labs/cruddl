@@ -131,3 +131,11 @@ When done, stop the instance with `npm run stop_arangodb`
 -   [Modelling guide](docs/modelling.md)
 -   [GraphQL API](docs/api.md)
 -   [I18n](docs/i18n.md)
+
+## Supported versions
+
+cruddl currently supports the following versions of ArangoDB:
+
+- 3.8
+- 3.9
+- 3.10

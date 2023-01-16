@@ -16,10 +16,10 @@
   "deleteRestricted": {
     "errors": [
       {
-        "message": "Cannot delete Main object because 2 Blocker objects are still referenced via blockers (ids: @{ids/Blocker/2}, @{ids/Blocker/3})",
+        "message": "Cannot delete Main object because a Blocker object is still referenced via blockers (id: @{ids/Blocker/2})",
         "locations": [
           {
-            "line": 16,
+            "line": 18,
             "column": 5
           }
         ],
