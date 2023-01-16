@@ -1,11 +1,23 @@
 import { Config, Connection, RequestOptions } from 'arangojs/connection';
-import { ArangoError, HttpError, isArangoErrorResponse } from 'arangojs/error';
 import { normalizeUrl } from 'arangojs/lib/normalizeUrl';
 import { ArangojsResponse } from 'arangojs/lib/request';
 import { RequestInstrumentation, requestInstrumentationBodyKey } from './config';
-import { createRequest } from './custom-request';
+import { createRequest, RequestOptions as CustomRequestOptions } from './custom-request';
 
-const MIME_JSON = /\/(json|javascript)(\W|$)/;
+/**
+ * @internal
+ */
+type Task = {
+    hostUrl?: string;
+    stack?: () => string;
+    allowDirtyRead: boolean;
+    retryOnConflict: number;
+    resolve: (result: any) => void;
+    reject: (error: Error) => void;
+    transform?: (res: ArangojsResponse) => any;
+    retries: number;
+    options: CustomRequestOptions;
+};
 
 export class CustomConnection extends Connection {
     constructor(config?: Config) {
@@ -14,12 +26,14 @@ export class CustomConnection extends Connection {
 
     request<T = ArangojsResponse>(
         {
-            host,
+            hostUrl,
             method = 'GET',
             body,
             expectBinary = false,
             isBinary = false,
             allowDirtyRead = false,
+            retryOnConflict = this._retryOnConflict,
+            timeout = 0,
             headers,
             ...urlInfo
         }: RequestOptions,
@@ -61,10 +75,11 @@ export class CustomConnection extends Connection {
             if (this._transactionId) {
                 extraHeaders['x-arango-trx-id'] = this._transactionId;
             }
-            const task = {
+            const task: Task = {
                 retries: 0,
-                host,
+                hostUrl,
                 allowDirtyRead,
+                retryOnConflict,
                 options: {
                     url: (this as any)._buildUrl(urlInfo),
                     headers: { ...extraHeaders, ...headers },
@@ -73,52 +88,9 @@ export class CustomConnection extends Connection {
                     body,
                     requestInstrumentation,
                 },
-                stack: undefined as unknown as () => string | undefined,
                 reject,
-                resolve: (res: ArangojsResponse) => {
-                    const contentType = res.headers['content-type'];
-                    let parsedBody: any = undefined;
-                    if (res.body.length && contentType && contentType.match(MIME_JSON)) {
-                        try {
-                            parsedBody = res.body;
-                            parsedBody = JSON.parse(parsedBody);
-                        } catch (e: any) {
-                            if (!expectBinary) {
-                                if (typeof parsedBody !== 'string') {
-                                    parsedBody = res.body.toString('utf-8');
-                                }
-                                e.response = res;
-                                if (task.stack) {
-                                    e.stack += task.stack();
-                                }
-                                reject(e);
-                                return;
-                            }
-                        }
-                    } else if (res.body && !expectBinary) {
-                        parsedBody = res.body.toString('utf-8');
-                    } else {
-                        parsedBody = res.body;
-                    }
-                    if (isArangoErrorResponse(parsedBody)) {
-                        res.body = parsedBody;
-                        const err = new ArangoError(res);
-                        if (task.stack) {
-                            (err.stack as string) += task.stack();
-                        }
-                        reject(err);
-                    } else if (res.statusCode && res.statusCode >= 400) {
-                        res.body = parsedBody;
-                        const err = new HttpError(res);
-                        if (task.stack) {
-                            (err.stack as string) += task.stack();
-                        }
-                        reject(err);
-                    } else {
-                        if (!expectBinary) res.body = parsedBody;
-                        resolve(transform ? transform(res) : (res as any));
-                    }
-                },
+                resolve,
+                transform,
             };
 
             if (this._precaptureStackTraces) {
@@ -139,14 +111,14 @@ export class CustomConnection extends Connection {
         });
     }
 
-    addToHostList(urls: string | string[]): number[] {
+    addToHostList(urls: string | string[]): string[] {
         const cleanUrls = (Array.isArray(urls) ? urls : [urls]).map((url) => normalizeUrl(url));
-        const newUrls = cleanUrls.filter((url) => this._urls.indexOf(url) === -1);
-        this._urls.push(...newUrls);
+        const newUrls = cleanUrls.filter((url) => this._hostUrls.indexOf(url) === -1);
+        this._hostUrls.push(...newUrls);
         this._hosts.push(
             ...newUrls.map((url: string) => createRequest(url, this._agentOptions, this._agent)),
         );
-        return cleanUrls.map((url) => this._urls.indexOf(url));
+        return cleanUrls;
     }
 }
 

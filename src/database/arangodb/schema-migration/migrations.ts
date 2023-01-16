@@ -1,5 +1,5 @@
 import { CreateAnalyzerOptions } from 'arangojs/analyzer';
-import { ArangoSearchViewPropertiesOptions } from 'arangojs/view';
+import {ArangoSearchViewPropertiesOptions, CreateArangoSearchViewOptions} from 'arangojs/view';
 import { Relation } from '../../../model/implementation';
 import { describeIndex, getIndexDescriptor, IndexDefinition } from './index-helpers';
 
@@ -109,12 +109,17 @@ export class CreateEdgeCollectionMigration {
 
 interface CreateArangoSearchViewMigrationConfig {
     readonly viewName: string;
-    readonly properties: ArangoSearchViewPropertiesOptions;
+    readonly properties: CreateArangoSearchViewOptions;
     readonly collectionName: string;
     readonly collectionSize?: number;
 }
 
-interface UpdateArangoSearchViewMigrationConfig extends CreateArangoSearchViewMigrationConfig {}
+interface UpdateArangoSearchViewMigrationConfig {
+    readonly viewName: string;
+    readonly properties: ArangoSearchViewPropertiesOptions;
+    readonly collectionName: string;
+    readonly collectionSize?: number;
+}
 
 interface DropArangoSearchViewMigrationConfig {
     readonly viewName: string;
@@ -175,7 +180,7 @@ export class UpdateArangoSearchViewMigration {
 export class CreateArangoSearchViewMigration {
     readonly type: 'createArangoSearchView' = 'createArangoSearchView';
     readonly viewName: string;
-    readonly properties: ArangoSearchViewPropertiesOptions;
+    readonly properties: CreateArangoSearchViewOptions;
     readonly collectionName: string;
     readonly collectionSize?: number;
 
@@ -202,7 +207,7 @@ export class CreateArangoSearchViewMigration {
 export class RecreateArangoSearchViewMigration {
     readonly type: 'recreateArangoSearchView' = 'recreateArangoSearchView';
     readonly viewName: string;
-    readonly properties: ArangoSearchViewPropertiesOptions;
+    readonly properties: CreateArangoSearchViewOptions;
     readonly collectionName: string;
     readonly collectionSize?: number;
 

@@ -1,15 +1,12 @@
-import { CollectionType, Database } from 'arangojs';
-import deepEqual from 'deep-equal';
-import { ArangoDBConfig, initDatabase } from '../config';
+import {Database} from 'arangojs';
+import {CollectionType} from 'arangojs/collection';
+import {ArangoDBConfig, initDatabase} from '../config';
 import {
     ERROR_ARANGO_DATA_SOURCE_NOT_FOUND,
-    ERROR_ARANGO_DOCUMENT_NOT_FOUND,
     ERROR_ARANGO_DUPLICATE_NAME,
     ERROR_ARANGO_INDEX_NOT_FOUND,
-    ERROR_BAD_PARAMETER,
-    ERROR_FILE_EXISTS,
 } from '../error-codes';
-import { configureForBackgroundCreation, isEqualProperties } from './arango-search-helpers';
+import {configureForBackgroundCreation, isEqualProperties} from './arango-search-helpers';
 import {
     CreateArangoSearchAnalyzerMigration,
     CreateArangoSearchViewMigration,
@@ -66,7 +63,7 @@ export class MigrationPerformer {
                 unique: migration.index.unique,
                 sparse: migration.index.sparse,
                 inBackground: this.config.createIndicesInBackground,
-            } as any /* inBackground is not included in the types, but it works */,
+            },
         );
     }
 
@@ -85,7 +82,7 @@ export class MigrationPerformer {
     private async createDocumentCollection(migration: CreateDocumentCollectionMigration) {
         try {
             await this.db.createCollection(migration.collectionName, {
-                ...(this.config.createCollectionOptions as any),
+                ...this.config.createCollectionOptions,
                 type: CollectionType.DOCUMENT_COLLECTION,
             });
         } catch (e: any) {
@@ -103,7 +100,7 @@ export class MigrationPerformer {
     private async createEdgeCollection(migration: CreateEdgeCollectionMigration) {
         try {
             await this.db.createCollection(migration.collectionName, {
-                ...(this.config.createCollectionOptions as any),
+                ...this.config.createCollectionOptions,
                 type: CollectionType.EDGE_COLLECTION,
             });
         } catch (e: any) {
