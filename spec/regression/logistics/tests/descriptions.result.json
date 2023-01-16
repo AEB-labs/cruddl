@@ -1275,6 +1275,56 @@
               "deprecationReason": null
             },
             {
+              "name": "isoCode",
+              "description": "Checks if `isoCode` equals a specified string, case-insensitively.",
+              "deprecationReason": null
+            },
+            {
+              "name": "isoCode_not",
+              "description": "Checks if `isoCode` does not equal a specified string, case-insensitively.",
+              "deprecationReason": null
+            },
+            {
+              "name": "isoCode_lt",
+              "description": "Checks if `isoCode` is less than a specified value.",
+              "deprecationReason": null
+            },
+            {
+              "name": "isoCode_lte",
+              "description": "Checks if `isoCode` is less or equal a specified value.",
+              "deprecationReason": null
+            },
+            {
+              "name": "isoCode_gt",
+              "description": "Checks if `isoCode` is greater than a specified value.",
+              "deprecationReason": null
+            },
+            {
+              "name": "isoCode_gte",
+              "description": "Checks if `isoCode` is greater or equal a specified value.",
+              "deprecationReason": null
+            },
+            {
+              "name": "isoCode_in",
+              "description": "Checks if `isoCode` is equal to one of the specified values.",
+              "deprecationReason": null
+            },
+            {
+              "name": "isoCode_not_in",
+              "description": "Checks if `isoCode` is not equal to one of the specified values.",
+              "deprecationReason": null
+            },
+            {
+              "name": "isoCode_starts_with",
+              "description": "Checks if `isoCode` starts with a specified string, case-insensitively.",
+              "deprecationReason": null
+            },
+            {
+              "name": "isoCode_not_starts_with",
+              "description": "Checks if `isoCode` does not start with a specified string, case-insensitively.",
+              "deprecationReason": null
+            },
+            {
               "name": "someKey",
               "description": "Checks if `someKey` equals a specified string, case-insensitively.",
               "deprecationReason": null
