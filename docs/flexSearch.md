@@ -15,8 +15,8 @@ type Order @rootEntity(flexSearch: true) {
 }
 ```
 
-This also means that the system fields (`id`, `createdAt` and `updatedAt`) are automatically
-indexed.
+The system fields (`id`, `createdAt` and `updatedAt`) and fields annotated with `@key` are
+automatically indexed.
 
 To add additional fields to the index, the `@flexSearch` or the `@flexSearchFulltext` annotation
 needs to be added to the field.
@@ -64,6 +64,9 @@ type Order @rootEntity(flexSearch: true, flexSearchLanguage: EN) {
 
 In this example an "expression search" would search in the fields `orderNumber` and `descriptionEN`
 but not the field `descriptionDE`.
+
+A field annotated with `@key` is included in search by default. To disable this, manually specify
+`@flexSearch(includeInSearch: false)` on the field.
 
 ### FlexSearch Order
 
@@ -121,9 +124,9 @@ query {
 ```
 
 The query also accepts the pagination arguments `first`, `skip` and `after` and the sorting argument
-`orderBy`. The regular filter argument is available as `postFilter`. Because the ArangoSearch-index cannot be used
-for sorting and regular filtering, these can be very slow for large amounts of data. To prevent slow
-queries, cruddl returns an error in these cases.
+`orderBy`. The regular filter argument is available as `postFilter`. Because the ArangoSearch-index
+cannot be used for sorting and regular filtering, these can be very slow for large amounts of data.
+To prevent slow queries, cruddl returns an error in these cases.
 
 ### Filter
 

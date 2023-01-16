@@ -153,4 +153,36 @@ describe('createModel', () => {
         const type2 = model.getRootEntityTypeOrThrow('Test2');
         expect(type2.isBusinessObject).to.be.false;
     });
+
+    it('enables flexSearch on key field by default', () => {
+        const document: DocumentNode = gql`
+            type Test @rootEntity(flexSearch: true) {
+                key: String @key
+            }
+        `;
+
+        const model = createSimpleModel(document);
+        expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
+
+        const type = model.getRootEntityTypeOrThrow('Test');
+        const field = type.getKeyFieldOrThrow();
+        expect(field.isFlexSearchIndexed).to.be.true;
+        expect(field.isIncludedInSearch).to.be.true;
+    });
+
+    it('enables does not include key field in search if explicitly disabled', () => {
+        const document: DocumentNode = gql`
+            type Test @rootEntity(flexSearch: true) {
+                key: String @key @flexSearch(includeInSearch: false)
+            }
+        `;
+
+        const model = createSimpleModel(document);
+        expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
+
+        const type = model.getRootEntityTypeOrThrow('Test');
+        const field = type.getKeyFieldOrThrow();
+        expect(field.isFlexSearchIndexed).to.be.true;
+        expect(field.isIncludedInSearch).to.be.false;
+    });
 });

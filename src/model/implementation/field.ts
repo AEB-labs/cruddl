@@ -1736,7 +1736,13 @@ export class Field implements ModelComponent {
     }
 
     get isFlexSearchIndexed(): boolean {
-        return !!this.input.isFlexSearchIndexed;
+        // @key-annotated fields are automatically flex-search indexed
+        return (
+            !!this.input.isFlexSearchIndexed ||
+            (this.declaringType.isRootEntityType &&
+                this.declaringType.isFlexSearchIndexed &&
+                this.declaringType.keyField === this)
+        );
     }
 
     get isFlexSearchIndexCaseSensitive(): boolean {
@@ -1794,7 +1800,22 @@ export class Field implements ModelComponent {
     }
 
     get isIncludedInSearch(): boolean {
-        return !!this.input.isIncludedInSearch && this.isFlexSearchIndexed;
+        // if flexsearch is manually configured, use that option
+        if (this.input.isFlexSearchIndexed) {
+            return !!this.input.isIncludedInSearch;
+        }
+
+        if (!this.type.isScalarType || this.type.name !== GraphQLString.name) {
+            // includeInSearch only supported on string
+            return false;
+        }
+
+        // key fields are included in search (unless manually configured or not supported)
+        if (this.declaringType.isRootEntityType && this.declaringType.keyField === this) {
+            return true;
+        }
+
+        return false;
     }
 
     get isFulltextIncludedInSearch(): boolean {
