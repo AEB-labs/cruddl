@@ -6,7 +6,8 @@ import stripJsonComments from 'strip-json-comments';
 import { ArangoDBConfig } from '../../src/database/arangodb';
 
 const DATABASE_NAME = 'cruddl-test-temp';
-const DATABASE_URL = 'http://root:@localhost:8529';
+// arangodb only listens on ipv4, but localhost may resolve to ::1, so explicitly state 127.0.0.1
+const DATABASE_URL = 'http://root:@127.0.0.1:8529';
 
 export async function createTempDatabase(): Promise<ArangoDBConfig> {
     const systemDatabase = new Database({
