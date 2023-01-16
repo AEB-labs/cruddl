@@ -89,6 +89,13 @@
           "expireAfterDays": {
             "type": "integer",
             "minimum": 1
+          },
+          "cascadeFields:": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^([a-zA-Z0-9_-]|\\.)+$"
+            }
           }
         },
         "required": ["typeName", "dateField", "expireAfterDays"]

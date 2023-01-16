@@ -24,7 +24,10 @@ interface TestObject {
     readonly createNested?: ReadonlyArray<TestObject>;
 }
 
-async function setUp(data: ReadonlyArray<TestObject>): Promise<Setup> {
+async function setUp(
+    data: ReadonlyArray<TestObject>,
+    options: Partial<TimeToLiveConfig> = {},
+): Promise<Setup> {
     const ttlConfig: TimeToLiveConfig = {
         typeName: 'Test',
         dateField: 'finishedAt',
@@ -54,7 +57,10 @@ async function setUp(data: ReadonlyArray<TestObject>): Promise<Setup> {
                     }
                 `),
             ),
-            new ProjectSource('ttl.json', JSON.stringify({ timeToLive: [ttlConfig] })),
+            new ProjectSource(
+                'ttl.json',
+                JSON.stringify({ timeToLive: [{ ...ttlConfig, ...options }] }),
+            ),
         ],
         getExecutionOptions: () => ({ disableAuthorization: true }),
     });
@@ -316,5 +322,75 @@ describe('ArangoDB TTL', async function () {
         expect(afterKeys).to.deep.equal(['K', 'R']);
         const afterN2s = await getN2Keys();
         expect(afterN2s).to.deep.equal(['K11', 'R11']);*/
+    });
+
+    it('supports cascadeFields', async () => {
+        const { project, adapter, getAllKeys, getN2Keys } = await setUp(
+            [
+                {
+                    key: 'K',
+                    finishedAt: '2023-01-10T00:00:00Z',
+                    createNested: [
+                        {
+                            key: 'K1',
+                            createNested: [
+                                {
+                                    key: 'K11',
+                                },
+                            ],
+                        },
+                        { key: 'K2' },
+                    ],
+                },
+                {
+                    key: 'D',
+                    finishedAt: '2023-01-01T00:00:00Z',
+                    createNested: [
+                        {
+                            key: 'D1',
+                            createNested: [
+                                {
+                                    key: 'D11',
+                                },
+                            ],
+                        },
+                        { key: 'D2' },
+                    ],
+                },
+                {
+                    key: 'R',
+                    finishedAt: '2023-01-01T00:00:00Z',
+                    createNested: [
+                        {
+                            key: 'R1',
+                            createNested: [
+                                {
+                                    key: 'R11',
+                                },
+                            ],
+                        },
+                        { key: 'R2' },
+                    ],
+                },
+            ],
+            {
+                cascadeFields: ['nested.nested'],
+            },
+        );
+
+        const beforeKeys = await getAllKeys();
+        expect(beforeKeys).to.deep.equal(['D', 'K', 'R']);
+        const beforeN2s = await getN2Keys();
+        expect(beforeN2s).to.deep.equal(['D11', 'K11', 'R11']);
+
+        await project.executeTTLCleanup(adapter, {
+            clock: { getCurrentTimestamp: () => '2023-01-10T01:00:00Z' },
+            disableAuthorization: true,
+        });
+
+        const afterKeys = await getAllKeys();
+        expect(afterKeys).to.deep.equal(['K']);
+        const afterN2s = await getN2Keys();
+        expect(afterN2s).to.deep.equal(['K11']);
     });
 });

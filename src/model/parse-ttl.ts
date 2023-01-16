@@ -11,5 +11,9 @@ export function parseTTLConfigs(source: ParsedObjectProjectSource): TimeToLiveCo
         typeNameLoc: source.pathLocationMap[`/timeToLive/${index}/typeName`],
         dateFieldLoc: source.pathLocationMap[`/timeToLive/${index}/dateField`],
         expireAfterDaysLoc: source.pathLocationMap[`/timeToLive/${index}/expireAfterDays`],
+        cascadeFieldsLocs: (ttlConfig.cascadeFields ?? []).map(
+            (_, fieldIndex) =>
+                source.pathLocationMap[`/timeToLive/${index}/cascadeFields/${fieldIndex}`],
+        ),
     }));
 }
