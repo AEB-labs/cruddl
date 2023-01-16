@@ -10,13 +10,25 @@ import {
 } from '../query-tree';
 import { mapToIDNodesUnoptimized } from './utils/map';
 import { getPreEntityRemovalStatements } from './utils/relations';
+import { FieldPath } from '../model/implementation/field-path';
+
+export interface GenerateDeleteAllQueryNodeOptions {
+    readonly resultValue?: DeleteEntitiesResultValue;
+
+    /**
+     * An array of paths to fields that should be treated as if they were configured with
+     * onDelete=CASCADE
+     */
+    readonly additionalCascadeFields?: ReadonlyArray<FieldPath>;
+}
 
 export function generateDeleteAllQueryNode(
     rootEntityType: RootEntityType,
     listNode: QueryNode,
     {
         resultValue = DeleteEntitiesResultValue.OLD_ENTITIES,
-    }: { readonly resultValue?: DeleteEntitiesResultValue } = {},
+        additionalCascadeFields,
+    }: GenerateDeleteAllQueryNodeOptions = {},
 ) {
     if (!rootEntityType.relations.length) {
         return new DeleteEntitiesQueryNode({
@@ -47,7 +59,9 @@ export function generateDeleteAllQueryNode(
         resultValue,
     });
 
-    const removeEdgesStatements = getPreEntityRemovalStatements(rootEntityType, idsVariable);
+    const removeEdgesStatements = getPreEntityRemovalStatements(rootEntityType, idsVariable, {
+        additionalCascadeFields,
+    });
 
     return new WithPreExecutionQueryNode({
         preExecQueries: [idsStatement, ...removeEdgesStatements],

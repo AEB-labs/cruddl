@@ -68,6 +68,7 @@ export function getQueryNodeForTTLType({ ttlType, maxCount, clock }: GetQueryNod
     });
     return generateDeleteAllQueryNode(ttlType.rootEntityType, listQueryNode, {
         resultValue: DeleteEntitiesResultValue.COUNT,
+        additionalCascadeFields: ttlType.cascadeFields,
     });
 }
 

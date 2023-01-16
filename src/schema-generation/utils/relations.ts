@@ -26,7 +26,6 @@ import {
     QueryNode,
     RemoveEdgesQueryNode,
     SetEdgeQueryNode,
-    TransformListQueryNode,
     TraversalQueryNode,
     VariableQueryNode,
 } from '../../query-tree';
@@ -34,6 +33,7 @@ import { PlainObject } from '../../utils/utils';
 import { CreateRootEntityInputType } from '../create-input-types';
 import { FieldContext } from '../query-node-object-type';
 import { mapToIDNodesWithOptimizations } from './map';
+import { FieldPath } from '../../model/implementation/field-path';
 
 /**
  * Gets a statement that deletes existing outgoing edges and creates a new one, but does not check existing
@@ -245,9 +245,38 @@ export function getRemoveEdgesStatements(
     ];
 }
 
+export interface GetPreEntityRemovalStatementsOptions {
+    /**
+     * An array of paths to fields that should be treated as if they were configured with
+     * onDelete=CASCADE
+     */
+    readonly additionalCascadeFields?: ReadonlyArray<FieldPath>;
+}
+
 interface PreEntityRemovalStatementsContext {
     readonly originalRootEntityType: RootEntityType;
+    /**
+     * All relation sides traversed, starting from the originalRootEntityType
+     */
     readonly relationSideStack: ReadonlyArray<RelationSide>;
+
+    /**
+     * Relation sides that have been traversed, but not because of additionalCascadeFields
+     *
+     * additionalCascadeFields can contain relation sides multiple times. But if we're not following
+     * these fixed sets of paths, and still found something we already encountered, that's an error
+     */
+    readonly relationSideStackForCycleCheck: ReadonlyArray<RelationSide>;
+
+    /**
+     * An array of paths to fields that should be treated as if they were configured with
+     * onDelete=CASCADE
+     *
+     * each top-level array item is a path, and that path consists of multiple fields
+     *
+     * unpacked on each recursion level
+     */
+    readonly additionalCascadeFields: ReadonlyArray<ReadonlyArray<Field>>;
 }
 
 /**
@@ -256,10 +285,13 @@ interface PreEntityRemovalStatementsContext {
 export function getPreEntityRemovalStatements(
     rootEntityType: RootEntityType,
     sourceIDsNode: QueryNode,
+    { additionalCascadeFields = [] }: GetPreEntityRemovalStatementsOptions = {},
 ): ReadonlyArray<PreExecQueryParms> {
     return getPreEntityRemovalStatements0(rootEntityType, sourceIDsNode, {
         originalRootEntityType: rootEntityType,
         relationSideStack: [],
+        relationSideStackForCycleCheck: [],
+        additionalCascadeFields: additionalCascadeFields.map((f) => f.fields ?? []),
     });
 }
 
@@ -286,17 +318,20 @@ function getPreEntityRemovalStatements0(
     // RESTRICT -> stop (we fail anyway)
 
     function compare(a: RelationSide, b: RelationSide) {
-        if (a.deleteAction === RelationDeleteAction.RESTRICT) {
+        const aAction = getEffectiveDeleteAction(a, context);
+        const bAction = getEffectiveDeleteAction(b, context);
+
+        if (aAction === RelationDeleteAction.RESTRICT) {
             return -1;
         }
-        if (b.deleteAction === RelationDeleteAction.RESTRICT) {
+        if (bAction === RelationDeleteAction.RESTRICT) {
             return 1;
         }
         // second, cascade before DELETE_EDGES because it might contain indirect RESTRICTs
-        if (a.deleteAction === RelationDeleteAction.CASCADE) {
+        if (aAction === RelationDeleteAction.CASCADE) {
             return -1;
         }
-        if (b.deleteAction === RelationDeleteAction.CASCADE) {
+        if (bAction === RelationDeleteAction.CASCADE) {
             return 1;
         }
         return 0;
@@ -320,21 +355,20 @@ function getPreEntityRemovalStatementsForRelationSide(
     sourceIDsNode: QueryNode,
     context: PreEntityRemovalStatementsContext,
 ): ReadonlyArray<PreExecQueryParms> {
-    if (relationSide.deleteAction === RelationDeleteAction.REMOVE_EDGES) {
+    const effectiveDeleteAction = getEffectiveDeleteAction(relationSide, context);
+
+    if (effectiveDeleteAction === RelationDeleteAction.REMOVE_EDGES) {
         return [getRemoveAllEdgesStatement(relationSide, sourceIDsNode)];
     }
 
     // RESTRICT and CASCADE
 
     // don't recurse
-    if (context.relationSideStack.includes(relationSide)) {
-        // TODO either support this or validate it in the schema
+    if (context.relationSideStackForCycleCheck.includes(relationSide)) {
+        // should not occur because we validate this in the schema
         throw new Error(`onDelete=CASCADE on recursive entities`);
     }
-    const newContext: PreEntityRemovalStatementsContext = {
-        ...context,
-        relationSideStack: [...context.relationSideStack, relationSide],
-    };
+    const newRelationSideStack = [...context.relationSideStack, relationSide];
 
     // first, find the entities
     const sourceField = relationSide.getSourceFieldOrThrow();
@@ -363,7 +397,7 @@ function getPreEntityRemovalStatementsForRelationSide(
         alwaysProduceList: true,
     });
 
-    switch (relationSide.deleteAction) {
+    switch (effectiveDeleteAction) {
         case RelationDeleteAction.RESTRICT:
             let idsNode = mapToIDNodesWithOptimizations(collectNode);
             // for recursive relations, make sure objects to-be-deleted don't block the deletion
@@ -381,7 +415,7 @@ function getPreEntityRemovalStatementsForRelationSide(
                     resultValidator: new NoRestrictingObjectsOnDeleteValidator({
                         restrictedRootEntityType: context.originalRootEntityType,
                         restrictingRootEntityType: relationSide.targetType,
-                        path: newContext.relationSideStack,
+                        path: newRelationSideStack,
                     }),
                 }),
                 getRemoveAllEdgesStatement(relationSide, sourceIDsNode),
@@ -389,6 +423,22 @@ function getPreEntityRemovalStatementsForRelationSide(
 
         case RelationDeleteAction.CASCADE:
             const targetIDsVariable = new VariableQueryNode(sourceField.name + 'IDs');
+
+            // remove all paths unrelated to following this field, and strip this field from the others
+            const newAdditionalCascadeFields = context.additionalCascadeFields
+                .filter((f) => f[0] === relationSide.sourceField)
+                .map((p) => p.slice(1));
+            const newContext: PreEntityRemovalStatementsContext = {
+                originalRootEntityType: context.originalRootEntityType,
+                relationSideStack: newRelationSideStack,
+
+                // start checking for cycles as soon as we're done with the additionalFields
+                relationSideStackForCycleCheck: newAdditionalCascadeFields.length
+                    ? []
+                    : [...context.relationSideStackForCycleCheck, relationSide],
+
+                additionalCascadeFields: newAdditionalCascadeFields,
+            };
 
             return [
                 // store the ids both for performance (don't repeat the collect) and to make sure the edges are not deleted too early
@@ -416,6 +466,29 @@ function getPreEntityRemovalStatementsForRelationSide(
         default:
             throw new Error(`Unexpected deleteAction: ${relationSide.deleteAction}`);
     }
+}
+
+function getEffectiveDeleteAction(
+    relationSide: RelationSide,
+    context: PreEntityRemovalStatementsContext,
+): RelationDeleteAction {
+    if (isCascadeField(relationSide, context)) {
+        return RelationDeleteAction.CASCADE;
+    }
+    return relationSide.deleteAction;
+}
+
+function isCascadeField(relationSide: RelationSide, context: PreEntityRemovalStatementsContext) {
+    if (relationSide.deleteAction === RelationDeleteAction.CASCADE) {
+        return true;
+    }
+    if (!relationSide.sourceField) {
+        // relation sides without sourceField can't be configured in additionalCascadeFields
+        // (there is no field to reference them)
+        return false;
+    }
+
+    return context.additionalCascadeFields.some((f) => f[0] === relationSide.sourceField);
 }
 
 /**

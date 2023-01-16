@@ -79,9 +79,28 @@ export class Relation {
  * A relation from the perspective of one of the two types
  */
 export class RelationSide {
+    /**
+     * The type where the relation originates, when viewed with this side's perspective
+     */
     public readonly sourceType: RootEntityType;
+
+    /**
+     * The field declared in the source type
+     *
+     * Might be undefined if this is the "to side"
+     */
     public readonly sourceField: Field | undefined;
+
+    /**
+     * The type where the relation points to, when viewed with this side's perspective
+     */
     public readonly targetType: RootEntityType;
+
+    /**
+     * The field declared in the source type
+     *
+     * Might be undefined if this is the "from side"
+     */
     public readonly targetField: Field | undefined;
 
     constructor(public readonly relation: Relation, private readonly side: RelationFieldSide) {
@@ -100,10 +119,16 @@ export class RelationSide {
         }
     }
 
+    /**
+     * Whether this is side that follows the relation in the forwards direction
+     */
     get isFromSide() {
         return this.side === RelationFieldSide.FROM_SIDE;
     }
 
+    /**
+     * Whether this is side that follows the relation in the inverse direction
+     */
     get isToSide() {
         return this.side === RelationFieldSide.TO_SIDE;
     }

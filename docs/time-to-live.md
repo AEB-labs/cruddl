@@ -28,3 +28,28 @@ Any edges from relations including the deleted elements will also be deleted.
 
 The actual cleanup must be triggered manually by calling the executeTTLCleanup method on the
 `Project`.
+
+## Cascading Delete
+
+If the type of a TTL configuration has relations annotated with `@relation(onDelete=CASCADE)`, this
+cascading delete operation will also be performed when the objects are deleted due to TTL.
+
+`@relation(onDelete=RESTRIICT)` currently does not work well with TTL because as soon as one item in
+a batch cannot be deleted, the whole operation is cancelled.
+
+You can configure some relation paths as cascading in the TTL configuration, overriding the regular
+model configuration:
+
+```json
+{
+    "timeToLive": [
+        {
+            "typeName": "Delivery",
+            // ...
+            "cascadeFields": ["handlingUnits", "handlingUnits.innerHandlingUnits"]
+        }
+    ]
+}
+```
+
+This will only have an effect when the objects are deleted by TTL.

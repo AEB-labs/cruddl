@@ -4,14 +4,31 @@ import { locationWithinStringArgument, MessageLocation, ValidationMessage } from
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
 import { ObjectType, Type } from './type';
+import { config } from 'chai';
 
-export interface FieldPathConfig {
+export interface FieldPathConfig extends Partial<FieldPathOptions> {
     readonly path: string;
     readonly location?: MessageLocation;
     readonly baseType: ObjectType;
     readonly canTraverseRootEntities?: boolean;
+    readonly canFollowReferences?: boolean;
     readonly canUseCollectFields?: boolean;
+    readonly canNavigateIntoLists?: boolean;
 }
+
+export interface FieldPathOptions {
+    readonly canTraverseRootEntities: boolean;
+    readonly canFollowReferences: boolean;
+    readonly canUseCollectFields: boolean;
+    readonly canNavigateIntoLists: boolean;
+}
+
+const defaultOptions: FieldPathOptions = {
+    canFollowReferences: true,
+    canNavigateIntoLists: false,
+    canTraverseRootEntities: true,
+    canUseCollectFields: true,
+};
 
 /**
  * A path to a single value
@@ -21,8 +38,17 @@ export interface FieldPathConfig {
 export class FieldPath implements ModelComponent {
     readonly path: string;
 
+    private readonly options: FieldPathOptions;
+
+    readonly location: MessageLocation | undefined;
+
     constructor(private readonly config: FieldPathConfig) {
         this.path = config.path;
+        this.options = {
+            ...defaultOptions,
+            ...config,
+        };
+        this.location = config.location;
     }
 
     @memorize()
@@ -46,6 +72,29 @@ export class FieldPath implements ModelComponent {
 
     validate(context: ValidationContext): void {
         this.traversePath(context.addMessage.bind(context));
+    }
+
+    /**
+     * Gets the location for some fields within this path
+     *
+     * lastFieldIndex is exclusive (like with substring or slice)
+     */
+    getSubLocation(firstFieldIndex: number, lastFieldIndex: number): MessageLocation | undefined {
+        if (!this.location || !this.fields) {
+            return undefined;
+        }
+        const skipped = this.fields
+            .slice(0, firstFieldIndex)
+            .reduce((agg, field) => agg + field.name.length + 1 /* plus one for dot */, 0);
+        const included = this.fields
+            .slice(firstFieldIndex, lastFieldIndex)
+            .reduce((agg, field) => agg + field.name.length + 1 /* plus one for dot */, 0);
+        return locationWithinStringArgument(
+            this.location,
+            /* if we skipped any fields, also include the trailing dot of the skipped fields */
+            skipped + (skipped > 0 ? 1 : 0),
+            included,
+        );
     }
 
     private traversePath(addMessage: (mess: ValidationMessage) => void): ReadonlyArray<Field> {
@@ -77,10 +126,19 @@ export class FieldPath implements ModelComponent {
                 );
                 return [];
             }
-            if (lastField && lastField.isList) {
+            if (lastField && lastField.isList && !this.options.canNavigateIntoLists) {
                 addMessage(
                     ValidationMessage.error(
                         `Field "${lastField.declaringType.name}.${lastField.name}" is a list and cannot be navigated into.`,
+                        segmentLocation,
+                    ),
+                );
+                return [];
+            }
+            if (lastField && lastField.isReference && !this.options.canFollowReferences) {
+                addMessage(
+                    ValidationMessage.error(
+                        `Field "${lastField.declaringType.name}.${lastField.name}" is a reference and cannot be navigated into.`,
                         segmentLocation,
                     ),
                 );
@@ -128,7 +186,7 @@ export class FieldPath implements ModelComponent {
                 return [];
             }
 
-            if (this.config.canUseCollectFields === false && field.isCollectField) {
+            if (!this.options.canUseCollectFields && field.isCollectField) {
                 addMessage(
                     ValidationMessage.error(
                         `Field "${currentType.name}.${field.name}" is a collect field, but collect fields cannot be used in this path.`,
@@ -137,7 +195,7 @@ export class FieldPath implements ModelComponent {
                 );
             }
 
-            if (this.config.canTraverseRootEntities === false) {
+            if (!this.options.canTraverseRootEntities) {
                 if (
                     field.type.isRootEntityType ||
                     (field.isCollectField && field.collectPath?.traversesRootEntityTypes)
