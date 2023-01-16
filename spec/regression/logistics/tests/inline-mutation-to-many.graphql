@@ -3,7 +3,7 @@ mutation toManyRelation {
         input: { deliveryNumber: "10", createHandlingUnits: [{ huNumber: "A" }, { huNumber: "B" }] }
     ) {
         deliveryNumber
-        handlingUnits {
+        handlingUnits(orderBy: huNumber_ASC) {
             huNumber
         }
     }
@@ -13,7 +13,7 @@ mutation toManyRelation {
             createHandlingUnits: [{ huNumber: "C" }, { huNumber: "D" }]
         }
     ) {
-        handlingUnits {
+        handlingUnits(orderBy: huNumber_ASC) {
             huNumber
         }
     }
