@@ -1,5 +1,5 @@
-import { CollectionType, Database } from 'arangojs';
-import deepEqual from 'deep-equal';
+import { Database } from 'arangojs';
+import { CollectionType } from 'arangojs/collection';
 import { NORM_CI_ANALYZER } from '../../../model/implementation/flex-search';
 import { ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
@@ -59,7 +59,7 @@ export class SchemaAnalyzer {
         const existingCollections = (await this.db.listCollections()).filter(
             (coll) => coll.type === CollectionType.DOCUMENT_COLLECTION,
         );
-        const existingCollectionNames = new Set(existingCollections.map((coll) => coll.name)); // typing for name missing
+        const existingCollectionNames = new Set(existingCollections.map((coll) => coll.name));
 
         const migrations: CreateDocumentCollectionMigration[] = [];
 

@@ -1,15 +1,17 @@
 import { Database } from 'arangojs';
-import { AnalyzerInfo, IdentityAnalyzerInfo } from 'arangojs/analyzer';
+import { AnalyzerDescription, CreateAnalyzerOptions } from 'arangojs/analyzer';
 import {
-    ArangoSearchView,
     ArangoSearchViewLink,
-    ArangoSearchViewProperties,
+    ArangoSearchViewLinkOptions,
     ArangoSearchViewPropertiesOptions,
+    CreateArangoSearchViewOptions,
+    View,
+    ViewProperties,
 } from 'arangojs/view';
 import deepEqual from 'deep-equal';
 import { isEqual } from 'lodash';
 import { Field, Model, RootEntityType } from '../../../model';
-import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../../model/implementation/flex-search';
+import { IDENTITY_ANALYZER } from '../../../model/implementation/flex-search';
 import { OrderDirection } from '../../../model/implementation/order';
 import { ID_FIELD } from '../../../schema/constants';
 import { GraphQLI18nString } from '../../../schema/scalars/string-map';
@@ -34,16 +36,6 @@ export interface ArangoSearchDefinition {
     readonly viewName: string;
     readonly collectionName: string;
     readonly primarySort: ReadonlyArray<FlexSearchPrimarySortConfig>;
-}
-
-interface ArangoSearchViewCollectionLink {
-    analyzers?: string[];
-    fields?: {
-        [key: string]: ArangoSearchViewCollectionLink | undefined;
-    };
-    includeAllFields?: boolean;
-    trackListPositions?: boolean;
-    storeValues?: 'none' | 'id';
 }
 
 export interface ArangoSearchConfiguration {
@@ -75,7 +67,7 @@ function getViewForRootEntity(rootEntityType: RootEntityType): ArangoSearchDefin
 }
 
 export async function calculateRequiredArangoSearchViewCreateOperations(
-    existingViews: ArangoSearchView[],
+    existingViews: ReadonlyArray<View>,
     requiredViews: ReadonlyArray<ArangoSearchDefinition>,
     db: Database,
     configuration?: ArangoSearchConfiguration,
@@ -103,7 +95,7 @@ export async function calculateRequiredArangoSearchViewCreateOperations(
 }
 
 export function calculateRequiredArangoSearchViewDropOperations(
-    views: ArangoSearchView[],
+    views: ReadonlyArray<View>,
     definitions: ReadonlyArray<ArangoSearchDefinition>,
 ): ReadonlyArray<SchemaMigration> {
     const viewsToDrop = views.filter(
@@ -117,12 +109,12 @@ export function calculateRequiredArangoSearchViewDropOperations(
 /**
  * Configures the inBackground flag
  *
- * We don'd to this initially because it won't be present in the actual view definition, and we would always see a
+ * We don't to this initially because it won't be present in the actual view definition, and we would always see a
  * pending change in the migration analyzer (because it would want to add inBackground).
  */
-export function configureForBackgroundCreation(
-    definition: ArangoSearchViewPropertiesOptions,
-): ArangoSearchViewPropertiesOptions {
+export function configureForBackgroundCreation<T extends ArangoSearchViewPropertiesOptions>(
+    definition: T,
+): T {
     return {
         ...definition,
         links: definition.links
@@ -131,7 +123,6 @@ export function configureForBackgroundCreation(
                       key,
                       {
                           ...value,
-                          // missing in types, see https://github.com/arangodb/arangojs/issues/759
                           // if this is not set, creating the view would acquire an exclusive lock on the collections
                           inBackground: true,
                       },
@@ -144,10 +135,11 @@ export function configureForBackgroundCreation(
 function getPropertiesFromDefinition(
     definition: ArangoSearchDefinition,
     configuration?: ArangoSearchConfiguration,
-): ArangoSearchViewPropertiesOptions {
+): CreateArangoSearchViewOptions {
     const recursionDepth =
         configuration && configuration.recursionDepth ? configuration.recursionDepth : 1;
     return {
+        type: 'arangosearch',
         links: {
             [definition.collectionName]: {
                 analyzers: [IDENTITY_ANALYZER],
@@ -169,8 +161,8 @@ function getPropertiesFromDefinition(
     function fieldDefinitionsFor(
         fields: ReadonlyArray<Field>,
         path: ReadonlyArray<Field> = [],
-    ): { [key: string]: ArangoSearchViewCollectionLink | undefined } {
-        const fieldDefinitions: { [key: string]: ArangoSearchViewCollectionLink | undefined } = {};
+    ): { [key: string]: ArangoSearchViewLinkOptions } {
+        const fieldDefinitions: { [key: string]: ArangoSearchViewLinkOptions } = {};
         const fieldsToIndex = fields.filter(
             (field) =>
                 (field.isFlexSearchIndexed || field.isFlexSearchFulltextIndexed) &&
@@ -195,7 +187,7 @@ function getPropertiesFromDefinition(
     function fieldDefinitionFor(
         field: Field,
         path: ReadonlyArray<Field> = [],
-    ): ArangoSearchViewCollectionLink {
+    ): ArangoSearchViewLinkOptions {
         if (field.type.isObjectType) {
             return {
                 fields: fieldDefinitionsFor(field.type.fields, path),
@@ -210,7 +202,7 @@ function getPropertiesFromDefinition(
             analyzers.add(field.flexSearchAnalyzer);
         }
 
-        const link: ArangoSearchViewCollectionLink = {};
+        const link: ArangoSearchViewLinkOptions = {};
         // only set this property if it's not the default (["identity"])
         if (analyzers.size !== 1 || !analyzers.has(IDENTITY_ANALYZER)) {
             link.analyzers = Array.from(analyzers);
@@ -227,9 +219,14 @@ function getPropertiesFromDefinition(
 }
 
 export function isEqualProperties(
-    definitionProperties: ArangoSearchViewPropertiesOptions,
-    viewProperties: ArangoSearchViewProperties,
+    definitionProperties: CreateArangoSearchViewOptions,
+    viewProperties: ViewProperties,
 ): boolean {
+    if (viewProperties.type !== 'arangosearch') {
+        // we always need an 'arangosearch' view
+        return false;
+    }
+
     return (
         isEqual(definitionProperties.links, viewProperties.links) &&
         isEqual(definitionProperties.primarySort, viewProperties.primarySort) &&
@@ -241,14 +238,19 @@ export function isEqualProperties(
 }
 
 function isRecreateRequired(
-    definitionProperties: ArangoSearchViewPropertiesOptions,
-    viewProperties: ArangoSearchViewProperties,
+    definitionProperties: CreateArangoSearchViewOptions,
+    viewProperties: ViewProperties,
 ): boolean {
+    if (viewProperties.type !== 'arangosearch') {
+        // we always need an 'arangosearch' view
+        return true;
+    }
+
     return !isEqual(definitionProperties.primarySort, viewProperties.primarySort);
 }
 
 export async function calculateRequiredArangoSearchViewUpdateOperations(
-    views: ArangoSearchView[],
+    views: ReadonlyArray<View>,
     definitions: ReadonlyArray<ArangoSearchDefinition>,
     db: Database,
     configuration?: ArangoSearchConfiguration,
@@ -295,19 +297,19 @@ export async function calculateRequiredArangoSearchViewUpdateOperations(
     return viewsWithUpdateRequired;
 }
 
-export function areAnalyzersEqual(a: AnalyzerInfo, b: AnalyzerInfo) {
-    if (a.type !== b.type) {
+export function areAnalyzersEqual(actual: AnalyzerDescription, target: CreateAnalyzerOptions) {
+    if (actual.type !== target.type) {
         return false;
     }
-    if (a.type === 'norm' && b.type === 'norm') {
+    if (actual.type === 'norm' && target.type === 'norm') {
         // arangodb 3.9 removed the .utf-8 suffix
         return (
-            a.properties.case === b.properties.case &&
-            a.properties.accent === b.properties.accent &&
-            normalizeLocale(a.properties.locale) === normalizeLocale(b.properties.locale)
+            actual.properties.case === target.properties.case &&
+            actual.properties.accent === target.properties.accent &&
+            normalizeLocale(actual.properties.locale) === normalizeLocale(target.properties.locale)
         );
     }
-    return deepEqual(a, b);
+    return deepEqual(actual, target);
 }
 
 function normalizeLocale(locale: string) {

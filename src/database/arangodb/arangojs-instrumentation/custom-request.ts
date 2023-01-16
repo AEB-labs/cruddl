@@ -4,7 +4,6 @@
  * Originally licensed under Apache License 2.0
  */
 
-import { btoa } from 'arangojs/lib/btoa';
 import { joinPath } from 'arangojs/lib/joinPath';
 import { Errback } from 'arangojs/lib/errback';
 import { omit } from 'arangojs/lib/omit';
@@ -19,27 +18,49 @@ import { Agent as HttpsAgent, request as httpsRequest } from 'https';
 import { Socket } from 'net';
 import { parse as parseUrl, UrlWithStringQuery } from 'url';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './config';
+import { SystemError } from 'arangojs/error';
 import { RequestOptions as ArangoRequestOptions } from 'arangojs/lib/request.node';
 
-export type ArangojsResponse = IncomingMessage & {
+/**
+ * @internal
+ */
+function systemErrorToJSON(this: SystemError) {
+    return {
+        error: true,
+        errno: this.errno,
+        code: this.code,
+        syscall: this.syscall,
+    };
+}
+
+/**
+ * @internal
+ */
+export interface ArangojsResponse extends IncomingMessage {
     request: ClientRequest;
     body?: any;
-    host?: number;
-};
+    arangojsHostUrl?: string;
+}
 
-export type ArangojsError = Error & {
+/**
+ * @internal
+ */
+export interface ArangojsError extends Error {
     request: ClientRequest;
-};
+    toJSON: () => Record<string, any>;
+}
 
 export interface RequestOptions extends ArangoRequestOptions {
     requestInstrumentation?: RequestInstrumentation;
 }
 
-export interface RequestFunction {
-    (opts: RequestOptions, cb: Errback<ArangojsResponse>): void;
-
+/**
+ * @internal
+ */
+export type RequestFunction = {
+    (options: RequestOptions, cb: Errback<ArangojsResponse>): void;
     close?: () => void;
-}
+};
 
 /**
  * collects sockets we already took the lookup/connect events from
@@ -116,7 +137,8 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
                 headers['content-length'] = String(Buffer.byteLength(body));
             }
             if (!headers['authorization']) {
-                headers['authorization'] = `Basic ${btoa(baseUrlParts.auth || 'root:')}`;
+                const encoded = Buffer.from(baseUrlParts.auth || 'root:').toString('base64');
+                headers['authorization'] = `Basic ${encoded}`;
             }
             const options: ClientRequestArgs = { path, method, headers, agent };
             if (socketPath) {
@@ -172,6 +194,7 @@ export function createRequest(baseUrl: string, agentOptions: any, agent: any): R
                 req.on('error', (err) => {
                     const error = err as ArangojsError;
                     error.request = req;
+                    error.toJSON = systemErrorToJSON;
                     if (called) return;
                     called = true;
                     if (agentOptions.after) {
