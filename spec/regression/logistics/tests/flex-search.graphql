@@ -3,13 +3,26 @@ query containsAnyWord {
         deliveryNumber
     }
 }
+
 query containsAllWords {
     flexSearchDeliveries(flexSearchFilter: { description_contains_all_words: "all words" }) {
         deliveryNumber
     }
 }
+
 query containsAllPrefixes {
     flexSearchDeliveries(flexSearchFilter: { description_contains_all_prefixes: "all prefixes" }) {
+        deliveryNumber
+    }
+}
+
+query multipleTokenizationExpressions {
+    flexSearchDeliveries(
+        flexSearchFilter: {
+            description_contains_all_prefixes: "phrase"
+            itemsAggregation: { itemNumber_contains_all_prefixes: "1002" }
+        }
+    ) {
         deliveryNumber
     }
 }
