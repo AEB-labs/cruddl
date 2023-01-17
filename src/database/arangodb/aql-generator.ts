@@ -1943,5 +1943,5 @@ export function generateTokenizationQuery(
             aql`${aql.identifier('token_' + i)}: TOKENS(${value.expression}, ${value.analyzer})`,
         );
     }
-    return aql`RETURN { ${aql.join(fragments, aql`,\n`)} }`;
+    return aql.lines(aql`RETURN {`, aql.indent(aql.join(fragments, aql`,\n`)), aql`}`);
 }
