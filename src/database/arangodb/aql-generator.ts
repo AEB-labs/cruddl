@@ -1768,5 +1768,5 @@ export function generateTokenizationQuery(tokensFiltered: ReadonlyArray<FlexSear
         const value = tokensFiltered[i];
         fragments.push(aql`${aql.identifier('token_' + i)}: TOKENS(${value.expression}, ${value.analyzer})`);
     }
-    return aql`RETURN { ${aql.join(fragments, aql`',\n`)} }`;
+    return aql`RETURN { ${aql.join(fragments, aql`,\n`)} }`;
 }
