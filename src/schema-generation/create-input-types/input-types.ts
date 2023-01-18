@@ -34,10 +34,6 @@ import {
 import { CreateInputField } from './input-fields';
 import { isRelationCreateField } from './relation-fields';
 
-function getCurrentISODate() {
-    return new Date().toISOString();
-}
-
 export class CreateObjectInputType extends TypedInputObjectType<CreateInputField> {
     constructor(
         type: ObjectType,
@@ -58,12 +54,12 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
             ...flatMap(applicableFields, (field) =>
                 toPairs(field.getProperties(value[field.name], context)),
             ),
-            ...toPairs(this.getAdditionalProperties(value)),
+            ...toPairs(this.getAdditionalProperties(value, context)),
         ];
         return fromPairs(properties);
     }
 
-    protected getAdditionalProperties(value: PlainObject): PlainObject {
+    protected getAdditionalProperties(value: PlainObject, context: FieldContext): PlainObject {
         return {};
     }
 
@@ -152,8 +148,8 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
         ];
     }
 
-    getAdditionalProperties() {
-        const now = getCurrentISODate();
+    getAdditionalProperties(value: PlainObject, context: FieldContext) {
+        const now = context.clock.getCurrentTimestamp();
         return {
             [ENTITY_CREATED_AT]: now,
             [ENTITY_UPDATED_AT]: now,
@@ -229,8 +225,8 @@ export class CreateChildEntityInputType extends CreateObjectInputType {
         );
     }
 
-    getAdditionalProperties() {
-        const now = getCurrentISODate();
+    getAdditionalProperties(value: PlainObject, context: FieldContext) {
+        const now = context.clock.getCurrentTimestamp();
         return {
             [ID_FIELD]: uuid(),
             [ENTITY_CREATED_AT]: now,

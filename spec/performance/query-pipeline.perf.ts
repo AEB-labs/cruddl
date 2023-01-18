@@ -13,6 +13,7 @@ import {
 import { compact } from '../../src/utils/utils';
 import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
 import { createTestProject } from './support/helpers';
+import { createRootFieldContext } from '../../src/schema-generation/query-node-object-type';
 
 const QUERIES = [
     `{
@@ -111,12 +112,14 @@ function buildQueryTree({
             ObjectQueryNode.EMPTY,
             mutationType,
             distilledOperation.selectionSet,
+            createRootFieldContext(),
         );
     } else {
         return buildConditionalObjectQueryNode(
             ObjectQueryNode.EMPTY,
             queryType,
             distilledOperation.selectionSet,
+            createRootFieldContext(),
         );
     }
 }

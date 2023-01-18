@@ -70,19 +70,34 @@ import { Constructor, decapitalize } from '../../utils/utils';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
+import { Clock, DefaultClock } from '../../execution/execution-options';
 
 const ID_FIELD_NAME = 'id';
+
+export interface QueryGenerationOptions {
+    /**
+     * An interface to determine the current date/time
+     */
+    readonly clock: Clock;
+}
 
 class QueryContext {
     private variableMap = new Map<VariableQueryNode, JSVariable>();
     private preExecQueries: JSCompoundQuery[] = [];
+
+    constructor(
+        /**
+         * Options that do not change within one query tree
+         */
+        readonly options: QueryGenerationOptions,
+    ) {}
 
     /**
      * Creates a new QueryContext with an independent variable map except that all query result variables of this
      * context are available.
      */
     private newPreExecContext(): QueryContext {
-        const newContext = new QueryContext();
+        const newContext = new QueryContext(this.options);
         this.variableMap.forEach((jsVar, varNode) => {
             if (jsVar instanceof JSQueryResultVariable) {
                 newContext.variableMap.set(varNode, jsVar);
@@ -103,7 +118,7 @@ class QueryContext {
         if (this.variableMap.has(variableNode)) {
             throw new Error(`Variable ${variableNode} is introduced twice`);
         }
-        const newContext = new QueryContext();
+        const newContext = new QueryContext(this.options);
         newContext.variableMap = new Map(this.variableMap);
         newContext.variableMap.set(variableNode, jsVariable);
         newContext.preExecQueries = this.preExecQueries;
@@ -1119,7 +1134,7 @@ register(FlexSearchComplexOperatorQueryNode, (node, context) => {
 });
 
 register(CreateBillingEntityQueryNode, (node, context) => {
-    const currentTimestamp = new Date().toISOString();
+    const currentTimestamp = context.options.clock.getCurrentTimestamp();
     const billingEntities = js.collection('billingEntities');
 
     return jsExt.executingFunction(
@@ -1144,7 +1159,7 @@ register(CreateBillingEntityQueryNode, (node, context) => {
 
 register(ConfirmForBillingQueryNode, (node, context) => {
     const key = processNode(node.keyNode, context);
-    const currentTimestamp = new Date().toISOString();
+    const currentTimestamp = context.options.clock.getCurrentTimestamp();
     const billingEntities = js.collection('billingEntities');
 
     return jsExt.executingFunction(
@@ -1245,12 +1260,17 @@ function processNode(node: QueryNode, context: QueryContext): JSFragment {
 
 // TODO I think JSCompoundQuery (JS transaction node) should not be the exported type
 // we should rather export JSExecutableQuery[] (as JS transaction) directly.
-export function getJSQuery(node: QueryNode): JSCompoundQuery {
+export function getJSQuery(
+    node: QueryNode,
+    options: Partial<QueryGenerationOptions> = {},
+): JSCompoundQuery {
     return createJSCompoundQuery(
         node,
         js.queryResultVariable('result'),
         undefined,
-        new QueryContext(),
+        new QueryContext({
+            clock: options.clock ?? new DefaultClock(),
+        }),
     );
 }
 

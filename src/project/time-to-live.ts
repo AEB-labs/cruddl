@@ -1,5 +1,5 @@
-import { DateTimeFormatter, ZonedDateTime, ZoneId } from '@js-joda/core';
-import { ExecutionOptions } from '../execution/execution-options';
+import { DateTimeFormatter, Instant, ZonedDateTime, ZoneId } from '@js-joda/core';
+import { Clock } from '../execution/execution-options';
 import { Field, ScalarType } from '../model';
 import { TimeToLiveType } from '../model/implementation/time-to-live';
 import {
@@ -22,10 +22,27 @@ import { getScalarFilterValueNode } from '../schema-generation/filter-input-type
 import { GraphQLLocalDate } from '../schema/scalars/local-date';
 import { decapitalize } from '../utils/utils';
 
-export function getQueryNodeForTTLType(
-    ttlType: TimeToLiveType,
-    maxCount: number | undefined,
-): QueryNode {
+export interface GetQueryNodeArgs {
+    readonly ttlType: TimeToLiveType;
+    readonly clock: Clock;
+    readonly maxCount?: number;
+}
+
+export interface TTLInfoQueryNodeArgs {
+    readonly ttlType: TimeToLiveType;
+    readonly overdueDelta: number;
+    readonly clock: Clock;
+}
+
+export interface TTLInfo {
+    readonly typeName: string;
+    readonly dateField: string;
+    readonly expireAfterDays: number;
+    readonly expiredObjectCount: number;
+    readonly overdueObjectCount: number;
+}
+
+export function getQueryNodeForTTLType({ ttlType, maxCount, clock }: GetQueryNodeArgs): QueryNode {
     if (!ttlType.rootEntityType) {
         throw new Error(`The ttlType does not specify a valid rootEntityType.`);
     }
@@ -36,7 +53,11 @@ export function getQueryNodeForTTLType(
         throw new Error(`The ttlType does not have a valid fieldType.`);
     }
 
-    const deleteFrom = calcDeleteFrom(ttlType.expireAfterDays, ttlType.fieldType);
+    const deleteFrom = calcDeleteFrom({
+        expireAfterDays: ttlType.expireAfterDays,
+        fieldType: ttlType.fieldType,
+        clock,
+    });
     const listItemVar = new VariableQueryNode(decapitalize(ttlType.rootEntityType.name));
 
     const listQueryNode = new TransformListQueryNode({
@@ -50,40 +71,7 @@ export function getQueryNodeForTTLType(
     });
 }
 
-export function getTTLFilter(
-    fieldType: ScalarType,
-    path: ReadonlyArray<Field>,
-    deleteFrom: string,
-    listItemVar: VariableQueryNode,
-) {
-    const filterNode = new BinaryOperationQueryNode(
-        getScalarFilterValueNode(new FieldPathQueryNode(listItemVar, path), fieldType),
-        BinaryOperator.LESS_THAN,
-        new LiteralQueryNode(deleteFrom),
-    );
-    const nullFilterNode = new BinaryOperationQueryNode(
-        getScalarFilterValueNode(new FieldPathQueryNode(listItemVar, path), fieldType),
-        BinaryOperator.GREATER_THAN,
-        new NullQueryNode(),
-    );
-    return new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, nullFilterNode);
-}
-
-export function calcDeleteFrom(expireAfterDays: number, fieldType: ScalarType | undefined) {
-    if (!fieldType) {
-        throw new Error(`The ttl-type dateField does not have a valid type.`);
-    }
-
-    // Use westernmost timezone for LocalDate so objects are only deleted when they are expired everywhere in the world
-    const currentTime: ZonedDateTime =
-        fieldType.name === GraphQLLocalDate.name
-            ? ZonedDateTime.now(ZoneId.of('UTC+12:00'))
-            : ZonedDateTime.now(ZoneId.UTC);
-
-    return currentTime.minusDays(expireAfterDays).format(DateTimeFormatter.ISO_INSTANT);
-}
-
-export function getTTLInfoQueryNode(ttlType: TimeToLiveType, overdueDelta: number) {
+export function getTTLInfoQueryNode({ ttlType, overdueDelta, clock }: TTLInfoQueryNodeArgs) {
     if (!ttlType.rootEntityType) {
         throw new Error(`The ttlType does not specify a valid rootEntityType.`);
     }
@@ -111,7 +99,11 @@ export function getTTLInfoQueryNode(ttlType: TimeToLiveType, overdueDelta: numbe
                     filterNode: getTTLFilter(
                         ttlType.fieldType,
                         ttlType.path,
-                        calcDeleteFrom(ttlType.expireAfterDays, ttlType.fieldType),
+                        calcDeleteFrom({
+                            expireAfterDays: ttlType.expireAfterDays,
+                            fieldType: ttlType.fieldType,
+                            clock,
+                        }),
                         expiredVariableNode,
                     ),
                 }),
@@ -126,7 +118,11 @@ export function getTTLInfoQueryNode(ttlType: TimeToLiveType, overdueDelta: numbe
                     filterNode: getTTLFilter(
                         ttlType.fieldType,
                         ttlType.path,
-                        calcDeleteFrom(ttlType.expireAfterDays + overdueDelta, ttlType.fieldType),
+                        calcDeleteFrom({
+                            expireAfterDays: ttlType.expireAfterDays + overdueDelta,
+                            fieldType: ttlType.fieldType,
+                            clock,
+                        }),
                         overdueVariableNode,
                     ),
                 }),
@@ -135,10 +131,43 @@ export function getTTLInfoQueryNode(ttlType: TimeToLiveType, overdueDelta: numbe
     ]);
 }
 
-export interface TTLInfo {
-    readonly typeName: string;
-    readonly dateField: string;
+interface CalcDeleteFromArgs {
     readonly expireAfterDays: number;
-    readonly expiredObjectCount: number;
-    readonly overdueObjectCount: number;
+    readonly fieldType: ScalarType | undefined;
+    readonly clock: Clock;
+}
+
+function getTTLFilter(
+    fieldType: ScalarType,
+    path: ReadonlyArray<Field>,
+    deleteFrom: string,
+    listItemVar: VariableQueryNode,
+) {
+    const filterNode = new BinaryOperationQueryNode(
+        getScalarFilterValueNode(new FieldPathQueryNode(listItemVar, path), fieldType),
+        BinaryOperator.LESS_THAN,
+        new LiteralQueryNode(deleteFrom),
+    );
+    const nullFilterNode = new BinaryOperationQueryNode(
+        getScalarFilterValueNode(new FieldPathQueryNode(listItemVar, path), fieldType),
+        BinaryOperator.GREATER_THAN,
+        new NullQueryNode(),
+    );
+    return new BinaryOperationQueryNode(filterNode, BinaryOperator.AND, nullFilterNode);
+}
+
+function calcDeleteFrom({ expireAfterDays, fieldType, clock }: CalcDeleteFromArgs) {
+    if (!fieldType) {
+        throw new Error(`The ttl-type dateField does not have a valid type.`);
+    }
+
+    const now = Instant.parse(clock.getCurrentTimestamp());
+
+    // Use westernmost timezone for LocalDate so objects are only deleted when they are expired everywhere in the world
+    const currentTime: ZonedDateTime =
+        fieldType.name === GraphQLLocalDate.name
+            ? now.atZone(ZoneId.of('UTC+12:00'))
+            : now.atZone(ZoneId.UTC);
+
+    return currentTime.minusDays(expireAfterDays).format(DateTimeFormatter.ISO_INSTANT);
 }

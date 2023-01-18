@@ -4,12 +4,18 @@ import { Logger } from '../../config/logging';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { FlexSearchTokenization } from '../../query-tree/flex-search';
-import { DatabaseAdapter, FlexSearchTokenizable } from '../database-adapter';
+import {
+    DatabaseAdapter,
+    ExecutionArgs,
+    ExecutionResult,
+    FlexSearchTokenizable,
+} from '../database-adapter';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { JSCompoundQuery, JSExecutableQuery } from './js';
 import { getJSQuery } from './js-generator';
 import { v4 as uuid } from 'uuid';
+import { DefaultClock } from '../../execution/execution-options';
 
 export class InMemoryDB {
     collections: { [name: string]: any[] } = {};
@@ -246,11 +252,21 @@ export class InMemoryAdapter implements DatabaseAdapter {
     }
 
     async execute(queryTree: QueryNode) {
+        const result = await this.executeExt({ queryTree });
+        if (result.error) {
+            throw result.error;
+        }
+        return result.data;
+    }
+
+    async executeExt(args: ExecutionArgs): Promise<ExecutionResult> {
         globalContext.registerContext(this.schemaContext);
         let executableQueries: JSExecutableQuery[];
         let jsQuery: JSCompoundQuery;
         try {
-            jsQuery = getJSQuery(queryTree);
+            jsQuery = getJSQuery(args.queryTree, {
+                clock: args.clock ?? new DefaultClock(),
+            });
             executableQueries = jsQuery.getExecutableQueries();
         } finally {
             globalContext.unregisterContext();
@@ -259,7 +275,10 @@ export class InMemoryAdapter implements DatabaseAdapter {
             this.logger.trace(`Executing JavaScript: ${jsQuery.toColoredString()}`);
         }
 
-        return this.executeQueries(executableQueries);
+        const data = this.executeQueries(executableQueries);
+        return {
+            data,
+        };
     }
 
     async updateSchema(model: Model) {

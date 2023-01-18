@@ -87,6 +87,7 @@ import {
     getCollectionNameForRootEntity,
 } from './arango-basics';
 import { getFlexSearchViewNameForRootEntity } from './schema-migration/arango-search-helpers';
+import { Clock, DefaultClock } from '../../execution/execution-options';
 
 enum AccessType {
     /**
@@ -106,6 +107,13 @@ enum AccessType {
     WRITE = 'WRITE',
 }
 
+export interface QueryGenerationOptions {
+    /**
+     * An interface to determine the current date/time
+     */
+    readonly clock: Clock;
+}
+
 class QueryContext {
     private variableMap = new Map<VariableQueryNode, AQLFragment>();
     private preExecQueries: AQLCompoundQuery[] = [];
@@ -114,12 +122,19 @@ class QueryContext {
     private writeAccessedCollections = new Set<string>();
     private extensions: Map<unknown, unknown> | undefined;
 
+    constructor(
+        /**
+         * Options that do not change within one query tree
+         */
+        readonly options: QueryGenerationOptions,
+    ) {}
+
     /**
      * Creates a new QueryContext with an independent variable map except that all query result variables of this
      * context are available.
      */
     private newPreExecContext(): QueryContext {
-        const newContext = new QueryContext();
+        const newContext = new QueryContext(this.options);
         this.variableMap.forEach((aqlVar, varNode) => {
             if (aqlVar instanceof AQLQueryResultVariable) {
                 newContext.variableMap.set(varNode, aqlVar);
@@ -140,7 +155,7 @@ class QueryContext {
         variableNode: VariableQueryNode,
         aqlVariable: AQLFragment,
     ): QueryContext {
-        const newContext = new QueryContext();
+        const newContext = new QueryContext(this.options);
         newContext.variableMap = new Map(this.variableMap);
         newContext.variableMap.set(variableNode, aqlVariable);
         newContext.preExecQueries = this.preExecQueries;
@@ -235,7 +250,7 @@ class QueryContext {
     }
 
     withExtension(key: unknown, value: unknown): QueryContext {
-        const newContext = new QueryContext();
+        const newContext = new QueryContext(this.options);
         newContext.variableMap = this.variableMap;
         newContext.explicitlyReadAccessedCollections = this.explicitlyReadAccessedCollections;
         newContext.writeAccessedCollections = this.writeAccessedCollections;
@@ -977,7 +992,7 @@ function getBillingInput(
 }
 
 register(CreateBillingEntityQueryNode, (node, context) => {
-    const currentTimestamp = new Date().toISOString();
+    const currentTimestamp = context.options.clock.getCurrentTimestamp();
     return aqlExt.parenthesizeList(
         aql`UPSERT {
             key: ${node.key},
@@ -999,7 +1014,7 @@ register(CreateBillingEntityQueryNode, (node, context) => {
 
 register(ConfirmForBillingQueryNode, (node, context) => {
     const key = processNode(node.keyNode, context);
-    const currentTimestamp = new Date().toISOString();
+    const currentTimestamp = context.options.clock.getCurrentTimestamp();
     return aqlExt.parenthesizeList(
         aql`UPSERT {
             key: ${key},
@@ -1878,12 +1893,17 @@ function processNode(node: QueryNode, context: QueryContext): AQLFragment {
 
 // TODO I think AQLCompoundQuery (AQL transaction node) should not be the exported type
 // we should rather export AQLExecutableQuery[] (as AQL transaction) directly.
-export function getAQLQuery(node: QueryNode): AQLCompoundQuery {
+export function getAQLQuery(
+    node: QueryNode,
+    options: Partial<QueryGenerationOptions> = {},
+): AQLCompoundQuery {
     return createAQLCompoundQuery(
         node,
         aql.queryResultVariable('result'),
         undefined,
-        new QueryContext(),
+        new QueryContext({
+            clock: options.clock ?? new DefaultClock(),
+        }),
     );
 }
 

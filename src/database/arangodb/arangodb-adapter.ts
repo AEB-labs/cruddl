@@ -2,7 +2,7 @@ import { Database } from 'arangojs';
 import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
-import { ExecutionOptions } from '../../execution/execution-options';
+import { DefaultClock, ExecutionOptions } from '../../execution/execution-options';
 import {
     ConflictRetriesExhaustedError,
     TransactionCancelledError,
@@ -331,7 +331,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         aqlConfig.enableIndentationForCode = !!options.recordPlan;
         try {
             //TODO Execute single statement AQL queries directly without "db.transaction"?
-            aqlQuery = getAQLQuery(queryTree);
+            aqlQuery = getAQLQuery(queryTree, {
+                clock: options.clock,
+            });
             executableQueries = aqlQuery.getExecutableQueries();
         } finally {
             globalContext.unregisterContext();

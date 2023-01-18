@@ -85,6 +85,11 @@ export interface ExecutionOptions {
      * @deprecated use timeToLiveOptions
      */
     readonly timeToLiveOverdueDelta?: number;
+
+    /**
+     * An interface to determine the current date/time. If not specified, system time is used
+     */
+    readonly clock?: Clock;
 }
 
 export interface TimeToLiveExecutionOptions {
@@ -124,4 +129,20 @@ export interface LocaleInfo {
      * An array of languages or languages with region (e.g. de-DE) in order of decreasing priority
      */
     readonly acceptLanguages?: ReadonlyArray<string>;
+}
+
+export interface Clock {
+    /**
+     * Gets an ISO string for the current date/time in UTC
+     */
+    getCurrentTimestamp(): string;
+}
+
+/**
+ * A class that implements the Clock interface and uses the system time
+ */
+export class DefaultClock implements Clock {
+    getCurrentTimestamp(): string {
+        return new Date().toISOString();
+    }
 }
