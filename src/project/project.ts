@@ -3,7 +3,7 @@ import memorize from 'memorize-decorator';
 import { ProjectOptions } from '../config/interfaces';
 import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
 import { DatabaseAdapter } from '../database/database-adapter';
-import { ExecutionOptions } from '../execution/execution-options';
+import { DefaultClock, ExecutionOptions } from '../execution/execution-options';
 import { TransactionTimeoutError } from '../execution/runtime-errors';
 import { SchemaExecutor } from '../execution/schema-executor';
 import { TransactionError } from '../execution/transaction-error';
@@ -223,7 +223,11 @@ export class Project {
         let hasReducedLimit = false;
         let lastLimitReductionCause: Error | undefined = undefined;
         while (true) {
-            const queryTree = getQueryNodeForTTLType(type, limit);
+            const queryTree = getQueryNodeForTTLType({
+                ttlType: type,
+                maxCount: limit,
+                clock: executionOptions.clock ?? new DefaultClock(),
+            });
             try {
                 const deletedObjectsCount = await this.execute(
                     databaseAdapter,
@@ -280,12 +284,14 @@ export class Project {
         );
         const queryTree = new ListQueryNode(
             ttlTypes.map((ttlType) =>
-                getTTLInfoQueryNode(
-                    ttlType,
-                    executionOptions.timeToLiveOptions?.overdueDelta ||
+                getTTLInfoQueryNode({
+                    ttlType: ttlType,
+                    overdueDelta:
+                        executionOptions.timeToLiveOptions?.overdueDelta ||
                         executionOptions.timeToLiveOverdueDelta ||
                         3,
-                ),
+                    clock: executionOptions.clock ?? new DefaultClock(),
+                }),
             ),
         );
         return await this.execute(databaseAdapter, queryTree, executionOptions);

@@ -32,7 +32,7 @@ import {
 } from '../schema-generation/query-node-object-type';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
 import { getPreciseTime, Watch } from '../utils/watch';
-import { ExecutionOptions } from './execution-options';
+import { DefaultClock, ExecutionOptions } from './execution-options';
 import { ExecutionResult } from './execution-result';
 
 export class OperationResolver {
@@ -100,6 +100,7 @@ export class OperationResolver {
                 flexSearchMaxFilterableAmountOverride:
                     options.flexSearchMaxFilterableAndSortableAmount,
                 flexSearchRecursionDepth: options.flexSearchRecursionDepth,
+                clock: options.clock ?? new DefaultClock(),
             };
             queryTree = buildConditionalObjectQueryNode(
                 rootQueryNode,

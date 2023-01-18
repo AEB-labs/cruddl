@@ -10,7 +10,6 @@ import {
     PreExecQueryParms,
     PropertySpecification,
     QueryNode,
-    RuntimeErrorQueryNode,
     TransformListQueryNode,
     TypeCheckQueryNode,
     VariableAssignmentQueryNode,
@@ -22,16 +21,27 @@ import { decapitalize, flatMap } from '../../utils/utils';
 import { FieldContext, SelectionToken } from './context';
 import { QueryNodeField, QueryNodeObjectType } from './definition';
 import { extractQueryTreeObjectType, isListTypeIgnoringNonNull } from './utils';
+import { DefaultClock } from '../../execution/execution-options';
+
+export function createRootFieldContext(
+    options: Partial<
+        Omit<FieldContext, 'selectionStack' | 'selectionTokenStack' | 'selectionToken'>
+    > = {},
+): FieldContext {
+    return {
+        selectionStack: [],
+        selectionTokenStack: [],
+        selectionToken: new SelectionToken(),
+        clock: options.clock ?? new DefaultClock(),
+        ...options,
+    };
+}
 
 export function buildConditionalObjectQueryNode(
     sourceNode: QueryNode,
     type: QueryNodeObjectType,
     selectionSet: ReadonlyArray<FieldSelection>,
-    context: FieldContext = {
-        selectionStack: [],
-        selectionTokenStack: [],
-        selectionToken: new SelectionToken(),
-    },
+    context: FieldContext,
 ) {
     if (sourceNode instanceof ObjectQueryNode) {
         // shortcut, especially useful for namespace nodes where we always pass through an empty object but ignore it
@@ -72,7 +82,9 @@ function getFieldMap(type: QueryNodeObjectType) {
     if (fieldMap) {
         return fieldMap;
     }
-    fieldMap = new Map(resolveReadonlyArrayThunk(type.fields).map((f): [string, QueryNodeField] => [f.name, f]));
+    fieldMap = new Map(
+        resolveReadonlyArrayThunk(type.fields).map((f): [string, QueryNodeField] => [f.name, f]),
+    );
     typeFieldMaps.set(type, fieldMap);
     return fieldMap;
 }
