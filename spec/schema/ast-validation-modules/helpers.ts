@@ -4,6 +4,7 @@ import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project'
 import {
     createModel,
     PermissionProfileConfigMap,
+    TimeToLiveConfig,
     ValidationContext,
     ValidationResult,
 } from '../../../src/model';
@@ -15,15 +16,23 @@ import {
 } from '../../../src/schema/preparation/ast-validator';
 import { parseProjectSource } from '../../../src/schema/schema-builder';
 
-export function assertValidatorRejects(source: string | DocumentNode, msg: string) {
-    const validationResult = validate(source);
+export function assertValidatorRejects(
+    source: string | DocumentNode,
+    msg: string,
+    options?: ValidationOptions,
+) {
+    const validationResult = validate(source, options);
     expect(validationResult.hasErrors()).to.be.true;
     expect(validationResult.getErrors().length, validationResult.toString()).to.equal(1);
     expect(validationResult.getErrors()[0].message, validationResult.toString()).to.equal(msg);
 }
 
-export function assertValidatorWarns(source: string | DocumentNode, msg: string) {
-    const validationResult = validate(source);
+export function assertValidatorWarns(
+    source: string | DocumentNode,
+    msg: string,
+    options?: ValidationOptions,
+) {
+    const validationResult = validate(source, options);
     expect(validationResult.hasWarnings()).to.be.true;
     expect(
         validationResult.messages.find((validatedMsg) => validatedMsg.message === msg),
@@ -31,20 +40,28 @@ export function assertValidatorWarns(source: string | DocumentNode, msg: string)
     ).to.not.be.undefined;
 }
 
-export function assertValidatorAccepts(source: string | DocumentNode) {
-    const validationResult = validate(source);
+export function assertValidatorAccepts(source: string | DocumentNode, options?: ValidationOptions) {
+    const validationResult = validate(source, options);
     expect(validationResult.hasErrors(), validationResult.toString()).to.be.false;
 }
 
-export function assertValidatorAcceptsAndDoesNotWarn(source: string | DocumentNode) {
-    const validationResult = validate(source);
+export function assertValidatorAcceptsAndDoesNotWarn(
+    source: string | DocumentNode,
+    options?: ValidationOptions,
+) {
+    const validationResult = validate(source, options);
     expect(validationResult.hasErrors(), validationResult.toString()).to.be.false;
     expect(validationResult.hasWarnings(), validationResult.toString()).to.be.false;
 }
 
+export interface ValidationOptions {
+    readonly permissionProfiles?: PermissionProfileConfigMap;
+    timeToLive?: ReadonlyArray<TimeToLiveConfig>;
+}
+
 export function validate(
     source: string | DocumentNode,
-    options: { permissionProfiles?: PermissionProfileConfigMap } = {},
+    options: ValidationOptions = {},
 ): ValidationResult {
     const ast = typeof source === 'string' ? parse(new Source(source, 'schema.graphqls')) : source;
     const model = createModel({
@@ -67,6 +84,7 @@ export function validate(
                             ],
                         },
                     },
+                    timeToLive: options.timeToLive,
                 },
                 namespacePath: [],
                 pathLocationMap: {},
