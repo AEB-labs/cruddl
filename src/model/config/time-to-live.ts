@@ -5,7 +5,7 @@ export interface TimeToLiveConfig {
     readonly dateField: string;
     readonly expireAfterDays: number;
 
-    readonly typeNameLoc: MessageLocation;
-    readonly dateFieldLoc: MessageLocation;
-    readonly expireAfterDaysLoc: MessageLocation;
+    readonly typeNameLoc?: MessageLocation;
+    readonly dateFieldLoc?: MessageLocation;
+    readonly expireAfterDaysLoc?: MessageLocation;
 }
