@@ -25,6 +25,7 @@ describe('FlexSearch', () => {
             `@flexSearch is not supported on relations.`,
         );
     });
+
     it('rejects flexSearch on reference', () => {
         assertValidatorRejects(
             `
@@ -36,6 +37,7 @@ describe('FlexSearch', () => {
             `@flexSearch is not supported on references.`,
         );
     });
+
     it('rejects flexSearch on collect fields', () => {
         assertValidatorRejects(
             `
@@ -47,6 +49,7 @@ describe('FlexSearch', () => {
             `@flexSearch is not supported on collect fields.`,
         );
     });
+
     it('accepts flexSearch flexSearchFulltext on strings', () => {
         // currently we allow pretty much every type on @flexSearch (which is a bug),
         // but when we change this, we should not break e.g. Strings
@@ -58,6 +61,7 @@ describe('FlexSearch', () => {
         `,
         );
     });
+
     it('accepts flexSearch and flexSearchFulltext on I18nString', () => {
         assertValidatorAccepts(
             `
@@ -67,6 +71,7 @@ describe('FlexSearch', () => {
         `,
         );
     });
+
     it('rejects flexSearchFulltext on numbers', () => {
         assertValidatorRejects(
             `
@@ -77,6 +82,7 @@ describe('FlexSearch', () => {
             `@flexSearchFulltext is not supported on type "Int".`,
         );
     });
+
     it('rejects flexSearchFulltext on collect fields', () => {
         assertValidatorRejects(
             `
@@ -88,6 +94,7 @@ describe('FlexSearch', () => {
             `@flexSearch is not supported on collect fields.`,
         );
     });
+
     it('rejects flexSearch on child without indexed field', () => {
         assertValidatorRejects(
             `
@@ -101,6 +108,7 @@ describe('FlexSearch', () => {
             `At least one field on type "HandlingUnitInfo" must be annotated with @flexSearch or @flexSearchFulltext if @flexSearch is specified on the type declaration.`,
         );
     });
+
     it('rejects flexSearch includeInSearch for booleans', () => {
         assertValidatorRejects(
             `
@@ -122,6 +130,7 @@ describe('FlexSearch', () => {
             `"${FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT}" is only supported on the types "String" and "[String]".`,
         );
     });
+
     it('accepts flexSearch includeInSearch for string arrays', () => {
         assertValidatorAccepts(`
             type HandlingUnit @rootEntity(flexSearch: true) {
@@ -129,6 +138,7 @@ describe('FlexSearch', () => {
             }
         `);
     });
+
     it('rejects flexSearch without accessField', () => {
         const model = new Model({
             types: [
@@ -162,6 +172,7 @@ describe('FlexSearch', () => {
         const type = <RootEntityType>model.types.find((value) => value.name === 'HandlingUnit');
         expectSingleErrorToInclude(type.fields.find((value) => value.name === 'accessGroup')!, '');
     });
+
     it('accepts a valid primarySort', () => {
         assertValidatorAccepts(`
             type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someString", direction: ASC}]) {
@@ -177,6 +188,7 @@ describe('FlexSearch', () => {
             }
         `);
     });
+
     it('rejects an invalid primarySort', () => {
         assertValidatorRejects(
             `
@@ -190,6 +202,21 @@ describe('FlexSearch', () => {
             `At least one field on type "HandlingUnitInfo" must be annotated with @flexSearch or @flexSearchFulltext if @flexSearch is specified on the type declaration.`,
         );
     });
+
+    it('rejects primarySort without field', () => {
+        assertValidatorRejects(
+            `
+            type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{direction: ASC}]) {
+                someExtension: HandlingUnitInfo @flexSearch
+            }
+            type HandlingUnitInfo @entityExtension{
+                someString: String
+            }
+        `,
+            `Field "FlexSearchOrderArgument.field" of required type "String!" was not provided.`,
+        );
+    });
+
     it('uses EN as default language for flexSearchFulltext', () => {
         const document: DocumentNode = gql`
             type HandlingUnit @rootEntity(flexSearch: true) {
