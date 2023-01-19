@@ -165,7 +165,7 @@ export const DIRECTIVES: DocumentNode = gql`
 
     "An argument to define the order of a flexSearchIndex"
     input FlexSearchOrderArgument {
-        field: String
+        field: String!
         direction: OrderDirection
     }
 
