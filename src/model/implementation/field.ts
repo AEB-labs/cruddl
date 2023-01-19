@@ -7,6 +7,8 @@ import {
     COLLECT_DIRECTIVE,
     FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT,
     FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
+    INPUT_FIELD_EQUAL,
+    INPUT_FIELD_NOT,
     PARENT_DIRECTIVE,
     REFERENCE_DIRECTIVE,
     RELATION_DIRECTIVE,
@@ -43,6 +45,8 @@ import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
+import { NUMERIC_FILTER_FIELDS } from '../../schema-generation/filter-input-types/constants';
+import { STRING_FLEX_SEARCH_FILTER_FIELDS } from '../../schema-generation/flex-search-filter-input-types/constants';
 
 export interface SystemFieldConfig extends FieldConfig {
     readonly isSystemField?: boolean;
@@ -1613,6 +1617,31 @@ export class Field implements ModelComponent {
                 return;
             }
         }
+
+        const supportedNonNumberScalarTypeNames = [
+            GraphQLString.name,
+            GraphQLID.name,
+            GraphQLDateTime.name,
+            GraphQLLocalDate.name,
+            GraphQLLocalTime.name,
+            GraphQLBoolean.name,
+        ];
+        if (
+            this.isFlexSearchIndexed &&
+            this.type.isScalarType &&
+            !this.type.isNumberType &&
+            !supportedNonNumberScalarTypeNames.includes(this.type.name)
+        ) {
+            // this used to be accepted silently in the past
+            // report a warning for the transition period, and change this to an error later
+            context.addMessage(
+                ValidationMessage.warn(
+                    `@flexSearch is not supported on type "${this.type.name}". Remove this directive. This will be an error in a future release.`,
+                    this.input.isFlexSearchIndexedASTNode,
+                ),
+            );
+        }
+
         const supportedFullTextTypeNames = [GraphQLString.name, GraphQLI18nString.name];
         if (
             this.isFlexSearchFulltextIndexed &&

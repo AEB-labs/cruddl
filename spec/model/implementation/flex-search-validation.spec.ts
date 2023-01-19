@@ -166,15 +166,14 @@ describe('FlexSearch', () => {
         );
     });
 
-    // captures status quo - should make it clear that it will be an error in the future
-    // only FLEX_SEARCH_FILTER_FIELDS_BY_TYPE and I18nString should be allowed
-    it('accepts flexSearch on fields of type JSON', () => {
-        assertValidatorAcceptsAndDoesNotWarn(
+    it('warns about flexSearch on fields of type JSON', () => {
+        assertValidatorWarns(
             `
             type HandlingUnit @rootEntity(flexSearch: true) {
                 data: JSON @flexSearch
             }
         `,
+            '@flexSearch is not supported on type "JSON". Remove this directive. This will be an error in a future release.',
         );
     });
 
