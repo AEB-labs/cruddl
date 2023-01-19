@@ -279,14 +279,14 @@ describe('FlexSearch', () => {
         );
     });
 
-    // captures status quo - should be changed to a warning and eventually to an error
-    it('accepts primarySort with missing direction', () => {
-        assertValidatorAcceptsAndDoesNotWarn(
+    it('warns about primarySort with missing direction', () => {
+        assertValidatorWarns(
             `
             type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someString"}]) {
                 someString: String @flexSearch
             }
         `,
+            'Field "FlexSearchOrderArgument.direction" of required type "OrderDirection!" was not provided. "ASC" will be assumed. This will be an error in a future release.',
         );
     });
 
@@ -294,7 +294,7 @@ describe('FlexSearch', () => {
     it('accepts primarySort when flexSearch is not enabled', () => {
         assertValidatorAcceptsAndDoesNotWarn(
             `
-            type HandlingUnit @rootEntity(flexSearchOrder: [{field: "someString"}]) {
+            type HandlingUnit @rootEntity(flexSearchOrder: [{field: "someString", direction: ASC}]) {
                 someString: String
             }
         `,

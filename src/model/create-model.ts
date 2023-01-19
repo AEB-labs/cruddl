@@ -2,6 +2,7 @@ import {
     ArgumentNode,
     DirectiveNode,
     EnumValueDefinitionNode,
+    EnumValueNode,
     FieldDefinitionNode,
     GraphQLBoolean,
     GraphQLEnumType,
@@ -16,6 +17,7 @@ import {
     StringValueNode,
     TypeDefinitionNode,
     valueFromAST,
+    ValueNode,
 } from 'graphql';
 import { ModelOptions } from '../config/interfaces';
 import {
@@ -335,43 +337,86 @@ function getDefaultValue(fieldNode: FieldDefinitionNode, context: ValidationCont
 }
 
 function getFlexSearchOrder(
-    rootEntityDirective?: DirectiveNode,
+    rootEntityDirective: DirectiveNode,
+    context: ValidationContext,
 ): ReadonlyArray<FlexSearchPrimarySortClauseConfig> {
-    if (!rootEntityDirective) {
-        return [];
-    }
-    const argumentFlexSearchOrder: ArgumentNode | undefined = getNodeByName(
+    const argumentNode: ArgumentNode | undefined = getNodeByName(
         rootEntityDirective.arguments,
         FLEX_SEARCH_ORDER_ARGUMENT,
     );
-    if (argumentFlexSearchOrder && argumentFlexSearchOrder.value.kind === 'ListValue') {
-        return argumentFlexSearchOrder.value.values
-            .map((orderArgument) => {
-                return valueFromAST(orderArgument, flexSearchOrderInputObjectType);
-            })
-            .map((value: any) => {
-                return {
-                    field: value.field,
-                    direction:
-                        value.direction === 'DESC'
-                            ? OrderDirection.DESCENDING
-                            : OrderDirection.ASCENDING,
-                };
-            });
+
+    if (!argumentNode) {
+        return [];
     }
-    return [];
+
+    if (argumentNode.value.kind === Kind.LIST) {
+        return argumentNode.value.values.map((v) => createFlexSearchPrimarySortClause(v, context));
+    } else {
+        // graphql syntax allows list values to be defined without [] which results in an OBJECT
+        return [createFlexSearchPrimarySortClause(argumentNode.value, context)];
+    }
+}
+
+function createFlexSearchPrimarySortClause(
+    valueNode: ValueNode,
+    context: ValidationContext,
+): FlexSearchPrimarySortClauseConfig {
+    if (valueNode.kind !== Kind.OBJECT) {
+        // this is a graphql validation error
+        throw new Error(
+            `Expected FlexSearchOrderArgument value to be OBJECT, is ${valueNode.kind}`,
+        );
+    }
+
+    const fieldNode = valueNode.fields.find((f) => f.name.value === 'field');
+    const directionNode = valueNode.fields.find((f) => f.name.value === 'direction');
+
+    if (!fieldNode || fieldNode?.value.kind !== Kind.STRING) {
+        // this is a graphql validation error
+        throw new Error(
+            `Expected "field" field of FlexSearchOrderArgument to be STRING, but is ${fieldNode?.value.kind}`,
+        );
+    }
+
+    let direction: OrderDirection;
+    let directionASTNode: EnumValueNode | undefined;
+    if (!directionNode) {
+        // a missing direction was just silently be ignored and assumed to be ASC in the past
+        // for a migration period, treat it as a warning
+        context.addMessage(
+            ValidationMessage.warn(
+                `Field "FlexSearchOrderArgument.direction" of required type "OrderDirection!" was not provided. "ASC" will be assumed. This will be an error in a future release.`,
+                valueNode,
+            ),
+        );
+        direction = OrderDirection.ASCENDING;
+    } else if (directionNode?.value.kind !== Kind.ENUM) {
+        // this is a graphql validation error
+        throw new Error(
+            `Expected "direction" field of FlexSearchOrderArgument to be ENUM, but is ${directionNode.value.kind}`,
+        );
+    } else {
+        directionASTNode = directionNode.value;
+        direction =
+            directionASTNode.value === 'DESC'
+                ? OrderDirection.DESCENDING
+                : OrderDirection.ASCENDING;
+    }
+
+    return {
+        field: fieldNode?.value.value,
+        fieldASTNode: fieldNode?.value,
+        direction,
+        directionASTNode,
+    };
 }
 
 function createFlexSearchDefinitionInputs(
     objectNode: ObjectTypeDefinitionNode,
     context: ValidationContext,
 ): FlexSearchIndexConfig {
-    let directive = findDirectiveWithName(objectNode, ROOT_ENTITY_DIRECTIVE);
-    let config = {
-        isIndexed: false,
-        directiveASTNode: directive,
-        primarySort: getFlexSearchOrder(directive),
-    };
+    let isIndexed = false;
+    const directive = findDirectiveWithName(objectNode, ROOT_ENTITY_DIRECTIVE);
     if (directive) {
         const argumentIndexed: ArgumentNode | undefined = getNodeByName(
             directive.arguments,
@@ -379,11 +424,16 @@ function createFlexSearchDefinitionInputs(
         );
         if (argumentIndexed) {
             if (argumentIndexed.value.kind === 'BooleanValue') {
-                config.isIndexed = argumentIndexed.value.value;
+                isIndexed = argumentIndexed.value.value;
             }
         }
     }
-    return config;
+
+    return {
+        isIndexed,
+        directiveASTNode: directive,
+        primarySort: directive ? getFlexSearchOrder(directive, context) : [],
+    };
 }
 
 function getFlexSearchIndexCaseSensitiveNode(
