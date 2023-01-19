@@ -1,14 +1,17 @@
 import memorize from 'memorize-decorator';
-import { TypeKind } from '../config';
-import { locationWithinStringArgument, MessageLocation, ValidationMessage } from '../validation';
+import {
+    LocationLike,
+    locationWithinStringArgument,
+    MessageLocation,
+    ValidationMessage,
+} from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
 import { ObjectType, Type } from './type';
-import { config } from 'chai';
 
 export interface FieldPathConfig extends Partial<FieldPathOptions> {
     readonly path: string;
-    readonly location?: MessageLocation;
+    readonly location?: LocationLike;
     readonly baseType: ObjectType;
     readonly canTraverseRootEntities?: boolean;
     readonly canFollowReferences?: boolean;
@@ -40,7 +43,7 @@ export class FieldPath implements ModelComponent {
 
     private readonly options: FieldPathOptions;
 
-    readonly location: MessageLocation | undefined;
+    readonly location: LocationLike | undefined;
 
     constructor(private readonly config: FieldPathConfig) {
         this.path = config.path;

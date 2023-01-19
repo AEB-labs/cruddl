@@ -1,4 +1,4 @@
-import { ASTNode, Location, StringValueNode, ValueNode } from 'graphql';
+import { ASTNode, Kind, Location } from 'graphql';
 import { ProjectSource } from '../../project/source';
 import { getLineAndColumnFromPosition } from '../../schema/schema-utils';
 
@@ -155,32 +155,42 @@ function isASTNode(obj: any): obj is ASTNode {
 }
 
 export function locationWithinStringArgument(
-    node: StringValueNode | MessageLocation,
+    node: LocationLike,
     offset: number,
     length: number,
-) {
-    if (node instanceof MessageLocation) {
-        return locationWithinStringArgumentML(node, offset, length);
+): MessageLocation | undefined {
+    if (isASTNode(node) && node.kind === Kind.STRING && node.loc) {
+        const loc = node.loc;
+        // add 1 because of "
+        return new MessageLocation(
+            ProjectSource.fromGraphQLSource(loc.source) || loc.source.name,
+            new SourcePosition(
+                loc.start + 1 + offset,
+                loc.startToken.line,
+                loc.startToken.column + 1 + offset,
+            ),
+            new SourcePosition(
+                loc.start + 1 + offset + length,
+                loc.endToken.line,
+                loc.startToken.column + 1 + offset + length,
+            ),
+        );
     }
 
-    if (!node.loc) {
-        return undefined;
+    let ml: MessageLocation;
+    if (node instanceof MessageLocation) {
+        ml = node;
+    } else if (isASTNode(node)) {
+        if (node.loc) {
+            ml = MessageLocation.fromGraphQLLocation(node.loc);
+        } else {
+            return undefined;
+        }
+    } else {
+        ml = MessageLocation.fromGraphQLLocation(node);
     }
-    const loc = node.loc;
-    // add 1 because of "
-    return new MessageLocation(
-        ProjectSource.fromGraphQLSource(loc.source) || loc.source.name,
-        new SourcePosition(
-            loc.start + 1 + offset,
-            loc.startToken.line,
-            loc.startToken.column + 1 + offset,
-        ),
-        new SourcePosition(
-            loc.start + 1 + offset + length,
-            loc.endToken.line,
-            loc.startToken.column + 1 + offset + length,
-        ),
-    );
+
+    return locationWithinStringArgumentML(ml, offset, length);
 }
 
 function locationWithinStringArgumentML(
