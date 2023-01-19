@@ -9,7 +9,9 @@ import {
 } from '../../../src/schema/constants';
 import {
     assertValidatorAccepts,
+    assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
+    assertValidatorWarns,
 } from '../../schema/ast-validation-modules/helpers';
 import { createSimpleModel } from '../model-spec.helper';
 import { expectSingleErrorToInclude } from './validation-utils';
@@ -139,6 +141,43 @@ describe('FlexSearch', () => {
         `);
     });
 
+    it('rejects flexSearchFulltext on fields of type JSON', () => {
+        assertValidatorRejects(
+            `
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                data: JSON @flexSearchFulltext
+            }
+        `,
+            '@flexSearchFulltext is not supported on type "JSON".',
+        );
+    });
+
+    it('accepts flexSearch on enum fields', () => {
+        assertValidatorAcceptsAndDoesNotWarn(
+            `
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                field: Enum @flexSearch
+            }
+            
+            enum Enum {
+                VALUE
+            }
+        `,
+        );
+    });
+
+    // captures status quo - should make it clear that it will be an error in the future
+    // only FLEX_SEARCH_FILTER_FIELDS_BY_TYPE and I18nString should be allowed
+    it('accepts flexSearch on fields of type JSON', () => {
+        assertValidatorAcceptsAndDoesNotWarn(
+            `
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                data: JSON @flexSearch
+            }
+        `,
+        );
+    });
+
     it('rejects flexSearch without accessField', () => {
         const model = new Model({
             types: [
@@ -174,12 +213,12 @@ describe('FlexSearch', () => {
     });
 
     it('accepts a valid primarySort', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someString", direction: ASC}]) {
                 someString: String @flexSearch
             }
         `);
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someExtension.someString", direction: ASC}]) {
                 someExtension: HandlingUnitInfo @flexSearch
             }
@@ -187,20 +226,6 @@ describe('FlexSearch', () => {
                 someString: String @flexSearch
             }
         `);
-    });
-
-    it('rejects an invalid primarySort', () => {
-        assertValidatorRejects(
-            `
-            type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someTypo", direction: ASC}]) {
-                someExtension: HandlingUnitInfo @flexSearch
-            }
-            type HandlingUnitInfo @entityExtension{
-                someString: String
-            }
-        `,
-            `At least one field on type "HandlingUnitInfo" must be annotated with @flexSearch or @flexSearchFulltext if @flexSearch is specified on the type declaration.`,
-        );
     });
 
     it('rejects primarySort without field', () => {
@@ -214,6 +239,66 @@ describe('FlexSearch', () => {
             }
         `,
             `Field "FlexSearchOrderArgument.field" of required type "String!" was not provided.`,
+        );
+    });
+
+    // captures status quo - should make it clear that it will be an error in the future
+    it('warns about primarySort with missing field', () => {
+        assertValidatorWarns(
+            `
+            type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someTypo", direction: ASC}]) {
+                someString: String @flexSearch
+            }
+        `,
+            `The provided flexSearchOrder is invalid. It must be a path that evaluates to a scalar value and the full path must be annotated with flexSearch.`,
+        );
+    });
+
+    // this is ok, the primary sort field does not need to be included in the index
+    it('accepts about primarySort with field that is not flexSearch-indexed', () => {
+        assertValidatorAcceptsAndDoesNotWarn(
+            `
+            type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someString", direction: ASC}]) {
+                someString: String
+            }
+        `,
+        );
+    });
+
+    // captures status quo - should make it clear that it will be an error in the future
+    it('warns about primarySort with object-typed field', () => {
+        assertValidatorWarns(
+            `
+            type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someObject", direction: ASC}]) {
+                someObject: HandlingUnitInfo @flexSearch
+            }
+            type HandlingUnitInfo @entityExtension{
+                someString: String @flexSearch
+            }
+        `,
+            `The provided flexSearchOrder is invalid. It must be a path that evaluates to a scalar value and the full path must be annotated with flexSearch.`,
+        );
+    });
+
+    // captures status quo - should be changed to a warning and eventually to an error
+    it('accepts primarySort with missing direction', () => {
+        assertValidatorAcceptsAndDoesNotWarn(
+            `
+            type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someString"}]) {
+                someString: String @flexSearch
+            }
+        `,
+        );
+    });
+
+    // this is ok because it makes it easier to disable flexSearch while still keeping the configs
+    it('accepts primarySort when flexSearch is not enabled', () => {
+        assertValidatorAcceptsAndDoesNotWarn(
+            `
+            type HandlingUnit @rootEntity(flexSearchOrder: [{field: "someString"}]) {
+                someString: String
+            }
+        `,
         );
     });
 
