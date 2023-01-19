@@ -64,6 +64,27 @@ export function validate(
     options: ValidationOptions = {},
 ): ValidationResult {
     const ast = typeof source === 'string' ? parse(new Source(source, 'schema.graphqls')) : source;
+    const projectSource = new ProjectSource(
+        'schema.graphqls',
+        typeof source === 'string' ? source : source.loc?.source?.body ?? print(source),
+    );
+    const sourceResults = validateSource(projectSource);
+    const validationContext = new ValidationContext();
+    const parsedSource = parseProjectSource(projectSource, {}, validationContext);
+    let parsedSourceResults: ValidationResult | undefined;
+    if (parsedSource) {
+        parsedSourceResults = validateParsedProjectSource(parsedSource);
+    }
+
+    const intermediateResult = new ValidationResult([
+        ...sourceResults.messages,
+        ...validationContext.asResult().messages,
+        ...(parsedSourceResults ? parsedSourceResults.messages : []),
+    ]);
+    if (intermediateResult.hasErrors()) {
+        return intermediateResult;
+    }
+
     const model = createModel({
         sources: [
             {
@@ -92,26 +113,10 @@ export function validate(
         ],
     });
     const astResults = validatePostMerge(ast, model);
-    const projectSource = new ProjectSource(
-        'schema.graphqls',
-        typeof source === 'string' ? source : source.loc?.source?.body ?? print(source),
-    );
-    const sourceResults = validateSource(projectSource);
-    const validationContext = new ValidationContext();
-    const parsedSource = parseProjectSource(projectSource, {}, validationContext);
-    let parsedSourceResults: ValidationResult | undefined;
-    if (parsedSource) {
-        parsedSourceResults = validateParsedProjectSource(parsedSource);
-    }
 
-    const intermediateResult = new ValidationResult([
-        ...sourceResults.messages,
+    return new ValidationResult([
+        ...model.validate().messages,
         ...astResults.messages,
-        ...validationContext.asResult().messages,
-        ...(parsedSourceResults ? parsedSourceResults.messages : []),
+        ...intermediateResult.messages,
     ]);
-    if (intermediateResult.hasErrors()) {
-        return intermediateResult;
-    }
-    return new ValidationResult([...model.validate().messages, ...intermediateResult.messages]);
 }
