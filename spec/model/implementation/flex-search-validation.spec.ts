@@ -241,7 +241,6 @@ describe('FlexSearch', () => {
         );
     });
 
-    // captures status quo - should make it clear that it will be an error in the future
     it('warns about primarySort with missing field', () => {
         assertValidatorWarns(
             `
@@ -249,7 +248,7 @@ describe('FlexSearch', () => {
                 someString: String @flexSearch
             }
         `,
-            `The provided flexSearchOrder is invalid. It must be a path that evaluates to a scalar value and the full path must be annotated with flexSearch.`,
+            `Type "HandlingUnit" does not have a field "someTypo". This will be an error in a future release.`,
         );
     });
 
@@ -264,7 +263,6 @@ describe('FlexSearch', () => {
         );
     });
 
-    // captures status quo - should make it clear that it will be an error in the future
     it('warns about primarySort with object-typed field', () => {
         assertValidatorWarns(
             `
@@ -275,7 +273,7 @@ describe('FlexSearch', () => {
                 someString: String @flexSearch
             }
         `,
-            `The provided flexSearchOrder is invalid. It must be a path that evaluates to a scalar value and the full path must be annotated with flexSearch.`,
+            `Field "HandlingUnit.someObject" is an object field, but only scalar and enum fields are supported in flexSearchOrder. Choose a subfield or a different field. This will be an error in a future release.`,
         );
     });
 
