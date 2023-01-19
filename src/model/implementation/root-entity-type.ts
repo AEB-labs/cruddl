@@ -21,7 +21,7 @@ import {
     RootEntityTypeConfig,
     TypeKind,
 } from '../config';
-import { Severity, ValidationContext, ValidationMessage } from '../validation';
+import { ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
 import { FieldPath } from './field-path';
 import { FlexSearchPrimarySortClause } from './flex-search';
@@ -435,40 +435,9 @@ export class RootEntityType extends ObjectTypeBase {
                 ),
             );
         }
-        // validate primarySort
-        for (const primarySortConfig of this.flexSearchPrimarySort) {
-            const primarySortPath = primarySortConfig.field.path.split('.');
-            const astNode = this.input
-                .astNode!.directives!.find((value) => value.name.value === ROOT_ENTITY_DIRECTIVE)!
-                .arguments!.find((value) => value.name.value === FLEX_SEARCH_ORDER_ARGUMENT)!;
 
-            function isValidPath(
-                fields: ReadonlyArray<Field>,
-                path: ReadonlyArray<string>,
-            ): boolean {
-                const [head, ...tail] = path;
-                const field = fields.find((value) => value.name === head);
-                if (field) {
-                    if (field.type.isScalarType || (field.type.isEnumType && tail.length == 0)) {
-                        return true;
-                    } else if (field.type.isObjectType && !field.isList && tail.length > 0) {
-                        return isValidPath(field.type.fields, tail);
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-            }
-
-            if (!isValidPath(this.fields, primarySortPath)) {
-                context.addMessage(
-                    ValidationMessage.warn(
-                        `The provided flexSearchOrder is invalid. It must be a path that evaluates to a scalar value and the full path must be annotated with ${FLEX_SEARCH_INDEXED_DIRECTIVE}.`,
-                        astNode,
-                    ),
-                );
-            }
+        for (const clause of this.flexSearchPrimarySort) {
+            clause.validate(context);
         }
     }
 
@@ -504,13 +473,7 @@ export class RootEntityType extends ObjectTypeBase {
                 },
             ];
         }
-        return clauses.map(
-            (c) =>
-                new FlexSearchPrimarySortClause(
-                    new FieldPath({ path: c.field, baseType: this }),
-                    c.direction,
-                ),
-        );
+        return clauses.map((clause) => new FlexSearchPrimarySortClause(clause, this));
     }
 
     @memorize()
