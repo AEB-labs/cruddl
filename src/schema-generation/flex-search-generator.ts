@@ -70,15 +70,15 @@ export class FlexSearchGenerator {
             description: `Queries for ${rootEntityType.pluralName} using FlexSearch.`,
             resolve: () => new FlexSearchQueryNode({ rootEntityType: rootEntityType }),
         };
-        const withOrderBy = this.augmentWithCondition(
-            this.orderByAugmentation.augment(
+        const withPostFilter = this.augmentWithCondition(
+            this.postFilterAugmentation.augment(
                 this.generateFromConfig(fieldConfig, rootEntityType),
                 rootEntityType,
             ),
             rootEntityType,
         );
         return this.augmentWithCondition(
-            this.postFilterAugmentation.augment(withOrderBy, rootEntityType),
+            this.orderByAugmentation.augment(withPostFilter, rootEntityType),
             rootEntityType,
         );
     }

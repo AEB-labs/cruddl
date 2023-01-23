@@ -230,13 +230,23 @@
       "flexSearchDeliveries": null
     }
   },
+  "post_filter_and_first": {
+    "data": {
+      "a": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ],
+      "b": []
+    }
+  },
   "legacy_filter_above_max": {
     "errors": [
       {
         "message": "Too many objects.",
         "locations": [
           {
-            "line": 143,
+            "line": 166,
             "column": 5
           }
         ],
@@ -258,7 +268,7 @@
         "message": "Too many objects.",
         "locations": [
           {
-            "line": 149,
+            "line": 172,
             "column": 5
           }
         ],
@@ -278,7 +288,7 @@
         "message": "Too many objects.",
         "locations": [
           {
-            "line": 155,
+            "line": 178,
             "column": 5
           }
         ],
@@ -309,7 +319,7 @@
         "message": "Recursive filters can only be defined for 1 level of recursion.",
         "locations": [
           {
-            "line": 167,
+            "line": 190,
             "column": 5
           }
         ],
