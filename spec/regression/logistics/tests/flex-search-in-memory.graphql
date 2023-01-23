@@ -139,6 +139,29 @@ query post_filter_above_max {
     }
 }
 
+query post_filter_and_first {
+    # postFilter reduces the results to 1, so "first" has no effect
+    a: flexSearchDeliveries(
+        flexSearchFilter: { deliveryNumber_in: ["1000521", "1000173"] }
+        postFilter: { deliveryNumber: "1000521" }
+        orderBy: deliveryNumber_ASC
+        first: 1
+    ) {
+        deliveryNumber
+    }
+
+    # postFilter reduces the results to 1, so "skip" skips to the end
+    b: flexSearchDeliveries(
+        flexSearchFilter: { deliveryNumber_in: ["1000521", "1000173"] }
+        postFilter: { deliveryNumber: "1000521" }
+        orderBy: deliveryNumber_ASC
+        skip: 1
+        first: 1
+    ) {
+        deliveryNumber
+    }
+}
+
 query legacy_filter_above_max {
     flexSearchDeliveries(filter: { description_starts_with: "description" }) {
         deliveryNumber
