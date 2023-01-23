@@ -57,7 +57,7 @@ export class FlexSearchGenerator {
     constructor(
         private readonly flexSearchTypeGenerator: FlexSearchFilterTypeGenerator,
         private readonly outputTypeGenerator: OutputTypeGenerator,
-        private readonly flexSearchFilterAugmentation: FlexSearchPostFilterAugmentation,
+        private readonly postFilterAugmentation: FlexSearchPostFilterAugmentation,
         private readonly orderByAugmentation: OrderByAndPaginationAugmentation,
     ) {}
 
@@ -78,7 +78,7 @@ export class FlexSearchGenerator {
             rootEntityType,
         );
         return this.augmentWithCondition(
-            this.flexSearchFilterAugmentation.augment(withOrderBy, rootEntityType),
+            this.postFilterAugmentation.augment(withOrderBy, rootEntityType),
             rootEntityType,
         );
     }
@@ -97,7 +97,7 @@ export class FlexSearchGenerator {
             },
         };
         return this.augmentWithCondition(
-            this.flexSearchFilterAugmentation.augment(
+            this.postFilterAugmentation.augment(
                 this.generateFromConfig(fieldConfig, rootEntityType),
                 rootEntityType,
             ),
@@ -273,7 +273,7 @@ export class FlexSearchGenerator {
             const identityNode = new FlexSearchStartsWithQueryNode(
                 new FieldPathQueryNode(itemVariable, path.concat(field)),
                 new LiteralQueryNode(expression),
-                field.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER
+                field.isFlexSearchIndexCaseSensitive ? IDENTITY_ANALYZER : NORM_CI_ANALYZER,
             );
             const fullTextQueryNode = new FlexSearchComplexOperatorQueryNode(
                 expression,
