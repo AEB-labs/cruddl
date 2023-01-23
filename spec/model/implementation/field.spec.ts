@@ -925,5 +925,21 @@ describe('Field', () => {
 
             expectSingleErrorToInclude(field, `Calc mutations are not supported on list fields.`);
         });
+
+        it('warns about @calcMutations within a value object', () => {
+            const field = new Field(
+                {
+                    name: 'amount',
+                    typeName: 'Int',
+                    calcMutationOperators: [CalcMutationsOperator.ADD],
+                },
+                addressType,
+            );
+
+            expectSingleWarningToInclude(
+                field,
+                `Calc mutations do not work within value objects because value objects cannot be updated. This will be an error in a future release.`,
+            );
+        });
     });
 });

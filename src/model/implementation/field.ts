@@ -1255,6 +1255,15 @@ export class Field implements ModelComponent {
                 );
             }
         }
+
+        if (this.declaringType.isValueObjectType) {
+            context.addMessage(
+                ValidationMessage.warn(
+                    `Calc mutations do not work within value objects because value objects cannot be updated. This will be an error in a future release.`,
+                    this.astNode,
+                ),
+            );
+        }
     }
 
     private validateParentField(context: ValidationContext) {
