@@ -406,13 +406,12 @@ function extractAllPaths(
             return [...mergedMap];
         case YAMLKind.MAPPING:
             const mappingNode = node as YAMLMapping;
+            const path: ReadonlyArray<string | number> = [...curPath, mappingNode.key.value];
             if (mappingNode.value) {
-                return [
-                    { path: [...curPath, mappingNode.key.value], node: mappingNode },
-                    ...extractAllPaths(mappingNode.value, [...curPath, mappingNode.key.value]),
-                ];
+                return [{ path, node: mappingNode }, ...extractAllPaths(mappingNode.value, path)];
+            } else {
+                return [{ path, node: mappingNode }];
             }
-            break;
         case YAMLKind.SCALAR:
             const scalarNode = node as YAMLScalar;
             if (scalarNode.parent && scalarNode.parent.kind == YAMLKind.SEQ) {

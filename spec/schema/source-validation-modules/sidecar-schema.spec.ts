@@ -151,4 +151,24 @@ i18n:
             sourceName: 'file.yaml',
         });
     });
+
+    it('reports errors on empty properties in yaml files', () => {
+        const messages = getValidatorMessages(
+            new ProjectSource(
+                'file.yaml',
+                `
+i18n:
+  de:
+    types:
+      Temp:
+        label:`,
+            ),
+        );
+        expect(messages.length).to.equal(1);
+        expect(JSON.parse(JSON.stringify(messages[0].location))).to.deep.equal({
+            _end: 50,
+            _start: 44,
+            sourceName: 'file.yaml',
+        });
+    });
 });

@@ -128,5 +128,43 @@ describe('schema-builder', () => {
             expect(context.asResult().messages).to.deep.equal([]);
             expect(parsed).to.be.undefined;
         });
+
+        it('reports location of some yaml property', () => {
+            const context = new ValidationContext();
+            const parsed = parseProjectSource(
+                new ProjectSource(
+                    'test.yaml',
+                    `
+                        root:
+                            sub:
+                                field: value
+                `,
+                ),
+                {},
+                context,
+            ) as ParsedObjectProjectSource;
+            const loc = parsed.pathLocationMap['/root/sub/field'];
+            expect(loc.start.line).to.equal(4);
+            expect(loc.start.column).to.equal(33);
+        });
+
+        it('reports location of an empty yaml property', () => {
+            const context = new ValidationContext();
+            const parsed = parseProjectSource(
+                new ProjectSource(
+                    'test.yaml',
+                    `
+                        root:
+                            sub:
+                                field:
+`,
+                ),
+                {},
+                context,
+            ) as ParsedObjectProjectSource;
+            const loc = parsed.pathLocationMap['/root/sub/field'];
+            expect(loc.start.line).to.equal(4);
+            expect(loc.start.column).to.equal(33);
+        });
     });
 });
