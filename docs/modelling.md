@@ -692,8 +692,8 @@ The `DateTime` scalar type represents a point in time in UTC, in a format specif
 such as `2007-12-03T10:15:30Z` or `2007-12-03T10:15:30.123Z`.
 
 This scalar type rejects values without timezone specifier or with a timezone other than UTC. See
-also `LocalDate` and `LocalTime` for values without timezone specifier. To store Date/time values
-with timezones other than UTC, define a value object type with the fields you need.
+also `OffsetDateTime` for a point in time with an explicit timezone offset, or `LocalDate` and
+`LocalTime` for values without timezone specifier.
 
 The _second_ part is added if not specified, e.g. `2007-12-03T12:34Z` is converted to
 `2007-12-03T12:34:00Z`. Second fraction digits are cut off at the nearest three-digit group, e.g.
