@@ -55,7 +55,7 @@ export function getScalarFilterValueNode(fieldNode: QueryNode, type: Type): Quer
     return fieldNode;
 }
 
-function getScalarFilterLiteralValue(value: unknown, type: Type): unknown {
+export function getScalarFilterLiteralValue(value: unknown, type: Type): unknown {
     if (type.isScalarType && type.graphQLScalarType === GraphQLOffsetDateTime && value instanceof ZonedDateTime) {
         return value.toInstant().toString();
     }
