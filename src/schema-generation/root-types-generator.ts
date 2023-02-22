@@ -45,6 +45,9 @@ export class RootTypesGenerator {
     private readonly flexSearchFilterAugmentation = new FlexSearchPostFilterAugmentation(
         this.filterTypeGenerator,
         this.rootFieldHelper,
+        {
+            omitDeprecatedOldPostFilterVariant: this.options.omitDeprecatedOldPostFilterVariant,
+        },
     );
     private readonly listAugmentation = new ListAugmentation(
         this.filterAugmentation,
