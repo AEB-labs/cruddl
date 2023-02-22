@@ -11,7 +11,7 @@ describe('entity directive nesting validator', () => {
     it('accepts field of @rootEntity type as @reference', () => {
         assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity { fooo: String @key } 
-            type Bar @rootEntity { foo: Foo @reference }
+            type Bar @rootEntity { foo: Foo @reference(keyField: "fooKey"), fooKey: String }
         `);
     });
 
@@ -109,7 +109,7 @@ describe('entity directive nesting validator', () => {
     it('accepts valueObjects with reference to @rootEntity', () => {
         assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity { fooo: String @key }
-            type Bar @valueObject { foo: Foo @reference }
+            type Bar @valueObject { foo: Foo @reference(keyField: "fooKey"), fooKey: String }
             type Root @rootEntity { bar: Bar } # to avoid warning because Bar is not used
         `);
     });

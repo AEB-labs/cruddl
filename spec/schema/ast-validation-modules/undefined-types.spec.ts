@@ -14,7 +14,8 @@ const invalidSource = `
 
 const validSource = `
             type Test @rootEntity {
-                other: Other @reference
+                other: Other @reference(keyField: "otherKey")
+                otherKey: String
                 date: DateTime
             }
             

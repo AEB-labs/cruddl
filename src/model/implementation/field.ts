@@ -619,6 +619,14 @@ export class Field implements ModelComponent {
                     this.astNode,
                 ),
             );
+        } else if (!this.input.referenceKeyField) {
+            // can only format this nicely if we have the key field
+            context.addMessage(
+                ValidationMessage.warn(
+                    `Usage of @reference without the keyField argument is deprecated. Add a field of type "${this.type.keyField.type.name}" and specify it in @reference(keyField: "...")`,
+                    this.astNode,
+                ),
+            );
         }
 
         this.validateReferenceKeyField(context);

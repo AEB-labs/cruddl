@@ -219,9 +219,9 @@ The referenced country will be looked on demand. If the referenced object does n
 `null` ( though `countryISOCode` will still result in its value). You can think of references as
 more of an API feature than a modelling feature.
 
-You can omit the argument `keyField` on the `@reference` directive (and this argument has only been
-introduced in cruddl 0.9). In that case, you won't have access to the raw key field value via the
-API. In the data base, it will be stored with the name of the reference field.
+You can omit the argument `keyField` on the `@reference` directive. In the database, it will be
+stored with the name of the reference field. This variant is deprecated and should no longer be
+used.
 
 ## Collect fields
 

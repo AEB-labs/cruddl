@@ -21,7 +21,8 @@ describe('unused object validator', () => {
                 foo: String @key
             }
             type RefStuff @rootEntity {
-                stuff: Stuff @reference
+                stuff: Stuff @reference(keyField: "stuffKey")
+                stuffKey: String
             }
         `);
     });
