@@ -81,4 +81,18 @@ describe('references with key field', () => {
             `There are multiple references declared for keyField "stuffKey".`,
         );
     });
+
+    it('warns about @reference without key field', () => {
+        assertValidatorWarns(
+            `
+            type Stuff @rootEntity {
+                key: String @key
+            }
+            type RefStuff @rootEntity {
+                stuff: Stuff @reference
+            }
+        `,
+            `Usage of @reference without the keyField argument is deprecated. Add a field of type "String" and specify it in @reference(keyField: "...")`,
+        );
+    });
 });

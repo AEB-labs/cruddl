@@ -23,7 +23,8 @@ const modelWithoutReferenceToNonRoot = `
                 foo: String @key
             }
             type Bar @rootEntity {
-                stuff: Stuff @reference
+                stuff: Stuff @reference(keyField: "stuffKey")
+                stuffKey: String
             }
         `;
 

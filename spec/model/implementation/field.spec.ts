@@ -74,6 +74,10 @@ describe('Field', () => {
                         isRelation: true,
                     },
                     {
+                        name: 'countryIsoCode',
+                        typeName: 'String',
+                    },
+                    {
                         name: 'lineItems',
                         typeName: 'DeliveryLineItem',
                         isList: true,
@@ -272,6 +276,7 @@ describe('Field', () => {
                     typeName: 'Country',
                     isRelation: true,
                     isReference: true,
+                    referenceKeyField: 'countryIsoCode',
                 },
                 deliveryType,
             );
@@ -519,6 +524,7 @@ describe('Field', () => {
                     name: 'country',
                     typeName: 'Country',
                     isReference: true,
+                    referenceKeyField: 'countryIsoCode',
                 },
                 deliveryType,
             );
@@ -564,6 +570,7 @@ describe('Field', () => {
                     name: 'countries',
                     typeName: 'Country',
                     isReference: true,
+                    referenceKeyField: 'countryIsoCode',
                     isList: true,
                 },
                 deliveryType,
