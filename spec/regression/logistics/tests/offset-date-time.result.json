@@ -3,16 +3,16 @@
     "data": {
       "allDeliveries": [
         {
-          "deliveryNumber": "1000173",
+          "deliveryNumber": "1000522",
           "dispatchDate": null
+        },
+        {
+          "deliveryNumber": "1000173",
+          "dispatchDate": "2001-01-02T03:00:00+00:00"
         },
         {
           "deliveryNumber": "1000521",
-          "dispatchDate": null
-        },
-        {
-          "deliveryNumber": "1000522",
-          "dispatchDate": null
+          "dispatchDate": "2001-01-02T04:00:00+01:00"
         }
       ]
     }

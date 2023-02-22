@@ -212,3 +212,11 @@ query string_aggregation {
         serialNumbers
     }
 }
+
+query offset_date_time {
+    flexSearchDeliveries(flexSearchFilter: { dispatchDate: "2001-01-02T03:00:00Z" }) {
+        deliveryNumber
+        serialNumbers
+        dispatchDate
+    }
+}

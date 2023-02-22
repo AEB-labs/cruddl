@@ -5558,6 +5558,46 @@
               "deprecationReason": null
             },
             {
+              "name": "dispatchDate",
+              "description": "Checks if `dispatchDate` equals a specified value.",
+              "deprecationReason": null
+            },
+            {
+              "name": "dispatchDate_not",
+              "description": "Checks if `dispatchDate` does not equal a specified value",
+              "deprecationReason": null
+            },
+            {
+              "name": "dispatchDate_in",
+              "description": "Checks if `dispatchDate` is equal to one of the specified values.",
+              "deprecationReason": null
+            },
+            {
+              "name": "dispatchDate_not_in",
+              "description": "Checks if `dispatchDate` is not equal to one of the specified values.",
+              "deprecationReason": null
+            },
+            {
+              "name": "dispatchDate_lt",
+              "description": "Checks if `dispatchDate` is less than a specified value.",
+              "deprecationReason": null
+            },
+            {
+              "name": "dispatchDate_lte",
+              "description": "Checks if `dispatchDate` is less or equal a specified value.",
+              "deprecationReason": null
+            },
+            {
+              "name": "dispatchDate_gt",
+              "description": "Checks if `dispatchDate` is greater than a specified value.",
+              "deprecationReason": null
+            },
+            {
+              "name": "dispatchDate_gte",
+              "description": "Checks if `dispatchDate` is greater or equal a specified value.",
+              "deprecationReason": null
+            },
+            {
               "name": "description_contains_any_word",
               "description": "Tokenizes the provided string into words, and checks if `description` contains at least one of them.\n Stemming (reduction of words on their base form) is applied.",
               "deprecationReason": null

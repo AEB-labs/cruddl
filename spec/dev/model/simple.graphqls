@@ -28,7 +28,7 @@ type Hero
     info: JSON
     infoObj: JSONObject
     attributes: StringMap
-    timeOfDeath: OffsetDateTime
+    timeOfDeath: OffsetDateTime @flexSearch
     recursion: Recursion @flexSearch
 }
 

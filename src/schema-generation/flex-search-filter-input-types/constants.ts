@@ -37,6 +37,7 @@ import {
     notStartsWithOp,
     startsWithOp,
 } from '../utils/input-types';
+import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
 
 export const SOME_PREFIX = 'some';
 
@@ -111,6 +112,7 @@ export const FLEX_SEARCH_FILTER_FIELDS_BY_TYPE: { [name: string]: string[] } = {
     [GraphQLDateTime.name]: NUMERIC_FILTER_FIELDS,
     [GraphQLLocalDate.name]: NUMERIC_FILTER_FIELDS,
     [GraphQLLocalTime.name]: NUMERIC_FILTER_FIELDS,
+    [GraphQLOffsetDateTime.name]: NUMERIC_FILTER_FIELDS,
     [GraphQLBoolean.name]: [INPUT_FIELD_EQUAL, INPUT_FIELD_NOT],
 };
 

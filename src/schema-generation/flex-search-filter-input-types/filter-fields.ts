@@ -36,7 +36,11 @@ import {
     OR_FILTER_FIELD,
 } from '../../schema/constants';
 import { AnyValue, PlainObject } from '../../utils/utils';
-import { FilterField } from '../filter-input-types/filter-fields';
+import {
+    FilterField,
+    getScalarFilterLiteralValue,
+    getScalarFilterValueNode,
+} from '../filter-input-types/filter-fields';
 import { QueryNodeResolveInfo } from '../query-node-object-type';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { not } from '../utils/input-types';
@@ -148,6 +152,11 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
         } else {
             valueNode = new FieldQueryNode(sourceNode, this.field);
         }
+
+        // handle special cases like .timestamp for OffsetDateTime
+        valueNode = getScalarFilterValueNode(valueNode, this.field.type);
+        filterValue = getScalarFilterLiteralValue(filterValue, this.field.type);
+
         return resolveFilterField(this, valueNode, filterValue, this.analyzer);
     }
 }
