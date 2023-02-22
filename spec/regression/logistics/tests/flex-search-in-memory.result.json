@@ -386,5 +386,41 @@
         }
       ]
     }
+  },
+  "empty_one_list": {
+    "data": {
+      "updateDelivery": {
+        "deliveryNumber": "1000522",
+        "_itemsMeta": {
+          "count": 0
+        }
+      }
+    }
+  },
+  "empty": {
+    "data": {
+      "empty": [
+        {
+          "deliveryNumber": "1000522",
+          "_itemsMeta": {
+            "count": 0
+          }
+        }
+      ],
+      "not_empty": [
+        {
+          "deliveryNumber": "1000173",
+          "_itemsMeta": {
+            "count": 2
+          }
+        },
+        {
+          "deliveryNumber": "1000521",
+          "_itemsMeta": {
+            "count": 2
+          }
+        }
+      ]
+    }
   }
 }

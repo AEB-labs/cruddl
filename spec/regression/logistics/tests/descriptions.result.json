@@ -5458,6 +5458,11 @@
               "deprecationReason": null
             },
             {
+              "name": "serialNumbers_empty",
+              "description": "Checks if `serialNumbers` is an empty list (true) or a non-empty list or null (false).",
+              "deprecationReason": null
+            },
+            {
               "name": "consignee",
               "description": "Checks if `consignee` is not null, and allows to filter based on its fields.",
               "deprecationReason": null
@@ -5465,6 +5470,11 @@
             {
               "name": "itemsAggregation",
               "description": "Checks if `items` is not null, and allows to filter based on its fields.",
+              "deprecationReason": null
+            },
+            {
+              "name": "items_empty",
+              "description": "Checks if `items` is an empty list (true) or a non-empty list or null (false).",
               "deprecationReason": null
             },
             {

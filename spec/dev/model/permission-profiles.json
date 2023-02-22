@@ -17,13 +17,7 @@
         },
         {
           "access": ["readWrite"],
-          "roles": ["allusers"],
-          "restrictions": [
-            {
-              "field": "name",
-              "value": "a"
-            }
-          ]
+          "roles": ["allusers"]
         }
       ]
     }

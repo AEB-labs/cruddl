@@ -220,3 +220,28 @@ query offset_date_time {
         dispatchDate
     }
 }
+
+mutation empty_one_list {
+    updateDelivery(input: { id: "@{ids/Delivery/3}", items: [] }) {
+        deliveryNumber
+        _itemsMeta {
+            count
+        }
+    }
+}
+
+query empty {
+    empty: flexSearchDeliveries(flexSearchFilter: { items_empty: true }) {
+        deliveryNumber
+        _itemsMeta {
+            count
+        }
+    }
+
+    not_empty: flexSearchDeliveries(flexSearchFilter: { items_empty: false }) {
+        deliveryNumber
+        _itemsMeta {
+            count
+        }
+    }
+}
