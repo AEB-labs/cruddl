@@ -133,7 +133,8 @@
                 "aText": "foo bar",
                 "sometimesNull": "1",
                 "caseInsensitiveField": "Ä TEXT",
-                "colorData": { "packageColor": "red" }
+                "colorData": { "packageColor": "red" },
+                "dispatchDate": "2001-01-02T03:00:00Z"
             },
             {
                 "@id": "2",
@@ -177,7 +178,8 @@
                 },
                 "sometimesNull": "2",
                 "caseInsensitiveField": "ä text",
-                "colorData": { "packageColor": "blue" }
+                "colorData": { "packageColor": "blue" },
+                "dispatchDate": "2001-01-02T04:00:00+01:00"
             },
             {
                 "@id": "3",

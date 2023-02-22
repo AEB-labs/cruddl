@@ -19,6 +19,10 @@ import {
     SchemaMigration,
     UpdateArangoSearchViewMigration
 } from './migrations';
+import {
+    GraphQLOffsetDateTime,
+    TIMESTAMP_PROPERTY,
+} from '../../../schema/scalars/offset-date-time';
 
 export const FLEX_SEARCH_VIEW_PREFIX = 'flex_view_';
 
@@ -207,7 +211,16 @@ function getPropertiesFromDefinition(
             link.includeAllFields = true;
         }
 
-        return link;
+        // for GraphQLOffsetDateTime, we actually need to index the ".timestamp" field
+        if (field.type.name === GraphQLOffsetDateTime.name) {
+            return {
+                fields: {
+                    [TIMESTAMP_PROPERTY]: link,
+                },
+            };
+        } else {
+            return link;
+        }
     }
 }
 
