@@ -1,4 +1,4 @@
-import { assertValidatorAccepts, assertValidatorRejects, assertValidatorWarns } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorWarns } from './helpers';
 
 describe('root-entities-without-read-roles validator', () => {
     it('rejects @roles without read or readWrite', () => {
@@ -24,7 +24,7 @@ describe('root-entities-without-read-roles validator', () => {
     });
 
     it('accepts non-nested lists', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity @roles(readWrite: "reader") {
                 foo: [String]
             }

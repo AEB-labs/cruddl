@@ -1,6 +1,6 @@
 import { print } from 'graphql';
 import gql from 'graphql-tag';
-import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
 
 describe('@businessObject validation', () => {
     it('is invalid on entity extension types', () => {
@@ -19,7 +19,7 @@ describe('@businessObject validation', () => {
     });
 
     it('is valid on root entity types', () => {
-        assertValidatorAccepts(
+        assertValidatorAcceptsAndDoesNotWarn(
             print(gql`
                 type Test @rootEntity @businessObject {
                     a: String

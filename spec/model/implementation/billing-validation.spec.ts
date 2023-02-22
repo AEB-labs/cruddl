@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import { Source } from 'graphql';
 import { createModel, ValidationContext } from '../../../src/model';
 import { Project } from '../../../src/project/project';
-import { validateParsedProjectSource } from '../../../src/schema/preparation/ast-validator';
 import { parseProject } from '../../../src/schema/schema-builder';
 
 const graphql = `

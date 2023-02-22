@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { assertValidatorAccepts, assertValidatorRejects, validate } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects, validate } from './helpers';
 
 describe('known object type directive validator', () => {
     it('rejects unknown object type directives', () => {
@@ -14,7 +14,7 @@ describe('known object type directive validator', () => {
     });
 
     it('accepts known object type directives', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity {
                 foo: String
             }

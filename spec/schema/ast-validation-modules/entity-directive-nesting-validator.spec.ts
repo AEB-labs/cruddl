@@ -1,22 +1,22 @@
-import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
 
 describe('entity directive nesting validator', () => {
     it('accepts field of @rootEntity type as @relation', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity { fooo: String }
             type Bar @rootEntity { foo: Foo @relation }
         `);
     });
 
     it('accepts field of @rootEntity type as @reference', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity { fooo: String @key } 
             type Bar @rootEntity { foo: Foo @reference }
         `);
     });
 
     it('accepts list of @rootEntity type as @relation', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity { fooo: String }
             type Bar @rootEntity { foo: [Foo] @relation }
         `);
@@ -53,23 +53,26 @@ describe('entity directive nesting validator', () => {
     });
 
     it('accepts nesting @valueObjects', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @valueObject { fooo: String }
             type Bar @valueObject { foo: Foo }
+            type Root @rootEntity { bar: Bar } # to avoid warning because Bar is not used
         `);
     });
 
     it('accepts nesting @valueObject lists', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @valueObject { fooo: String }
             type Bar @valueObject { foo: [Foo] }
+            type Root @rootEntity { bar: Bar } # to avoid warning because Bar is not used
         `);
     });
 
     it('accepts nesting non-nullable @valueObject lists', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @valueObject { fooo: String }
             type Bar @valueObject { foo: [Foo!]! }
+            type Root @rootEntity { bar: Bar } # to avoid warning because Bar is not used
         `);
     });
 
@@ -104,9 +107,10 @@ describe('entity directive nesting validator', () => {
     });
 
     it('accepts valueObjects with reference to @rootEntity', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity { fooo: String @key }
             type Bar @valueObject { foo: Foo @reference }
+            type Root @rootEntity { bar: Bar } # to avoid warning because Bar is not used
         `);
     });
 

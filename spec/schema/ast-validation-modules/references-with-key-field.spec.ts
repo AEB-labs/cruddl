@@ -1,9 +1,14 @@
-import { assertValidatorAccepts, assertValidatorRejects, validate } from './helpers';
+import {
+    assertValidatorAcceptsAndDoesNotWarn,
+    assertValidatorRejects,
+    assertValidatorWarns,
+    validate,
+} from './helpers';
 import { expect } from 'chai';
 
 describe('references with key field', () => {
     it('accepts proper configuration', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity {
                 key: String @key
             }

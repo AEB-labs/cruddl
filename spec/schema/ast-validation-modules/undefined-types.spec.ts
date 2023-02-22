@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { assertValidatorAccepts, validate } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, validate } from './helpers';
 
 const invalidSource = `
             type Test @rootEntity {
@@ -33,6 +33,6 @@ describe('undefined-types validator', () => {
     });
 
     it('accepts valid sources', () => {
-        assertValidatorAccepts(validSource);
+        assertValidatorAcceptsAndDoesNotWarn(validSource);
     });
 });

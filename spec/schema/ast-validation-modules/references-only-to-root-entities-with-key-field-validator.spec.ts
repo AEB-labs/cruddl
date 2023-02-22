@@ -1,4 +1,4 @@
-import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
 
 const modelWithReferenceToNonRoot = `
             type Stuff @childEntity {
@@ -43,6 +43,6 @@ describe('references only on root entity with key field validator', () => {
     });
 
     it('accepts @reference to @rootEntity with @key', () => {
-        assertValidatorAccepts(modelWithoutReferenceToNonRoot);
+        assertValidatorAcceptsAndDoesNotWarn(modelWithoutReferenceToNonRoot);
     });
 });

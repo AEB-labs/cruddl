@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { assertValidatorAccepts, validate } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, validate } from './helpers';
 
 describe('no duplicate type definition validator', () => {
     it('finds duplicate types', () => {
@@ -22,7 +22,7 @@ describe('no duplicate type definition validator', () => {
     });
 
     it('accepts unique types', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity {
                 foo: String
             }

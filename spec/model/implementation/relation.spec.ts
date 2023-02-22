@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { DatabaseAdapter, FlexSearchTokenizable } from '../../../src/database/database-adapter';
-import { FlexSearchLanguage, Model, Relation, TypeKind } from '../../../src/model';
+import { Model, Relation, TypeKind } from '../../../src/model';
 import { QueryNode } from '../../../src/query-tree';
 import { FlexSearchTokenization } from '../../../src/query-tree/flex-search';
 

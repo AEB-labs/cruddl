@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { assertValidatorAccepts, assertValidatorRejects, validate } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, validate } from './helpers';
 
 describe('no-permission-profile validator', () => {
     it('rejects @roles and permissionProfile', () => {
@@ -18,15 +18,15 @@ describe('no-permission-profile validator', () => {
     });
 
     it('accepts @roles', () => {
-        assertValidatorAccepts(`
-            type Stuff @rootEntity @roles {
+        assertValidatorAcceptsAndDoesNotWarn(`
+            type Stuff @rootEntity @roles(readWrite: "abc") {
                 foo: [String]
             }
         `);
     });
 
     it('accepts permissionProfile', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity(permissionProfile: "default") {
                 foo: [String]
             }

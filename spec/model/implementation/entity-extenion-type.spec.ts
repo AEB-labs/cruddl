@@ -1,5 +1,5 @@
 import { TypeKind } from '../../../src/model/config';
-import { EntityExtensionType, Model, RootEntityType } from '../../../src/model/implementation';
+import { EntityExtensionType, Model } from '../../../src/model/implementation';
 import { Severity } from '../../../src/model/validation';
 import { expectSingleMessageToInclude } from './validation-utils';
 

@@ -1,4 +1,4 @@
-import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
 
 describe('roles-on-non-root-entity-types validator', () => {
     it('rejects value objects with @roles', () => {
@@ -24,16 +24,17 @@ describe('roles-on-non-root-entity-types validator', () => {
     });
 
     it('accepts value objects without roles', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type ValueObject @valueObject {
                 foo: String
             }
+            type Root @rootEntity { bar: ValueObject } # to avoid warning because ValueObject is not used
         `);
     });
 
     it('accepts root entities with roles', () => {
-        assertValidatorAccepts(`
-            type ValueObject @rootEntity @roles {
+        assertValidatorAcceptsAndDoesNotWarn(`
+            type ValueObject @rootEntity @roles(readWrite: "abc") {
                 foo: String
             }
         `);

@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import {
     CollectPath,
-    Model,
     CollectPathSegment,
+    Model,
     TypeKind,
     ValidationContext,
 } from '../../../src/model';
