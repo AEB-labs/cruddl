@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { assertValidatorAccepts, assertValidatorRejects, validate } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects, validate } from './helpers';
 
 const modelWithTypeWithoutDirective = `
             type Stuff {
@@ -15,8 +15,8 @@ const modelWithTypeWithToManyDirectives = `
 
 const modelWithoutDirectiveFlaws = `
             enum Bla {
-                one
-                two
+                ONE
+                TWO
             }
 
             type Stuff @rootEntity {
@@ -58,6 +58,6 @@ describe('object directive count validator', () => {
     });
 
     it('accepts correct type directives', () => {
-        assertValidatorAccepts(modelWithoutDirectiveFlaws);
+        assertValidatorAcceptsAndDoesNotWarn(modelWithoutDirectiveFlaws);
     });
 });

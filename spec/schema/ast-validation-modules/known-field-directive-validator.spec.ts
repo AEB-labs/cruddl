@@ -1,4 +1,4 @@
-import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
 
 describe('known field directive validator', () => {
     it('rejects unknown field directives', () => {
@@ -13,7 +13,7 @@ describe('known field directive validator', () => {
     });
 
     it('accepts known field directives', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity {
                 foo: String @key
             }
@@ -21,7 +21,7 @@ describe('known field directive validator', () => {
     });
 
     it('accepts fields without directives', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity {
                 foo: String
             }

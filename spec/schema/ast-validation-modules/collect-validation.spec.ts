@@ -1,10 +1,10 @@
 import { expect } from 'chai';
-import { assertValidatorAccepts, assertValidatorRejects, validate } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects, validate } from './helpers';
 
 describe('collect validation', () => {
     describe('without aggregate', () => {
         it('accepts to-n-to-n traversal', () => {
-            assertValidatorAccepts(`
+            assertValidatorAcceptsAndDoesNotWarn(`
                 type HandlingUnit @rootEntity {
                     handlingUnitNumber: String
                     delivery: Delivery @relation(inverseOf: "handlingUnits")
@@ -40,7 +40,7 @@ describe('collect validation', () => {
         });
 
         it('accepts to-1-to-n-to-n traversals', () => {
-            assertValidatorAccepts(`
+            assertValidatorAcceptsAndDoesNotWarn(`
                 type HandlingUnit @rootEntity {
                     handlingUnitNumber: String
                     delivery: Delivery @relation(inverseOf: "handlingUnits")
@@ -79,7 +79,7 @@ describe('collect validation', () => {
         });
 
         it('accepts to-1-to-n traversals', () => {
-            assertValidatorAccepts(`
+            assertValidatorAcceptsAndDoesNotWarn(`
                 type Delivery @rootEntity {
                     deliveryNumber: String
                     shipment: Shipment @relation(inverseOf: "deliveries")
@@ -92,7 +92,7 @@ describe('collect validation', () => {
         });
 
         it('accepts indirect to-1-to-n traversals', () => {
-            assertValidatorAccepts(`
+            assertValidatorAcceptsAndDoesNotWarn(`
                 type HandlingUnit @rootEntity {
                     handlingUnitNumber: String
                     delivery: Delivery @relation(inverseOf: "handlingUnits")
@@ -135,7 +135,7 @@ describe('collect validation', () => {
         });
 
         it('accepts nested traversals', () => {
-            assertValidatorAccepts(`
+            assertValidatorAcceptsAndDoesNotWarn(`
                 type HandlingUnit @rootEntity {
                     handlingUnitNumber: String
                     delivery: Delivery @relation(inverseOf: "handlingUnits")
@@ -410,7 +410,7 @@ describe('collect validation', () => {
         });
 
         it('accept depth specifier on to-n relations', () => {
-            assertValidatorAccepts(`
+            assertValidatorAcceptsAndDoesNotWarn(`
                 type HandlingUnit @rootEntity {
                     childHandlingUnits: [HandlingUnit] @relation
                     allInnerHandlingUnits: [HandlingUnit] @collect(path: "childHandlingUnits{1,3}")
@@ -419,7 +419,7 @@ describe('collect validation', () => {
         });
 
         it('accept depth specifier with min=0 on to-n relations', () => {
-            assertValidatorAccepts(`
+            assertValidatorAcceptsAndDoesNotWarn(`
                 type HandlingUnit @rootEntity {
                     childHandlingUnits: [HandlingUnit] @relation
                     allInnerHandlingUnits: [HandlingUnit] @collect(path: "childHandlingUnits{0,3}")
@@ -428,7 +428,7 @@ describe('collect validation', () => {
         });
 
         it('accept depth specifier with implicit max', () => {
-            assertValidatorAccepts(`
+            assertValidatorAcceptsAndDoesNotWarn(`
                 type HandlingUnit @rootEntity {
                     childHandlingUnits: [HandlingUnit] @relation
                     allInnerHandlingUnits: [HandlingUnit] @collect(path: "childHandlingUnits{2}")
@@ -517,7 +517,7 @@ describe('collect validation', () => {
 
     describe('with aggregate', () => {
         it('accepts sum aggregation', () => {
-            assertValidatorAccepts(`
+            assertValidatorAcceptsAndDoesNotWarn(`
                 type HandlingUnit @rootEntity {
                     totalWeightInKg: Float
                 }
@@ -595,7 +595,7 @@ describe('collect validation', () => {
         });
 
         it('accepts MAX on OffsetDateTime', () => {
-            assertValidatorAccepts(`
+            assertValidatorAcceptsAndDoesNotWarn(`
                 type HandlingUnit @rootEntity {
                     packedAt: OffsetDateTime
                 }
@@ -622,7 +622,7 @@ describe('collect validation', () => {
         });
 
         it('accepts collect fields within aggregation paths', () => {
-            assertValidatorAccepts(`
+            assertValidatorAcceptsAndDoesNotWarn(`
                 type HandlingUnit @rootEntity {
                     weightInKg: Float
                     delivery: Delivery @relation(inverseOf: "handlingUnits")
@@ -698,7 +698,7 @@ describe('collect validation', () => {
 
         describe('distinct', () => {
             it('is supported on strings', () => {
-                assertValidatorAccepts(`
+                assertValidatorAcceptsAndDoesNotWarn(`
                     type Delivery @rootEntity {
                         keys: [String]
                         distinctKeys: [String] @collect(path: "keys", aggregate: DISTINCT)
@@ -707,7 +707,7 @@ describe('collect validation', () => {
             });
 
             it('is supported on enums', () => {
-                assertValidatorAccepts(`
+                assertValidatorAcceptsAndDoesNotWarn(`
                     enum Kind { OBJECT, TYPE, FIELD }
 
                     type Delivery @rootEntity {
@@ -738,7 +738,7 @@ describe('collect validation', () => {
             });
 
             it('is supported on simple value objects', () => {
-                assertValidatorAccepts(`
+                assertValidatorAcceptsAndDoesNotWarn(`
                     enum Kind { OBJECT, TYPE, FIELD }
 
                     type Identifier @valueObject {

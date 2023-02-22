@@ -1,5 +1,4 @@
 import {
-    assertValidatorAccepts,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
@@ -9,7 +8,7 @@ import { expect } from 'chai';
 
 describe('@parent directive', () => {
     it('accepts direct embedding in root entity', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Root @rootEntity {
                 children: [Child]
             }
@@ -22,7 +21,8 @@ describe('@parent directive', () => {
     });
 
     it('accepts embedding in other child entity', () => {
-        assertValidatorAccepts(`
+        assertValidatorWarns(
+            `
             type Root @rootEntity {
                 children: [Child]
             }
@@ -35,11 +35,13 @@ describe('@parent directive', () => {
                 name: String
                 parent: Child @parent
             }
-        `);
+        `,
+            'Parent fields currently can\'t be selected within collect fields, so this field will probably be useless. You could add a @root field (of type "Root") instead.',
+        );
     });
 
     it('accepts embedding with entity extension in between', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Root @rootEntity {
                 extension: Extension
             }
@@ -56,7 +58,8 @@ describe('@parent directive', () => {
     });
 
     it('accepts embedding nested with multiple extension in between', () => {
-        assertValidatorAccepts(`
+        assertValidatorWarns(
+            `
             type Root @rootEntity {
                 extension: Extension1
             }
@@ -96,11 +99,13 @@ describe('@parent directive', () => {
                 name: String
                 parent: Child3 @parent
             }
-        `);
+        `,
+            'Parent fields currently can\'t be selected within collect fields, so this field will probably be useless. You could add a @root field (of type "Root") instead.',
+        );
     });
 
     it('accepts embedding in multiple fields with the same type', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Root @rootEntity {
                 children1: [Child]
                 children2: [Child]
@@ -119,7 +124,8 @@ describe('@parent directive', () => {
     });
 
     it('accepts if embedded only by one entity type, but used with @collect in another', () => {
-        assertValidatorAccepts(`
+        assertValidatorWarns(
+            `
             type Root @rootEntity {
                 children: [Child]
                 grandchildren: [Grandchild] @collect(path: "children.children")
@@ -133,7 +139,9 @@ describe('@parent directive', () => {
                 name: String
                 parent: Child @parent
             }
-        `);
+        `,
+            'Parent fields currently can\'t be selected within collect fields, so this field will probably be useless. You could add a @root field (of type "Root") instead.',
+        );
     });
 
     it('rejects with list', () => {

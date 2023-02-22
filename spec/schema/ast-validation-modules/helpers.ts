@@ -33,16 +33,12 @@ export function assertValidatorWarns(
     options?: ValidationOptions,
 ) {
     const validationResult = validate(source, options);
+    expect(validationResult.hasErrors(), validationResult.toString()).to.be.false;
     expect(validationResult.hasWarnings()).to.be.true;
     expect(
         validationResult.messages.find((validatedMsg) => validatedMsg.message === msg),
         validationResult.toString(),
     ).to.not.be.undefined;
-}
-
-export function assertValidatorAccepts(source: string | DocumentNode, options?: ValidationOptions) {
-    const validationResult = validate(source, options);
-    expect(validationResult.hasErrors(), validationResult.toString()).to.be.false;
 }
 
 export function assertValidatorAcceptsAndDoesNotWarn(

@@ -1,27 +1,27 @@
-import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
 
 describe('indices validator', () => {
     it('accepts flawless index', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity(indices:[{ fields: ["foo" ]}]) { foo: String }
         `);
     });
 
     it('accepts index on enum type', () => {
-        assertValidatorAccepts(`
-            enum Animal { Cat, Dog }
+        assertValidatorAcceptsAndDoesNotWarn(`
+            enum Animal { CAT, DOG }
             type Foo @rootEntity(indices:[{ fields: ["animal" ]}]) { animal: Animal }
         `);
     });
 
     it('accepts index on multiple columns', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity(indices:[{ fields: ["foo", "bar" ]}]) { foo: String, bar: String }
         `);
     });
 
     it('accepts index on nested field', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity(indices:[{ fields: ["bar.baz" ]}]) { foo: String, bar: Bar }
             type Bar @entityExtension { baz: String }
         `);

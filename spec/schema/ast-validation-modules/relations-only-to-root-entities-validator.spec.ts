@@ -1,4 +1,4 @@
-import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
 
 describe('relations only on root entities validator', () => {
     it('rejects @relation to non-@rootEntity', () => {
@@ -16,7 +16,7 @@ describe('relations only on root entities validator', () => {
     });
 
     it('accepts @relation to @rootEntity', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity {
                 foo: String
             }

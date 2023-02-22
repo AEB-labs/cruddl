@@ -1,4 +1,4 @@
-import { assertValidatorAccepts, assertValidatorRejects } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
 
 describe('no lists of lists validator', () => {
     it('rejects lists of lists', () => {
@@ -24,7 +24,7 @@ describe('no lists of lists validator', () => {
     });
 
     it('accepts non-nested lists', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity {
                 foo: [String!]!
             }

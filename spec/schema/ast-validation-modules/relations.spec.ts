@@ -1,9 +1,9 @@
 import { expect } from 'chai';
-import { assertValidatorAccepts, assertValidatorRejects, validate } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects, validate } from './helpers';
 
 describe('@relation', () => {
     it('allows CASCADE in forward relations', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Parent @rootEntity {
                 children: [Child] @relation(onDelete: CASCADE)
             }
@@ -14,7 +14,7 @@ describe('@relation', () => {
     });
 
     it('allows RESTRICT in forward relations', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Parent @rootEntity {
                 children: [Child] @relation(onDelete: RESTRICT)
             }
@@ -25,7 +25,7 @@ describe('@relation', () => {
     });
 
     it('allows RESTRICT in forward relations without inverse field', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Parent @rootEntity {
                 children: [Child] @relation(onDelete: RESTRICT)
             }
@@ -121,7 +121,7 @@ describe('@relation', () => {
     });
 
     it('allows RESTRICT in forward n-to-m relations', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Parent @rootEntity {
                 children: [Child] @relation(onDelete: RESTRICT)
             }
@@ -164,7 +164,7 @@ describe('@relation', () => {
     });
 
     it('allows relation loops if it is broken by a RESTRICT', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Red @rootEntity {
                 blues: [Blue] @relation(onDelete: CASCADE)
                 parentBlue: Blue @relation(inverseOf: "reds")

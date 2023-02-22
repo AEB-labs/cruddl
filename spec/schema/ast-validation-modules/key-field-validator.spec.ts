@@ -1,7 +1,5 @@
 import { expect } from 'chai';
-import { expectSingleErrorToInclude } from '../../model/implementation/validation-utils';
 import {
-    assertValidatorAccepts,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
@@ -65,7 +63,7 @@ describe('key field validator', () => {
     });
 
     it('allows LocalDate keys', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity {
                 foo: String
                 bar: LocalDate @key
@@ -86,7 +84,7 @@ describe('key field validator', () => {
     });
 
     it('accepts correct key usage', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity {
                 foo: String @key
             }
@@ -94,7 +92,7 @@ describe('key field validator', () => {
     });
 
     it('accepts Int53 type', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity {
                 foo: Int53 @key
             }

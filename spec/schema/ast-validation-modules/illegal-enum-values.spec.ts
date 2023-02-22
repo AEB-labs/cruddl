@@ -1,10 +1,5 @@
 import { gql } from 'graphql-tag';
-import {
-    assertValidatorAccepts,
-    assertValidatorAcceptsAndDoesNotWarn,
-    assertValidatorRejects,
-    assertValidatorWarns,
-} from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorWarns } from './helpers';
 
 describe('enum declaration validation', () => {
     it('accepts regular enums', () => {

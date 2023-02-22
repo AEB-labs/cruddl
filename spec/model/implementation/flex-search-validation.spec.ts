@@ -8,7 +8,6 @@ import {
     FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
 } from '../../../src/schema/constants';
 import {
-    assertValidatorAccepts,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
@@ -55,7 +54,7 @@ describe('FlexSearch', () => {
     it('accepts flexSearch flexSearchFulltext on strings', () => {
         // currently we allow pretty much every type on @flexSearch (which is a bug),
         // but when we change this, we should not break e.g. Strings
-        assertValidatorAccepts(
+        assertValidatorAcceptsAndDoesNotWarn(
             `
             type HandlingUnit @rootEntity(flexSearch: true) {
                 handlingUnitNumber: String @flexSearchFulltext @flexSearch
@@ -65,7 +64,7 @@ describe('FlexSearch', () => {
     });
 
     it('accepts flexSearch and flexSearchFulltext on I18nString', () => {
-        assertValidatorAccepts(
+        assertValidatorAcceptsAndDoesNotWarn(
             `
             type HandlingUnit @rootEntity(flexSearch: true) {
                 handlingUnitNumber: I18nString @flexSearchFulltext @flexSearch
@@ -134,7 +133,7 @@ describe('FlexSearch', () => {
     });
 
     it('accepts flexSearch includeInSearch for string arrays', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type HandlingUnit @rootEntity(flexSearch: true) {
                 someListOfStrings: [String] @flexSearch(includeInSearch: true)
             }

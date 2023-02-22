@@ -1,9 +1,9 @@
-import { assertValidatorAccepts, assertValidatorRejects, validate } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects, validate } from './helpers';
 import { expect } from 'chai';
 
 describe('@root directive', () => {
     it('accepts direct embedding in root entity', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Root @rootEntity {
                 children: [Child]
             }
@@ -16,7 +16,7 @@ describe('@root directive', () => {
     });
 
     it('accepts embedding in other child entity', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Root @rootEntity {
                 children: [Child]
             }
@@ -33,7 +33,7 @@ describe('@root directive', () => {
     });
 
     it('accepts embedding with entity extension in between', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Root @rootEntity {
                 extension: Extension
             }
@@ -50,7 +50,7 @@ describe('@root directive', () => {
     });
 
     it('accepts embedding nested with multiple extension in between', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Root @rootEntity {
                 extension: Extension1
             }
@@ -94,7 +94,7 @@ describe('@root directive', () => {
     });
 
     it('accepts embedding in multiple fields with the same type', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Root @rootEntity {
                 children1: [Child]
                 children2: [Child]
@@ -113,7 +113,7 @@ describe('@root directive', () => {
     });
 
     it('accepts if embedded only by one entity type, but used with @collect in another', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Root @rootEntity {
                 children: [Child]
             }

@@ -1,5 +1,4 @@
 import {
-    assertValidatorAccepts,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
@@ -7,35 +6,35 @@ import {
 
 describe('check-directed-relation-edges-validator', () => {
     it('accepts forward only @relation', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity { bar: Bar @relation }
             type Bar @rootEntity { bla: String }
         `);
     });
 
     it('accepts bidirectional relation @relation', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity { bar: Bar @relation }
             type Bar @rootEntity { foo: Foo @relation(inverseOf: "bar") }
         `);
     });
 
     it('accepts two forward only @relations', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity { bar: Bar @relation, bar2: Bar @relation }
             type Bar @rootEntity { bla: String }
         `);
     });
 
     it('accepts two bidirectional @relations', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity { bar: Bar @relation, bar2: Bar @relation }
             type Bar @rootEntity { foo: Foo @relation(inverseOf:"bar"), foo2: Foo @relation(inverseOf:"bar2") }
         `);
     });
 
     it('accepts one bidirectional and one forward only @relation', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity { bar: Bar @relation, bar2: Bar @relation }
             type Bar @rootEntity { foo: Foo @relation(inverseOf:"bar") }
         `);

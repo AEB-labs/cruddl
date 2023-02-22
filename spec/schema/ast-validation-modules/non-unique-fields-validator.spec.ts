@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { assertValidatorAccepts, validate } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, validate } from './helpers';
 
 const modelWithNonUniqueFields = `
             type Stuff @rootEntity {
@@ -16,7 +16,7 @@ describe('unique field validator', () => {
     });
 
     it('finds no problems', () => {
-        assertValidatorAccepts(`
+        assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity {
                 foo: String @key
                 bar: [Bar]
