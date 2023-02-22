@@ -1,5 +1,6 @@
 import {
     getNamedType,
+    GraphQLBoolean,
     GraphQLInputType,
     GraphQLList,
     GraphQLNonNull,
@@ -307,6 +308,45 @@ export class FlexSearchEntityExtensionFilterField implements FlexSearchFilterFie
         }
         const valueNode = new FieldQueryNode(sourceNode, this.field);
         return this.inputType.getFilterNode(valueNode, filterValue, path.concat(this.field), info);
+    }
+}
+
+export class FlexSearchEmptyListFilterField implements FlexSearchFilterField {
+    readonly name: string;
+    readonly description: string;
+
+    readonly inputType = GraphQLBoolean;
+
+    constructor(public readonly field: Field) {
+        this.name = this.field.name + '_empty';
+        this.description = `Checks if \`${this.field.name}\` is an empty list (true) or a non-empty list or null (false).`;
+    }
+
+    getFilterNode(
+        sourceNode: QueryNode,
+        filterValue: AnyValue,
+        path: ReadonlyArray<Field>,
+        info: QueryNodeResolveInfo,
+    ): QueryNode {
+        if (filterValue == undefined) {
+            // null means do not filter
+            return ConstBoolQueryNode.TRUE;
+        }
+        const valueNode = new FieldQueryNode(sourceNode, this.field);
+        if (typeof filterValue !== 'boolean') {
+            throw new Error(
+                `Expected value for FlexSearchEmptyListFilterField to be null, false or true, but is ${String(
+                    filterValue,
+                )}`,
+            );
+        }
+        const existsNode = new FlexSearchFieldExistsQueryNode(valueNode);
+        if (filterValue) {
+            // _empty: true means NOT EXISTS() because EXISTS() is false for empty arrays
+            return not(existsNode);
+        } else {
+            return existsNode;
+        }
     }
 }
 

@@ -1103,8 +1103,14 @@ register(FlexSearchQueryNode, (node, context) => {
 });
 
 register(FlexSearchFieldExistsQueryNode, (node, context) => {
-    const sourceNodeResult = processNode(node.sourceNode, context);
-    return js`(${sourceNodeResult} != null)`;
+    const valueFrag = processNode(node.sourceNode, context);
+    const valueVar = js.variable('val');
+    // EXISTS is false for empty arrays, and we make use of this
+    return jsExt.evaluatingLambda(
+        valueVar,
+        js`${valueVar} != null && (!Array.isArray(${valueVar}) || ${valueVar}.length)`,
+        valueFrag,
+    );
 });
 
 register(FieldPathQueryNode, (node, context) => {

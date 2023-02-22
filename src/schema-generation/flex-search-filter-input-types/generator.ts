@@ -2,17 +2,61 @@ import { GraphQLEnumType, GraphQLString, resolveReadonlyArrayThunk } from 'graph
 import { ThunkReadonlyArray } from 'graphql/type/definition';
 import memorize from 'memorize-decorator';
 import { EnumType, Field, ObjectType, ScalarType, Type } from '../../model';
-import { BinaryOperator, BinaryOperatorWithAnalyzer, LiteralQueryNode, QueryNode, RuntimeErrorQueryNode } from '../../query-tree';
+import {
+    BinaryOperator,
+    BinaryOperatorWithAnalyzer,
+    LiteralQueryNode,
+    QueryNode,
+    RuntimeErrorQueryNode,
+} from '../../query-tree';
 import { FlexSearchComplexOperatorQueryNode } from '../../query-tree/flex-search';
-import { INPUT_FIELD_CONTAINS_ALL_PREFIXES, INPUT_FIELD_CONTAINS_ALL_WORDS, INPUT_FIELD_CONTAINS_ANY_PREFIX, INPUT_FIELD_CONTAINS_ANY_WORD, INPUT_FIELD_CONTAINS_PHRASE, INPUT_FIELD_EQUAL, INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES, INPUT_FIELD_NOT_CONTAINS_ALL_WORDS, INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX, INPUT_FIELD_NOT_CONTAINS_ANY_WORD, INPUT_FIELD_NOT_CONTAINS_PHRASE } from '../../schema/constants';
+import {
+    INPUT_FIELD_CONTAINS_ALL_PREFIXES,
+    INPUT_FIELD_CONTAINS_ALL_WORDS,
+    INPUT_FIELD_CONTAINS_ANY_PREFIX,
+    INPUT_FIELD_CONTAINS_ANY_WORD,
+    INPUT_FIELD_CONTAINS_PHRASE,
+    INPUT_FIELD_EQUAL,
+    INPUT_FIELD_NOT_CONTAINS_ALL_PREFIXES,
+    INPUT_FIELD_NOT_CONTAINS_ALL_WORDS,
+    INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX,
+    INPUT_FIELD_NOT_CONTAINS_ANY_WORD,
+    INPUT_FIELD_NOT_CONTAINS_PHRASE,
+} from '../../schema/constants';
 import { getFlexSearchFilterTypeName } from '../../schema/names';
 import { GraphQLI18nString } from '../../schema/scalars/string-map';
 import { flatMap } from '../../utils/utils';
 import { EnumTypeGenerator } from '../enum-type-generator';
-import { ENUM_FILTER_FIELDS, FILTER_OPERATORS, NUMERIC_FILTER_FIELDS } from '../filter-input-types/constants';
-import { binaryNotOpWithAnalyzer, binaryOpWithAnaylzer, noAnalyzerWasSuppliedError, not } from '../utils/input-types';
-import { FLEX_SEARCH_FILTER_FIELDS_BY_TYPE, FLEX_SEARCH_FILTER_OPERATORS, STRING_FLEX_SEARCH_FILTER_FIELDS, STRING_FLEX_SEARCH_FILTER_OPERATORS, STRING_TEXT_ANALYZER_FILTER_FIELDS } from './constants';
-import { FlexSearchAndFilterField, FlexSearchEntityExtensionFilterField, FlexSearchFilterField, FlexSearchI18nStringLocalizedFilterField, FlexSearchNestedObjectFilterField, FlexSearchOrFilterField, FlexSearchScalarOrEnumFieldFilterField, FlexSearchScalarOrEnumFilterField, I18nStringLocalizedFilterLanguageField } from './filter-fields';
+import {
+    ENUM_FILTER_FIELDS,
+    FILTER_OPERATORS,
+    NUMERIC_FILTER_FIELDS,
+} from '../filter-input-types/constants';
+import {
+    binaryNotOpWithAnalyzer,
+    binaryOpWithAnaylzer,
+    noAnalyzerWasSuppliedError,
+    not,
+} from '../utils/input-types';
+import {
+    FLEX_SEARCH_FILTER_FIELDS_BY_TYPE,
+    FLEX_SEARCH_FILTER_OPERATORS,
+    STRING_FLEX_SEARCH_FILTER_FIELDS,
+    STRING_FLEX_SEARCH_FILTER_OPERATORS,
+    STRING_TEXT_ANALYZER_FILTER_FIELDS,
+} from './constants';
+import {
+    FlexSearchAndFilterField,
+    FlexSearchEmptyListFilterField,
+    FlexSearchEntityExtensionFilterField,
+    FlexSearchFilterField,
+    FlexSearchI18nStringLocalizedFilterField,
+    FlexSearchNestedObjectFilterField,
+    FlexSearchOrFilterField,
+    FlexSearchScalarOrEnumFieldFilterField,
+    FlexSearchScalarOrEnumFilterField,
+    I18nStringLocalizedFilterLanguageField,
+} from './filter-fields';
 import { FlexSearchFilterObjectType } from './filter-types';
 
 export class FlexSearchFilterTypeGenerator {
@@ -69,7 +113,8 @@ export class FlexSearchFilterTypeGenerator {
         isAggregation: boolean,
     ): ReadonlyArray<FlexSearchFilterField> {
         if (field.isList) {
-            return this.generateListFieldFilterFields(field);
+            const fields = this.generateTypeSpecificListFieldFilterFields(field);
+            return [...fields, new FlexSearchEmptyListFilterField(field)];
         }
         if (field.type.isScalarType) {
             if (field.type.name === GraphQLI18nString.name) {
@@ -290,7 +335,7 @@ export class FlexSearchFilterTypeGenerator {
     }
 
     @memorize()
-    private generateListFieldFilterFields(
+    private generateTypeSpecificListFieldFilterFields(
         field: Field,
         path?: ReadonlyArray<Field>,
     ): FlexSearchFilterField[] {
