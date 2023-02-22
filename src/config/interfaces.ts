@@ -27,6 +27,12 @@ export interface SchemaOptions {
      * The maximum depth root entities can be traversed through for orderBy values
      */
     readonly maxOrderByRootEntityDepth?: number;
+
+    /**
+     * Set to true to remove the "filter" argument from flexSearch filter fields (this is deprecated
+     * in favor of "postFilter" and will be removed in the future)
+     */
+    readonly omitDeprecatedOldPostFilterVariant?: boolean;
 }
 
 export interface ModelOptions {
