@@ -1620,6 +1620,7 @@ export class Field implements ModelComponent {
 
         const supportedNonNumberScalarTypeNames = [
             GraphQLString.name,
+            GraphQLI18nString.name,
             GraphQLID.name,
             GraphQLDateTime.name,
             GraphQLLocalDate.name,
