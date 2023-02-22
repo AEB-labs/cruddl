@@ -365,5 +365,26 @@
         }
       ]
     }
+  },
+  "offset_date_time": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "serialNumbers": [
+            "12345",
+            "67890"
+          ],
+          "dispatchDate": "2001-01-02T03:00:00+00:00"
+        },
+        {
+          "deliveryNumber": "1000521",
+          "serialNumbers": [
+            "54321"
+          ],
+          "dispatchDate": "2001-01-02T04:00:00+01:00"
+        }
+      ]
+    }
   }
 }
