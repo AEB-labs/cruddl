@@ -3,7 +3,13 @@ import { ThunkReadonlyArray } from 'graphql/type/definition';
 import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { EnumType, Field, ScalarType, Type } from '../../model/index';
-import { BinaryOperationQueryNode, BinaryOperator, ConstBoolQueryNode, NullQueryNode, QueryNode } from '../../query-tree';
+import {
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ConstBoolQueryNode,
+    NullQueryNode,
+    QueryNode,
+} from '../../query-tree';
 import { INPUT_FIELD_EQUAL } from '../../schema/constants';
 import { getFilterTypeName } from '../../schema/names';
 import { GraphQLI18nString, GraphQLStringMap } from '../../schema/scalars/string-map';
@@ -11,8 +17,26 @@ import { AnyValue, objectEntries } from '../../utils/utils';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { and } from '../utils/input-types';
-import { ENUM_FILTER_FIELDS, FILTER_FIELDS_BY_TYPE, FILTER_OPERATORS, NUMERIC_FILTER_FIELDS, QUANTIFIERS } from './constants';
-import { AndFilterField, EntityExtensionFilterField, FilterField, ListFilterField, NestedObjectFilterField, OrFilterField, QuantifierFilterField, ScalarOrEnumFieldFilterField, ScalarOrEnumFilterField, StringMapEntryFilterField, StringMapSomeValueFilterField } from './filter-fields';
+import {
+    ENUM_FILTER_FIELDS,
+    FILTER_FIELDS_BY_TYPE,
+    FILTER_OPERATORS,
+    NUMERIC_FILTER_FIELDS,
+    QUANTIFIERS,
+} from './constants';
+import {
+    AndFilterField,
+    EmptyListFilterField,
+    EntityExtensionFilterField,
+    FilterField,
+    NestedObjectFilterField,
+    OrFilterField,
+    QuantifierFilterField,
+    ScalarOrEnumFieldFilterField,
+    ScalarOrEnumFilterField,
+    StringMapEntryFilterField,
+    StringMapSomeValueFilterField,
+} from './filter-fields';
 
 export class FilterObjectType extends TypedInputObjectType<FilterField> {
     constructor(typeName: string, fields: ThunkReadonlyArray<FilterField>, description?: string) {
@@ -87,7 +111,7 @@ export class FilterTypeGenerator {
         return filterType;
     }
 
-    private generateFieldFilterFields(field: Field): FilterField[] {
+    private generateFieldFilterFields(field: Field): ReadonlyArray<FilterField> {
         if (field.isCollectField || field.isRootField || field.isParentField) {
             // traversal fields can't be used to filter
             return [];
@@ -171,11 +195,12 @@ export class FilterTypeGenerator {
         );
     }
 
-    private generateListFieldFilterFields(field: Field): ListFilterField[] {
+    private generateListFieldFilterFields(field: Field): ReadonlyArray<FilterField> {
         const inputType = this.generate(field.type);
-        return QUANTIFIERS.map(
+        const quantifierFields = QUANTIFIERS.map(
             (quantifierName) => new QuantifierFilterField(field, quantifierName, inputType),
         );
+        return [...quantifierFields, new EmptyListFilterField(field)];
     }
 
     private buildScalarFilterFields(type: ScalarType): ScalarOrEnumFilterField[] {
