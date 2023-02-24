@@ -162,6 +162,20 @@ describe('Meta schema API', () => {
         }
     `;
 
+    const cruddlVersionQuery = gql`
+        {
+            cruddlVersion
+        }
+    `;
+
+    const cruddlVersionIntrospectionQuery = gql`
+        {
+            __type(name: "Query") {
+                description
+            }
+        }
+    `;
+
     const model = new Model({
         types: [
             {
@@ -942,6 +956,27 @@ describe('Meta schema API', () => {
                 { name: 'destinationCountry', permissions: { canRead: false, canWrite: false } },
             ],
         });
+    });
+
+    it('can query read the cruddl version', async () => {
+        const expectedVersion = require('../../package.json').version;
+        const result = await execute(cruddlVersionQuery);
+        const actualVersion = result!.cruddlVersion as string;
+
+        expect(typeof actualVersion).to.equal('string');
+        expect(actualVersion.length).to.be.greaterThan(0);
+        expect(actualVersion).to.deep.equal(expectedVersion);
+    });
+
+    it('can query read the cruddl version from meta description', async () => {
+        const expectedVersion = require('../../package.json').version;
+        const result = (await execute(cruddlVersionIntrospectionQuery)) as any;
+        const description = result.__type.description as string;
+        const actualVersion = description.match(/cruddlVersion: "(.*)"/)![1];
+
+        expect(typeof actualVersion).to.equal('string');
+        expect(actualVersion.length).to.be.greaterThan(0);
+        expect(actualVersion).to.deep.equal(expectedVersion);
     });
 
     after(function () {
