@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs';
-import { graphql, GraphQLSchema, OperationDefinitionNode, parse } from 'graphql';
+import { graphql, GraphQLSchema, OperationDefinitionNode, OperationTypeNode, parse } from 'graphql';
 import { resolve } from 'path';
 import stripJsonComments from 'strip-json-comments';
 import { ArangoDBAdapter } from '../../src/database/arangodb';
@@ -201,15 +201,28 @@ export class RegressionSuite {
             ? JSON.parse(stripJsonComments(readFileSync(metaPath, 'utf-8')))
             : {};
 
-        if (meta.waitForArangoSearch && this.databaseSpecifier === 'arangodb') {
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-        }
-
         let actualResult: any;
         if (hasNamedOperations) {
             const operationNames = operations.map((def) => def.name!.value);
             actualResult = {};
+            let arangoSearchPending = true;
             for (const operationName of operationNames) {
+                const operation = operations.find((o) => o.name?.value === operationName);
+                if (!operation) {
+                    throw new Error(`Exected operation ${operationName} to exist`);
+                }
+
+                // we need to wait for arangosearch views to catch up before we can perform a query
+                if (
+                    meta.waitForArangoSearch &&
+                    this.databaseSpecifier === 'arangodb' &&
+                    arangoSearchPending &&
+                    operation.operation === OperationTypeNode.QUERY
+                ) {
+                    await new Promise((resolve) => setTimeout(resolve, 2000));
+                    arangoSearchPending = false;
+                }
+
                 let operationContext = context;
                 if (context && context.operations && context.operations[operationName]) {
                     operationContext = context.operations[operationName];
@@ -224,8 +237,16 @@ export class RegressionSuite {
                 });
                 operationResult = JSON.parse(JSON.stringify(operationResult)); // serialize e.g. errors as they would be in a GraphQL server
                 actualResult[operationName] = operationResult;
+
+                if (operation.operation === OperationTypeNode.MUTATION) {
+                    // we need to wait for arangosearch again if we performed a mutation
+                    arangoSearchPending = true;
+                }
             }
         } else {
+            if (meta.waitForArangoSearch && this.databaseSpecifier === 'arangodb') {
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+            }
             actualResult = await graphql({
                 schema: this.schema,
                 source: gqlSource,
