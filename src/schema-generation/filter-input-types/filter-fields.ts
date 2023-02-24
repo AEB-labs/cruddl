@@ -5,6 +5,8 @@ import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConstBoolQueryNode,
+    CountQueryNode,
+    FieldQueryNode,
     ListItemQueryNode,
     LiteralQueryNode,
     ObjectEntriesQueryNode,
@@ -25,6 +27,8 @@ import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants';
 import { FilterObjectType } from './generator';
+import { GraphQLBoolean } from 'graphql/index';
+import { QueryNodeResolveInfo } from '../query-node-object-type';
 
 export interface FilterField extends TypedInputFieldBase<FilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode;
@@ -232,6 +236,49 @@ export class QuantifierFilterField implements FilterField {
             quantifier: this.quantifierName,
             conditionNode: filterNode,
         });
+    }
+}
+
+export class EmptyListFilterField implements FilterField {
+    readonly name: string;
+    readonly description: string;
+
+    readonly inputType = GraphQLBoolean;
+
+    constructor(public readonly field: Field) {
+        this.name = this.field.name + '_empty';
+        this.description = `Checks if \`${this.field.name}\` is an empty list (true) or a non-empty list or null (false).`;
+    }
+
+    getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
+        if (filterValue == undefined) {
+            // null means do not filter
+            return ConstBoolQueryNode.TRUE;
+        }
+        const valueNode = new FieldQueryNode(sourceNode, this.field);
+        if (typeof filterValue !== 'boolean') {
+            throw new Error(
+                `Expected value for EmptyListFilterField to be null, false or true, but is ${String(
+                    filterValue,
+                )}`,
+            );
+        }
+        const lengthNode = new CountQueryNode(valueNode);
+        if (filterValue) {
+            // _empty: true means length == 0 (LENGTH(null) == 0)
+            return new BinaryOperationQueryNode(
+                lengthNode,
+                BinaryOperator.EQUAL,
+                new LiteralQueryNode(0),
+            );
+        } else {
+            // _empty: false means length > 0
+            return new BinaryOperationQueryNode(
+                lengthNode,
+                BinaryOperator.GREATER_THAN,
+                new LiteralQueryNode(0),
+            );
+        }
     }
 }
 

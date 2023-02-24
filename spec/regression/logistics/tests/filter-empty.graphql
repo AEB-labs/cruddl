@@ -1,0 +1,46 @@
+mutation empty_one_list {
+    updateDelivery(input: { id: "@{ids/Delivery/3}", items: [] }) {
+        deliveryNumber
+        _itemsMeta {
+            count
+        }
+    }
+}
+
+query empty {
+    allDeliveries(filter: { items_empty: true }) {
+        deliveryNumber
+        _itemsMeta {
+            count
+        }
+    }
+}
+
+# this is the old version which also works
+query none {
+    allDeliveries(filter: { items_none: {} }) {
+        deliveryNumber
+        _itemsMeta {
+            count
+        }
+    }
+}
+
+query not_empty {
+    allDeliveries(filter: { items_empty: false }) {
+        deliveryNumber
+        _itemsMeta {
+            count
+        }
+    }
+}
+
+# this is the old version which also works
+query some {
+    allDeliveries(filter: { items_some: {} }) {
+        deliveryNumber
+        _itemsMeta {
+            count
+        }
+    }
+}

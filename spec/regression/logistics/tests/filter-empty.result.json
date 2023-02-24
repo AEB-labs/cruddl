@@ -1,0 +1,72 @@
+{
+  "empty_one_list": {
+    "data": {
+      "updateDelivery": {
+        "deliveryNumber": "1000522",
+        "_itemsMeta": {
+          "count": 0
+        }
+      }
+    }
+  },
+  "empty": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000522",
+          "_itemsMeta": {
+            "count": 0
+          }
+        }
+      ]
+    }
+  },
+  "none": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000522",
+          "_itemsMeta": {
+            "count": 0
+          }
+        }
+      ]
+    }
+  },
+  "not_empty": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "_itemsMeta": {
+            "count": 2
+          }
+        },
+        {
+          "deliveryNumber": "1000521",
+          "_itemsMeta": {
+            "count": 2
+          }
+        }
+      ]
+    }
+  },
+  "some": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "_itemsMeta": {
+            "count": 2
+          }
+        },
+        {
+          "deliveryNumber": "1000521",
+          "_itemsMeta": {
+            "count": 2
+          }
+        }
+      ]
+    }
+  }
+}

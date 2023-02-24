@@ -992,6 +992,11 @@
               "deprecationReason": null
             },
             {
+              "name": "description_empty",
+              "description": "Checks if `description` is an empty list (true) or a non-empty list or null (false).",
+              "deprecationReason": null
+            },
+            {
               "name": "totalInvestment",
               "description": "Checks if `totalInvestment` equals a specified string, case-sensitively.\n\nIf an index exists on `totalInvestment`, it can be used.\n\nSee also `like` for a case-insensitive filter.",
               "deprecationReason": null
@@ -2566,6 +2571,11 @@
               "deprecationReason": null
             },
             {
+              "name": "serialNumbers_empty",
+              "description": "Checks if `serialNumbers` is an empty list (true) or a non-empty list or null (false).",
+              "deprecationReason": null
+            },
+            {
               "name": "consignee",
               "description": "Checks if `consignee` is not null, and allows to filter based on its fields.",
               "deprecationReason": null
@@ -2583,6 +2593,11 @@
             {
               "name": "contentInfo_none",
               "description": "Makes sure none of the items in `contentInfo` match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `contentInfo` has no items.",
+              "deprecationReason": null
+            },
+            {
+              "name": "contentInfo_empty",
+              "description": "Checks if `contentInfo` is an empty list (true) or a non-empty list or null (false).",
               "deprecationReason": null
             },
             {
@@ -2606,6 +2621,11 @@
               "deprecationReason": null
             },
             {
+              "name": "items_empty",
+              "description": "Checks if `items` is an empty list (true) or a non-empty list or null (false).",
+              "deprecationReason": null
+            },
+            {
               "name": "handlingUnits_some",
               "description": "Makes sure at least one of the items in \"handlingUnits\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `handlingUnits` has at least one item.",
               "deprecationReason": null
@@ -2618,6 +2638,11 @@
             {
               "name": "handlingUnits_none",
               "description": "Makes sure none of the items in `handlingUnits` match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `handlingUnits` has no items.",
+              "deprecationReason": null
+            },
+            {
+              "name": "handlingUnits_empty",
+              "description": "Checks if `handlingUnits` is an empty list (true) or a non-empty list or null (false).",
               "deprecationReason": null
             },
             {
@@ -4362,6 +4387,11 @@
               "deprecationReason": null
             },
             {
+              "name": "notices_empty",
+              "description": "Checks if `notices` is an empty list (true) or a non-empty list or null (false).",
+              "deprecationReason": null
+            },
+            {
               "name": "details",
               "description": "Allows to filter on the fields of `details`.\n\nNote that `details` is an entity extension and thus can never be `null`, so specifying `null` to this filter field has no effect.",
               "deprecationReason": null
@@ -4733,6 +4763,11 @@
             {
               "name": "deliveries_none",
               "description": "Makes sure none of the items in `deliveries` match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `deliveries` has no items.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deliveries_empty",
+              "description": "Checks if `deliveries` is an empty list (true) or a non-empty list or null (false).",
               "deprecationReason": null
             },
             {
@@ -6595,6 +6630,11 @@
             {
               "name": "deliveries_none",
               "description": "Makes sure none of the items in `deliveries` match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `deliveries` has no items.",
+              "deprecationReason": null
+            },
+            {
+              "name": "deliveries_empty",
+              "description": "Checks if `deliveries` is an empty list (true) or a non-empty list or null (false).",
               "deprecationReason": null
             },
             {
