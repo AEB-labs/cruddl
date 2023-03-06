@@ -14,12 +14,11 @@ import { OrderDirection } from '../model/implementation/order';
 import { Project } from '../project/project';
 import { compact, flatMap } from '../utils/utils';
 import { I18N_GENERIC, I18N_LOCALE } from './constants';
+import { CRUDDL_VERSION } from '../cruddl-version';
 
 const resolutionOrderDescription = JSON.stringify(
     'The order in which languages and other localization providers are queried for a localization. You can specify languages as defined in the schema as well as the following special identifiers:\n\n- `_LOCALE`: The language defined by the GraphQL request (might be a list of languages, e.g. ["de_DE", "de", "en"])\n- `_GENERIC`: is auto-generated localization from field and type names (e. G. `orderDate` => `Order date`)\n\nThe default `resolutionOrder` is `["_LOCALE", "_GENERIC"]` (if not specified).',
 );
-
-const cruddlVersion = require('../../package.json').version;
 
 const typeDefs = gql`
     enum TypeKind {
@@ -346,7 +345,7 @@ const typeDefs = gql`
     
     You can parse the following part of this comment for feature detection (it won't change the format):
     
-    cruddlVersion: "${cruddlVersion}"
+    cruddlVersion: "${CRUDDL_VERSION}"
     """
     type Query {
         "A list of all user-defined and system-provided types"
@@ -562,7 +561,7 @@ export function getMetaSchema(project: Project): GraphQLSchema {
             rootNamespace: () => model.rootNamespace,
             namespace: (_, { path }) => model.getNamespaceByPath(path),
             billingEntityTypes: () => model.billingEntityTypes,
-            cruddlVersion: () => cruddlVersion,
+            cruddlVersion: () => CRUDDL_VERSION,
         },
         // to be used within the subscription type, so we don't use the "Query" type there in case we want to add something there
         Schema: {
@@ -584,7 +583,7 @@ export function getMetaSchema(project: Project): GraphQLSchema {
             rootNamespace: () => model.rootNamespace,
             namespace: (_, { path }) => model.getNamespaceByPath(path),
             billingEntityTypes: () => model.billingEntityTypes,
-            cruddlVersion: () => cruddlVersion,
+            cruddlVersion: () => CRUDDL_VERSION,
         },
         Subscription: {
             schema: {
