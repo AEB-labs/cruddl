@@ -9,6 +9,7 @@ import { getMetaSchema } from '../../src/meta-schema/meta-schema';
 import { AggregationOperator, Model, TypeKind } from '../../src/model';
 import { Project } from '../../src/project/project';
 import { stopMetaServer } from '../dev/server';
+import { CRUDDL_VERSION } from '../../src/cruddl-version';
 
 describe('Meta schema API', () => {
     const introQuery = gql`
@@ -959,23 +960,19 @@ describe('Meta schema API', () => {
     });
 
     it('can query read the cruddl version', async () => {
-        const expectedVersion = require('../../package.json').version;
+        const expectedVersion = CRUDDL_VERSION;
         const result = await execute(cruddlVersionQuery);
         const actualVersion = result!.cruddlVersion as string;
 
-        expect(typeof actualVersion).to.equal('string');
-        expect(actualVersion.length).to.be.greaterThan(0);
         expect(actualVersion).to.deep.equal(expectedVersion);
     });
 
     it('can query read the cruddl version from meta description', async () => {
-        const expectedVersion = require('../../package.json').version;
+        const expectedVersion = CRUDDL_VERSION;
         const result = (await execute(cruddlVersionIntrospectionQuery)) as any;
         const description = result.__type.description as string;
         const actualVersion = description.match(/cruddlVersion: "(.*)"/)![1];
 
-        expect(typeof actualVersion).to.equal('string');
-        expect(actualVersion.length).to.be.greaterThan(0);
         expect(actualVersion).to.deep.equal(expectedVersion);
     });
 
