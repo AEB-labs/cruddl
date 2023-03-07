@@ -277,7 +277,7 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
                         new CountQueryNode(
                             new IntersectionQueryNode([
                                 fieldNode,
-                                new LiteralQueryNode(claimValues),
+                                new LiteralQueryNode(sanitizedClaimValues),
                             ])
                         ),
                         BinaryOperator.GREATER_THAN_OR_EQUAL,
