@@ -328,6 +328,83 @@ export class MutationTypeGenerator {
         inputType: UpdateRootEntityInputType,
         fieldContext: FieldContext,
     ): ReadonlyArray<PreExecQueryParms> {
+        const updateEntityNode = this.getUpdateRootEntityQueryNode(
+            fieldContext,
+            inputType,
+            input,
+            rootEntityType,
+        );
+        const updatedIdsVarNode = new VariableQueryNode('updatedIds');
+        const updateEntityPreExec = new PreExecQueryParms({
+            query: updateEntityNode,
+            resultVariable: updatedIdsVarNode,
+            resultValidator: new ErrorIfEmptyResultValidator({
+                errorMessage: `${rootEntityType.name} with id '${input[ID_FIELD]}' could not be found.`,
+                errorCode: NOT_FOUND_ERROR,
+            }),
+        });
+
+        const relationStatements = inputType.getRelationStatements(
+            input,
+            new FirstOfListQueryNode(updatedIdsVarNode),
+            fieldContext,
+        );
+        const billingStatement = this.getBillingStatementForUpdate(
+            rootEntityType,
+            input,
+            updatedIdsVarNode,
+        );
+
+        return [
+            updateEntityPreExec,
+            ...relationStatements,
+            ...(billingStatement ? [billingStatement] : []),
+        ];
+    }
+
+    private getBillingStatementForUpdate(
+        rootEntityType: RootEntityType,
+        input: PlainObject,
+        updatedIdsVarNode: VariableQueryNode,
+    ): PreExecQueryParms | undefined {
+        if (
+            !rootEntityType.billingEntityConfig ||
+            !rootEntityType.billingEntityConfig.keyFieldName ||
+            !input[rootEntityType.billingEntityConfig.keyFieldName]
+        ) {
+            return;
+        }
+
+        const entityVar = new VariableQueryNode('entity');
+        return new PreExecQueryParms({
+            query: new VariableAssignmentQueryNode({
+                variableValueNode: new EntityFromIdQueryNode(
+                    rootEntityType,
+                    new FirstOfListQueryNode(updatedIdsVarNode),
+                ),
+                variableNode: entityVar,
+                resultNode: new CreateBillingEntityQueryNode({
+                    rootEntityTypeName: rootEntityType.name,
+                    key: input[rootEntityType.billingEntityConfig.keyFieldName] as number | string,
+                    categoryNode: createBillingEntityCategoryNode(
+                        rootEntityType.billingEntityConfig,
+                        entityVar,
+                    ),
+                    quantityNode: createBillingEntityQuantityNode(
+                        rootEntityType.billingEntityConfig,
+                        entityVar,
+                    ),
+                }),
+            }),
+        });
+    }
+
+    private getUpdateRootEntityQueryNode(
+        fieldContext: FieldContext,
+        inputType: UpdateRootEntityInputType,
+        input: PlainObject,
+        rootEntityType: RootEntityType,
+    ) {
         const currentEntityVariable = new VariableQueryNode('currentEntity');
         const context: UpdateInputFieldContext = {
             ...fieldContext,
@@ -352,7 +429,7 @@ export class MutationTypeGenerator {
             itemVariable: listItemVar,
         });
 
-        const updateEntityNode = new UpdateEntitiesQueryNode({
+        return new UpdateEntitiesQueryNode({
             rootEntityType,
             affectedFields,
             updates,
@@ -360,57 +437,6 @@ export class MutationTypeGenerator {
             listNode,
             revision,
         });
-        const updatedIdsVarNode = new VariableQueryNode('updatedIds');
-        const updateEntityPreExec = new PreExecQueryParms({
-            query: updateEntityNode,
-            resultVariable: updatedIdsVarNode,
-            resultValidator: new ErrorIfEmptyResultValidator({
-                errorMessage: `${rootEntityType.name} with id '${input[ID_FIELD]}' could not be found.`,
-                errorCode: NOT_FOUND_ERROR,
-            }),
-        });
-
-        const relationStatements = inputType.getRelationStatements(
-            input,
-            new FirstOfListQueryNode(updatedIdsVarNode),
-            context,
-        );
-
-        const preExecQueryParms = [updateEntityPreExec, ...relationStatements];
-        if (
-            rootEntityType.billingEntityConfig &&
-            rootEntityType.billingEntityConfig.keyFieldName &&
-            input[rootEntityType.billingEntityConfig.keyFieldName]
-        ) {
-            const entityVar = new VariableQueryNode('entity');
-            preExecQueryParms.push(
-                new PreExecQueryParms({
-                    query: new VariableAssignmentQueryNode({
-                        variableValueNode: new EntityFromIdQueryNode(
-                            rootEntityType,
-                            new FirstOfListQueryNode(updatedIdsVarNode),
-                        ),
-                        variableNode: entityVar,
-                        resultNode: new CreateBillingEntityQueryNode({
-                            rootEntityTypeName: rootEntityType.name,
-                            key: input[rootEntityType.billingEntityConfig.keyFieldName] as
-                                | number
-                                | string,
-                            categoryNode: createBillingEntityCategoryNode(
-                                rootEntityType.billingEntityConfig,
-                                entityVar,
-                            ),
-                            quantityNode: createBillingEntityQuantityNode(
-                                rootEntityType.billingEntityConfig,
-                                entityVar,
-                            ),
-                        }),
-                    }),
-                }),
-            );
-        }
-
-        return preExecQueryParms;
     }
 
     private generateUpdateAllField(rootEntityType: RootEntityType): QueryNodeField | undefined {
