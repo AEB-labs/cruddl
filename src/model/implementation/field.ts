@@ -1858,7 +1858,11 @@ export class Field implements ModelComponent {
         }
 
         // key fields are included in search (unless manually configured or not supported)
-        if (this.declaringType.isRootEntityType && this.declaringType.keyField === this) {
+        if (
+            this.declaringType.isRootEntityType &&
+            this.declaringType.isFlexSearchIndexed &&
+            this.declaringType.keyField === this
+        ) {
             return true;
         }
 
