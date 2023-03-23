@@ -20,17 +20,6 @@ jobs:
       - run: curl -L http://localhost:8529/_api/version
       - run: npm ci
       - run: npm test
-  audit:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: npm ci
-      - run: npm audit
   deploy:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
