@@ -35,12 +35,13 @@ type Order @rootEntity(flexSearch: true) {
 The annotation `@flexSearchFulltext` is used to index Strings that contain text in a specific
 language. For example a description that contains a human-readable text in english.
 
-When using `@flexSearchFulltext` a language needs to be specified, either by adding the `language`
-argument, or by setting a default language for the whole entity by specifying the
-`flexSearchLanguage` argument to the `rootEntity` annotation.
+Some text processing (e.g. normalizing plural words to their singular forms) is language-dependent.
+By default, the algorithm is configured for English, so it might be inaccurate for other languages.
+The language can be changed with the `language` argument on `@flexSearch` or the
+`flexSearchLanguage` argument in `@rootEntity`.
 
 ```graphql
-type Order @rootEntity(flexSearch: true, flexSearchLanguage: EN) {
+type Order @rootEntity(flexSearch: true) {
     descriptionEN: String @flexSearchFulltext
     descriptionDE: String @flexSearchFulltext(language: DE)
 }
