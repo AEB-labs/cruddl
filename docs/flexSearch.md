@@ -26,6 +26,9 @@ contain a Text in a specific language. For example an orderNumber might be index
 all numeric, boolean or DateTime values can only be indexed as Values. Value comparisons in
 FlexSearch are case-sensitive.
 
+Fields inside child entities, entity extensions and value objects are only indexed if all fields in
+the path from the root entity to the field are also annotated with `@flexSearch`.
+
 ```graphql
 type Order @rootEntity(flexSearch: true) {
     orderNumber: String @flexSearch
@@ -53,7 +56,8 @@ Fields can also be indexed as both value and text.
 
 Cruddl also allows to predefine specific fields that will be included in a general search. To do
 this, the argument `includeInSearch` needs to be added to the `@flexSearch` or `@flexSearchFulltext`
-annotation.
+annotation. Fields inside child entities, entity extensions and value objects are only searched if
+all fields in the path from the root entity to the field are also marked as `includeInSearch`.
 
 ```graphql
 type Order @rootEntity(flexSearch: true, flexSearchLanguage: EN) {
@@ -93,7 +97,7 @@ type Order @rootEntity(
         { field: "createdAt", direction: DESC }
     ]
 ) {
- #...
+    #...
 }
 ```
 
