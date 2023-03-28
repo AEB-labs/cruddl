@@ -1688,6 +1688,20 @@ export class Field implements ModelComponent {
             );
         }
         if (
+            this.isIncludedInSearch &&
+            this.type.isObjectType &&
+            !this.type.fields.some(
+                (value) => value.isIncludedInSearch || value.isFulltextIncludedInSearch,
+            )
+        ) {
+            context.addMessage(
+                ValidationMessage.warn(
+                    `At least one field on type "${this.type.name}" should be marked with "includeInSearch".`,
+                    this.input.isFlexSearchIndexedASTNode ?? this.input.isFlexSearchFulltextIndexedASTNode,
+                ),
+            );
+        }
+        if (
             this.name === ACCESS_GROUP_FIELD &&
             this.declaringType.isRootEntityType &&
             this.declaringType.permissionProfile &&

@@ -110,6 +110,33 @@ describe('FlexSearch', () => {
         );
     });
 
+    it('warns for includeInSearch on child without includeInSearch field', () => {
+        assertValidatorWarns(
+            `
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                someExtension: HandlingUnitInfo @flexSearch(includeInSearch: true)
+            }
+            type HandlingUnitInfo @entityExtension{
+                someString: String @flexSearch
+            }
+        `,
+            `At least one field on type "HandlingUnitInfo" should be marked with "includeInSearch".`,
+        );
+    });
+
+    it('does not warn for includeInSearch on child with fulltext includeInSearch field', () => {
+        assertValidatorAcceptsAndDoesNotWarn(
+            `
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                someExtension: HandlingUnitInfo @flexSearch(includeInSearch: true)
+            }
+            type HandlingUnitInfo @entityExtension{
+                someString: String @flexSearchFulltext(includeInSearch: true)
+            }
+        `,
+        );
+    });
+
     it('rejects flexSearch includeInSearch for booleans', () => {
         assertValidatorRejects(
             `
