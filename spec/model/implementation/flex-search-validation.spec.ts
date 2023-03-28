@@ -11,6 +11,7 @@ import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
+    validate,
 } from '../../schema/ast-validation-modules/helpers';
 import { createSimpleModel } from '../model-spec.helper';
 import { expectSingleErrorToInclude } from './validation-utils';
@@ -120,7 +121,7 @@ describe('FlexSearch', () => {
                 someString: String @flexSearch
             }
         `,
-            `At least one field on type "HandlingUnitInfo" should be marked with "includeInSearch".`,
+            `"includeInSearch: true" does not have an effect because none of the fields in type "HandlingUnitInfo" have "includeInSearch: true".`,
         );
     });
 
@@ -134,6 +135,46 @@ describe('FlexSearch', () => {
                 someString: String @flexSearchFulltext(includeInSearch: true)
             }
         `,
+        );
+    });
+
+    it('rejects nested-recursion of includeInSearch', () => {
+        const validationResult = validate(`
+            type Delivery @rootEntity(flexSearch: true) {
+                handlingUnits: [HandlingUnit] @flexSearch(includeInSearch: true)
+            }
+            type HandlingUnit @childEntity{
+                handlingUnitNumber: String @flexSearch(includeInSearch: true)
+                packingInfo: PackingInfo @flexSearch(includeInSearch: true)
+            }
+            type PackingInfo @entityExtension{
+                handlingUnitNumber: String @flexSearch(includeInSearch: true)
+                packedHandlingUnits: [HandlingUnit] @flexSearch(includeInSearch: true)
+            }
+        `);
+        expect(validationResult.hasErrors()).to.be.true;
+        // The error appears on "Delivery.handlingUnits", "HandlingUnit.packingInfo" and "PackingInfo.packedHandlingUnits"
+        expect(validationResult.getErrors().length, validationResult.toString()).to.equal(3);
+        expect(validationResult.getErrors()[0].message, validationResult.toString()).to.equal(
+            `"includeInSearch" cannot be used here because it would cause a recursion.`,
+        );
+    });
+
+    it('rejects self-recursion of includeInSearch', () => {
+        const validationResult = validate(`
+            type Delivery @rootEntity(flexSearch: true) {
+                handlingUnits: [HandlingUnit] @flexSearch(includeInSearch: true)
+            }
+            type HandlingUnit @childEntity{
+                handlingUnitNumber: String @flexSearch(includeInSearch: true)
+                childHandlingUnits: [HandlingUnit] @flexSearch(includeInSearch: true)
+            }
+        `);
+        expect(validationResult.hasErrors()).to.be.true;
+        // The error appears on "Delivery.handlingUnits" and "HandlingUnit.childHandlingUnits"
+        expect(validationResult.getErrors().length, validationResult.toString()).to.equal(2);
+        expect(validationResult.getErrors()[0].message, validationResult.toString()).to.equal(
+            `"includeInSearch" cannot be used here because it would cause a recursion.`,
         );
     });
 
