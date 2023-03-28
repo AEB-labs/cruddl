@@ -265,7 +265,7 @@ export class FlexSearchGenerator {
         function getQueryNodeFromField(field: Field, path: Field[] = []): QueryNode {
             if (field.type.isObjectType) {
                 return field.type.fields
-                    .filter((f) => f.isFlexSearchIndexed || f.isFlexSearchFulltextIndexed)
+                    .filter((f) => f.isIncludedInSearch || f.isFulltextIncludedInSearch)
                     .map((value) => getQueryNodeFromField(value, path.concat(field)))
                     .reduce(or, ConstBoolQueryNode.FALSE);
             }

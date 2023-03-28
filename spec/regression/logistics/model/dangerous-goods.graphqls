@@ -1,5 +1,5 @@
 type DangerousGoodsInfo @entityExtension {
-    unNumber: String
+    unNumber: String @flexSearch(includeInSearch: true)
     flashpoint: String
     notices: [String] @defaultValue(value: ["No special treatment necessary."])
     details: DangerousGoodsDetails

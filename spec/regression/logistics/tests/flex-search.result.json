@@ -138,6 +138,11 @@
       "flexSearchDeliveries": []
     }
   },
+  "expressionRequiresFlagOnChildObjects": {
+    "data": {
+      "flexSearchDeliveries": []
+    }
+  },
   "gt_lt_number": {
     "data": {
       "flexSearchDeliveries": [

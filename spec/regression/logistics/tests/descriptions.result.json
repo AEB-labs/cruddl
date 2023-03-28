@@ -6187,8 +6187,70 @@
               "deprecationReason": null
             },
             {
+              "name": "dgInfo",
+              "description": "Allows to filter on the fields of `dgInfo`.\n\nNote that `dgInfo` is an entity extension and thus can never be `null`, so specifying `null` to this filter field has no effect.",
+              "deprecationReason": null
+            },
+            {
               "name": "description_localized",
               "description": "Makes sure at least one of the entries in \"description\" has a value that matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `description` has at least one item.",
+              "deprecationReason": null
+            }
+          ]
+        },
+        {
+          "name": "DangerousGoodsInfoAggregationFlexSearchFilter",
+          "description": "An aggregation contains all values of a list. Each check in this type is true if it matches any of the values in the list.",
+          "fields": null,
+          "inputFields": [
+            {
+              "name": "unNumber",
+              "description": "Checks if `unNumber` equals a specified string, case-insensitively.",
+              "deprecationReason": null
+            },
+            {
+              "name": "unNumber_not",
+              "description": "Checks if `unNumber` does not equal a specified string, case-insensitively.",
+              "deprecationReason": null
+            },
+            {
+              "name": "unNumber_lt",
+              "description": "Checks if `unNumber` is less than a specified value.",
+              "deprecationReason": null
+            },
+            {
+              "name": "unNumber_lte",
+              "description": "Checks if `unNumber` is less or equal a specified value.",
+              "deprecationReason": null
+            },
+            {
+              "name": "unNumber_gt",
+              "description": "Checks if `unNumber` is greater than a specified value.",
+              "deprecationReason": null
+            },
+            {
+              "name": "unNumber_gte",
+              "description": "Checks if `unNumber` is greater or equal a specified value.",
+              "deprecationReason": null
+            },
+            {
+              "name": "unNumber_in",
+              "description": "Checks if `unNumber` is equal to one of the specified values.",
+              "deprecationReason": null
+            },
+            {
+              "name": "unNumber_not_in",
+              "description": "Checks if `unNumber` is not equal to one of the specified values.",
+              "deprecationReason": null
+            },
+            {
+              "name": "unNumber_starts_with",
+              "description": "Checks if `unNumber` starts with a specified string, case-insensitively.",
+              "deprecationReason": null
+            },
+            {
+              "name": "unNumber_not_starts_with",
+              "description": "Checks if `unNumber` does not start with a specified string, case-insensitively.",
               "deprecationReason": null
             }
           ]

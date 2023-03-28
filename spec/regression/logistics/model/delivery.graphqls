@@ -12,7 +12,7 @@ type Delivery
     consignee: Address @flexSearch
     contentInfo: [Translation]
     dgInfo: DangerousGoodsInfo
-    items: [DeliveryItem] @flexSearch
+    items: [DeliveryItem] @flexSearch(includeInSearch: true)
     "The handling units the items of this delivery are packaged in"
     handlingUnits: [HandlingUnit] @relation
     "The country to where the delivery should be shipped"
@@ -70,7 +70,7 @@ type DeliveryItem @childEntity {
     quantity: Int @flexSearch
     weightInKg: Float
     handlingUnit: HandlingUnit @reference
-    dgInfo: DangerousGoodsInfo
+    dgInfo: DangerousGoodsInfo @flexSearch
     description: I18nString @flexSearch @flexSearchFulltext
 }
 
