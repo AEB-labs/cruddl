@@ -92,6 +92,15 @@ query expressionWithNoTokens {
     }
 }
 
+# when using includeInSearch the whole path must be marked as includeInSearch
+# in the past there was a bug where they were included even if they were on a nested object
+# were the nested object field was not marked
+query expressionRequiresFlagOnChildObjects {
+    flexSearchDeliveries(flexSearchExpression: "5435") {
+        deliveryNumber
+    }
+}
+
 query gt_lt_number {
     flexSearchDeliveries(flexSearchFilter: { itemsAggregation: { quantity_lt: 5 } }) {
         deliveryNumber
