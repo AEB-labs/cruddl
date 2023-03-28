@@ -7,8 +7,6 @@ import {
     COLLECT_DIRECTIVE,
     FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT,
     FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
-    INPUT_FIELD_EQUAL,
-    INPUT_FIELD_NOT,
     PARENT_DIRECTIVE,
     REFERENCE_DIRECTIVE,
     RELATION_DIRECTIVE,
@@ -36,8 +34,7 @@ import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { numberTypeNames } from './built-in-types';
 import { CollectPath } from './collect-path';
-import { NORM_CI_ANALYZER } from './flex-search';
-import { IDENTITY_ANALYZER } from './flex-search';
+import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from './flex-search';
 import { FieldLocalization } from './i18n';
 import { Model } from './model';
 import { PermissionProfile } from './permission-profile';
@@ -45,8 +42,6 @@ import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
-import { NUMERIC_FILTER_FIELDS } from '../../schema-generation/filter-input-types/constants';
-import { STRING_FLEX_SEARCH_FILTER_FIELDS } from '../../schema-generation/flex-search-filter-input-types/constants';
 
 export interface SystemFieldConfig extends FieldConfig {
     readonly isSystemField?: boolean;
@@ -1696,8 +1691,9 @@ export class Field implements ModelComponent {
         ) {
             context.addMessage(
                 ValidationMessage.warn(
-                    `At least one field on type "${this.type.name}" should be marked with "includeInSearch".`,
-                    this.input.isFlexSearchIndexedASTNode ?? this.input.isFlexSearchFulltextIndexedASTNode,
+                    `"includeInSearch: true" does not have an effect because none of the fields in type "${this.type.name}" have "includeInSearch: true".`,
+                    this.input.isFlexSearchIndexedASTNode ??
+                        this.input.isFlexSearchFulltextIndexedASTNode,
                 ),
             );
         }
@@ -1756,6 +1752,48 @@ export class Field implements ModelComponent {
             );
             return;
         }
+
+        if (this.hasRecursiveIncludeInSearch()) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `"includeInSearch" cannot be used here because it would cause a recursion.`,
+                    this.input.isFlexSearchIndexedASTNode,
+                ),
+            );
+            return;
+        }
+    }
+
+    private hasRecursiveIncludeInSearch(): boolean {
+        function fieldHasRecursiveIncludeInSearch(
+            field: Field,
+            typesInPath: ReadonlyArray<string>,
+        ): boolean {
+            if (!field.isIncludedInSearch || !field.type.isObjectType) {
+                return false;
+            }
+            for (const childField of field.type.fields) {
+                if (!childField.isIncludedInSearch) {
+                    // isFulltextIncludedInSearch can also be ignored here because they can only be used
+                    // on strings and thus never cause a recursion
+                    continue;
+                }
+                if (typesInPath.includes(childField.input.typeName)) {
+                    return true;
+                }
+                if (
+                    fieldHasRecursiveIncludeInSearch(childField, [
+                        ...typesInPath,
+                        field.input.typeName,
+                    ])
+                ) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        return fieldHasRecursiveIncludeInSearch(this, []);
     }
 
     private validateAccessField(context: ValidationContext) {
