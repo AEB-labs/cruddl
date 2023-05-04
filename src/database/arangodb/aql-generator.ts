@@ -1489,9 +1489,13 @@ function getRelationTraversalFragment({
                 if (
                     !(
                         segment.vertexFilter instanceof BinaryOperationQueryNode &&
-                        segment.vertexFilter.lhs instanceof FieldQueryNode &&
-                        segment.vertexFilter.lhs.objectNode === segment.vertexFilterVariable
+                        segment.vertexFilter.lhs instanceof FieldQueryNode
                     )
+                    // !(
+                    //     segment.vertexFilter instanceof BinaryOperationQueryNode &&
+                    //     segment.vertexFilter.lhs instanceof FieldQueryNode &&
+                    //     segment.vertexFilter.lhs.objectNode === segment.vertexFilterVariable
+                    // )
                 ) {
                     throw new Error(`Unsupported filter pattern for graph traversal`);
                 }
