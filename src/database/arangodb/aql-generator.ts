@@ -28,6 +28,7 @@ import {
     FieldQueryNode,
     FirstOfListQueryNode,
     FollowEdgeQueryNode,
+    IntersectionQueryNode,
     ListItemQueryNode,
     ListQueryNode,
     LiteralQueryNode,
@@ -502,6 +503,12 @@ register(DynamicPropertyAccessQueryNode, (node, context) => {
 register(FieldPathQueryNode, (node, context) => {
     const object = processNode(node.objectNode, context);
     return aql`${object}${getFieldPathAccessFragment(node.path)}`;
+});
+
+register(IntersectionQueryNode, (node, context) => {
+    const listNodes = node.listNodes.map((node) => processNode(node, context));
+    const listNodeStr = aql.join(listNodes, aql`, `);
+    return aql`INTERSECTION(${listNodeStr})`;
 });
 
 function getPropertyAccessFragment(propertyName: string) {
@@ -1383,6 +1390,8 @@ register(TraversalQueryNode, (node, context) => {
             }
         }
 
+        // console.log('sourceFrag', sourceFrag);
+
         const frag = getRelationTraversalFragment({
             segments: node.relationSegments,
             sourceFrag: fixedSourceFrag,
@@ -1486,7 +1495,9 @@ function getRelationTraversalFragment({
                         segment.vertexFilter.lhs.objectNode === segment.vertexFilterVariable
                     )
                 ) {
-                    throw new Error(`Unsupported filter pattern for graph traversal`);
+                    throw new Error(
+                        `Unsupported filter pattern for graph traversal - ${segment.vertexFilter.describe()}`,
+                    );
                 }
                 const vertexInPathFrag = aql`${pathVar}.vertices[*]`;
                 const pathFilterContext = context.introduceVariableAlias(

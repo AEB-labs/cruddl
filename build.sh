@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/bin/zsh
 set -euxo pipefail
 rimraf dist
 tsc --skipLibCheck

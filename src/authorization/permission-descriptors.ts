@@ -5,7 +5,10 @@ import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConstBoolQueryNode,
+    ConstIntQueryNode,
+    CountQueryNode,
     FieldQueryNode,
+    IntersectionQueryNode,
     LiteralQueryNode,
     QueryNode,
     UnknownValueQueryNode,
@@ -215,6 +218,20 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
             accessGroupConditionNode = ConstBoolQueryNode.TRUE;
         }
 
+        const intersectBinaryOperationQueryNode = (
+            fieldNode: QueryNode,
+            values: ReadonlyArray<string>,
+        ): QueryNode => {
+            const node = new BinaryOperationQueryNode(
+                new CountQueryNode(
+                    new IntersectionQueryNode([fieldNode, new LiteralQueryNode(values)]),
+                ),
+                BinaryOperator.GREATER_THAN_OR_EQUAL,
+                ConstIntQueryNode.ONE,
+            );
+            return node;
+        };
+
         const restrictionNodes = permission.restrictions.map((restriction) => {
             if (!this.rootEntityType) {
                 throw new Error(
@@ -239,11 +256,13 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
 
             if (restriction.valueTemplate !== undefined) {
                 const values = permission.evaluateTemplate(restriction.valueTemplate, authContext);
-                return new BinaryOperationQueryNode(
-                    fieldNode,
-                    BinaryOperator.IN,
-                    new LiteralQueryNode(values),
-                );
+                return fieldPath.isList
+                    ? intersectBinaryOperationQueryNode(fieldNode, values)
+                    : new BinaryOperationQueryNode(
+                          fieldNode,
+                          BinaryOperator.IN,
+                          new LiteralQueryNode(values),
+                      );
             }
 
             if (restriction.claim !== undefined) {
@@ -255,11 +274,13 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
                 if (!sanitizedClaimValues.length) {
                     return ConstBoolQueryNode.FALSE;
                 }
-                return new BinaryOperationQueryNode(
-                    fieldNode,
-                    BinaryOperator.IN,
-                    new LiteralQueryNode(sanitizedClaimValues),
-                );
+                return fieldPath.isList
+                    ? intersectBinaryOperationQueryNode(fieldNode, sanitizedClaimValues)
+                    : new BinaryOperationQueryNode(
+                          fieldNode,
+                          BinaryOperator.IN,
+                          new LiteralQueryNode(sanitizedClaimValues),
+                      );
             }
 
             throw new Error(`Invalid permission restriction (field: ${restriction.field})`);

@@ -189,3 +189,16 @@ export class AggregationQueryNode extends QueryNode {
         return `${this.operator}(${this.listNode.describe()})`;
     }
 }
+
+export class IntersectionQueryNode extends QueryNode {
+    constructor(public readonly listNodes: ReadonlyArray<QueryNode>) {
+        super();
+    }
+
+    describe() {
+        if (!this.listNodes.length) {
+            return `[]`;
+        }
+        return `intersection(${this.listNodes.map((listNode) => listNode.describe()).join(',')})`;
+    }
+}
