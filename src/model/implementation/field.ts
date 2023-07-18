@@ -1628,6 +1628,7 @@ export class Field implements ModelComponent {
             GraphQLDateTime.name,
             GraphQLLocalDate.name,
             GraphQLLocalTime.name,
+            GraphQLOffsetDateTime.name,
             GraphQLBoolean.name,
         ];
         if (
