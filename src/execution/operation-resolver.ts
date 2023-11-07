@@ -100,6 +100,8 @@ export class OperationResolver {
                 flexSearchMaxFilterableAmountOverride:
                     options.flexSearchMaxFilterableAndSortableAmount,
                 flexSearchRecursionDepth: options.flexSearchRecursionDepth,
+                childEntityUpdatesViaDictStrategyThreshold:
+                    options.childEntityUpdatesViaDictStrategyThreshold,
             };
             queryTree = buildConditionalObjectQueryNode(
                 rootQueryNode,

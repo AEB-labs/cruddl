@@ -1,0 +1,120 @@
+# in the .context.json, childEntityUpdatesViaDictStrategyThreshold is set to 100
+# so we will never use the dict strategy to update child entities
+
+mutation updateOne {
+    updateDelivery(
+        input: {
+            id: "@{ids/Delivery/1}"
+            updateItems: [{ id: "id_init_0000", itemNumber: "updated1" }]
+        }
+    ) {
+        items {
+            id
+            itemNumber
+        }
+    }
+}
+
+# to verify it is updated in the db
+query afterUpdateOne {
+    Delivery(id: "@{ids/Delivery/1}") {
+        items {
+            id
+            itemNumber
+        }
+    }
+}
+
+mutation addSome {
+    updateDelivery(
+        input: {
+            id: "@{ids/Delivery/1}"
+            addItems: [
+                { itemNumber: "added00" }
+                { itemNumber: "added01" }
+                { itemNumber: "added02" }
+                { itemNumber: "added03" }
+                { itemNumber: "added04" }
+                { itemNumber: "added05" }
+                { itemNumber: "added06" }
+                { itemNumber: "added07" }
+                { itemNumber: "added08" }
+                { itemNumber: "added09" }
+                { itemNumber: "added10" }
+            ]
+        }
+    ) {
+        items {
+            id
+            itemNumber
+        }
+    }
+}
+
+mutation updateMultiple {
+    updateDelivery(
+        input: {
+            id: "@{ids/Delivery/1}"
+            updateItems: [
+                { id: "id_test_0003", itemNumber: "updated03" }
+                { id: "id_test_0005", itemNumber: "updated05" }
+                { id: "id_test_0007", itemNumber: "updated07" }
+                { id: "id_test_0008", itemNumber: "updated08" }
+                { id: "id_test_0009", itemNumber: "updated09" }
+            ]
+        }
+    ) {
+        items {
+            id
+            itemNumber
+        }
+    }
+}
+
+# to verify it is updated in the db
+query afterUpdateMultiple {
+    Delivery(id: "@{ids/Delivery/1}") {
+        items {
+            id
+            itemNumber
+        }
+    }
+}
+
+mutation addUpdateAndDelete {
+    updateDelivery(
+        input: {
+            id: "@{ids/Delivery/1}"
+            addItems: [
+                { itemNumber: "finalNew1" }
+                { itemNumber: "finalNew2" }
+                { itemNumber: "finalNew3" }
+            ]
+            updateItems: [
+                { id: "id_test_0004", itemNumber: "finalUpdated04" }
+                # this is finalNew2
+                { id: "id_test_0012", itemNumber: "finalUpdated02" }
+            ]
+            removeItems: [
+                "id_test_0007"
+                # this is finalNew3
+                "id_test_0013"
+            ]
+        }
+    ) {
+        items {
+            id
+            itemNumber
+        }
+    }
+}
+
+# to verify it is updated in the db
+query end {
+    Delivery(id: "@{ids/Delivery/1}") {
+        items {
+            id
+            itemNumber
+        }
+    }
+}

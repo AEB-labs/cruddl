@@ -53,6 +53,7 @@ import {
     TypeCheckQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
+    UpdateChildEntitiesQueryNode,
     UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
@@ -486,6 +487,68 @@ register(AggregationQueryNode, (node, context) => {
         default:
             throw new Error(`Unsupported aggregation operator: ${(node as any).operator}`);
     }
+});
+
+register(UpdateChildEntitiesQueryNode, (node, context) => {
+    if (!node.updates.length) {
+        // optimization, and we later rely on updates.length >= 1
+        return processNode(node.originalList, context);
+    }
+
+    const itemsVar = js.variable('items');
+    const childContext = context.introduceVariable(node.dictionaryVar);
+    const dictVar = childContext.getVariable(node.dictionaryVar);
+    const updatedDictVar = js.variable('updatedDict');
+    const itemVar = js.variable('item');
+    const indexVar = js.variable('indexVar');
+
+    // this is deliberately close to the aql implementation
+
+    return jsExt.executingFunction(
+        // could be a complex expression, and we're using it multiple times -> store in a variable
+        js`const ${itemsVar} = ${processNode(node.originalList, context)}`,
+
+        // add a __index property to each item so we can sort by this later
+        // regular field names cannot start with an underscore, so we're safe to use __index as a
+        // temporary property to store the index of the child entity in the list
+        // convert the list into a dict object like { 'id1': { ...}, 'id2': { ... } }
+        // this allows us to efficiently look up individual objects (to avoid quadratic runtime)
+        js`const ${dictVar} = Object.fromEntries(`,
+        js.indent(
+            js.lines(
+                js`${itemsVar}.map((${itemVar}, ${indexVar}) => [`,
+                js.indent(
+                    js.lines(
+                        // id as key, item with __index as value
+                        js`${itemVar}.id,`,
+                        js`{ ...${itemVar}, __index: ${indexVar} }`,
+                    ),
+                ),
+                js`])`,
+            ),
+        ),
+        js`);`,
+
+        // merging the updated items into the dict to remove the old versions of the updated items
+        js`const ${updatedDictVar} = {`,
+        js.indent(
+            js.lines(
+                js`...${dictVar},`,
+                ...node.updates.map((update): JSFragment => {
+                    const idFrag = processNode(update.idNode, childContext);
+                    // we're expecting the newChildEntityNode to merge the untouched properties of
+                    // the old item, including __index
+                    // using [idFrag] because it's a bound value, not an identifier
+                    const valueFrag = processNode(update.newChildEntityNode, childContext);
+                    return js`[${idFrag}]: ${valueFrag},`;
+                }),
+            ),
+        ),
+        js`};`,
+
+        // sort by the __index we stored, and unpack the dictionary into a list again
+        js`return Object.values(${updatedDictVar}).map(({ __index, ...${itemVar} }) => ${itemVar});`,
+    );
 });
 
 register(MergeObjectsQueryNode, (node, context) => {

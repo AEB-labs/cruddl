@@ -67,6 +67,14 @@ export interface ExecutionOptions {
      */
     readonly flexSearchRecursionDepth?: number;
 
+    /**
+     * A child entity update operation with this number of updates or more will use the "dict"
+     * strategy that converts the list into a dictionary before applying the updates first
+     *
+     * If not specified, a reasonable default will be used
+     */
+    readonly childEntityUpdatesViaDictStrategyThreshold?: number;
+
     readonly timeToLiveOptions?: TimeToLiveExecutionOptions;
 
     /**

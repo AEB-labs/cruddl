@@ -1,3 +1,4 @@
 {
-  "authRoles": ["allusers"]
+  "authRoles": ["allusers"],
+  "childEntityUpdatesViaDictStrategyThreshold": 2
 }

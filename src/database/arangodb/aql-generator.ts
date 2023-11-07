@@ -56,6 +56,7 @@ import {
     TypeCheckQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
+    UpdateChildEntitiesQueryNode,
     UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
@@ -784,6 +785,56 @@ register(AggregationQueryNode, (node, context) => {
             ? aql`COLLECT ${aggregationVar} = ${itemFrag}`
             : aql``,
         aql`RETURN ${resultFragment}`,
+    );
+});
+
+register(UpdateChildEntitiesQueryNode, (node, context) => {
+    const itemsVar = aql.variable('items');
+    const itemsWithIndexVar = aql.variable('itemsWithIndex');
+    const childContext = context.introduceVariable(node.dictionaryVar);
+    const dictVar = childContext.getVariable(node.dictionaryVar);
+    const updatedDictVar = aql.variable('updatedDict');
+    const itemVar = aql.variable('item');
+    const indexVar = aql.variable('indexVar');
+
+    return aqlExt.parenthesizeList(
+        // could be a complex expression, and we're using it multiple times -> store in a variable
+        aql`LET ${itemsVar} = ${processNode(node.originalList, context)}`,
+
+        // add a __index property to each item so we can sort by this later
+        // regular field names cannot start with an underscore, so we're safe to use __index as a
+        // temporary property to store the index of the child entity in the list
+        aql`LET ${itemsWithIndexVar} = ${aqlExt.parenthesizeList(
+            aql`FOR ${indexVar}`,
+            aql`IN 0..(LENGTH(${itemsVar}) - 1)`,
+            aql`RETURN MERGE(NTH(${itemsVar}, ${indexVar}), { __index: ${indexVar} })`,
+        )}`,
+
+        // convert the list into a dict object like { 'id1': { ...}, 'id2': { ... } }
+        // this allows us to efficiently look up individual objects (to avoid quadratic runtime)
+        aql`LET ${dictVar} = ZIP(${itemsVar}[*].id, ${itemsWithIndexVar})`,
+
+        // merging the updated items into the dict to remove the old versions of the updated items
+        aql`LET ${updatedDictVar} = MERGE(${dictVar}, {`,
+        aql.indent(
+            aql.join(
+                node.updates.map((update): AQLFragment => {
+                    const idFrag = processNode(update.idNode, childContext);
+                    // we're expecting the newChildEntityNode to merge the untouched properties of
+                    // the old item, including __index
+                    const valueFrag = processNode(update.newChildEntityNode, childContext);
+                    return aql`${idFrag}: ${valueFrag}`;
+                }),
+                aql`,\n`,
+            ),
+        ),
+        aql`})`,
+
+        // sort by the __index we stored, and unpack the dictionary into a list again
+        aql`FOR ${itemVar}`,
+        aql`IN VALUES(${updatedDictVar})`,
+        aql`SORT ${itemVar}.__index`,
+        aql`RETURN UNSET(${itemVar}, '__index')`,
     );
 });
 
