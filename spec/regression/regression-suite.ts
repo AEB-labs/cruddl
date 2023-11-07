@@ -9,6 +9,7 @@ import { ProjectOptions } from '../../src/project/project';
 import { loadProjectFromDir } from '../../src/project/project-from-fs';
 import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider';
 import { createTempDatabase, initTestData, TestDataEnvironment } from './initialization';
+import { IDGenerationInfo, IDGenerator } from '../../src/execution/execution-options';
 import deepEqual = require('deep-equal');
 
 interface TestResult {
@@ -45,6 +46,7 @@ export class RegressionSuite {
     // TODO: implement better regression test architecture for different db types
     private inMemoryDB: InMemoryDB = new InMemoryDB();
     private databaseSpecifier: DatabaseSpecifier;
+    private readonly idGenerator = new PredictableIDGenerator();
     private databaseVersion: string | undefined;
 
     constructor(private readonly path: string, private options: RegressionSuiteOptions = {}) {
@@ -62,6 +64,7 @@ export class RegressionSuite {
             : {};
 
         this.inMemoryDB = new InMemoryDB();
+        this.idGenerator.resetToPhase('init');
         const generalOptions: ProjectOptions = {
             processError: (e) => {
                 console.error(e.stack);
@@ -71,6 +74,7 @@ export class RegressionSuite {
                 authContext: { authRoles: context.authRoles, claims: context.claims },
                 flexSearchMaxFilterableAndSortableAmount:
                     context.flexSearchMaxFilterableAndSortableAmount,
+                idGenerator: this.idGenerator,
             }),
             modelOptions: {
                 forbiddenRootEntityNames: [],
@@ -163,6 +167,7 @@ export class RegressionSuite {
         if (!this._isSetUpClean) {
             await this.setUp();
         }
+        this.idGenerator.resetToPhase('test');
 
         if (!this.testDataEnvironment || !this.schema) {
             throw new Error(`Regression suite not set up correctly`);
@@ -265,5 +270,22 @@ export class RegressionSuite {
             actualResult,
             expectedResult,
         };
+    }
+}
+
+class PredictableIDGenerator implements IDGenerator {
+    nextNumberPerTarget = new Map<string, number>();
+    phase = 'init';
+
+    generateID({ target }: IDGenerationInfo): string {
+        const number = this.nextNumberPerTarget.get(target) ?? 0;
+        this.nextNumberPerTarget.set(target, number + 1);
+        return `id_${this.phase}_${String(number).padStart(4, '0')}`;
+    }
+
+    resetToPhase(phase: string) {
+        // we have separate phases for init and test because we sometimes skip init
+        this.phase = phase;
+        this.nextNumberPerTarget = new Map();
     }
 }
