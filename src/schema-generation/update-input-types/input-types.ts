@@ -1,15 +1,60 @@
 import { GraphQLID, GraphQLInputFieldConfigMap } from 'graphql';
 import { ThunkReadonlyArray } from 'graphql/type/definition';
 import { groupBy } from 'lodash';
-import { ChildEntityType, EntityExtensionType, Field, ObjectType, RootEntityType } from '../../model';
-import { BinaryOperationQueryNode, BinaryOperator, ConcatListsQueryNode, ConditionalQueryNode, FieldQueryNode, LiteralQueryNode, MergeObjectsQueryNode, ObjectQueryNode, PreExecQueryParms, QueryNode, RuntimeErrorQueryNode, SafeListQueryNode, SetFieldQueryNode, TransformListQueryNode, UnaryOperationQueryNode, UnaryOperator, VariableQueryNode } from '../../query-tree';
+import {
+    ChildEntityType,
+    EntityExtensionType,
+    Field,
+    ObjectType,
+    RootEntityType,
+} from '../../model';
+import {
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ChildEntityUpdate,
+    ConcatListsQueryNode,
+    ConditionalQueryNode,
+    DynamicPropertyAccessQueryNode,
+    FieldQueryNode,
+    LiteralQueryNode,
+    MergeObjectsQueryNode,
+    ObjectQueryNode,
+    PreExecQueryParms,
+    QueryNode,
+    RuntimeErrorQueryNode,
+    SafeListQueryNode,
+    SetFieldQueryNode,
+    TransformListQueryNode,
+    UnaryOperationQueryNode,
+    UnaryOperator,
+    UpdateChildEntitiesQueryNode,
+    VariableQueryNode,
+} from '../../query-tree';
 import { ENTITY_UPDATED_AT, ID_FIELD, REVISION_FIELD } from '../../schema/constants';
-import { getAddChildEntitiesFieldName, getRemoveChildEntitiesFieldName, getReplaceChildEntitiesFieldName, getUpdateChildEntitiesFieldName } from '../../schema/names';
-import { AnyValue, decapitalize, flatMap, joinWithAnd, objectEntries, PlainObject } from '../../utils/utils';
+import {
+    getAddChildEntitiesFieldName,
+    getRemoveChildEntitiesFieldName,
+    getReplaceChildEntitiesFieldName,
+    getUpdateChildEntitiesFieldName,
+} from '../../schema/names';
+import {
+    AnyValue,
+    decapitalize,
+    flatMap,
+    joinWithAnd,
+    objectEntries,
+    PlainObject,
+} from '../../utils/utils';
 import { createGraphQLError } from '../graphql-errors';
 import { FieldContext } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
-import { AddChildEntitiesInputField, ReplaceChildEntitiesInputField, UpdateChildEntitiesInputField, UpdateInputField, UpdateInputFieldContext } from './input-fields';
+import {
+    AddChildEntitiesInputField,
+    ReplaceChildEntitiesInputField,
+    UpdateChildEntitiesInputField,
+    UpdateInputField,
+    UpdateInputFieldContext,
+} from './input-fields';
 import { isRelationUpdateField } from './relation-fields';
 
 function getCurrentISODate() {
@@ -161,41 +206,90 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
             );
         }
 
-        let updateMapNode: QueryNode | undefined = undefined;
-        if (updatedValues.length) {
-            // build an ugly conditional tree
-            // looks like this:
-            // - item
-            // - item.id == 1 ? update1(item) : item
-            // - item.id == 2 ? update2(item) : (item.id == 1 ? update1(item) : item)
-            // ...
-            updateMapNode = childEntityVarNode;
-
-            for (const value of updatedValues) {
-                const filterNode = new BinaryOperationQueryNode(
-                    childIDQueryNode,
-                    BinaryOperator.EQUAL,
-                    new LiteralQueryNode((value as any)[ID_FIELD]),
-                );
-                const updates = updateField.updateInputType.getProperties(value as PlainObject, {
-                    ...context,
-                    currentEntityNode: childEntityVarNode,
+        // use an optimized way to update many child entities
+        // (it converts the list into an id->item dictionary first)
+        // don't use it for very small updates because it adds overhead
+        const threshold = context.childEntityUpdatesViaDictStrategyThreshold ?? 3;
+        if (updatedValues.length >= threshold) {
+            // do deletions first to have a smaller object to update
+            // (and to preserve backwards-compatibility)
+            if (removalFilterNode) {
+                currentNode = new TransformListQueryNode({
+                    listNode: currentNode,
+                    filterNode: removalFilterNode,
+                    itemVariable: childEntityVarNode,
                 });
-                const updateNode = new MergeObjectsQueryNode([
-                    childEntityVarNode,
-                    new ObjectQueryNode(updates),
-                ]);
-                updateMapNode = new ConditionalQueryNode(filterNode, updateNode, updateMapNode);
             }
-        }
 
-        if (removalFilterNode || updateMapNode) {
-            currentNode = new TransformListQueryNode({
-                listNode: currentNode,
-                filterNode: removalFilterNode,
-                innerNode: updateMapNode,
-                itemVariable: childEntityVarNode,
+            const dictionaryVar = new VariableQueryNode('dict');
+            currentNode = new UpdateChildEntitiesQueryNode({
+                originalList: currentNode,
+                dictionaryVar,
+                updates: updatedValues.map((value): ChildEntityUpdate => {
+                    const id = (value as any)[ID_FIELD];
+                    const idNode = new LiteralQueryNode(id);
+                    const childEntityNode = new DynamicPropertyAccessQueryNode(
+                        dictionaryVar,
+                        idNode,
+                    );
+                    const updatedProperties = updateField.updateInputType.getProperties(
+                        value as PlainObject,
+                        {
+                            ...context,
+                            currentEntityNode: childEntityNode,
+                        },
+                    );
+                    const newChildEntityNode = new MergeObjectsQueryNode([
+                        childEntityNode,
+                        new ObjectQueryNode(updatedProperties),
+                    ]);
+                    return {
+                        idNode,
+                        newChildEntityNode,
+                    };
+                }),
             });
+        } else {
+            let updateMapNode: QueryNode | undefined = undefined;
+            if (updatedValues.length) {
+                // build an ugly conditional tree
+                // looks like this:
+                // - item
+                // - item.id == 1 ? update1(item) : item
+                // - item.id == 2 ? update2(item) : (item.id == 1 ? update1(item) : item)
+                // ...
+                // (note the threshold above - we only do this for a very small number of updates)
+                updateMapNode = childEntityVarNode;
+
+                for (const value of updatedValues) {
+                    const filterNode = new BinaryOperationQueryNode(
+                        childIDQueryNode,
+                        BinaryOperator.EQUAL,
+                        new LiteralQueryNode((value as any)[ID_FIELD]),
+                    );
+                    const updates = updateField.updateInputType.getProperties(
+                        value as PlainObject,
+                        {
+                            ...context,
+                            currentEntityNode: childEntityVarNode,
+                        },
+                    );
+                    const updateNode = new MergeObjectsQueryNode([
+                        childEntityVarNode,
+                        new ObjectQueryNode(updates),
+                    ]);
+                    updateMapNode = new ConditionalQueryNode(filterNode, updateNode, updateMapNode);
+                }
+            }
+
+            if (removalFilterNode || updateMapNode) {
+                currentNode = new TransformListQueryNode({
+                    listNode: currentNode,
+                    filterNode: removalFilterNode,
+                    innerNode: updateMapNode,
+                    itemVariable: childEntityVarNode,
+                });
+            }
         }
 
         return [new SetFieldQueryNode(field, currentNode)];
