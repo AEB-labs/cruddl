@@ -1,5 +1,5 @@
-# in the .context.json, childEntityUpdatesViaDictStrategyThreshold is set to 100
-# so we will never use the dict strategy to update child entities
+# in the .context.json, childEntityUpdatesViaDictStrategyThreshold is set to 1
+# so we will always use the dict strategy to update child entities
 
 mutation updateOne {
     updateDelivery(
