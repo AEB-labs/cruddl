@@ -15,14 +15,10 @@ import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './
 import { JSCompoundQuery, JSExecutableQuery } from './js';
 import { getJSQuery } from './js-generator';
 import { v4 as uuid } from 'uuid';
-import { DefaultClock } from '../../execution/execution-options';
+import { DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
 
 export class InMemoryDB {
     collections: { [name: string]: any[] } = {};
-
-    generateID() {
-        return uuid();
-    }
 }
 
 export class InMemoryAdapter implements DatabaseAdapter {
@@ -45,7 +41,10 @@ export class InMemoryAdapter implements DatabaseAdapter {
      * Gets the javascript source code for a function that executes a transaction
      * @returns {string}
      */
-    private executeQueries(queries: JSExecutableQuery[]) {
+    private executeQueries(
+        queries: JSExecutableQuery[],
+        { idGenerator }: { idGenerator: IDGenerator },
+    ) {
         const validators = new Map(
             ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS.map((provider): [string, Function] => [
                 provider.getValidatorName(),
@@ -202,6 +201,8 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 }
                 return [arg];
             },
+
+            generateID: () => idGenerator.generateID({ target: 'root-entity' }),
         };
 
         let resultHolder: { [p: string]: any } = {};
@@ -266,6 +267,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
         try {
             jsQuery = getJSQuery(args.queryTree, {
                 clock: args.clock ?? new DefaultClock(),
+                idGenerator: args.idGenerator ?? new UUIDGenerator(),
             });
             executableQueries = jsQuery.getExecutableQueries();
         } finally {
@@ -275,7 +277,9 @@ export class InMemoryAdapter implements DatabaseAdapter {
             this.logger.trace(`Executing JavaScript: ${jsQuery.toColoredString()}`);
         }
 
-        const data = this.executeQueries(executableQueries);
+        const data = this.executeQueries(executableQueries, {
+            idGenerator: args.idGenerator ?? new UUIDGenerator(),
+        });
         return {
             data,
         };

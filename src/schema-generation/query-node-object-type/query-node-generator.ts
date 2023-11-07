@@ -21,7 +21,7 @@ import { decapitalize, flatMap } from '../../utils/utils';
 import { FieldContext, SelectionToken } from './context';
 import { QueryNodeField, QueryNodeObjectType } from './definition';
 import { extractQueryTreeObjectType, isListTypeIgnoringNonNull } from './utils';
-import { DefaultClock } from '../../execution/execution-options';
+import { DefaultClock, UUIDGenerator } from '../../execution/execution-options';
 
 export function createRootFieldContext(
     options: Partial<
@@ -33,6 +33,7 @@ export function createRootFieldContext(
         selectionTokenStack: [],
         selectionToken: new SelectionToken(),
         clock: options.clock ?? new DefaultClock(),
+        idGenerator: options.idGenerator ?? new UUIDGenerator(),
         ...options,
     };
 }

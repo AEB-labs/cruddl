@@ -87,7 +87,7 @@ import {
     getCollectionNameForRootEntity,
 } from './arango-basics';
 import { getFlexSearchViewNameForRootEntity } from './schema-migration/arango-search-helpers';
-import { Clock, DefaultClock } from '../../execution/execution-options';
+import { Clock, DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
 
 enum AccessType {
     /**
@@ -112,6 +112,11 @@ export interface QueryGenerationOptions {
      * An interface to determine the current date/time
      */
     readonly clock: Clock;
+
+    /**
+     * An interface to generate IDs, e.g. for new child entities.
+     */
+    readonly idGenerator: IDGenerator;
 }
 
 class QueryContext {
@@ -1903,6 +1908,7 @@ export function getAQLQuery(
         undefined,
         new QueryContext({
             clock: options.clock ?? new DefaultClock(),
+            idGenerator: options.idGenerator ?? new UUIDGenerator(),
         }),
     );
 }
