@@ -333,6 +333,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             //TODO Execute single statement AQL queries directly without "db.transaction"?
             aqlQuery = getAQLQuery(queryTree, {
                 clock: options.clock,
+                idGenerator: options.idGenerator,
             });
             executableQueries = aqlQuery.getExecutableQueries();
         } finally {

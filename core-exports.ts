@@ -13,6 +13,8 @@ export {
     ExecutionOptions,
     MutationMode,
     ExecutionOptionsCallbackArgs,
+    Clock,
+    IDGenerator,
 } from './src/execution/execution-options';
 export { ExecutionResult } from './src/execution/execution-result';
 export {

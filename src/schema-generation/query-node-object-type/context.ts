@@ -1,5 +1,5 @@
 import { FieldSelection } from '../../graphql/query-distiller';
-import { Clock } from '../../execution/execution-options';
+import { Clock, IDGenerator } from '../../execution/execution-options';
 
 /**
  * A token that corresponds to a FieldSelection but is local to one execution
@@ -37,4 +37,9 @@ export interface FieldContext {
      * An interface to determine the current date/time
      */
     readonly clock: Clock;
+
+    /**
+     * An interface to generate IDs, e.g. for new child entities
+     */
+    readonly idGenerator: IDGenerator;
 }
