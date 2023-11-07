@@ -1,6 +1,6 @@
 {
   "name": "cruddl",
-  "version": "3.2.0",
+  "version": "3.2.0-0.child-entity-updates.0",
   "description": "",
   "license": "MIT",
   "main": "dist/index.js",
