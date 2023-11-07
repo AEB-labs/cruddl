@@ -1,5 +1,6 @@
 import { OperationDefinitionNode } from 'graphql';
 import { AuthContext } from '../authorization/auth-basics';
+import { randomUUID } from 'crypto';
 
 export type MutationMode = 'normal' | 'disallowed' | 'rollback';
 
@@ -90,6 +91,12 @@ export interface ExecutionOptions {
      * An interface to determine the current date/time. If not specified, system time is used
      */
     readonly clock?: Clock;
+
+    /**
+     * An interface to generate IDs, e.g. for new child entities. If not specified, random UUIDs
+     * will be used.
+     */
+    readonly idGenerator?: IDGenerator;
 }
 
 export interface TimeToLiveExecutionOptions {
@@ -144,5 +151,27 @@ export interface Clock {
 export class DefaultClock implements Clock {
     getCurrentTimestamp(): string {
         return new Date().toISOString();
+    }
+}
+
+export type IDGenerationTarget = 'root-entity' | 'child-entity';
+
+export interface IDGenerationInfo {
+    readonly target: IDGenerationTarget;
+}
+
+export interface IDGenerator {
+    /**
+     * Generate an id that will be used for some entities (e.g. child entities)
+     */
+    generateID(info: IDGenerationInfo): string;
+}
+
+export class UUIDGenerator implements IDGenerator {
+    /**
+     * Generates a random UUID
+     */
+    generateID(): string {
+        return randomUUID();
     }
 }

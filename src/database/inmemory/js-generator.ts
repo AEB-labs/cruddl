@@ -70,7 +70,7 @@ import { Constructor, decapitalize } from '../../utils/utils';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
-import { Clock, DefaultClock } from '../../execution/execution-options';
+import { Clock, DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
 
 const ID_FIELD_NAME = 'id';
 
@@ -79,6 +79,11 @@ export interface QueryGenerationOptions {
      * An interface to determine the current date/time
      */
     readonly clock: Clock;
+
+    /**
+     * An interface to generate IDs, e.g. for new child entities.
+     */
+    readonly idGenerator: IDGenerator;
 }
 
 class QueryContext {
@@ -870,7 +875,7 @@ register(CreateEntityQueryNode, (node, context) => {
     const idVar = js.variable('id');
     return jsExt.executingFunction(
         js`const ${objVar} = ${processNode(node.objectNode, context)};`,
-        js`const ${idVar} = db.generateID();`,
+        js`const ${idVar} = support.generateID();`,
         js`${objVar}.${js.identifier(ID_FIELD_NAME)} = ${idVar};`,
         js`${js.collection(getCollectionNameForRootEntity(node.rootEntityType))}.push(${objVar});`,
         js`return ${idVar};`,
@@ -1276,6 +1281,7 @@ export function getJSQuery(
         undefined,
         new QueryContext({
             clock: options.clock ?? new DefaultClock(),
+            idGenerator: options.idGenerator ?? new UUIDGenerator(),
         }),
     );
 }
