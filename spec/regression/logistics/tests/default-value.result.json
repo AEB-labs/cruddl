@@ -80,5 +80,65 @@
         "defaultValueEnum": "Bar"
       }
     }
+  },
+  "checkFiltersByInit": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "destination": {
+            "street": "Hauptstraße",
+            "city": "Stuttgart",
+            "zipCode": "70xxx",
+            "country": {
+              "isoCode": "DE"
+            }
+          },
+          "defaultValueString": "foo",
+          "defaultValueString2": "bar",
+          "defaultValueInt": 42,
+          "defaultValueTrue": true,
+          "defaultValueFalse": false,
+          "defaultValueFloat": 3.14,
+          "defaultValueEnum": "Bar"
+        },
+        {
+          "deliveryNumber": "1000521",
+          "destination": {
+            "street": "Hauptstraße",
+            "city": "Stuttgart",
+            "zipCode": "70xxx",
+            "country": {
+              "isoCode": "DE"
+            }
+          },
+          "defaultValueString": "foo",
+          "defaultValueString2": "bar",
+          "defaultValueInt": 42,
+          "defaultValueTrue": true,
+          "defaultValueFalse": false,
+          "defaultValueFloat": 3.14,
+          "defaultValueEnum": "Bar"
+        },
+        {
+          "deliveryNumber": "1000522",
+          "destination": {
+            "street": "Hauptstraße",
+            "city": "Stuttgart",
+            "zipCode": "70xxx",
+            "country": {
+              "isoCode": "DE"
+            }
+          },
+          "defaultValueString": "foo",
+          "defaultValueString2": "bar",
+          "defaultValueInt": 42,
+          "defaultValueTrue": true,
+          "defaultValueFalse": false,
+          "defaultValueFloat": 3.14,
+          "defaultValueEnum": "Bar"
+        }
+      ]
+    }
   }
 }
