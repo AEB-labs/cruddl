@@ -9,11 +9,15 @@ import { PlainObject } from '../utils/utils';
 export function getValueFromAST(valueNode: ValueNode): any {
     switch (valueNode.kind) {
         case Kind.STRING:
-        case Kind.INT:
-        case Kind.FLOAT:
         case Kind.BOOLEAN:
         case Kind.ENUM:
             return valueNode.value;
+        case Kind.INT:
+            // this is the logic in GraphQLInt.prototype.parseInt
+            return parseInt(valueNode.value, 10);
+        case Kind.FLOAT:
+            // this is the logic in GraphQLFloat.prototype.parseFloat
+            return parseFloat(valueNode.value);
         case Kind.LIST:
             return [...valueNode.values.map((value) => getValueFromAST(value))];
         case Kind.OBJECT:
