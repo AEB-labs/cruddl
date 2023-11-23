@@ -626,6 +626,70 @@ only have the `sparse` option because `@unique` is its own directive.
     is a filter that makes sure no `null` values can be returned (even if there are actually no
     `null` values currently in the database).
 
+## More field features
+
+There are two additional directives you can use on fields: `@defaultValue` and `@calcMutations`.
+
+### Default values
+
+When an object is created without specifying all fields, the unspecified fields will be set to
+`null` (scalars and value objects), `{}` (entity extensions), or `[]` (child entities).
+
+You can add the `@defaultValue` directive to a field to change this behavior. **The default value
+will be used during object creation** if the field value is not specified. The directive does not
+affect existing objects. This still applies if you add a new field with the `@defaultValue`
+directive: only newly created objects will have the default value.
+
+Be careful with specifying the field value exactly, because there are currently no typechecks for
+default values. For example, for fields of type `Int`, make sure you specify a number and not a
+string value:
+
+```graphql
+type Delivery @rootEntity {
+    isShipped: Boolean @defaultValue(value: false)
+}
+```
+
+### Calc mutations
+
+If you add the `@calcMutations` directive to a scalar field, additional input fields will be
+available for the update mutations. These fields perform simple calculations like incrementing a
+value or appending a list item. Calc mutations are always executed within the transaction, so you
+can use this to e.g. update a number range without risk of race conditions.
+
+For example, given the following type definition:
+
+```graphql
+type NumberRange @rootEntity {
+    name: String @key
+    value: Int @calcMutations(operators: [ADD])
+}
+```
+
+You can increment the `value` with a mutation like this:
+
+```graphql
+mutation UpdateNumberRange {
+    updateNumberRange(input: { name: "deliveries", value_add: 1 }) {
+        value
+    }
+}
+```
+
+The following operators are available on numeric types (`GraphQLInt`, `GraphQLInt53`,
+`GraphQLFloat`, `GraphQLDecimal1`, `GraphQLDecimal2` and `GraphQLDecimal3`);
+
+-   `MULTIPLY`
+-   `DIVIDE`
+-   `ADD`
+-   `SUBTRACT`
+-   `MODULO`
+
+The following operators are available on the type `String`:
+
+-   `APPEND`
+-   `PREPEND`
+
 ## Scalar types
 
 ### Text types
