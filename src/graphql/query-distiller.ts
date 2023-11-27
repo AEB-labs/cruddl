@@ -148,9 +148,6 @@ export interface OperationDistillationParams {
  * Creates a simplified description of an operation definition
  */
 export function distillOperation(params: OperationDistillationParams): DistilledOperation {
-    // needed to coerce values
-    // not really sure when we should do this
-    // I think it's idempotent, so won't do much harm except from performance penality
     const context: Context = {
         variableValues: params.variableValues,
         fragments: params.fragments,
