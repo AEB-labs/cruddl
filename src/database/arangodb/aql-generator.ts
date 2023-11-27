@@ -486,7 +486,10 @@ register(WithPreExecutionQueryNode, (node, context) => {
 });
 
 register(EntityFromIdQueryNode, (node, context) => {
-    const collection = getCollectionForType(node.rootEntityType, AccessType.EXPLICIT_READ, context);
+    // the DOCUMENT() function only dynamically refers to the collection name, so the coordinators
+    // do not know about the collections. Therefore, these are implicit reads.
+    // We should refactor DOCUMENT() to collection traversals in the future to enable optimizations.
+    const collection = getCollectionForType(node.rootEntityType, AccessType.IMPLICIT_READ, context);
     return aql`DOCUMENT(${collection}, ${processNode(node.idNode, context)})`;
 });
 
