@@ -486,8 +486,24 @@ register(WithPreExecutionQueryNode, (node, context) => {
 });
 
 register(EntityFromIdQueryNode, (node, context) => {
-    const collection = getCollectionForType(node.rootEntityType, AccessType.EXPLICIT_READ, context);
-    return aql`DOCUMENT(${collection}, ${processNode(node.idNode, context)})`;
+    // We previously used the DOCUMENT() function here, but that function is discouraged if the
+    // collection is statically known. https://docs.arangodb.com/3.11/aql/functions/miscellaneous/#document
+
+    const itemVariable = new VariableQueryNode(decapitalize(node.rootEntityType.name));
+    const transformed = new FirstOfListQueryNode(
+        new TransformListQueryNode({
+            listNode: new EntitiesQueryNode(node.rootEntityType),
+            itemVariable,
+            filterNode: new BinaryOperationQueryNode(
+                new RootEntityIDQueryNode(itemVariable),
+                BinaryOperator.EQUAL,
+                node.idNode,
+            ),
+            maxCount: 1,
+        }),
+    );
+
+    return processNode(transformed, context);
 });
 
 register(PropertyAccessQueryNode, (node, context) => {

@@ -4,8 +4,10 @@ import {
     ConditionalQueryNode,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
+    FirstOfListQueryNode,
     NullQueryNode,
     PERMISSION_DENIED_ERROR,
+    RootEntityIDQueryNode,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     VariableAssignmentQueryNode,
@@ -15,6 +17,7 @@ import { FlexSearchQueryNode } from '../../query-tree/flex-search';
 import { AccessOperation, AuthContext } from '../auth-basics';
 import { PermissionResult } from '../permission-descriptors';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';
+import { decapitalize } from '../../utils/utils';
 
 export function transformEntitiesQueryNode(node: EntitiesQueryNode, authContext: AuthContext) {
     const permissionDescriptor = getPermissionDescriptorOfRootEntityType(node.rootEntityType);
@@ -57,17 +60,32 @@ export function transformEntityFromIdQueryNode(
                 { code: PERMISSION_DENIED_ERROR },
             );
         default:
-            const entityVar = new VariableQueryNode('entity');
+            // EntityFromIdQueryNode is converted to FIRST(FOR e in ... FILTER ... RETURN), so it's
+            // best to just add the condition there
+
+            const itemVariable = new VariableQueryNode(decapitalize(node.rootEntityType.name));
             const condition = permissionDescriptor.getAccessCondition(
                 authContext,
                 AccessOperation.READ,
-                entityVar,
+                itemVariable,
             );
-            return new VariableAssignmentQueryNode({
-                variableNode: entityVar,
-                variableValueNode: node,
-                resultNode: new ConditionalQueryNode(condition, entityVar, new NullQueryNode()),
-            });
+            const idEqualsNode = new BinaryOperationQueryNode(
+                new RootEntityIDQueryNode(itemVariable),
+                BinaryOperator.EQUAL,
+                node.idNode,
+            );
+            return new FirstOfListQueryNode(
+                new TransformListQueryNode({
+                    listNode: new EntitiesQueryNode(node.rootEntityType),
+                    itemVariable,
+                    filterNode: new BinaryOperationQueryNode(
+                        idEqualsNode,
+                        BinaryOperator.AND,
+                        condition,
+                    ),
+                    maxCount: 1,
+                }),
+            );
     }
 }
 
