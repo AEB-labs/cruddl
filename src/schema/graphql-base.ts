@@ -9,7 +9,21 @@ export const DIRECTIVES: DocumentNode = gql`
         flexSearch: Boolean = false
         flexSearchLanguage: FlexSearchLanguage = EN
         flexSearchOrder: [FlexSearchOrderArgument!] = []
+
+        flexSearchPerformanceParams: FlexSearchPerformanceParams
     ) on OBJECT
+
+    "Bundles non-functional, optional parameters for flexsearch performance optimizations"
+    input FlexSearchPerformanceParams {
+        "The time in milliseconds after which data changes will be visible in flexSearch queries"
+        commitIntervalMsec: Int
+
+        "The interval at which a consolidation policy is applied to the flexSearch view"
+        consolidationIntervalMsec: Int
+
+        "Wait at least this many commits before removing unused files in the data directory"
+        cleanupIntervalStep: Int
+    }
 
     "Declares a type for objects with ids that can be embedded as a list within another entity"
     directive @childEntity(flexSearchLanguage: FlexSearchLanguage = EN) on OBJECT

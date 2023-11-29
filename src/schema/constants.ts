@@ -26,6 +26,7 @@ export const FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE = 'flexSearchFulltext';
 
 export const FLEX_SEARCH_INDEXED_ARGUMENT = 'flexSearch';
 export const FLEX_SEARCH_ORDER_ARGUMENT = 'flexSearchOrder';
+export const FLEX_SEARCH_PERFORMANCE_PARAMS_ARGUMENT = 'flexSearchPerformanceParams';
 export const FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT = 'includeInSearch';
 export const FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT = 'caseSensitive';
 export const FLEX_SEARCH_INDEXED_LANGUAGE_ARG = 'language';

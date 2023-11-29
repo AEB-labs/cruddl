@@ -44,8 +44,21 @@ export interface ArangoSearchDefinition {
 
 export interface ArangoSearchConfiguration {
     readonly recursionDepth?: number;
+
+    /**
+     * The time in milliseconds after which data changes will be visible in flexSearch queries
+     */
     readonly commitIntervalMsec?: number;
+
+    /**
+     * The interval at which a consolidation policy is applied to the flexSearch view
+     */
     readonly consolidationIntervalMsec?: number;
+
+    /**
+     * Wait at least this many commits before removing unused files in the data directory
+     */
+    readonly cleanupIntervalStep?: number;
 }
 
 export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSearchDefinition> {
@@ -142,6 +155,11 @@ function getPropertiesFromDefinition(
 ): CreateArangoSearchViewOptions {
     const recursionDepth =
         configuration && configuration.recursionDepth ? configuration.recursionDepth : 1;
+    const performanceParams = definition.rootEntityType.flexSearchPerformanceParams;
+
+    // need to be explicit with defaults here (e.g. 1000 or 2) because we get concrete values for
+    // all parameters for existing views as well, and we need to be able to compare them
+    // (undefined does not mean "don't care" but "use defaults")
     return {
         type: 'arangosearch',
         links: {
@@ -153,12 +171,24 @@ function getPropertiesFromDefinition(
                 fields: fieldDefinitionsFor(definition.rootEntityType.fields),
             } as ArangoSearchViewLink,
         },
-        commitIntervalMsec: configuration?.commitIntervalMsec
-            ? configuration.commitIntervalMsec
-            : 1000,
-        consolidationIntervalMsec: configuration?.consolidationIntervalMsec
-            ? configuration.consolidationIntervalMsec
-            : 1000,
+
+        commitIntervalMsec:
+            performanceParams.commitIntervalMsec ??
+            (configuration?.commitIntervalMsec ? configuration.commitIntervalMsec : 1000),
+
+        // not sure what the actual default is - the arangojs docs suggest it's 10_000, but the
+        // arangodb documentation says it's 1_000. We historically specified 1_000 here, so keep it
+        consolidationIntervalMsec:
+            performanceParams.consolidationIntervalMsec ??
+            (configuration?.consolidationIntervalMsec
+                ? configuration.consolidationIntervalMsec
+                : 1000),
+
+        // 2 is default according to
+        // https://docs.arangodb.com/3.11/index-and-search/arangosearch/arangosearch-views-reference/#view-properties
+        cleanupIntervalStep:
+            performanceParams.cleanupIntervalStep ?? configuration?.cleanupIntervalStep ?? 2,
+
         primarySort: definition?.primarySort ? definition.primarySort.slice() : [],
     };
 
@@ -243,14 +273,12 @@ export function isEqualProperties(
     return (
         isEqual(definitionProperties.links, viewProperties.links) &&
         isEqual(definitionProperties.primarySort, viewProperties.primarySort) &&
-        isEqual(
-            definitionProperties.commitIntervalMsec,
-            (viewProperties as any).commitIntervalMsec /* somehow missing in types */,
-        ) &&
+        isEqual(definitionProperties.commitIntervalMsec, viewProperties.commitIntervalMsec) &&
         isEqual(
             definitionProperties.consolidationIntervalMsec,
             viewProperties.consolidationIntervalMsec,
-        )
+        ) &&
+        isEqual(definitionProperties.cleanupIntervalStep, viewProperties.cleanupIntervalStep)
     );
 }
 

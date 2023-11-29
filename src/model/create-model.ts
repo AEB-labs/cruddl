@@ -8,9 +8,11 @@ import {
     GraphQLEnumType,
     GraphQLID,
     GraphQLInputObjectType,
+    GraphQLInt,
     GraphQLList,
     GraphQLNonNull,
     GraphQLString,
+    IntValueNode,
     Kind,
     ObjectTypeDefinitionNode,
     ObjectValueNode,
@@ -46,6 +48,7 @@ import {
     FLEX_SEARCH_INDEXED_DIRECTIVE,
     FLEX_SEARCH_INDEXED_LANGUAGE_ARG,
     FLEX_SEARCH_ORDER_ARGUMENT,
+    FLEX_SEARCH_PERFORMANCE_PARAMS_ARGUMENT,
     ID_FIELD,
     INDEX_DEFINITION_INPUT_TYPE,
     INDEX_DIRECTIVE,
@@ -89,6 +92,7 @@ import {
     FieldConfig,
     FlexSearchIndexConfig,
     FlexSearchLanguage,
+    FlexSearchPerformanceParams,
     FlexSearchPrimarySortClauseConfig,
     IndexDefinitionConfig,
     LocalizationConfig,
@@ -357,6 +361,52 @@ function getFlexSearchOrder(
     }
 }
 
+function getFlexSearchPerformanceParams(
+    rootEntityDirective: DirectiveNode,
+): FlexSearchPerformanceParams | undefined {
+    const argumentNode: ArgumentNode | undefined = getNodeByName(
+        rootEntityDirective.arguments,
+        FLEX_SEARCH_PERFORMANCE_PARAMS_ARGUMENT,
+    );
+
+    if (!argumentNode || argumentNode.value.kind !== 'ObjectValue') {
+        return undefined;
+    }
+
+    const commitIntervalMsecASTNode = argumentNode.value.fields.find(
+        (f) => f.name.value === 'commitIntervalMsec',
+    )?.value;
+    let commitIntervalMsec: number | undefined = undefined;
+    if (commitIntervalMsecASTNode?.kind === 'IntValue') {
+        commitIntervalMsec = GraphQLInt.parseLiteral(commitIntervalMsecASTNode);
+    }
+
+    const consolidationIntervalMsecASTNode = argumentNode.value.fields.find(
+        (f) => f.name.value === 'consolidationIntervalMsec',
+    )?.value;
+    let consolidationIntervalMsec: number | undefined = undefined;
+    if (consolidationIntervalMsecASTNode?.kind === 'IntValue') {
+        consolidationIntervalMsec = GraphQLInt.parseLiteral(consolidationIntervalMsecASTNode);
+    }
+
+    const cleanupIntervalStepASTNode = argumentNode.value.fields.find(
+        (f) => f.name.value === 'cleanupIntervalStep',
+    )?.value;
+    let cleanupIntervalStep: number | undefined = undefined;
+    if (cleanupIntervalStepASTNode?.kind === 'IntValue') {
+        cleanupIntervalStep = GraphQLInt.parseLiteral(cleanupIntervalStepASTNode);
+    }
+
+    return {
+        consolidationIntervalMsec,
+        cleanupIntervalStep,
+        commitIntervalMsec,
+        cleanupIntervalStepASTNode,
+        commitIntervalMsecASTNode,
+        consolidationIntervalMsecASTNode,
+    };
+}
+
 function createFlexSearchPrimarySortClause(
     valueNode: ValueNode,
     context: ValidationContext,
@@ -433,6 +483,7 @@ function createFlexSearchDefinitionInputs(
         isIndexed,
         directiveASTNode: directive,
         primarySort: directive ? getFlexSearchOrder(directive, context) : [],
+        performanceParams: directive ? getFlexSearchPerformanceParams(directive) : undefined,
     };
 }
 
