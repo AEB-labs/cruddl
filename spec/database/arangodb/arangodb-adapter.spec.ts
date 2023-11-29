@@ -4,6 +4,7 @@ import { ArangoDBAdapter } from '../../../src/database/arangodb';
 import { createSimpleModel } from '../../model/model-spec.helper';
 import { createTempDatabase, getTempDatabase } from '../../regression/initialization';
 import { isArangoDBDisabled } from './arangodb-test-utils';
+import { ArangoSearchViewProperties } from 'arangojs/view';
 
 describe('ArangoDBAdapter', () => {
     describe('updateSchema', () => {
@@ -150,6 +151,62 @@ describe('ArangoDBAdapter', () => {
                     unique: true,
                 },
             ]);
+        });
+
+        it('it resets arangosearch view parameters to configured values', async function () {
+            // can't use arrow function because we need the "this"
+            if (isArangoDBDisabled()) {
+                (this as any).skip();
+                return;
+            }
+
+            const model = createSimpleModel(gql`
+                type Delivery
+                    @rootEntity(
+                        flexSearch: true
+                        flexSearchPerformanceParams: {
+                            commitIntervalMsec: 2000
+                            consolidationIntervalMsec: 8000
+                            cleanupIntervalStep: 1
+                        }
+                    ) {
+                    deliveryNumber: String @key @flexSearch
+                }
+            `);
+
+            const dbConfig = await createTempDatabase();
+            const adapter = new ArangoDBAdapter({
+                ...dbConfig,
+                createIndicesInBackground: true,
+            });
+            const db = getTempDatabase();
+            await adapter.updateSchema(model);
+
+            const view = db.view('flex_view_deliveries');
+            const properties = (await view.properties()) as ArangoSearchViewProperties;
+            expect(properties.commitIntervalMsec).to.equal(2000);
+            expect(properties.consolidationIntervalMsec).to.equal(8000);
+            expect(properties.cleanupIntervalStep).to.equal(1);
+
+            await view.updateProperties({
+                commitIntervalMsec: 12345,
+                consolidationIntervalMsec: 54321,
+                cleanupIntervalStep: 7,
+            });
+
+            const updatedProperties = (await view.properties()) as ArangoSearchViewProperties;
+            expect(updatedProperties.commitIntervalMsec).to.equal(12345);
+            expect(updatedProperties.consolidationIntervalMsec).to.equal(54321);
+            expect(updatedProperties.cleanupIntervalStep).to.equal(7);
+
+            // running the migrations again should reset it
+            await adapter.updateSchema(model);
+
+            const propertiesAfterSecondMigration =
+                (await view.properties()) as ArangoSearchViewProperties;
+            expect(properties.commitIntervalMsec).to.equal(2000);
+            expect(properties.consolidationIntervalMsec).to.equal(8000);
+            expect(properties.cleanupIntervalStep).to.equal(1);
         });
     });
 });

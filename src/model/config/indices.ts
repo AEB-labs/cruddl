@@ -1,4 +1,11 @@
-import { DirectiveNode, EnumValueNode, ObjectValueNode, StringValueNode } from 'graphql';
+import {
+    DirectiveNode,
+    EnumValueNode,
+    IntValueNode,
+    ObjectValueNode,
+    StringValueNode,
+    ValueNode,
+} from 'graphql';
 import { OrderDirection } from '../implementation/order';
 
 export interface IndexDefinitionConfig {
@@ -35,4 +42,32 @@ export interface FlexSearchIndexConfig {
     readonly isIndexed: boolean;
     readonly directiveASTNode?: DirectiveNode;
     readonly primarySort: ReadonlyArray<FlexSearchPrimarySortClauseConfig>;
+
+    /**
+     * Bundled non-functional, optional parameters for flexsearch performance optimizations
+     */
+    readonly performanceParams?: FlexSearchPerformanceParams;
+}
+
+/**
+ * Bundles non-functional, optional parameters for flexsearch performance optimizations
+ */
+export interface FlexSearchPerformanceParams {
+    /**
+     * The time in milliseconds after which data changes will be visible in flexSearch queries
+     */
+    readonly commitIntervalMsec?: number;
+    readonly commitIntervalMsecASTNode?: ValueNode;
+
+    /**
+     * The interval at which a consolidation policy is applied to the flexSearch view
+     */
+    readonly consolidationIntervalMsec?: number;
+    readonly consolidationIntervalMsecASTNode?: ValueNode;
+
+    /**
+     * Wait at least this many commits before removing unused files in the data directory
+     */
+    readonly cleanupIntervalStep?: number;
+    readonly cleanupIntervalStepASTNode?: ValueNode;
 }
