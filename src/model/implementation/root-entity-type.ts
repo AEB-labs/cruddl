@@ -6,9 +6,7 @@ import {
     ENTITY_CREATED_AT,
     FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
     FLEX_SEARCH_INDEXED_DIRECTIVE,
-    FLEX_SEARCH_ORDER_ARGUMENT,
     ID_FIELD,
-    ROOT_ENTITY_DIRECTIVE,
     SCALAR_INT,
     SCALAR_STRING,
 } from '../../schema/constants';
@@ -16,6 +14,7 @@ import { GraphQLInt53 } from '../../schema/scalars/int53';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { compact } from '../../utils/utils';
 import {
+    FlexSearchPerformanceParams,
     FlexSearchPrimarySortClauseConfig,
     PermissionsConfig,
     RootEntityTypeConfig,
@@ -49,6 +48,7 @@ export class RootEntityType extends ObjectTypeBase {
 
     readonly isFlexSearchIndexed: boolean;
     readonly flexSearchPrimarySort: ReadonlyArray<FlexSearchPrimarySortClause>;
+    readonly flexSearchPerformanceParams: FlexSearchPerformanceParams;
 
     constructor(private readonly input: RootEntityTypeConfig, model: Model) {
         super(input, model, systemFieldInputs);
@@ -63,9 +63,11 @@ export class RootEntityType extends ObjectTypeBase {
             this.flexSearchPrimarySort = this.completeFlexSearchPrimarySort(
                 input.flexSearchIndexConfig.primarySort,
             );
+            this.flexSearchPerformanceParams = input.flexSearchIndexConfig.performanceParams ?? {};
         } else {
             this.isFlexSearchIndexed = false;
             this.flexSearchPrimarySort = [];
+            this.flexSearchPerformanceParams = {};
         }
     }
 
@@ -438,6 +440,35 @@ export class RootEntityType extends ObjectTypeBase {
 
         for (const clause of this.flexSearchPrimarySort) {
             clause.validate(context);
+        }
+
+        const perfParams = this.flexSearchPerformanceParams;
+        if (perfParams.commitIntervalMsec !== undefined && perfParams.commitIntervalMsec < 100) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Cannot be less than 100.`,
+                    perfParams?.commitIntervalMsecASTNode,
+                ),
+            );
+        }
+        if (
+            perfParams.consolidationIntervalMsec !== undefined &&
+            perfParams.consolidationIntervalMsec < 100
+        ) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Cannot be less than 100.`,
+                    perfParams?.consolidationIntervalMsecASTNode,
+                ),
+            );
+        }
+        if (perfParams.cleanupIntervalStep !== undefined && perfParams.cleanupIntervalStep < 0) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Cannot be negative.`,
+                    perfParams?.cleanupIntervalStepASTNode,
+                ),
+            );
         }
     }
 
