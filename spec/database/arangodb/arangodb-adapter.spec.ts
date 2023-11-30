@@ -151,5 +151,37 @@ describe('ArangoDBAdapter', () => {
                 },
             ]);
         });
+
+        it('it does not care about other collections using unicode names', async function () {
+            // can't use arrow function because we need the "this"
+            if (isArangoDBDisabled()) {
+                (this as any).skip();
+                return;
+            }
+
+            const model = createSimpleModel(gql`
+                type Delivery @rootEntity {
+                    deliveryNumber: String
+                }
+            `);
+
+            const dbConfig = await createTempDatabase();
+            const adapter = new ArangoDBAdapter({
+                ...dbConfig,
+                createIndicesInBackground: true,
+            });
+            const db = getTempDatabase();
+            await db.collection('unübertroffen-gute-collection\uD83D\uDCA5').create({});
+
+            await adapter.updateSchema(model);
+
+            const collections = (await db.listCollections()).map((c) => c.name);
+
+            expect(collections).to.deep.equalInAnyOrder([
+                'billingEntities',
+                'deliveries',
+                'unübertroffen-gute-collection\uD83D\uDCA5',
+            ]);
+        });
     });
 });
