@@ -246,6 +246,10 @@ export function isEqualProperties(
         isEqual(
             definitionProperties.commitIntervalMsec,
             (viewProperties as any).commitIntervalMsec /* somehow missing in types */,
+        ) &&
+        isEqual(
+            definitionProperties.consolidationIntervalMsec,
+            viewProperties.consolidationIntervalMsec,
         )
     );
 }
