@@ -61,6 +61,9 @@ mutation updateMultiple {
                 { id: "id_test_0007", itemNumber: "updated07" }
                 { id: "id_test_0008", itemNumber: "updated08" }
                 { id: "id_test_0009", itemNumber: "updated09" }
+                # make sure this one does not end up in the list
+                # (the initial implementation of the dict-based update had a bug that it was)
+                { id: "nonexistant", itemNumber: "updated10" }
             ]
         }
     ) {
