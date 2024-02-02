@@ -528,7 +528,11 @@ register(UpdateChildEntitiesQueryNode, (node, context) => {
         // could be a complex expression, and we're using it multiple times -> store in a variable
         js`const ${itemsVar} = ${processNode(node.originalList, context)}`,
 
-        // add a __index property to each item so we can sort by this later
+        // the aql implementation needs an __index property to sort the object after applying
+        // the updates. the js implementation does not need to sort because {...obj, a: ...}
+        // keeps the order of properties in obj. However, we still need to filter out updates
+        // for which there are no items in originalList. To stay close to the aql implementation,
+        // we just also set an __index here.
         // regular field names cannot start with an underscore, so we're safe to use __index as a
         // temporary property to store the index of the child entity in the list
         // convert the list into a dict object like { 'id1': { ...}, 'id2': { ... } }
@@ -566,8 +570,10 @@ register(UpdateChildEntitiesQueryNode, (node, context) => {
         ),
         js`};`,
 
-        // sort by the __index we stored, and unpack the dictionary into a list again
-        js`return Object.values(${updatedDictVar}).map(({ __index, ...${itemVar} }) => ${itemVar});`,
+        // filter out objects that were included in node.updates() but did not actually exist in node.originalList
+        // (for them, __index is not set)
+        // and unpack the dictionary into a list again
+        js`return Object.values(${updatedDictVar}).filter(({ __index }) => __index !== undefined).map(({ __index, ...${itemVar} }) => ${itemVar});`,
     );
 });
 
