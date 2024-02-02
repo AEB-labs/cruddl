@@ -853,9 +853,13 @@ register(UpdateChildEntitiesQueryNode, (node, context) => {
         ),
         aql`})`,
 
-        // sort by the __index we stored, and unpack the dictionary into a list again
+        // sort by the __index we stored,
+        // filter out objects that were included in node.updates() but did not actually exist in node.originalList
+        // (for them, __index is not set)
+        // and unpack the dictionary into a list again
         aql`FOR ${itemVar}`,
         aql`IN VALUES(${updatedDictVar})`,
+        aql`FILTER ${itemVar}.__index != null`,
         aql`SORT ${itemVar}.__index`,
         aql`RETURN UNSET(${itemVar}, '__index')`,
     );
