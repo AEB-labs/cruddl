@@ -826,7 +826,9 @@ register(UpdateChildEntitiesQueryNode, (node, context) => {
         // temporary property to store the index of the child entity in the list
         aql`LET ${itemsWithIndexVar} = ${aqlExt.parenthesizeList(
             aql`FOR ${indexVar}`,
-            aql`IN 0..(LENGTH(${itemsVar}) - 1)`,
+            // 0..-1 would evaluate to [0, -1], so the ZIP would complain because the right side
+            // has more entries (2) than the left (0). RANGE() behaves the same
+            aql`IN LENGTH(${itemsVar}) > 0 ? 0..(LENGTH(${itemsVar}) - 1) : []`,
             aql`RETURN MERGE(NTH(${itemsVar}, ${indexVar}), { __index: ${indexVar} })`,
         )}`,
 
