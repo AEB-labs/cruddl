@@ -1,0 +1,30 @@
+{
+  "clearItems": {
+    "data": {
+      "updateDelivery": {
+        "items": []
+      }
+    }
+  },
+  "afterClear": {
+    "data": {
+      "Delivery": {
+        "items": []
+      }
+    }
+  },
+  "updateMultiple": {
+    "data": {
+      "updateDelivery": {
+        "items": []
+      }
+    }
+  },
+  "afterUpdateMultiple": {
+    "data": {
+      "Delivery": {
+        "items": []
+      }
+    }
+  }
+}
