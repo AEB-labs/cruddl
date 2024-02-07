@@ -826,7 +826,9 @@ register(UpdateChildEntitiesQueryNode, (node, context) => {
         // temporary property to store the index of the child entity in the list
         aql`LET ${itemsWithIndexVar} = ${aqlExt.parenthesizeList(
             aql`FOR ${indexVar}`,
-            aql`IN 0..(LENGTH(${itemsVar}) - 1)`,
+            // 0..-1 would evaluate to [0, -1], so the ZIP would complain because the right side
+            // has more entries (2) than the left (0). RANGE() behaves the same
+            aql`IN LENGTH(${itemsVar}) > 0 ? 0..(LENGTH(${itemsVar}) - 1) : []`,
             aql`RETURN MERGE(NTH(${itemsVar}, ${indexVar}), { __index: ${indexVar} })`,
         )}`,
 
@@ -850,9 +852,13 @@ register(UpdateChildEntitiesQueryNode, (node, context) => {
         ),
         aql`})`,
 
-        // sort by the __index we stored, and unpack the dictionary into a list again
+        // sort by the __index we stored,
+        // filter out objects that were included in node.updates() but did not actually exist in node.originalList
+        // (for them, __index is not set)
+        // and unpack the dictionary into a list again
         aql`FOR ${itemVar}`,
         aql`IN VALUES(${updatedDictVar})`,
+        aql`FILTER ${itemVar}.__index != null`,
         aql`SORT ${itemVar}.__index`,
         aql`RETURN UNSET(${itemVar}, '__index')`,
     );

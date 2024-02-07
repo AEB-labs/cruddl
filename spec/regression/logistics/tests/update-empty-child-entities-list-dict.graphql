@@ -1,0 +1,59 @@
+# in the .context.json, childEntityUpdatesViaDictStrategyThreshold is set to 1
+# so we will always use the dict strategy to update child entities
+
+# this test makes sure that updating child entities works (even though it does nothing)
+# when the child entity list in the database is empty
+# this regression test exists because of two bugs we had in the initial dict-based implementation
+# - an AQL error when there were updates but the collection was empty
+# - updates that did not correspond to actual were persisted as new items (just without id etc.)
+
+mutation clearItems {
+    updateDelivery(
+        input: { id: "@{ids/Delivery/1}", removeItems: ["id_init_0000", "id_init_0001"] }
+    ) {
+        items {
+            id
+            itemNumber
+        }
+    }
+}
+
+# to verify it is cleared in the db
+query afterClear {
+    Delivery(id: "@{ids/Delivery/1}") {
+        items {
+            id
+            itemNumber
+        }
+    }
+}
+
+mutation updateMultiple {
+    updateDelivery(
+        input: {
+            id: "@{ids/Delivery/1}"
+            updateItems: [
+                { id: "id_test_0003", itemNumber: "updated03" }
+                { id: "id_test_0005", itemNumber: "updated05" }
+                { id: "id_test_0009", itemNumber: "updated09" }
+                { id: "id_test_0007", itemNumber: "updated07" }
+                { id: "id_test_0008", itemNumber: "updated08" }
+            ]
+        }
+    ) {
+        items {
+            id
+            itemNumber
+        }
+    }
+}
+
+# just sanity check - should do nothign
+query afterUpdateMultiple {
+    Delivery(id: "@{ids/Delivery/1}") {
+        items {
+            id
+            itemNumber
+        }
+    }
+}
