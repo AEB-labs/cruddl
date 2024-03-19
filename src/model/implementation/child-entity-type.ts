@@ -1,9 +1,9 @@
 import { ID_FIELD } from '../../schema/constants';
+import { ChildEntityTypeConfig, TypeKind } from '../config';
 import { ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
-import { ObjectTypeBase } from './object-type-base';
-import { ChildEntityTypeConfig, FieldConfig, TypeKind } from '../config';
 import { Model } from './model';
+import { ObjectTypeBase } from './object-type-base';
 
 export class ChildEntityType extends ObjectTypeBase {
     constructor(input: ChildEntityTypeConfig, model: Model) {
@@ -50,6 +50,7 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         isFlexSearchIndexed: true,
         isFlexSearchFulltextIndexed: false,
         isIncludedInSearch: false,
+        allowedDirectiveNames: ['hidden'],
     },
     {
         name: 'createdAt',
@@ -59,6 +60,7 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         isFlexSearchIndexed: true,
         isFlexSearchFulltextIndexed: false,
         isIncludedInSearch: false,
+        allowedDirectiveNames: ['hidden'],
     },
     {
         name: 'updatedAt',
@@ -68,5 +70,6 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         isFlexSearchIndexed: true,
         isFlexSearchFulltextIndexed: false,
         isIncludedInSearch: false,
+        allowedDirectiveNames: ['hidden'],
     },
 ];

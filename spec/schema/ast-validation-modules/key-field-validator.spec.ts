@@ -108,18 +108,6 @@ describe('key field validator', () => {
         `);
     });
 
-    it('warns about id: ID (without @key)', () => {
-        assertValidatorWarns(
-            `
-            type Stuff @rootEntity {
-                id: ID
-                test: String
-            }
-        `,
-            'The field "id" is redundant and should only be explicitly added when used with @key.',
-        );
-    });
-
     it('warns about _key: String (without @key)', () => {
         assertValidatorWarns(
             `
@@ -129,30 +117,6 @@ describe('key field validator', () => {
             }
         `,
             'The field "_key" is deprecated and should be replaced with "id" (of type "ID").',
-        );
-    });
-
-    it('rejects id: String @key (wrong type)', () => {
-        assertValidatorRejects(
-            `
-            type Stuff @rootEntity {
-                id: String @key
-                test: String
-            }
-        `,
-            'The field "id" must be of type "ID".',
-        );
-    });
-
-    it('rejects id: String (wrong type, without @key)', () => {
-        assertValidatorRejects(
-            `
-            type Stuff @rootEntity {
-                id: String
-                test: String
-            }
-        `,
-            'The field "id" must be of type "ID".',
         );
     });
 

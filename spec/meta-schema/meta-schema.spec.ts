@@ -173,6 +173,17 @@ describe('Meta schema API', () => {
         }
     `;
 
+    const hiddenFieldsQuery = gql`
+        {
+            rootEntityType(name: "Country") {
+                fields {
+                    name
+                    isHidden
+                }
+            }
+        }
+    `;
+
     const permissionsQuery = gql`
         {
             rootEntityType(name: "Shipment") {
@@ -226,6 +237,16 @@ describe('Meta schema API', () => {
                 fields: [
                     {
                         name: 'isoCode',
+                        typeName: 'String',
+                        isHidden: true,
+                    },
+                    {
+                        name: 'id',
+                        typeName: 'ID',
+                        isHidden: true,
+                    },
+                    {
+                        name: 'dummy',
                         typeName: 'String',
                     },
                 ],
@@ -571,6 +592,18 @@ describe('Meta schema API', () => {
                             isCollectField: false,
                             collectFieldConfig: null,
                             type: { __typename: 'ScalarType' },
+                        },
+                        {
+                            collectFieldConfig: null,
+                            isCollectField: false,
+                            isList: false,
+                            isReference: false,
+                            isRelation: false,
+                            name: 'dummy',
+                            referenceKeyField: null,
+                            type: {
+                                __typename: 'ScalarType',
+                            },
                         },
                     ],
                 },
@@ -1157,6 +1190,21 @@ describe('Meta schema API', () => {
         const actualVersion = result!.cruddlVersion as string;
 
         expect(actualVersion).to.deep.equal(expectedVersion);
+    });
+
+    it('can query read whether fields are hidden', async () => {
+        const result = (await execute(hiddenFieldsQuery)) as any;
+        const rootEntityTypeFields = result.rootEntityType.fields;
+        const isoCodeField = rootEntityTypeFields.find((field: any) => field.name === 'isoCode');
+        const idField = rootEntityTypeFields.find((field: any) => field.name === 'id');
+        const dummyField = rootEntityTypeFields.find((field: any) => field.name === 'dummy');
+        const updatedAtField = rootEntityTypeFields.find(
+            (field: any) => field.name === 'updatedAt',
+        );
+        expect(isoCodeField.isHidden).to.be.true;
+        expect(idField.isHidden).to.be.true;
+        expect(dummyField.isHidden).to.be.false;
+        expect(updatedAtField.isHidden).to.be.false;
     });
 
     it('can query read the cruddl version from meta description', async () => {

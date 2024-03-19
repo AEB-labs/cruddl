@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 import { DocumentNode } from 'graphql';
 import gql from 'graphql-tag';
-import { createModel } from '../../src/model';
 import { createSimpleModel } from './model-spec.helper';
 
 describe('createModel', () => {
@@ -352,5 +351,29 @@ describe('createModel', () => {
             de: 'Lieferung mittels Schiff',
             en: 'Delivery via ship',
         });
+    });
+
+    it('it allows to apply the hidden directive on regular and system fields', () => {
+        const document: DocumentNode = gql`
+            type Test @rootEntity {
+                id: ID @hidden
+                updatedAt: DateTime @hidden
+                regularField: String!
+                test2: Test2 @relation @hidden
+            }
+
+            type Test2 @rootEntity {
+                dummy: String
+            }
+        `;
+
+        const model = createSimpleModel(document);
+        expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
+
+        const type = model.getRootEntityTypeOrThrow('Test');
+        expect(type.getFieldOrThrow('id').isHidden).to.be.true;
+        expect(type.getFieldOrThrow('updatedAt').isHidden).to.be.true;
+        expect(type.getFieldOrThrow('createdAt').isHidden).to.be.false;
+        expect(type.getFieldOrThrow('test2').isHidden).to.be.true;
     });
 });

@@ -1,7 +1,4 @@
-import { GraphQLInt } from 'graphql';
 import { numberTypeNames } from '../model/implementation/built-in-types';
-import { GraphQLDecimal1, GraphQLDecimal2 } from './scalars/fixed-point-decimals';
-import { GraphQLInt53 } from './scalars/int53';
 
 export const WILDCARD_CHARACTER = '*';
 
@@ -23,6 +20,8 @@ export const ROOT_DIRECTIVE = 'root';
 export const ACCESS_FIELD_DIRECTIVE = 'accessField';
 export const FLEX_SEARCH_INDEXED_DIRECTIVE = 'flexSearch';
 export const FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE = 'flexSearchFulltext';
+
+export const HIDDEN_DIRECTIVE = 'hidden';
 
 export const FLEX_SEARCH_INDEXED_ARGUMENT = 'flexSearch';
 export const FLEX_SEARCH_ORDER_ARGUMENT = 'flexSearchOrder';

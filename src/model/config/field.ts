@@ -66,6 +66,14 @@ export interface FieldConfig {
     readonly isAccessField?: boolean;
 
     readonly accessFieldDirectiveASTNode?: DirectiveNode;
+
+    /**
+     * Whether a field is marked as "hidden". This information can later be used,
+     * via the fields meta information, to decide whether the field should be shown in UIs
+     * or not.
+     */
+    readonly isHidden?: boolean;
+    readonly isHiddenASTNode?: DirectiveNode;
 }
 
 export enum RelationDeleteAction {

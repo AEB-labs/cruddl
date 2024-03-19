@@ -46,6 +46,7 @@ import { ValueObjectType } from './value-object-type';
 export interface SystemFieldConfig extends FieldConfig {
     readonly isSystemField?: boolean;
     readonly isNonNull?: boolean;
+    readonly allowedDirectiveNames?: ReadonlyArray<string>;
 }
 
 export class Field implements ModelComponent {
@@ -65,6 +66,7 @@ export class Field implements ModelComponent {
     readonly isParentField: boolean;
     readonly isRootField: boolean;
     readonly roles: RolesSpecifier | undefined;
+    readonly isHidden: boolean;
     private _type: Type | undefined;
 
     /**
@@ -109,6 +111,7 @@ export class Field implements ModelComponent {
                 : undefined;
         this.isSystemField = input.isSystemField || false;
         this.isAccessField = input.isAccessField ?? false;
+        this.isHidden = !!input.isHidden;
     }
 
     /**
