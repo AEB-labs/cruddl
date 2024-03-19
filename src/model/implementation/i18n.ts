@@ -1,4 +1,4 @@
-import { I18N_GENERIC } from '../../meta-schema/constants';
+import { I18N_GENERIC, I18N_LOCALE } from '../../meta-schema/constants';
 import {
     arrayStartsWith,
     capitalize,
@@ -62,6 +62,12 @@ export class ModelI18n implements ModelComponent {
         };
     }
 
+    public getTypeI18n(type: TypeBase): Record<string, TypeLocalization> {
+        return mapValues(this.getAllLocalizationProviders(), (provider) =>
+            provider.localizeType(type),
+        );
+    }
+
     public getFieldLocalization(
         field: Field,
         resolutionOrder: ReadonlyArray<string>,
@@ -73,6 +79,12 @@ export class ModelI18n implements ModelComponent {
             label: mapFirstDefined(resolutionProviders, (rp) => rp.localizeField(field).label),
             hint: mapFirstDefined(resolutionProviders, (rp) => rp.localizeField(field).hint),
         };
+    }
+
+    public getFieldI18n(field: Field): Record<string, FieldLocalization> {
+        return mapValues(this.getAllLocalizationProviders(), (provider) =>
+            provider.localizeField(field),
+        );
     }
 
     public getEnumValueLocalization(
@@ -92,6 +104,12 @@ export class ModelI18n implements ModelComponent {
         };
     }
 
+    public getEnumValueI18n(enumValue: EnumValue): Record<string, EnumValueLocalization> {
+        return mapValues(this.getAllLocalizationProviders(), (provider) =>
+            provider.localizeEnumValue(enumValue),
+        );
+    }
+
     private getResolutionProviders(
         resolutionOrder: ReadonlyArray<string>,
     ): ReadonlyArray<LocalizationProvider> {
@@ -105,6 +123,18 @@ export class ModelI18n implements ModelComponent {
                 }
             }),
         );
+    }
+
+    /**
+     * Returns all available localization providers.
+     *
+     * The derived languages "I18N_GENERIC" and "I18N_LOCALE" are not included.
+     */
+    private getAllLocalizationProviders(): Record<string, LocalizationProvider> {
+        const filteredProviders = Array.from(
+            this.languageLocalizationProvidersByLanguage.entries(),
+        ).filter(([lang, _]) => lang !== I18N_GENERIC && lang !== I18N_LOCALE);
+        return Object.fromEntries(filteredProviders);
     }
 }
 
@@ -214,11 +244,8 @@ export class NamespaceLocalization {
     }
 }
 
-export interface TypeLocalization {
-    readonly label?: string;
+export interface TypeLocalization extends LocalizationBaseConfig {
     readonly labelPlural?: string;
-    readonly hint?: string;
-    readonly loc?: MessageLocation;
 }
 
 export interface FieldLocalization extends LocalizationBaseConfig {}

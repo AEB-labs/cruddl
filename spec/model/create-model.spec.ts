@@ -185,4 +185,172 @@ describe('createModel', () => {
         expect(field.isFlexSearchIndexed).to.be.true;
         expect(field.isIncludedInSearch).to.be.false;
     });
+
+    it('it allows to access raw label/labelPlural/hint localization on type "ObjectType" and its fields', () => {
+        const document: DocumentNode = gql`
+            type Shipment @rootEntity {
+                shipmentNumber: String
+            }
+        `;
+        const model = createSimpleModel(document, {
+            de: {
+                namespacePath: [],
+                types: {
+                    Shipment: {
+                        label: 'Lieferung',
+                        labelPlural: 'Lieferungen',
+                        hint: 'Eine Lieferung',
+                        fields: {
+                            shipmentNumber: {
+                                label: 'Lieferungsnummer',
+                                hint: 'Die Nummer der Lieferung',
+                            },
+                        },
+                    },
+                },
+            },
+            en: {
+                namespacePath: [],
+                types: {
+                    Shipment: {
+                        label: 'Shipment',
+                        labelPlural: 'Shipments',
+                        hint: 'A shipment',
+                        fields: {
+                            shipmentNumber: {
+                                label: 'Shipment number',
+                                hint: 'The number of the shipment',
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        const shipmentType = model.getObjectTypeOrThrow('Shipment');
+        expect(shipmentType.label).to.deep.equal({
+            de: 'Lieferung',
+            en: 'Shipment',
+        });
+        expect(shipmentType.labelPlural).to.deep.equal({
+            de: 'Lieferungen',
+            en: 'Shipments',
+        });
+        expect(shipmentType.hint).to.deep.equal({
+            de: 'Eine Lieferung',
+            en: 'A shipment',
+        });
+        const shipmentNumberField = shipmentType.getFieldOrThrow('shipmentNumber');
+        expect(shipmentNumberField.label).to.deep.equal({
+            de: 'Lieferungsnummer',
+            en: 'Shipment number',
+        });
+        expect(shipmentNumberField.hint).to.deep.equal({
+            de: 'Die Nummer der Lieferung',
+            en: 'The number of the shipment',
+        });
+    });
+
+    it('it allows to access raw label/labelPlural/hint localization on type "EnumType" and its values', () => {
+        const document: DocumentNode = gql`
+            type Shipment @rootEntity {
+                transportKind: TransportKind
+            }
+
+            enum TransportKind {
+                AIR
+                SEA
+                ROAD
+            }
+        `;
+        const model = createSimpleModel(document, {
+            de: {
+                namespacePath: [],
+                types: {
+                    TransportKind: {
+                        label: 'Transportart',
+                        labelPlural: 'Transportarten',
+                        hint: 'Die Art des Transports',
+                        values: {
+                            AIR: {
+                                label: 'Luft',
+                                hint: 'Lieferung mittels Fluchtfracht',
+                            },
+                            ROAD: {
+                                label: 'Straße',
+                                hint: 'Lieferung mittels LKW',
+                            },
+                            SEA: {
+                                label: 'Übersee',
+                                hint: 'Lieferung mittels Schiff',
+                            },
+                        },
+                    },
+                },
+            },
+            en: {
+                namespacePath: [],
+                types: {
+                    TransportKind: {
+                        label: 'Transport kind',
+                        labelPlural: 'Transport kinds',
+                        hint: 'The kind of transport',
+                        values: {
+                            AIR: {
+                                label: 'Air',
+                                hint: 'Delivery via airfreight',
+                            },
+                            ROAD: {
+                                label: 'Road',
+                                hint: 'Delivery via truck',
+                            },
+                            SEA: {
+                                label: 'Sea',
+                                hint: 'Delivery via ship',
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        const transportKindType = model.getEnumTypeOrThrow('TransportKind');
+        expect(transportKindType.label).to.deep.equal({
+            de: 'Transportart',
+            en: 'Transport kind',
+        });
+        expect(transportKindType.labelPlural).to.deep.equal({
+            de: 'Transportarten',
+            en: 'Transport kinds',
+        });
+        expect(transportKindType.hint).to.deep.equal({
+            de: 'Die Art des Transports',
+            en: 'The kind of transport',
+        });
+        const valueAIR = transportKindType.values.find((value) => value.value === 'AIR');
+        const valueROAD = transportKindType.values.find((value) => value.value === 'ROAD');
+        const valueSEA = transportKindType.values.find((value) => value.value === 'SEA');
+        expect(valueAIR?.label).to.deep.equal({
+            de: 'Luft',
+            en: 'Air',
+        });
+        expect(valueAIR?.hint).to.deep.equal({
+            de: 'Lieferung mittels Fluchtfracht',
+            en: 'Delivery via airfreight',
+        });
+        expect(valueROAD?.label).to.deep.equal({
+            de: 'Straße',
+            en: 'Road',
+        });
+        expect(valueROAD?.hint).to.deep.equal({
+            de: 'Lieferung mittels LKW',
+            en: 'Delivery via truck',
+        });
+        expect(valueSEA?.label).to.deep.equal({
+            de: 'Übersee',
+            en: 'Sea',
+        });
+        expect(valueSEA?.hint).to.deep.equal({
+            de: 'Lieferung mittels Schiff',
+            en: 'Delivery via ship',
+        });
+    });
 });

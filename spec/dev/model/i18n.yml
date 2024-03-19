@@ -1,6 +1,13 @@
 i18n:
   en:
     types:
+      Morality:
+        label: Morality
+        labelPlural: Morality
+        hint: The morality of the hero
+        values:
+          GOOD: Good
+          EVIL: Evil
       Hero:
         label: Hero
         labelPlural: Heroes
@@ -22,6 +29,14 @@ i18n:
       id: ID
   de:
     types:
+      Morality:
+        label: Moral
+        labelPlural: Moral
+        hint: Die Moral des Helden
+        values:
+          GOOD: Gut
+          EVIL: Böse
+
       Hero:
         label: Held
         labelPlural: Helden

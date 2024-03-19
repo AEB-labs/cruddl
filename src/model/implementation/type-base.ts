@@ -80,6 +80,39 @@ export abstract class TypeBase implements ModelComponent {
         return this.model.getNamespaceByPathOrThrow(this.namespacePath);
     }
 
+    @memorize()
+    get label(): Record<string, string> {
+        const res: Record<string, string> = {};
+        for (const [lang, localization] of Object.entries(this.model.i18n.getTypeI18n(this))) {
+            if (localization.label) {
+                res[lang] = localization.label;
+            }
+        }
+        return res;
+    }
+
+    @memorize()
+    get labelPlural(): Record<string, string> {
+        const res: Record<string, string> = {};
+        for (const [lang, localization] of Object.entries(this.model.i18n.getTypeI18n(this))) {
+            if (localization.labelPlural) {
+                res[lang] = localization.labelPlural;
+            }
+        }
+        return res;
+    }
+
+    @memorize()
+    get hint(): Record<string, string> {
+        const res: Record<string, string> = {};
+        for (const [lang, localization] of Object.entries(this.model.i18n.getTypeI18n(this))) {
+            if (localization.hint) {
+                res[lang] = localization.hint;
+            }
+        }
+        return res;
+    }
+
     abstract readonly isObjectType: boolean;
     abstract readonly isRootEntityType: boolean;
     abstract readonly isChildEntityType: boolean;
