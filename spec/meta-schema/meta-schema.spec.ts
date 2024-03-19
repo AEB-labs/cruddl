@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { DocumentNode, graphql, print } from 'graphql';
 import gql from 'graphql-tag';
+import { CRUDDL_VERSION } from '../../src/cruddl-version';
 import {
     ExecutionOptions,
     ExecutionOptionsCallbackArgs,
@@ -9,7 +10,6 @@ import { getMetaSchema } from '../../src/meta-schema/meta-schema';
 import { AggregationOperator, Model, TypeKind } from '../../src/model';
 import { Project } from '../../src/project/project';
 import { stopMetaServer } from '../dev/server';
-import { CRUDDL_VERSION } from '../../src/cruddl-version';
 
 describe('Meta schema API', () => {
     const introQuery = gql`
@@ -139,6 +139,36 @@ describe('Meta schema API', () => {
                         hint
                     }
                 }
+            }
+        }
+    `;
+
+    const rawI18nQuery = gql`
+        {
+            rootEntityType(name: "Shipment") {
+                label
+                labelPlural
+                hint
+                fields {
+                    name
+                    label
+                    hint
+                }
+            }
+            enumType(name: "TransportKind") {
+                label
+                labelPlural
+                hint
+                values {
+                    value
+                    label
+                    hint
+                }
+            }
+            valueObjectType(name: "Address") {
+                label
+                labelPlural
+                hint
             }
         }
     `;
@@ -349,6 +379,40 @@ describe('Meta schema API', () => {
                             },
                         },
                     },
+                    Shipment: {
+                        label: 'Lieferung',
+                        labelPlural: 'Lieferungen',
+                        hint: 'Eine Lieferung',
+                        fields: {
+                            transportKind: {
+                                label: 'Transportart',
+                                hint: 'Transportart der Lieferung',
+                            },
+                            handlingUnits: {
+                                label: 'Packstücke',
+                                hint: 'Die Packstücke der Lieferung'
+                            }
+                        },
+                    },
+                    TransportKind: {
+                        label: 'Transportart',
+                        labelPlural: 'Transportarten',
+                        hint: 'Die Art des Transports',
+                        values: {
+                            AIR: {
+                                label: 'Luft',
+                                hint: 'Lieferung mittels Fluchtfracht',
+                            },
+                            ROAD: {
+                                label: 'Straße',
+                                hint: 'Lieferung mittels LKW',
+                            },
+                            SEA: {
+                                label: 'Übersee',
+                                hint: 'Lieferung mittels Schiff',
+                            },
+                        },
+                    },
                 },
             },
             {
@@ -359,6 +423,36 @@ describe('Meta schema API', () => {
                         fields: {
                             street: {
                                 hint: 'The street and number',
+                            },
+                        },
+                    },
+                    Shipment: {
+                        label: 'Shipment',
+                        labelPlural: 'Shipments',
+                        hint: 'A shipment',
+                        fields: {
+                            transportKind: {
+                                label: 'Transport kind',
+                                hint: 'The kind of transport for the shipment',
+                            },
+                        },
+                    },
+                    TransportKind: {
+                        label: 'Transport kind',
+                        labelPlural: 'Transport kinds',
+                        hint: 'The kind of transport',
+                        values: {
+                            AIR: {
+                                label: 'Air',
+                                hint: 'Delivery via airfreight',
+                            },
+                            ROAD: {
+                                label: 'Road',
+                                hint: 'Delivery via truck',
+                            },
+                            SEA: {
+                                label: 'Sea',
+                                hint: 'Delivery via ship',
                             },
                         },
                     },
@@ -936,6 +1030,104 @@ describe('Meta schema API', () => {
         expect(streetField.localization).to.deep.equal({
             label: 'Straße',
             hint: 'The street and number',
+        });
+    });
+
+    it('can query raw localization of types', async () => {
+        const result = (await execute(rawI18nQuery)) as any;
+
+        // test for object types including fields
+        const shipmentType = result.rootEntityType;
+        expect(shipmentType.label).to.deep.equal({
+            en: 'Shipment',
+            de: 'Lieferung',
+        });
+        expect(shipmentType.labelPlural).to.deep.equal({
+            en: 'Shipments',
+            de: 'Lieferungen',
+        });
+        expect(shipmentType.hint).to.deep.equal({
+            en: 'A shipment',
+            de: 'Eine Lieferung',
+        });
+        const transportKindField = shipmentType.fields.find(
+            (field: any) => field.name === 'transportKind',
+        );
+        expect(transportKindField.label).to.deep.equal({
+            en: 'Transport kind',
+            de: 'Transportart',
+        });
+        expect(transportKindField.hint).to.deep.equal({
+            en: 'The kind of transport for the shipment',
+            de: 'Transportart der Lieferung',
+        });
+        const handlingUnitsField = shipmentType.fields.find(
+            (field: any) => field.name === 'handlingUnits'
+        );
+        expect(handlingUnitsField.label).to.deep.equal({
+            de: 'Packstücke'
+        });
+        expect(handlingUnitsField.hint).to.deep.equal({
+            de: 'Die Packstücke der Lieferung'
+        });
+
+        // test for enumType including values
+        const transportKindType = result.enumType;
+        expect(transportKindType.label).to.deep.equal({
+            en: 'Transport kind',
+            de: 'Transportart',
+        });
+        expect(transportKindType.labelPlural).to.deep.equal({
+            en: 'Transport kinds',
+            de: 'Transportarten',
+        });
+        expect(transportKindType.hint).to.deep.equal({
+            en: 'The kind of transport',
+            de: 'Die Art des Transports',
+        });
+        const transportKindValueAir = transportKindType.values.find(
+            (value: any) => value.value === 'AIR',
+        );
+        const transportKindValueRoad = transportKindType.values.find(
+            (value: any) => value.value === 'ROAD',
+        );
+        const transportKindValueSea = transportKindType.values.find(
+            (value: any) => value.value === 'SEA',
+        );
+        expect(transportKindValueAir.label).to.deep.equal({
+            en: 'Air',
+            de: 'Luft',
+        });
+        expect(transportKindValueAir.hint).to.deep.equal({
+            en: 'Delivery via airfreight',
+            de: 'Lieferung mittels Fluchtfracht',
+        });
+        expect(transportKindValueRoad.label).to.deep.equal({
+            de: 'Straße',
+            en: 'Road',
+        });
+        expect(transportKindValueRoad.hint).to.deep.equal({
+            de: 'Lieferung mittels LKW',
+            en: 'Delivery via truck',
+        });
+        expect(transportKindValueSea.label).to.deep.equal({
+            de: 'Übersee',
+            en: 'Sea',
+        });
+        expect(transportKindValueSea.hint).to.deep.equal({
+            de: 'Lieferung mittels Schiff',
+            en: 'Delivery via ship',
+        });
+
+        const adressType = result.valueObjectType;
+        expect(adressType.label).to.deep.equal({
+            de: 'Adresse'
+        });
+        expect(adressType.labelPlural).to.deep.equal({
+            de: 'Adressen'
+        });
+        expect(adressType.hint).to.deep.equal({
+            de: 'Eine Adresse'
         });
     });
 

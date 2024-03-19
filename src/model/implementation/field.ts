@@ -159,6 +159,28 @@ export class Field implements ModelComponent {
     }
 
     @memorize()
+    get label(): Record<string, string> {
+        const res: Record<string, string> = {};
+        for (const [lang, localization] of Object.entries(this.model.i18n.getFieldI18n(this))) {
+            if (localization.label) {
+                res[lang] = localization.label;
+            }
+        }
+        return res;
+    }
+
+    @memorize()
+    get hint(): Record<string, string> {
+        const res: Record<string, string> = {};
+        for (const [lang, localization] of Object.entries(this.model.i18n.getFieldI18n(this))) {
+            if (localization.hint) {
+                res[lang] = localization.hint;
+            }
+        }
+        return res;
+    }
+
+    @memorize()
     public get permissionProfile(): PermissionProfile | undefined {
         if (!this.input.permissions || this.input.permissions.permissionProfileName == undefined) {
             return undefined;

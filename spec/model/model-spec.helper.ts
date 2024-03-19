@@ -1,8 +1,20 @@
 import { DocumentNode } from 'graphql';
-import { ParsedProject, ParsedProjectSourceBaseKind } from '../../src/config/parsed-project';
-import { createModel, Model, PermissionProfileConfigMap } from '../../src/model';
+import {
+    ParsedProject,
+    ParsedProjectSource,
+    ParsedProjectSourceBaseKind,
+} from '../../src/config/parsed-project';
+import {
+    createModel,
+    Model,
+    NamespaceLocalizationConfig,
+    PermissionProfileConfigMap,
+} from '../../src/model';
 
-export function createSimpleModel(document: DocumentNode): Model {
+export function createSimpleModel(
+    document: DocumentNode,
+    i18n?: Record<string, NamespaceLocalizationConfig>,
+): Model {
     const permissionProfiles: PermissionProfileConfigMap = {
         default: {
             permissions: [
@@ -26,6 +38,16 @@ export function createSimpleModel(document: DocumentNode): Model {
                 object: { permissionProfiles },
                 pathLocationMap: {},
             },
+            ...(i18n
+                ? [
+                      {
+                          kind: ParsedProjectSourceBaseKind.OBJECT,
+                          namespacePath: [],
+                          object: { i18n },
+                          pathLocationMap: {},
+                      } as ParsedProjectSource,
+                  ]
+                : []),
         ],
     };
     return createModel(parsedProject);

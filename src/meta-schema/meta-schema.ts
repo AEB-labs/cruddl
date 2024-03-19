@@ -2,7 +2,7 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import { IResolvers } from '@graphql-tools/utils';
 import { GraphQLResolveInfo, GraphQLSchema } from 'graphql';
 import gql from 'graphql-tag';
-import { AccessOperation, AuthContext } from '../authorization/auth-basics';
+import { AccessOperation } from '../authorization/auth-basics';
 import { PermissionResult } from '../authorization/permission-descriptors';
 import {
     getPermissionDescriptorOfField,
@@ -15,12 +15,17 @@ import { Project } from '../project/project';
 import { compact, flatMap } from '../utils/utils';
 import { I18N_GENERIC, I18N_LOCALE } from './constants';
 import { CRUDDL_VERSION } from '../cruddl-version';
+import { mapValues } from 'lodash';
+import { GraphQLI18nString } from '../schema/scalars/string-map';
 
 const resolutionOrderDescription = JSON.stringify(
     'The order in which languages and other localization providers are queried for a localization. You can specify languages as defined in the schema as well as the following special identifiers:\n\n- `_LOCALE`: The language defined by the GraphQL request (might be a list of languages, e.g. ["de_DE", "de", "en"])\n- `_GENERIC`: is auto-generated localization from field and type names (e. G. `orderDate` => `Order date`)\n\nThe default `resolutionOrder` is `["_LOCALE", "_GENERIC"]` (if not specified).',
 );
 
+// noinspection GraphQLUnresolvedReference
 const typeDefs = gql`
+    scalar I18nString
+    
     enum TypeKind {
         ROOT_ENTITY, CHILD_ENTITY, ENTITY_EXTENSION, VALUE_OBJECT, ENUM, SCALAR
     }
@@ -79,6 +84,9 @@ const typeDefs = gql`
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
         ): FieldLocalization
+
+        label: I18nString!
+        hint: I18nString!
 
         isFlexSearchIndexed: Boolean!
         isFlexSearchIndexCaseSensitive: Boolean!
@@ -158,6 +166,8 @@ const typeDefs = gql`
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
+        label: I18nString!
+        hint: I18nString!
     }
 
     interface ObjectType {
@@ -168,6 +178,9 @@ const typeDefs = gql`
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
+        label: I18nString!
+        labelPlural: I18nString!
+        hint: I18nString!
     }
 
     type RootEntityType implements ObjectType & Type {
@@ -202,6 +215,10 @@ const typeDefs = gql`
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
+    
+        label: I18nString!
+        labelPlural: I18nString!
+        hint: I18nString!
 
         "Indicates if this root entity type is one of the core objects of business transactions"
         isBusinessObject: Boolean
@@ -217,6 +234,9 @@ const typeDefs = gql`
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
+        label: I18nString!
+        labelPlural: I18nString!
+        hint: I18nString!
     }
 
     type EntityExtensionType implements ObjectType & Type {
@@ -227,6 +247,9 @@ const typeDefs = gql`
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
+        label: I18nString!
+        labelPlural: I18nString!
+        hint: I18nString!
     }
 
     type ValueObjectType implements ObjectType & Type {
@@ -237,6 +260,9 @@ const typeDefs = gql`
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
+        label: I18nString!
+        labelPlural: I18nString!
+        hint: I18nString!
     }
 
     type ScalarType implements Type {
@@ -246,6 +272,9 @@ const typeDefs = gql`
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
+        label: I18nString!
+        labelPlural: I18nString!
+        hint: I18nString!
     }
 
     type EnumType implements Type {
@@ -256,6 +285,9 @@ const typeDefs = gql`
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
         ): TypeLocalization
+        label: I18nString!
+        labelPlural: I18nString!
+        hint: I18nString!
     }
 
     type EnumValue {
@@ -264,6 +296,8 @@ const typeDefs = gql`
         localization(
             ${resolutionOrderDescription} resolutionOrder: [String]
         ): EnumValueLocalization
+        label: I18nString!
+        hint: I18nString!
     }
 
     type Namespace {
@@ -637,6 +671,7 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         EnumValue: {
             localization: localizeEnumValue,
         },
+        I18nString: GraphQLI18nString,
     };
 
     function getResolutionOrder(

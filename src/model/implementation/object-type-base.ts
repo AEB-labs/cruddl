@@ -1,6 +1,6 @@
 import { groupBy } from 'lodash';
 import { objectValues } from '../../utils/utils';
-import { FieldConfig, ObjectTypeConfig } from '../config';
+import { ObjectTypeConfig } from '../config';
 import { ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
 import { Model } from './model';

@@ -5,6 +5,7 @@ import { ModelComponent } from '../validation/validation-context';
 import { EnumValueLocalization } from './i18n';
 import { Model } from './model';
 import { TypeBase } from './type-base';
+import memorize from 'memorize-decorator';
 
 export class EnumType extends TypeBase {
     constructor(input: EnumTypeConfig, model: Model) {
@@ -36,12 +37,14 @@ export class EnumValue implements ModelComponent {
     readonly description: string | undefined;
     readonly deprecationReason: string | undefined;
     readonly astNode: EnumValueDefinitionNode | undefined;
+    readonly model: Model;
 
     constructor(input: EnumValueConfig, public readonly declaringType: EnumType) {
         this.value = input.value;
         this.description = input.description;
         this.deprecationReason = input.deprecationReason;
         this.astNode = input.astNode;
+        this.model = declaringType.model;
     }
 
     public getLocalization(resolutionOrder: ReadonlyArray<string>): EnumValueLocalization {
@@ -63,5 +66,27 @@ export class EnumValue implements ModelComponent {
                 ValidationMessage.warn(`Enum values should be UPPER_CASE.`, this.astNode),
             );
         }
+    }
+
+    @memorize()
+    get label(): Record<string, string> {
+        const res: Record<string, string> = {};
+        for (const [lang, localization] of Object.entries(this.model.i18n.getEnumValueI18n(this))) {
+            if (localization.label) {
+                res[lang] = localization.label;
+            }
+        }
+        return res;
+    }
+
+    @memorize()
+    get hint(): Record<string, string> {
+        const res: Record<string, string> = {};
+        for (const [lang, localization] of Object.entries(this.model.i18n.getEnumValueI18n(this))) {
+            if (localization.hint) {
+                res[lang] = localization.hint;
+            }
+        }
+        return res;
     }
 }
