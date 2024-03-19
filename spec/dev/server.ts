@@ -7,7 +7,6 @@ import { ArangoDBAdapter, Project } from '../..';
 import { globalContext } from '../../src/config/global';
 import { InMemoryAdapter } from '../../src/database/inmemory';
 import { getMetaSchema } from '../../src/meta-schema/meta-schema';
-import { Model } from '../../src/model';
 import { loadProjectFromDir } from '../../src/project/project-from-fs';
 import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider';
 import { createFastApp } from './fast-server';

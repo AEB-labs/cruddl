@@ -9,6 +9,7 @@ type Hero
         ]
         indices: [{ fields: "missions.date" }]
     ) {
+    createdAt: DateTime @hidden
     "The hero's screen name"
     name: String @unique @flexSearch @flexSearchFulltext(includeInSearch: true) @accessField
     knownName: I18nString @flexSearch @flexSearchFulltext
@@ -16,7 +17,7 @@ type Hero
     nickNames: [String] @flexSearch(caseSensitive: false)
     movies: [Movie] @relation(inverseOf: "heroes")
     skills: [Skill] @flexSearch
-    suit: Suit @flexSearch
+    suit: Suit @flexSearch @hidden
     morality: Morality
     countryISOCode: String
     country: Country @reference(keyField: "countryISOCode")

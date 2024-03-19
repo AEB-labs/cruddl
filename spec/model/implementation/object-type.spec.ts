@@ -1,5 +1,5 @@
 import { ChildEntityType, Model, Severity, TypeKind } from '../../../src/model';
-import { expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
+import { expectToBeValid, validate } from './validation-utils';
 import { expect } from 'chai';
 
 // This test uses a ChildEntityType because that is a concrete class without much addition to ObjectType, but it
@@ -56,23 +56,5 @@ describe('ObjectType', () => {
             expect(message.severity).to.equal(Severity.Error);
             expect(message.message).to.equal(`Duplicate field name: "deliveryNumber".`);
         }
-    });
-
-    it('rejects type with reserved field names', () => {
-        const type = new ChildEntityType(
-            {
-                kind: TypeKind.CHILD_ENTITY,
-                name: 'Delivery',
-                fields: [
-                    {
-                        name: 'updatedAt',
-                        typeName: 'String',
-                    },
-                ],
-            },
-            model,
-        );
-
-        expectSingleErrorToInclude(type, `Field name "updatedAt" is reserved by a system field.`);
     });
 });

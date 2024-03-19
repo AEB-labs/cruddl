@@ -242,6 +242,11 @@ export const DIRECTIVES: DocumentNode = gql`
 
     "Annotates a field so it can be used within restrictions of a permission profile"
     directive @accessField on FIELD_DEFINITION
+
+    """
+    Marks this field as hidden in the meta schema so it will not be listed in generic UIs
+    """
+    directive @hidden on FIELD_DEFINITION
 `;
 
 export const CORE_SCALARS: DocumentNode = gql`

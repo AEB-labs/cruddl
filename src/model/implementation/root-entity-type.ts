@@ -18,7 +18,7 @@ import {
     FlexSearchPrimarySortClauseConfig,
     PermissionsConfig,
     RootEntityTypeConfig,
-    TypeKind,
+    TypeKind
 } from '../config';
 import { ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
@@ -525,6 +525,7 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         isFlexSearchIndexed: true,
         isFlexSearchFulltextIndexed: false,
         isIncludedInSearch: false,
+        allowedDirectiveNames: ['key', 'hidden'],
     },
     {
         name: 'createdAt',
@@ -534,6 +535,7 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         isFlexSearchIndexed: true,
         isFlexSearchFulltextIndexed: false,
         isIncludedInSearch: false,
+        allowedDirectiveNames: ['hidden'],
     },
     {
         name: 'updatedAt',
@@ -544,5 +546,6 @@ const systemFieldInputs: ReadonlyArray<SystemFieldConfig> = [
         isFlexSearchIndexed: true,
         isFlexSearchFulltextIndexed: false,
         isIncludedInSearch: false,
+        allowedDirectiveNames: ['hidden'],
     },
 ];

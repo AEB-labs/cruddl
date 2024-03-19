@@ -6,13 +6,11 @@ import {
     FieldDefinitionNode,
     GraphQLBoolean,
     GraphQLEnumType,
-    GraphQLID,
     GraphQLInputObjectType,
     GraphQLInt,
     GraphQLList,
     GraphQLNonNull,
     GraphQLString,
-    IntValueNode,
     Kind,
     ObjectTypeDefinitionNode,
     ObjectValueNode,
@@ -49,6 +47,7 @@ import {
     FLEX_SEARCH_INDEXED_LANGUAGE_ARG,
     FLEX_SEARCH_ORDER_ARGUMENT,
     FLEX_SEARCH_PERFORMANCE_PARAMS_ARGUMENT,
+    HIDDEN_DIRECTIVE,
     ID_FIELD,
     INDEX_DEFINITION_INPUT_TYPE,
     INDEX_DIRECTIVE,
@@ -282,6 +281,7 @@ function processKeyField(
     if (underscoreKeyField) {
         fields = fields.filter((f) => f !== underscoreKeyField);
         if (keyFieldASTNode && keyFieldASTNode.name.value === underscoreKeyField.name) {
+            // keyFieldName needs to be "id" if the @key directive is set on the _key field
             keyFieldASTNode = underscoreKeyField.astNode;
             keyFieldName = ID_FIELD;
             context.addMessage(
@@ -299,26 +299,7 @@ function processKeyField(
             );
         }
     }
-    const idField = fields.find((field) => field.name == ID_FIELD);
-    if (idField) {
-        fields = fields.filter((f) => f !== idField);
-        if (keyFieldASTNode && keyFieldASTNode.name.value === idField.name) {
-            keyFieldASTNode = idField.astNode;
-            keyFieldName = ID_FIELD;
-        } else {
-            context.addMessage(
-                ValidationMessage.warn(
-                    `The field "id" is redundant and should only be explicitly added when used with @key.`,
-                    idField.astNode,
-                ),
-            );
-        }
-        if (idField.typeName !== GraphQLID.name || idField.isList) {
-            context.addMessage(
-                ValidationMessage.error(`The field "id" must be of type "ID".`, idField.astNode),
-            );
-        }
-    }
+
     return { fields, keyFieldASTNode, keyFieldName };
 }
 
@@ -624,6 +605,7 @@ function createFieldInput(
         context,
     );
     const accessFieldDirectiveASTNode = findDirectiveWithName(fieldNode, ACCESS_FIELD_DIRECTIVE);
+    const hiddenDirectiveASTNode = findDirectiveWithName(fieldNode, HIDDEN_DIRECTIVE);
 
     return {
         name: fieldNode.name.value,
@@ -676,6 +658,8 @@ function createFieldInput(
         collect: getCollectConfig(fieldNode, context),
         isAccessField: !!accessFieldDirectiveASTNode,
         accessFieldDirectiveASTNode,
+        isHidden: !!hiddenDirectiveASTNode,
+        isHiddenASTNode: hiddenDirectiveASTNode,
     };
 }
 
