@@ -5,7 +5,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arango-image: ['arangodb:3.8', 'arangodb:3.9', 'arangodb:3.10', 'arangodb:3.11']
+        arango-image:
+          [
+            "arangodb:3.8",
+            "arangodb:3.9",
+            "arangodb:3.10",
+            "arangodb:3.11",
+            "arangodb:3.12",
+          ]
         node-version: [14.x, 16.x, 18.x]
     steps:
       - uses: actions/checkout@v2
@@ -14,7 +21,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run:
-          docker run --name arangodb -p 127.0.0.1:8529:8529 -d -e ARANGO_NO_AUTH=1 ${{
+          docker run --name arangodb -p 127.0.0.1:8529:8529 -d -e ARANGO_NO_AUTH=1 -e LANG=en_US ${{
           matrix.arango-image }}
       - run: timeout 10 docker logs --follow arangodb || true # wait until arangodb is started
       - run: curl -L http://localhost:8529/_api/version

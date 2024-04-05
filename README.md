@@ -136,7 +136,13 @@ When done, stop the instance with `npm run stop_arangodb`
 
 cruddl currently supports the following versions of ArangoDB:
 
-- 3.8
-- 3.9
-- 3.10
-- 3.11
+-   3.8
+-   3.9
+-   3.10
+-   3.11
+-   3.12
+
+Starting with ArangoDB 3.12, the default locale for new databases has been changed from `en_US` to
+`en_US_POSIX`. cruddl does not support `en_US_POSIX` at the moment, so you need to change the locale
+to `en_US`. See
+[the ArangoDB announcemenent](https://docs.arangodb.com/3.12/release-notes/version-3.12/incompatible-changes-in-3-12/#default-server-language-changed).
