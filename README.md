@@ -140,3 +140,4 @@ cruddl currently supports the following versions of ArangoDB:
 - 3.9
 - 3.10
 - 3.11
+- 3.12
