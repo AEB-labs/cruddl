@@ -78,7 +78,9 @@ export class FlexSearchGenerator {
             rootEntityType,
         );
         return this.augmentWithCondition(
-            this.orderByAugmentation.augment(withPostFilter, rootEntityType),
+            this.orderByAugmentation.augment(withPostFilter, rootEntityType, {
+                firstLimitCheckType: 'Resolver',
+            }),
             rootEntityType,
         );
     }

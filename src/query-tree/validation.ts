@@ -105,6 +105,69 @@ export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryR
 }
 
 /**
+ * Validates that a TransformListQueryNode does not resolve to fewer elements
+ * than expected. This can happen when an implicit query/mutation limit is applied
+ * to the TransformListQueryNode but more elements are available in the collection.
+ *
+ * In this case a helpful error message should be returned to the consumer so that
+ * a manual query limit can be applied.
+ */
+export class NoImplicitlyTruncatedListValidator extends QueryNode implements QueryResultValidator {
+    constructor(private readonly maximumExpectedNumberOfItems: number) {
+        super();
+    }
+
+    // The following function will be translated to a string and executed within the ArangoDB server itself.
+    // Therefore the next comment is necessary to instruct our test coverage tool (https://github.com/istanbuljs/nyc)
+    // not to instrument the code with coverage instructions.
+
+    /* istanbul ignore next */
+    static getValidatorFunction() {
+        return function (validationData: any, result: any) {
+            /**
+             * An error that is thrown if a validator fails
+             */
+            class RuntimeValidationError extends Error {
+                readonly code: string | undefined;
+
+                constructor(message: string, args: { readonly code?: string } = {}) {
+                    super(message);
+                    this.name = this.constructor.name;
+                    this.code = args.code;
+                }
+            }
+
+            if (result.length > validationData.maximumExpectedNumberOfItems) {
+                throw new RuntimeValidationError(
+                    `Collection is truncated by default to ${validationData.maximumExpectedNumberOfItems} elements but contains more elements than this limit. Specify a limit manually to retrieve all elements of the collection.`,
+                    {
+                        code: validationData.errorCode,
+                    },
+                );
+            }
+        };
+    }
+
+    static getValidatorName() {
+        return 'ErrorIfImplicitlyTruncatedListValidator';
+    }
+
+    getValidatorName() {
+        return NoImplicitlyTruncatedListValidator.getValidatorName();
+    }
+
+    getValidatorData() {
+        return {
+            maximumExpectedNumberOfItems: this.maximumExpectedNumberOfItems,
+        };
+    }
+
+    describe() {
+        return 'list implicitly truncated => error';
+    }
+}
+
+/**
  * A validator that verifies that a value is neither falsy nor empty (works for both strings and lists)
  */
 export class ErrorIfEmptyResultValidator extends QueryNode implements QueryResultValidator {
@@ -267,4 +330,5 @@ export const ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS: ReadonlyArray<QueryR
         ErrorIfNotTruthyResultValidator,
         ErrorIfEmptyResultValidator,
         NoRestrictingObjectsOnDeleteValidator,
+        NoImplicitlyTruncatedListValidator,
     ];

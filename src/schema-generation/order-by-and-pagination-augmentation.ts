@@ -9,12 +9,15 @@ import {
     INVALID_CURSOR_ERROR,
     LiteralQueryNode,
     NOT_SUPPORTED_ERROR,
+    NoImplicitlyTruncatedListValidator,
     OrderDirection,
     OrderSpecification,
+    PreExecQueryParms,
     QueryNode,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     VariableQueryNode,
+    WithPreExecutionQueryNode,
 } from '../query-tree';
 import { FlexSearchQueryNode } from '../query-tree/flex-search';
 import {
@@ -37,9 +40,17 @@ import {
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
 import { RootFieldHelper } from './root-field-helper';
-import { orderArgMatchesPrimarySort } from './utils/flex-search-utils';
 import { and, binaryOp, binaryOpWithAnaylzer } from './utils/input-types';
 import { getOrderByValues } from './utils/pagination';
+
+const MANUAL_MAX_COUNT_UPPER_BOUND = 50000;
+const DEFAULT_MAX_COUNT_UPPER_BOUND = 10000;
+
+export type LimitTypeCheckType = 'ResultValidator' | 'Resolver';
+
+export interface OrderByAndPaginationAugmentationOptions {
+    firstLimitCheckType?: LimitTypeCheckType;
+}
 
 /**
  * Augments list fields with orderBy argument
@@ -50,7 +61,11 @@ export class OrderByAndPaginationAugmentation {
         private readonly rootFieldHelper: RootFieldHelper,
     ) {}
 
-    augment(schemaField: QueryNodeField, type: Type): QueryNodeField {
+    augment(
+        schemaField: QueryNodeField,
+        type: Type,
+        options?: OrderByAndPaginationAugmentationOptions,
+    ): QueryNodeField {
         if (!type.isObjectType) {
             return schemaField;
         }
@@ -91,12 +106,39 @@ export class OrderByAndPaginationAugmentation {
                     description: `The number of items to include in the result. If omitted, all remaining items will be included (which can cause performance problems on large collections).`,
                 },
             },
+            transformResult: (data: any, args: object) => {
+                if (options?.firstLimitCheckType !== 'Resolver' || 'first' in args) {
+                    return data;
+                }
+                if (data.length > DEFAULT_MAX_COUNT_UPPER_BOUND) {
+                    throw new Error(
+                        `Collection is truncated by default to ${DEFAULT_MAX_COUNT_UPPER_BOUND} elements but contains more elements than this limit. Specify a limit manually to retrieve all elements of the collection.`,
+                    );
+                }
+                return data;
+            },
             resolve: (sourceNode, args, info) => {
                 let listNode = schemaField.resolve(sourceNode, args, info);
                 let itemVariable = new VariableQueryNode(decapitalize(type.name));
                 let objectNode = this.rootFieldHelper.getRealItemNode(itemVariable, info);
 
-                const maxCount: number | undefined = args[FIRST_ARG];
+                let maxCount: number | undefined = args[FIRST_ARG];
+
+                if (
+                    options?.firstLimitCheckType &&
+                    maxCount !== undefined &&
+                    maxCount > MANUAL_MAX_COUNT_UPPER_BOUND
+                ) {
+                    return new RuntimeErrorQueryNode(
+                        `The requested number of elements via the \"first\" parameter (${maxCount}) exceeds the maximum limit of ${MANUAL_MAX_COUNT_UPPER_BOUND}. Reduce the number of items you fetch and try again.`,
+                        { code: NOT_SUPPORTED_ERROR },
+                    );
+                }
+
+                if (options?.firstLimitCheckType && maxCount === undefined) {
+                    maxCount = DEFAULT_MAX_COUNT_UPPER_BOUND + 1;
+                }
+
                 const skip = args[SKIP_ARG];
                 const afterArg = args[AFTER_ARG];
                 const isCursorRequested = info.selectionStack[
@@ -244,7 +286,7 @@ export class OrderByAndPaginationAugmentation {
                     // TODO only really do this here if there is an index covering this
                     // (however, it's not that easy - it needs to include the filter stuff that is already baked into
                     // listNode)
-                    return this.getPaginatedNodeUsingMultiIndexOptimization({
+                    const optimizedQueryNode = this.getPaginatedNodeUsingMultiIndexOptimization({
                         orderBy,
                         itemVariable,
                         objectNode,
@@ -254,9 +296,21 @@ export class OrderByAndPaginationAugmentation {
                         maxCount,
                         filterNode,
                     });
+
+                    if (
+                        options?.firstLimitCheckType === 'ResultValidator' &&
+                        args[FIRST_ARG] === undefined
+                    ) {
+                        return this.wrapWithImplicitListTruncationResultValidator(
+                            optimizedQueryNode,
+                            maxCount,
+                        );
+                    }
+
+                    return optimizedQueryNode;
                 }
 
-                return new TransformListQueryNode({
+                const transformListNode = new TransformListQueryNode({
                     listNode,
                     itemVariable,
                     orderBy,
@@ -267,8 +321,38 @@ export class OrderByAndPaginationAugmentation {
                             ? and(filterNode, paginationFilter)
                             : filterNode || paginationFilter,
                 });
+
+                if (
+                    options?.firstLimitCheckType === 'ResultValidator' &&
+                    args[FIRST_ARG] === undefined &&
+                    maxCount
+                ) {
+                    return this.wrapWithImplicitListTruncationResultValidator(
+                        transformListNode,
+                        maxCount,
+                    );
+                }
+
+                return transformListNode;
             },
         };
+    }
+
+    private wrapWithImplicitListTruncationResultValidator(
+        queryNode: QueryNode,
+        maxCount: number,
+    ): QueryNode {
+        const v = new VariableQueryNode();
+        return new WithPreExecutionQueryNode({
+            preExecQueries: [
+                new PreExecQueryParms({
+                    query: queryNode,
+                    resultVariable: v,
+                    resultValidator: new NoImplicitlyTruncatedListValidator(maxCount - 1),
+                }),
+            ],
+            resultNode: v,
+        });
     }
 
     private getPaginatedNodeUsingMultiIndexOptimization({

@@ -421,7 +421,9 @@ export class MutationTypeGenerator {
             resolve: () => new EntitiesQueryNode(rootEntityType),
         };
 
-        const fieldWithListArgs = this.listAugmentation.augment(fieldBase, rootEntityType);
+        const fieldWithListArgs = this.listAugmentation.augment(fieldBase, rootEntityType, {
+            orderByAugmentationOptions: { firstLimitCheckType: 'ResultValidator' },
+        });
 
         const inputType =
             this.updateTypeGenerator.generateUpdateAllRootEntitiesInputType(rootEntityType);

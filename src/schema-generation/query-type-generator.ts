@@ -117,7 +117,9 @@ export class QueryTypeGenerator {
             isPure: true,
             resolve: () => this.getAllRootEntitiesNode(rootEntityType),
         };
-        return this.listAugmentation.augment(fieldConfig, rootEntityType);
+        return this.listAugmentation.augment(fieldConfig, rootEntityType, {
+            orderByAugmentationOptions: { firstLimitCheckType: 'Resolver' },
+        });
     }
 
     private getAllRootEntitiesNode(rootEntityType: RootEntityType): QueryNode {
