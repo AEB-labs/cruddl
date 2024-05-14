@@ -1,0 +1,38 @@
+{
+  "ExplicitDeleteAllFirstExceedsLimit": {
+    "data": null,
+    "errors": [
+      {
+        "extensions": {
+          "code": "ARGUMENT_OUT_OF_RANGE"
+        },
+        "locations": [
+          {
+            "column": 5,
+            "line": 2
+          }
+        ],
+        "message": "The requested number of elements via the \"first\" parameter (6) exceeds the maximum limit of 4.",
+        "path": ["deleteAllHeroes"]
+      }
+    ]
+  },
+  "DataCheck": {
+    "data": {
+      "allHeroes": [
+        {
+          "id": "@ids/Hero/0"
+        },
+        {
+          "id": "@ids/Hero/1"
+        },
+        {
+          "id": "@ids/Hero/2"
+        },
+        {
+          "id": "@ids/Hero/3"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+query ImplicitLimitQuery {
+    allHeroes {
+        name
+    }
+    withExplicitLimit: allHeroes(first: 4) {
+        name
+    }
+}

@@ -1,0 +1,4 @@
+{
+  "authRoles": ["users"],
+  "implicitLimitForRootEntityQueries": 3
+}

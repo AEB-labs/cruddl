@@ -1,0 +1,38 @@
+{
+  "ExplicitUpdateAllFirstExceedsLimit": {
+    "data": null,
+    "errors": [
+      {
+        "extensions": {
+          "code": "ARGUMENT_OUT_OF_RANGE"
+        },
+        "locations": [
+          {
+            "column": 5,
+            "line": 2
+          }
+        ],
+        "message": "The requested number of elements via the \"first\" parameter (6) exceeds the maximum limit of 4.",
+        "path": ["updateAllHeroes"]
+      }
+    ]
+  },
+  "DataCheck": {
+    "data": {
+      "allHeroes": [
+        {
+          "name": "Riley"
+        },
+        {
+          "name": "Ratliff"
+        },
+        {
+          "name": "Christa"
+        },
+        {
+          "name": "Rebekah"
+        }
+      ]
+    }
+  }
+}

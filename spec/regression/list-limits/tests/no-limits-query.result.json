@@ -1,0 +1,29 @@
+{
+  "NoLimitsQuery": {
+    "data": {
+      "allHeroes": [
+        {
+          "name": "Riley"
+        },
+        {
+          "name": "Ratliff"
+        },
+        {
+          "name": "Christa"
+        },
+        {
+          "name": "Rebekah"
+        },
+        {
+          "name": "Daniel"
+        },
+        {
+          "name": "Oneal"
+        },
+        {
+          "name": "Cain"
+        }
+      ]
+    }
+  }
+}

@@ -5,11 +5,11 @@ import stripJsonComments from 'strip-json-comments';
 import { ArangoDBAdapter } from '../../src/database/arangodb';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { InMemoryAdapter, InMemoryDB } from '../../src/database/inmemory';
+import { IDGenerationInfo, IDGenerator } from '../../src/execution/execution-options';
 import { ProjectOptions } from '../../src/project/project';
 import { loadProjectFromDir } from '../../src/project/project-from-fs';
 import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider';
 import { createTempDatabase, initTestData, TestDataEnvironment } from './initialization';
-import { IDGenerationInfo, IDGenerator } from '../../src/execution/execution-options';
 import deepEqual = require('deep-equal');
 
 interface TestResult {
@@ -86,6 +86,8 @@ export class RegressionSuite {
                 childEntityUpdatesViaDictStrategyThreshold:
                     context.childEntityUpdatesViaDictStrategyThreshold,
                 idGenerator: this.idGenerator,
+                implicitLimitForRootEntityQueries: context.implicitLimitForRootEntityQueries,
+                maxLimitForRootEntityQueries: context.maxLimitForRootEntityQueries,
             }),
             modelOptions: {
                 forbiddenRootEntityNames: [],

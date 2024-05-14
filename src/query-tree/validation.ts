@@ -1,4 +1,5 @@
 import { RelationSide, RootEntityType } from '../model';
+import { TOO_MANY_OBJECTS_ERROR } from './../schema-generation/flex-search-generator';
 import { QueryNode } from './base';
 
 export interface QueryResultValidatorFunctionProvider {
@@ -101,6 +102,84 @@ export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryR
 
     describe() {
         return 'not truthy => error';
+    }
+}
+
+/**
+ * Validates that a TransformListQueryNode does not resolve to fewer elements
+ * than expected. This can happen when an implicit query/mutation limit is applied
+ * to the TransformListQueryNode but more elements are available in the collection.
+ *
+ * In this case a helpful error message should be returned to the consumer so that
+ * a manual query limit can be applied.
+ */
+export class NoImplicitlyTruncatedListValidator extends QueryNode implements QueryResultValidator {
+    constructor(
+        private readonly maximumExpectedNumberOfItems: number,
+        private readonly operation: string,
+    ) {
+        super();
+    }
+
+    // The following function will be translated to a string and executed within the ArangoDB server itself.
+    // Therefore the next comment is necessary to instruct our test coverage tool (https://github.com/istanbuljs/nyc)
+    // not to instrument the code with coverage instructions.
+
+    /* istanbul ignore next */
+    static getValidatorFunction() {
+        return function (validationData: any, result: any) {
+            /**
+             * An error that is thrown if a validator fails
+             */
+            class RuntimeValidationError extends Error {
+                readonly code: string | undefined;
+
+                constructor(message: string, args: { readonly code?: string } = {}) {
+                    super(message);
+                    this.name = this.constructor.name;
+                    this.code = args.code;
+                }
+            }
+
+            const limit = validationData.maximumExpectedNumberOfItems;
+            if (result.length > validationData.maximumExpectedNumberOfItems) {
+                if (validationData.operation === 'query') {
+                    throw new RuntimeValidationError(
+                        `Query would return more than ${limit} objects. Specify "first" to increase the limit or truncate the result.`,
+                        {
+                            code: validationData.tooManyObjectsError,
+                        },
+                    );
+                } else {
+                    throw new RuntimeValidationError(
+                        `Mutation would affect more than ${limit} objects. Specify "first" to increase the limit or truncate the result`,
+                        {
+                            code: validationData.tooManyObjectsError,
+                        },
+                    );
+                }
+            }
+        };
+    }
+
+    static getValidatorName() {
+        return 'ErrorIfImplicitlyTruncatedListValidator';
+    }
+
+    getValidatorName() {
+        return NoImplicitlyTruncatedListValidator.getValidatorName();
+    }
+
+    getValidatorData() {
+        return {
+            maximumExpectedNumberOfItems: this.maximumExpectedNumberOfItems,
+            operation: this.operation,
+            tooManyObjectsError: TOO_MANY_OBJECTS_ERROR,
+        };
+    }
+
+    describe() {
+        return 'list implicitly truncated => error';
     }
 }
 
@@ -267,4 +346,5 @@ export const ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS: ReadonlyArray<QueryR
         ErrorIfNotTruthyResultValidator,
         ErrorIfEmptyResultValidator,
         NoRestrictingObjectsOnDeleteValidator,
+        NoImplicitlyTruncatedListValidator,
     ];

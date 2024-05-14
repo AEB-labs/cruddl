@@ -1,0 +1,9 @@
+query ExplicitLimitQuery {
+    tooBigLimit: allHeroes(first: 5) {
+        name
+    }
+
+    allHeroes(first: 4) {
+        name
+    }
+}

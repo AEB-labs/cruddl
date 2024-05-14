@@ -1,0 +1,11 @@
+mutation ImplicitDeleteAll {
+    deleteAllHeroes {
+        name
+    }
+}
+
+query DataCheck {
+    allHeroes(first: 7) {
+        id
+    }
+}

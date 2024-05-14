@@ -1,0 +1,8 @@
+mutation NoLimitsMutation {
+    updateAllHeroes(input: { name: "A" }) {
+        name
+    }
+    deleteAllHeroes {
+        name
+    }
+}

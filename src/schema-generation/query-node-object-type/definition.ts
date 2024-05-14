@@ -1,6 +1,14 @@
-import { GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType } from 'graphql';
+import {
+    GraphQLEnumType,
+    GraphQLFieldConfigArgumentMap,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLObjectType,
+    GraphQLScalarType,
+} from 'graphql';
 import { GraphQLOutputType } from 'graphql/index';
 import { ThunkReadonlyArray } from 'graphql/type/definition';
+import { ExecutionOptions } from '../../execution/execution-options';
 import { QueryNode } from '../../query-tree';
 import { FieldContext } from './context';
 
@@ -26,6 +34,17 @@ export interface QueryNodeField {
         args: { [name: string]: any },
         info: QueryNodeResolveInfo,
     ) => QueryNode;
+
+    /**
+     * Will be called in the actual graphql field resolver for this node.
+     * Can be used to transform and validate a fields data after query-execution.
+     *
+     * Needs be synchronous, it is not possible to return a promise here.
+     *
+     * When the validation should roll back already made changes during a mutation it needs to be done
+     * via a PreExecQueryParms statement to have transactional guarantees.
+     */
+    transformResult?: (data: any, args: object, executionOptions: ExecutionOptions) => any;
 
     /**
      * Indicates whether this field should be resolved in the user-specified sequence among other serial fields

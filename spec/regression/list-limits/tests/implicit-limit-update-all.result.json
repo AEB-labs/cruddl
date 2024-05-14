@@ -1,0 +1,44 @@
+{
+  "ImplicitUpdateAll": {
+    "data": null,
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 5,
+            "line": 2
+          }
+        ],
+        "message": "Mutation would affect more than 3 objects. Specify \"first\" to increase the limit or truncate the result",
+        "path": ["updateAllHeroes"]
+      }
+    ]
+  },
+  "DataCheck": {
+    "data": {
+      "allHeroes": [
+        {
+          "name": "Riley"
+        },
+        {
+          "name": "Ratliff"
+        },
+        {
+          "name": "Christa"
+        },
+        {
+          "name": "Rebekah"
+        },
+        {
+          "name": "Daniel"
+        },
+        {
+          "name": "Oneal"
+        },
+        {
+          "name": "Cain"
+        }
+      ]
+    }
+  }
+}

@@ -25,13 +25,13 @@ import {
 } from '../query-tree/flex-search';
 import { evaluateQueryStatically } from '../query-tree/utils';
 import {
-    buildConditionalObjectQueryNode,
     FieldContext,
     QueryNodeObjectType,
     SelectionToken,
+    buildConditionalObjectQueryNode,
 } from '../schema-generation/query-node-object-type';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
-import { getPreciseTime, Watch } from '../utils/watch';
+import { Watch, getPreciseTime } from '../utils/watch';
 import { DefaultClock, ExecutionOptions, UUIDGenerator } from './execution-options';
 import { ExecutionResult } from './execution-result';
 
@@ -104,6 +104,8 @@ export class OperationResolver {
                     options.childEntityUpdatesViaDictStrategyThreshold,
                 clock: options.clock ?? new DefaultClock(),
                 idGenerator: options.idGenerator ?? new UUIDGenerator(),
+                implicitLimitForRootEntityQueries: options.implicitLimitForRootEntityQueries,
+                maxLimitForRootEntityQueries: options.maxLimitForRootEntityQueries,
             };
             queryTree = buildConditionalObjectQueryNode(
                 rootQueryNode,
