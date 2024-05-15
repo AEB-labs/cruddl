@@ -459,9 +459,9 @@ export class FlexSearchI18nStringLocalizedFilterField implements FlexSearchFilte
 }
 
 export class I18nStringLocalizedFilterLanguageField implements FilterField {
-    readonly name = I18nStringLocalizedFilterLanguageField.fieldName;
-
     static readonly fieldName = 'language';
+
+    readonly name = I18nStringLocalizedFilterLanguageField.fieldName;
 
     readonly inputType = new GraphQLNonNull(GraphQLString);
 
