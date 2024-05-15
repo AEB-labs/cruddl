@@ -36,6 +36,13 @@ interface MetaOptions {
             };
         };
     };
+    readonly node?: {
+        readonly versions: {
+            readonly [version: string]: {
+                readonly ignore?: boolean;
+            };
+        };
+    };
 }
 
 export class RegressionSuite {
@@ -48,9 +55,11 @@ export class RegressionSuite {
     private databaseSpecifier: DatabaseSpecifier;
     private readonly idGenerator = new PredictableIDGenerator();
     private databaseVersion: string | undefined;
+    private nodeVersion: string;
 
     constructor(private readonly path: string, private options: RegressionSuiteOptions = {}) {
         this.databaseSpecifier = options.database || 'arangodb';
+        this.nodeVersion = process.versions.node.split('.')[0];
     }
 
     private get testsPath() {
@@ -161,6 +170,9 @@ export class RegressionSuite {
             ) {
                 return true;
             }
+        }
+        if (meta?.node?.versions[this.nodeVersion]?.ignore) {
+            return true;
         }
         return false;
     }
