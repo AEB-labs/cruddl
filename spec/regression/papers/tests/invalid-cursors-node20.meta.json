@@ -1,0 +1,9 @@
+{
+  "node": {
+    "versions": {
+      "18": {
+        "ignore": true
+      }
+    }
+  }
+}

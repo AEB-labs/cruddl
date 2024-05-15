@@ -1,0 +1,12 @@
+{
+  "node": {
+    "versions": {
+      "20": {
+        "ignore": true
+      },
+      "22": {
+        "ignore": true
+      }
+    }
+  }
+}
