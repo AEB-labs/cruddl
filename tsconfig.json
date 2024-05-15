@@ -14,6 +14,7 @@
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
+    "useDefineForClassFields": true,
     "lib": ["es2020"],
     "baseUrl": "./",
     "paths": {

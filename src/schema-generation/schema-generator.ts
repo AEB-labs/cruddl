@@ -10,12 +10,14 @@ import { QueryNodeObjectTypeConverter } from './query-node-object-type';
 import { RootTypesGenerator } from './root-types-generator';
 
 export class SchemaGenerator {
-    private readonly rootTypesGenerator = new RootTypesGenerator(this.context.schemaOptions);
-    private readonly queryNodeObjectTypeConverter = new QueryNodeObjectTypeConverter();
+    private readonly rootTypesGenerator: RootTypesGenerator;
+    private readonly queryNodeObjectTypeConverter: QueryNodeObjectTypeConverter;
     private readonly operationResolver: OperationResolver;
 
     constructor(private context: SchemaTransformationContext) {
         this.operationResolver = new OperationResolver(context);
+        this.rootTypesGenerator = new RootTypesGenerator(context.schemaOptions);
+        this.queryNodeObjectTypeConverter = new QueryNodeObjectTypeConverter();
     }
 
     generate(model: Model) {
