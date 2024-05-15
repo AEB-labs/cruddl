@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2019",
+    "target": "ES2022",
     "module": "commonjs",
     "moduleResolution": "node",
     "importHelpers": true,
@@ -14,8 +14,7 @@
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
-    "useDefineForClassFields": true,
-    "lib": ["es2020"],
+    "lib": ["ES2022"],
     "baseUrl": "./",
     "paths": {
       "*": ["./src/typings/*"]
