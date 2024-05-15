@@ -1134,19 +1134,6 @@ function getFastStartsWithQuery(lhs: AQLFragment, rhsValue: string): AQLFragment
     // within its case-sensitivity category. For ASCII characters, that's simply UPPER(), but that will not always be
     // the case. The same thing applies to the upper bound.
     return aql`(${lhs} >= UPPER(${rhsValue}) && ${lhs} < LOWER(${maxStr}))`;
-
-    // the following does not work because string sorting depends on the DB's collator
-    // which does not necessarily sort the characters by code points
-    // charCodeAt / fromCharCode works on code units, and so does the string indexer / substr / length
-    /*const lastCharCode = rhsValue.charCodeAt(rhsValue.length - 1);
-    const nextCharCode = lastCharCode + 1;
-    if (nextCharCode >= 0xD800) {
-        // don't mess with surrogate pairs
-        return undefined;
-    }
-
-    const nextValue = rhsValue.substring(0, rhsValue.length - 1) + String.fromCharCode(nextCharCode);
-    return aql`(${lhs} >= ${rhsValue} && ${lhs} < ${nextValue})`;*/
 }
 
 function getEqualsIgnoreCaseQuery(lhs: AQLFragment, rhsValue: string): AQLFragment {
