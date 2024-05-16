@@ -8,11 +8,11 @@ export type Visitor<T> = {
     leave?(object: T, key: string | undefined): T;
 };
 
-export function visitObject<T>(node: T, visitor: Visitor<T>): T {
+export function visitObject<T extends object>(node: T, visitor: Visitor<T>): T {
     return visitObject0(node, visitor);
 }
 
-function visitObject0<T>(node: T, visitor: Visitor<T>, key?: string): T {
+function visitObject0<T extends object>(node: T, visitor: Visitor<T>, key?: string): T {
     const { newValue, recurse } = enter(node, visitor, key);
 
     // recurse defaults to true
@@ -21,7 +21,7 @@ function visitObject0<T>(node: T, visitor: Visitor<T>, key?: string): T {
     return leave<T>(finalValue, visitor, key);
 }
 
-function visitObjectProperties<T>(object: T, visitor: Visitor<T>): T {
+function visitObjectProperties<T extends object>(object: T, visitor: Visitor<T>): T {
     const newFieldValues: { [name: string]: T } = {};
     let hasChanged = false;
     for (const field of Object.keys(object)) {
