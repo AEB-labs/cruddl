@@ -19,7 +19,7 @@
     "paths": {
       "*": ["./src/typings/*"]
     },
-    "typeRoots": ["./src/typings"],
+    "typeRoots": ["./node_modules/@types", "./src/typings"],
     "types": ["mocha", "node"],
     "outDir": "dist"
   },

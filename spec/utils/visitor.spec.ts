@@ -24,7 +24,7 @@ describe('visitObject', () => {
 
         it('replaces objects with result', () => {
             const result = visitObject(composite, {
-                enter: (obj: AnyValue) => {
+                enter: (obj: object) => {
                     if ((obj as any).inA) {
                         return { newValue: { inA: false }, recurse: true };
                     }
@@ -37,7 +37,7 @@ describe('visitObject', () => {
         it('does not visit replacement objects if recurse is false', () => {
             const visitedObjects: any[] = [];
             const result = visitObject(composite, {
-                enter: (obj: AnyValue) => {
+                enter: (obj: object) => {
                     visitedObjects.push(obj);
                     if ((obj as any).inA) {
                         return { recurse: false, newValue: { inA: { deepA: true } } };
@@ -51,7 +51,7 @@ describe('visitObject', () => {
         it('visit replacement objects if recurse is true', () => {
             const visitedObjects: any[] = [];
             const result = visitObject(composite, {
-                enter: (obj: AnyValue) => {
+                enter: (obj: object) => {
                     visitedObjects.push(obj);
                     if ((obj as any).inA) {
                         return { recurse: true, newValue: { inA: { deepA: true } } };
@@ -71,7 +71,7 @@ describe('visitObject', () => {
         it('skips when SKIP_NODE is returned', () => {
             const visitedObjects: any[] = [];
             const result = visitObject(composite, {
-                enter: (obj: AnyValue) => {
+                enter: (obj: object) => {
                     visitedObjects.push(obj);
                     if ((obj as any).inB) {
                         return { newValue: obj, recurse: false };
@@ -87,7 +87,7 @@ describe('visitObject', () => {
             const listObj = { items };
             const visitedObjects: any[] = [];
             visitObject(listObj, {
-                enter(obj: AnyValue) {
+                enter(obj: object) {
                     visitedObjects.push(obj as any);
                     return { newValue: obj };
                 },
@@ -101,7 +101,7 @@ describe('visitObject', () => {
             const visitedObjects: any[] = [];
             const visitedKeys: any[] = [];
             visitObject(composite, {
-                leave(obj: AnyValue, key) {
+                leave(obj: object, key) {
                     visitedObjects.push(obj);
                     visitedKeys.push(key);
                     return obj;
@@ -113,7 +113,7 @@ describe('visitObject', () => {
 
         it('replaces objects with result', () => {
             const result = visitObject(composite, {
-                leave: (obj: AnyValue) => {
+                leave: (obj: object) => {
                     if ((obj as any).inA) {
                         return { inA: false };
                     }
