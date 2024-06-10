@@ -1,6 +1,8 @@
 import { GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
+import { ExecutionOptions } from '../execution/execution-options';
 import { Type } from '../model';
 import {
+    ARGUMENT_OUT_OF_RANGE_ERROR,
     BinaryOperationQueryNode,
     BinaryOperator,
     BinaryOperatorWithAnalyzer,
@@ -43,13 +45,14 @@ import { RootFieldHelper } from './root-field-helper';
 import { and, binaryOp, binaryOpWithAnaylzer } from './utils/input-types';
 import { getOrderByValues } from './utils/pagination';
 
-const MANUAL_MAX_COUNT_UPPER_BOUND = 50000;
-const DEFAULT_MAX_COUNT_UPPER_BOUND = 10000;
-
-export type LimitTypeCheckType = 'ResultValidator' | 'Resolver';
+export enum LimitTypeCheckType {
+    RESULT_VALIDATOR,
+    RESOLVER,
+}
 
 export interface OrderByAndPaginationAugmentationOptions {
     firstLimitCheckType?: LimitTypeCheckType;
+    operation?: 'query' | 'mutation';
 }
 
 /**
@@ -106,13 +109,19 @@ export class OrderByAndPaginationAugmentation {
                     description: `The number of items to include in the result. If omitted, all remaining items will be included (which can cause performance problems on large collections).`,
                 },
             },
-            transformResult: (data: any, args: object) => {
-                if (options?.firstLimitCheckType !== 'Resolver' || 'first' in args) {
+            transformResult: (data: any, args: object, executionOptions: ExecutionOptions) => {
+                if (
+                    options?.firstLimitCheckType !== LimitTypeCheckType.RESOLVER ||
+                    'first' in args
+                ) {
                     return data;
                 }
-                if (data.length > DEFAULT_MAX_COUNT_UPPER_BOUND) {
+                if (
+                    executionOptions.implicitLimitForRootEntityQueries &&
+                    data.length > executionOptions.implicitLimitForRootEntityQueries
+                ) {
                     throw new Error(
-                        `Collection is truncated by default to ${DEFAULT_MAX_COUNT_UPPER_BOUND} elements but contains more elements than this limit. Specify a limit manually to retrieve all elements of the collection.`,
+                        `Collection is truncated by default to ${executionOptions.implicitLimitForRootEntityQueries} elements but contains more elements than this limit. Specify a limit manually to retrieve all elements of the collection.`,
                     );
                 }
                 return data;
@@ -126,17 +135,22 @@ export class OrderByAndPaginationAugmentation {
 
                 if (
                     options?.firstLimitCheckType &&
+                    info?.maxLimitForRootEntityQueries &&
                     maxCount !== undefined &&
-                    maxCount > MANUAL_MAX_COUNT_UPPER_BOUND
+                    maxCount > info.maxLimitForRootEntityQueries
                 ) {
                     return new RuntimeErrorQueryNode(
-                        `The requested number of elements via the \"first\" parameter (${maxCount}) exceeds the maximum limit of ${MANUAL_MAX_COUNT_UPPER_BOUND}. Reduce the number of items you fetch and try again.`,
-                        { code: NOT_SUPPORTED_ERROR },
+                        `The requested number of elements via the \"first\" parameter (${maxCount}) exceeds the maximum limit of ${info.maxLimitForRootEntityQueries}.`,
+                        { code: ARGUMENT_OUT_OF_RANGE_ERROR },
                     );
                 }
 
-                if (options?.firstLimitCheckType && maxCount === undefined) {
-                    maxCount = DEFAULT_MAX_COUNT_UPPER_BOUND + 1;
+                if (
+                    options?.firstLimitCheckType &&
+                    info.implicitLimitForRootEntityQueries &&
+                    maxCount === undefined
+                ) {
+                    maxCount = info.implicitLimitForRootEntityQueries + 1;
                 }
 
                 const skip = args[SKIP_ARG];
@@ -298,12 +312,14 @@ export class OrderByAndPaginationAugmentation {
                     });
 
                     if (
-                        options?.firstLimitCheckType === 'ResultValidator' &&
+                        options?.firstLimitCheckType === LimitTypeCheckType.RESULT_VALIDATOR &&
+                        options.operation &&
                         args[FIRST_ARG] === undefined
                     ) {
                         return this.wrapWithImplicitListTruncationResultValidator(
                             optimizedQueryNode,
                             maxCount,
+                            options.operation,
                         );
                     }
 
@@ -323,13 +339,15 @@ export class OrderByAndPaginationAugmentation {
                 });
 
                 if (
-                    options?.firstLimitCheckType === 'ResultValidator' &&
+                    options?.firstLimitCheckType === LimitTypeCheckType.RESULT_VALIDATOR &&
+                    options?.operation &&
                     args[FIRST_ARG] === undefined &&
                     maxCount
                 ) {
                     return this.wrapWithImplicitListTruncationResultValidator(
                         transformListNode,
                         maxCount,
+                        options.operation,
                     );
                 }
 
@@ -341,6 +359,7 @@ export class OrderByAndPaginationAugmentation {
     private wrapWithImplicitListTruncationResultValidator(
         queryNode: QueryNode,
         maxCount: number,
+        operation: string,
     ): QueryNode {
         const v = new VariableQueryNode();
         return new WithPreExecutionQueryNode({
@@ -348,7 +367,10 @@ export class OrderByAndPaginationAugmentation {
                 new PreExecQueryParms({
                     query: queryNode,
                     resultVariable: v,
-                    resultValidator: new NoImplicitlyTruncatedListValidator(maxCount - 1),
+                    resultValidator: new NoImplicitlyTruncatedListValidator(
+                        maxCount - 1,
+                        operation,
+                    ),
                 }),
             ],
             resultNode: v,

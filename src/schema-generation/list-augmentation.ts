@@ -1,7 +1,6 @@
 import { Type } from '../model';
 import { FilterAugmentation } from './filter-augmentation';
 import {
-    LimitTypeCheckType,
     OrderByAndPaginationAugmentation,
     OrderByAndPaginationAugmentationOptions,
 } from './order-by-and-pagination-augmentation';

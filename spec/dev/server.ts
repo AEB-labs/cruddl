@@ -18,7 +18,7 @@ const databaseURL = 'http://root:@localhost:8529';
 // const databaseURL = 'http://root:@localhost:7050';
 
 export async function start() {
-    const loggerProvider = new Log4jsLoggerProvider('trace');
+    const loggerProvider = new Log4jsLoggerProvider('error');
 
     let db;
     if (process.argv.includes('--db=in-memory')) {
@@ -54,6 +54,8 @@ export async function start() {
 
                 //queryMemoryLimit: 1000000,
                 cancellationToken: new Promise((resolve) => context.req.on('aborted', resolve)),
+                implicitLimitForRootEntityQueries: 1000,
+                maxLimitForRootEntityQueries: 1500,
             };
         },
         /*processError(error: Error) {

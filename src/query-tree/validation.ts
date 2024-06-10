@@ -1,4 +1,5 @@
 import { RelationSide, RootEntityType } from '../model';
+import { TOO_MANY_OBJECTS_ERROR } from './../schema-generation/flex-search-generator';
 import { QueryNode } from './base';
 
 export interface QueryResultValidatorFunctionProvider {
@@ -113,7 +114,10 @@ export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryR
  * a manual query limit can be applied.
  */
 export class NoImplicitlyTruncatedListValidator extends QueryNode implements QueryResultValidator {
-    constructor(private readonly maximumExpectedNumberOfItems: number) {
+    constructor(
+        private readonly maximumExpectedNumberOfItems: number,
+        private readonly operation: string,
+    ) {
         super();
     }
 
@@ -137,13 +141,23 @@ export class NoImplicitlyTruncatedListValidator extends QueryNode implements Que
                 }
             }
 
+            const limit = validationData.maximumExpectedNumberOfItems;
             if (result.length > validationData.maximumExpectedNumberOfItems) {
-                throw new RuntimeValidationError(
-                    `Collection is truncated by default to ${validationData.maximumExpectedNumberOfItems} elements but contains more elements than this limit. Specify a limit manually to retrieve all elements of the collection.`,
-                    {
-                        code: validationData.errorCode,
-                    },
-                );
+                if (validationData.operation === 'query') {
+                    throw new RuntimeValidationError(
+                        `Query would return more than ${limit} objects. Specify "first" to increase the limit or truncate the result.`,
+                        {
+                            code: TOO_MANY_OBJECTS_ERROR,
+                        },
+                    );
+                } else {
+                    throw new RuntimeValidationError(
+                        `Mutation would return more than ${limit} objects. Specify "first" to increase the limit or truncate the result`,
+                        {
+                            code: TOO_MANY_OBJECTS_ERROR,
+                        },
+                    );
+                }
             }
         };
     }
@@ -159,6 +173,7 @@ export class NoImplicitlyTruncatedListValidator extends QueryNode implements Que
     getValidatorData() {
         return {
             maximumExpectedNumberOfItems: this.maximumExpectedNumberOfItems,
+            operation: this.operation,
         };
     }
 
