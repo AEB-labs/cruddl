@@ -1,6 +1,6 @@
 import { OperationDefinitionNode } from 'graphql';
-import { AuthContext } from '../authorization/auth-basics';
 import { v4 as uuidv4 } from 'uuid';
+import { AuthContext } from '../authorization/auth-basics';
 
 export type MutationMode = 'normal' | 'disallowed' | 'rollback';
 
@@ -105,6 +105,47 @@ export interface ExecutionOptions {
      * will be used.
      */
     readonly idGenerator?: IDGenerator;
+
+    /**
+     * The maximum number of items that can be handled in a list-based root entity query/mutation.
+     *
+     * When then caller specifies a limit higher than this number an error is thrown prompting to reduce the limit.
+     *
+     * No checks are applied when this option is not set.
+     *
+     * It is applied to the following queries:
+     *  - flexSearchAll<RootEntityPluralName>
+     *  - all<RootEntityPluralName>
+     *
+     * It is applied to the following mutations:
+     *  - updateAll<RootEntityPluralName>
+     *  - deleteAll<RootEntityPluralName>
+     *
+     */
+    readonly maxLimitForRootEntityQueries?: number;
+
+    /**
+     * The implicit maximum number of items that can be handled in a list-based root entity query/mutation.
+     *
+     * In contrast to `maxLimitForRootEntityQueries` this ensures that no more than the specified number of
+     * elements will be modified/queried in the queries/mutations it applies to, even when the caller does not
+     * specify a "first" parameter.
+     *
+     * When the limit is exceeded an error is thrown indicating to manually set a higher limit or explicitly
+     * truncate the available elements.
+     *
+     * No checks are applied when this option is not set.
+     *
+     * It is applied to the following queries:
+     *  - flexSearchAll<RootEntityPluralName>
+     *  - all<RootEntityPluralName>
+     *
+     * It is applied to the following mutations:
+     *  - updateAll<RootEntityPluralName>
+     *  - deleteAll<RootEntityPluralName>
+     *
+     */
+    readonly implicitLimitForRootEntityQueries?: number;
 }
 
 export interface TimeToLiveExecutionOptions {

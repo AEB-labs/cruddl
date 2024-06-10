@@ -8,7 +8,7 @@ import {
 } from 'graphql';
 import { GraphQLOutputType } from 'graphql/index';
 import { ThunkReadonlyArray } from 'graphql/type/definition';
-import { QueryNode, RuntimeErrorValue } from '../../query-tree';
+import { QueryNode } from '../../query-tree';
 import { FieldContext } from './context';
 
 export interface QueryNodeResolveInfo extends FieldContext {}
@@ -37,6 +37,8 @@ export interface QueryNodeField {
     /**
      * Will be called in the actual graphql field resolver for this node.
      * Can be used to transform and validate a fields data after query-execution.
+     *
+     * Needs be synchronous, it is not possible to return a promise here.
      *
      * When the validation should roll back already made changes during a mutation it needs to be done
      * via a PreExecQueryParms statement to have transactional guarantees.

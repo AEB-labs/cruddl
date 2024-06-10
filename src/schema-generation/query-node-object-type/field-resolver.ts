@@ -1,5 +1,5 @@
 import { GraphQLFieldResolver } from 'graphql';
-import { extractRuntimeError, isRuntimeErrorValue, RuntimeErrorValue } from '../../query-tree';
+import { extractRuntimeError, isRuntimeErrorValue } from '../../query-tree';
 
 /**
  * A GraphQL field resolver for the query node object type framework
@@ -14,14 +14,14 @@ export function getFieldResolver(
     return (source, args, context, info) => {
         const fieldNode = info.fieldNodes[0];
         const alias = fieldNode.alias ? fieldNode.alias.value : fieldNode.name.value;
-        const value = source[alias];
+        let value = source[alias];
+
+        if (transformResult) {
+            value = transformResult(value, args);
+        }
 
         if (isRuntimeErrorValue(value)) {
             throw extractRuntimeError(value);
-        }
-
-        if (transformResult) {
-            return transformResult(value, args);
         }
 
         return value;
