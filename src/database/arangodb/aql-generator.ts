@@ -1262,9 +1262,11 @@ function getQuantifierFilterUsingArrayComparisonOperator(
     // this simplifies the AQL expression a lot (no filtering-then-checking-length), and also enables early pruning
 
     // only possible on lists that are field accesses (but we can handle safe lists below)
-    let isSafeList = false;
+    // note that needsSafeListWrapper will be set to false in some places below when we know that non-list
+    // values are no problem for the specific case
+    let needsSafeListWrapper = false;
     if (listNode instanceof SafeListQueryNode) {
-        isSafeList = true;
+        needsSafeListWrapper = true;
         listNode = listNode.sourceNode;
     }
     if (!(listNode instanceof FieldQueryNode)) {
@@ -1319,39 +1321,51 @@ function getQuantifierFilterUsingArrayComparisonOperator(
 
     const valueFrag = processNode(conditionNode.rhs, context);
 
-    let fieldValueFrag: AQLFragment;
+    // we do not know whether we will need a SafeListQueryNode here yet
+    // (depends on needsSafeListWrapper, which can change below), so parametrize this
+    let fieldValueFragFn: (useSafeListWrapper: boolean) => AQLFragment;
     if (fields.length) {
         const fieldAccessFrag = aql.concat(fields.map((f) => getPropertyAccessFragment(f.name)));
-        fieldValueFrag = aql`${processNode(listNode, context)}[*]${fieldAccessFrag}`;
-        // no need to use the SafeListQueryNode here because [*] already expands NULL to []
+        fieldValueFragFn = () => aql`${processNode(listNode, context)}[*]${fieldAccessFrag}`;
+        // the [*] operator does not complain about the left side being a non-array, and it will always yield
+        // an array - so we do not need to care about safe lists anymore
+        needsSafeListWrapper = false;
     } else {
         // special case: scalar list - no array expansion
-        if (isSafeList) {
-            // re-wrap in SafeListQueryNode to support generic case at the bottom
-            // "something" ANY IN NULL would not work (yields false instead of true)
-            // the shortcut with EQUAL / some would work though as "something" IN NULL is false
-            fieldValueFrag = processNode(new SafeListQueryNode(listNode), context);
-        } else {
-            fieldValueFrag = processNode(listNode, context);
-        }
+        // we do not know yet whether or not we care about the safe list wrapper
+        fieldValueFragFn = (useSafeListWrapper) =>
+            processNode(useSafeListWrapper ? new SafeListQueryNode(listNode) : listNode, context);
     }
 
     // The case of "field ANY == value" can further be optimized into "value IN field" which can use an array index
     // https://www.arangodb.com/docs/stable/indexing-index-basics.html#indexing-array-values
     if (operator === BinaryOperator.EQUAL && quantifier === 'some') {
-        return aql`(${valueFrag} IN ${fieldValueFrag})`;
+        // the IN operator does not complain if the rhs operand is not a list, it just yields false
+        // so we do not need to care about the safe list wrapper
+        needsSafeListWrapper = false;
+        return aql`(${valueFrag} IN ${fieldValueFragFn(needsSafeListWrapper)})`;
     }
 
     let quantifierFrag: AQLFragment;
     switch (quantifier) {
         case 'some':
             quantifierFrag = aql`ANY`;
+            // (non-list-value) ANY (some-expression) always yields false
+            // In the safe-list case, non-list values (especially NULL) are considered like empty lists
+            // -> we do not need to take special care for non-list values, and can ignore the safe list wrapper
+            needsSafeListWrapper = false;
             break;
         case 'every':
             quantifierFrag = aql`ALL`;
+            // (non-list-value) ALL (some-expression) always yields false,
+            // but [] ALL (some-expression) yields true
+            // In the safe-list case, non-list values (especially NULL) are considered like empty lists
+            // -> we need to convert non-list values to []
+            // -> we need to keep the safe list wrapper
             break;
         case 'none':
             quantifierFrag = aql`NONE`;
+            // same reasoning as above - we need to keep the safe list wrapper
             break;
         default:
             throw new Error(`Unexpected quantifier: ${quantifier}`);
@@ -1361,6 +1375,7 @@ function getQuantifierFilterUsingArrayComparisonOperator(
     if (!operatorFrag) {
         throw new Error(`Unable to get AQL fragment for operator ${operator}`);
     }
+    const fieldValueFrag = fieldValueFragFn(needsSafeListWrapper);
     return aql`(${fieldValueFrag} ${quantifierFrag} ${operatorFrag} ${valueFrag})`;
 }
 
