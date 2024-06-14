@@ -1319,39 +1319,49 @@ function getQuantifierFilterUsingArrayComparisonOperator(
 
     const valueFrag = processNode(conditionNode.rhs, context);
 
-    let fieldValueFrag: AQLFragment;
+    let fieldValueFrag: () => AQLFragment;
     if (fields.length) {
         const fieldAccessFrag = aql.concat(fields.map((f) => getPropertyAccessFragment(f.name)));
-        fieldValueFrag = aql`${processNode(listNode, context)}[*]${fieldAccessFrag}`;
-        // no need to use the SafeListQueryNode here because [*] already expands NULL to []
+        fieldValueFrag = () => aql`${processNode(listNode, context)}[*]${fieldAccessFrag}`;
+        // the [*] operator does not complain about the left side being a non-array, and it will always yield
+        // an array - so we do not need to care about safe lists anymore
+        isSafeList = false;
     } else {
         // special case: scalar list - no array expansion
-        if (isSafeList) {
-            // re-wrap in SafeListQueryNode to support generic case at the bottom
-            // "something" ANY IN NULL would not work (yields false instead of true)
-            // the shortcut with EQUAL / some would work though as "something" IN NULL is false
-            fieldValueFrag = processNode(new SafeListQueryNode(listNode), context);
-        } else {
-            fieldValueFrag = processNode(listNode, context);
-        }
+        // we do not know yet whether or not we care about isSafeList
+        fieldValueFrag = () =>
+            processNode(isSafeList ? new SafeListQueryNode(listNode) : listNode, context);
     }
 
     // The case of "field ANY == value" can further be optimized into "value IN field" which can use an array index
     // https://www.arangodb.com/docs/stable/indexing-index-basics.html#indexing-array-values
     if (operator === BinaryOperator.EQUAL && quantifier === 'some') {
-        return aql`(${valueFrag} IN ${fieldValueFrag})`;
+        // the IN operator does not complain if the rhs operand is not a list, it just yields false
+        // so we do not need to care about isSafeList
+        isSafeList = false;
+        return aql`(${valueFrag} IN ${fieldValueFrag()})`;
     }
 
     let quantifierFrag: AQLFragment;
     switch (quantifier) {
         case 'some':
             quantifierFrag = aql`ANY`;
+            // (non-list-value) ANY (some-expression) always yields false
+            // In the isSafeList case, non-list values (especially NULL) are considered like empty lists
+            // -> we do not need to take special care for non-list values, and can ignore isSafeList
+            isSafeList = false;
             break;
         case 'every':
             quantifierFrag = aql`ALL`;
+            // (non-list-value) ALL (some-expression) always yields false,
+            // but [] ALL (some-expression) yields true
+            // In the isSafeList case, non-list values (especially NULL) are considered like empty lists
+            // -> we need to convert non-list values to []
+            // -> we need to keep the isSafeList
             break;
         case 'none':
             quantifierFrag = aql`NONE`;
+            // same reasoning as above - we need to keep isSafeList
             break;
         default:
             throw new Error(`Unexpected quantifier: ${quantifier}`);
@@ -1361,7 +1371,7 @@ function getQuantifierFilterUsingArrayComparisonOperator(
     if (!operatorFrag) {
         throw new Error(`Unable to get AQL fragment for operator ${operator}`);
     }
-    return aql`(${fieldValueFrag} ${quantifierFrag} ${operatorFrag} ${valueFrag})`;
+    return aql`(${fieldValueFrag()} ${quantifierFrag} ${operatorFrag} ${valueFrag})`;
 }
 
 register(EntitiesQueryNode, (node, context) => {
