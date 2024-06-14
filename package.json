@@ -1,6 +1,6 @@
 {
   "name": "cruddl",
-  "version": "3.3.1",
+  "version": "3.3.2-0.index-usage-for-some-equals-in-scalar-lists.0",
   "description": "",
   "license": "MIT",
   "main": "dist/index.js",
