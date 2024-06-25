@@ -19,6 +19,7 @@ import {
 } from './query-node-object-type';
 import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator';
 import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
+import { LimitTypeCheckType } from './order-by-and-pagination-augmentation';
 
 export class QueryTypeGenerator {
     constructor(
@@ -117,7 +118,9 @@ export class QueryTypeGenerator {
             isPure: true,
             resolve: () => this.getAllRootEntitiesNode(rootEntityType),
         };
-        return this.listAugmentation.augment(fieldConfig, rootEntityType);
+        return this.listAugmentation.augment(fieldConfig, rootEntityType, {
+            orderByAugmentationOptions: { firstLimitCheckType: LimitTypeCheckType.RESOLVER },
+        });
     }
 
     private getAllRootEntitiesNode(rootEntityType: RootEntityType): QueryNode {

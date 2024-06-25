@@ -8,8 +8,8 @@ import {
     ConditionalQueryNode,
     ConstBoolQueryNode,
     CountQueryNode,
-    FieldPathQueryNode,
     FLEX_SEARCH_TOO_MANY_OBJECTS,
+    FieldPathQueryNode,
     LiteralQueryNode,
     PreExecQueryParms,
     QueryNode,
@@ -35,7 +35,10 @@ import { decapitalize } from '../utils/utils';
 import { FlexSearchFilterTypeGenerator } from './flex-search-filter-input-types';
 import { FlexSearchFilterObjectType } from './flex-search-filter-input-types/filter-types';
 import { FlexSearchPostFilterAugmentation } from './flex-search-post-filter-augmentation';
-import { OrderByAndPaginationAugmentation } from './order-by-and-pagination-augmentation';
+import {
+    LimitTypeCheckType,
+    OrderByAndPaginationAugmentation,
+} from './order-by-and-pagination-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
 import {
     QueryNodeField,
@@ -78,7 +81,9 @@ export class FlexSearchGenerator {
             rootEntityType,
         );
         return this.augmentWithCondition(
-            this.orderByAugmentation.augment(withPostFilter, rootEntityType),
+            this.orderByAugmentation.augment(withPostFilter, rootEntityType, {
+                firstLimitCheckType: LimitTypeCheckType.RESOLVER,
+            }),
             rootEntityType,
         );
     }

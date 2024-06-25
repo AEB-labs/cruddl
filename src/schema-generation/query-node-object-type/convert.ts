@@ -3,8 +3,8 @@ import { ThunkReadonlyArray } from 'graphql/type/definition';
 import { chain, uniq, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeOutputType } from './definition';
-import { fieldResolver } from './field-resolver';
 import { isGraphQLOutputType } from './utils';
+import { getFieldResolver } from './field-resolver';
 
 export class QueryNodeObjectTypeConverter {
     @memorize()
@@ -20,7 +20,7 @@ export class QueryNodeObjectTypeConverter {
                             description: field.description,
                             deprecationReason: field.deprecationReason,
                             args: field.args,
-                            resolve: fieldResolver,
+                            resolve: getFieldResolver(field.transformResult),
                             type: this.convertToGraphQLType(field.type),
                         }),
                     )

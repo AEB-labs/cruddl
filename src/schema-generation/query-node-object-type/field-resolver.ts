@@ -8,13 +8,22 @@ import { extractRuntimeError, isRuntimeErrorValue } from '../../query-tree';
  *
  * If the value is a runtime error, throws. Otherwise, just returns the value.
  */
-export const fieldResolver: GraphQLFieldResolver<any, any> = (source, args, context, info) => {
-    const fieldNode = info.fieldNodes[0];
-    const alias = fieldNode.alias ? fieldNode.alias.value : fieldNode.name.value;
-    const value = source[alias];
+export function getFieldResolver(
+    transformResult?: (data: any, args: object) => any,
+): GraphQLFieldResolver<any, any> {
+    return (source, args, context, info) => {
+        const fieldNode = info.fieldNodes[0];
+        const alias = fieldNode.alias ? fieldNode.alias.value : fieldNode.name.value;
+        let value = source[alias];
 
-    if (isRuntimeErrorValue(value)) {
-        throw extractRuntimeError(value);
-    }
-    return value;
-};
+        if (transformResult) {
+            value = transformResult(value, args);
+        }
+
+        if (isRuntimeErrorValue(value)) {
+            throw extractRuntimeError(value);
+        }
+
+        return value;
+    };
+}

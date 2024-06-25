@@ -39,7 +39,7 @@ import {
     getUpdateEntitiesFieldName,
     getUpdateEntityFieldName,
 } from '../schema/names';
-import { compact, decapitalize, PlainObject } from '../utils/utils';
+import { PlainObject, compact, decapitalize } from '../utils/utils';
 import { BillingTypeGenerator } from './billing-type-generator';
 import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';
 import { generateDeleteAllQueryNode } from './delete-all-generator';
@@ -48,11 +48,11 @@ import { ListAugmentation } from './list-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
 import {
     FieldContext,
-    makeNonNullableList,
     QueryNodeField,
     QueryNodeListType,
     QueryNodeNonNullType,
     QueryNodeObjectType,
+    makeNonNullableList,
 } from './query-node-object-type';
 import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator';
 import {
@@ -68,6 +68,7 @@ import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field'
 import { getFilterNode } from './utils/filtering';
 import { mapToIDNodesUnoptimized } from './utils/map';
 import { getPreEntityRemovalStatements } from './utils/relations';
+import { LimitTypeCheckType } from './order-by-and-pagination-augmentation';
 
 export class MutationTypeGenerator {
     constructor(
@@ -421,7 +422,12 @@ export class MutationTypeGenerator {
             resolve: () => new EntitiesQueryNode(rootEntityType),
         };
 
-        const fieldWithListArgs = this.listAugmentation.augment(fieldBase, rootEntityType);
+        const fieldWithListArgs = this.listAugmentation.augment(fieldBase, rootEntityType, {
+            orderByAugmentationOptions: {
+                firstLimitCheckType: LimitTypeCheckType.RESULT_VALIDATOR,
+                operation: 'mutation',
+            },
+        });
 
         const inputType =
             this.updateTypeGenerator.generateUpdateAllRootEntitiesInputType(rootEntityType);
@@ -629,7 +635,12 @@ export class MutationTypeGenerator {
             resolve: () => new EntitiesQueryNode(rootEntityType),
         };
 
-        const fieldWithListArgs = this.listAugmentation.augment(fieldBase, rootEntityType);
+        const fieldWithListArgs = this.listAugmentation.augment(fieldBase, rootEntityType, {
+            orderByAugmentationOptions: {
+                firstLimitCheckType: LimitTypeCheckType.RESULT_VALIDATOR,
+                operation: 'mutation',
+            },
+        });
 
         return {
             ...fieldWithListArgs,
