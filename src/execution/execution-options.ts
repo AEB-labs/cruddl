@@ -1,6 +1,6 @@
 import { OperationDefinitionNode } from 'graphql';
-import { AuthContext } from '../authorization/auth-basics';
 import { v4 as uuidv4 } from 'uuid';
+import { AuthContext } from '../authorization/auth-basics';
 
 export type MutationMode = 'normal' | 'disallowed' | 'rollback';
 
@@ -59,7 +59,7 @@ export interface ExecutionOptions {
     readonly transactionTimeoutMs?: number;
 
     /**
-     * The maximum amount of objects that can be filtered (using a normal filter) or sorted in an ArangoSearch query
+     * The maximum amount of objects that can be filtered using a postFilter or sorted in an ArangoSearch query
      */
     readonly flexSearchMaxFilterableAndSortableAmount?: number;
 
