@@ -247,7 +247,7 @@ export class EmptyListFilterField implements FilterField {
 
     constructor(public readonly field: Field) {
         this.name = this.field.name + '_empty';
-        this.description = `Checks if \`${this.field.name}\` is an empty list (true) or a non-empty list or null (false).`;
+        this.description = `Checks if \`${this.field.name}\` is an empty list (true) or a non-empty list (false).`;
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
