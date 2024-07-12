@@ -132,6 +132,8 @@ export class ConcatListsQueryNode extends QueryNode {
 
 /**
  * A node that evaluates to the number of items in a list
+ *
+ * If the listNode evaluates to null, this node evaluates to zero
  */
 export class CountQueryNode extends QueryNode {
     constructor(public readonly listNode: QueryNode) {
