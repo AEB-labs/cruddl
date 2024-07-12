@@ -993,7 +993,7 @@
             },
             {
               "name": "description_empty",
-              "description": "Checks if `description` is an empty list (true) or a non-empty list or null (false).",
+              "description": "Checks if `description` is an empty list (true) or a non-empty list (false).",
               "deprecationReason": null
             },
             {
@@ -2572,7 +2572,7 @@
             },
             {
               "name": "serialNumbers_empty",
-              "description": "Checks if `serialNumbers` is an empty list (true) or a non-empty list or null (false).",
+              "description": "Checks if `serialNumbers` is an empty list (true) or a non-empty list (false).",
               "deprecationReason": null
             },
             {
@@ -2597,7 +2597,7 @@
             },
             {
               "name": "contentInfo_empty",
-              "description": "Checks if `contentInfo` is an empty list (true) or a non-empty list or null (false).",
+              "description": "Checks if `contentInfo` is an empty list (true) or a non-empty list (false).",
               "deprecationReason": null
             },
             {
@@ -2622,7 +2622,7 @@
             },
             {
               "name": "items_empty",
-              "description": "Checks if `items` is an empty list (true) or a non-empty list or null (false).",
+              "description": "Checks if `items` is an empty list (true) or a non-empty list (false).",
               "deprecationReason": null
             },
             {
@@ -2642,7 +2642,7 @@
             },
             {
               "name": "handlingUnits_empty",
-              "description": "Checks if `handlingUnits` is an empty list (true) or a non-empty list or null (false).",
+              "description": "Checks if `handlingUnits` is an empty list (true) or a non-empty list (false).",
               "deprecationReason": null
             },
             {
@@ -4388,7 +4388,7 @@
             },
             {
               "name": "notices_empty",
-              "description": "Checks if `notices` is an empty list (true) or a non-empty list or null (false).",
+              "description": "Checks if `notices` is an empty list (true) or a non-empty list (false).",
               "deprecationReason": null
             },
             {
@@ -4767,7 +4767,7 @@
             },
             {
               "name": "deliveries_empty",
-              "description": "Checks if `deliveries` is an empty list (true) or a non-empty list or null (false).",
+              "description": "Checks if `deliveries` is an empty list (true) or a non-empty list (false).",
               "deprecationReason": null
             },
             {
@@ -5494,7 +5494,7 @@
             },
             {
               "name": "serialNumbers_empty",
-              "description": "Checks if `serialNumbers` is an empty list (true) or a non-empty list or null (false).",
+              "description": "Checks if `serialNumbers` is an empty list (true) or a non-empty list (false).",
               "deprecationReason": null
             },
             {
@@ -5509,7 +5509,7 @@
             },
             {
               "name": "items_empty",
-              "description": "Checks if `items` is an empty list (true) or a non-empty list or null (false).",
+              "description": "Checks if `items` is an empty list (true) or a non-empty list (false).",
               "deprecationReason": null
             },
             {
@@ -6696,7 +6696,7 @@
             },
             {
               "name": "deliveries_empty",
-              "description": "Checks if `deliveries` is an empty list (true) or a non-empty list or null (false).",
+              "description": "Checks if `deliveries` is an empty list (true) or a non-empty list (false).",
               "deprecationReason": null
             },
             {
