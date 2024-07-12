@@ -137,25 +137,43 @@ To prevent slow queries, cruddl returns an error in these cases.
 
 The following filter-fields are available for fields that are annotated with `@flexSearch`:
 
--   `equals`
--   `not_equals`
--   `in`
--   `not_in`
--   `starts_with`
--   `not_starts_with`
+- `equals`
+- `not_equals`
+- `in`
+- `not_in`
+- `starts_with`
+- `not_starts_with`
 
 The following filter-fields are available for fields that are annotated with `@flexSearchFulltext`
 
--   `contains_any_word`
--   `not_contains_any_word`
--   `contains_all_words`
--   `not_contains_all_words`
--   `contains_all_prefixes`
--   `not_contains_all_prefixes`
--   `contains_any_prefix`
--   `not_contains_any_prefix`
--   `contains_phrase`
--   `not_contains_phrase`
+- `contains_any_word`
+- `not_contains_any_word`
+- `contains_all_words`
+- `not_contains_all_words`
+- `contains_all_prefixes`
+- `not_contains_all_prefixes`
+- `contains_any_prefix`
+- `not_contains_any_prefix`
+- `contains_phrase`
+- `not_contains_phrase`
 
 When using `flexSearchExpression: "..."` the `starts_with` field is used for values and the
 `contains_all_prefixes` field for texts.
+
+### PostFilter and Sorting
+
+For cases where using the flexSearchFilter is not possible, there is a `postFilter` which has the
+capabilities of normal filtering. It is applied in memory after the `flexSearchFilter` is applied
+and can never use any indices. The same applies to any sorting that does not match the
+flexSearchOrder.
+
+To prevent queries with bad performance a `FLEX_SEARCH_TOO_MANY_OBJECTS` error is thrown when a
+postFilter or sorting is applied to more than 10 000 Objects (the exact number is configurable via
+the flexSearchMaxFilterableAndSortableAmount ExecutionOption). This limit is applied after the 
+`flexSearchFilter` is applied so if the `flexSearchFilter` already reduces the amount of objects,
+the `postFilter` is applied to below the limit, the error is not thrown.
+
+The reasoning behind this is to provide an API that always guarantees to have good performance and
+quick response time. When using flexSearchFilter you will always use the ArangoSearch index which
+means the query should be fast.
+
