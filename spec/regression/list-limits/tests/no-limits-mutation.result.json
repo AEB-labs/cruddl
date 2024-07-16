@@ -1,0 +1,52 @@
+{
+  "NoLimitsMutation": {
+    "data": {
+      "updateAllHeroes": [
+        {
+          "name": "A"
+        },
+        {
+          "name": "A"
+        },
+        {
+          "name": "A"
+        },
+        {
+          "name": "A"
+        },
+        {
+          "name": "A"
+        },
+        {
+          "name": "A"
+        },
+        {
+          "name": "A"
+        }
+      ],
+      "deleteAllHeroes": [
+        {
+          "name": "A"
+        },
+        {
+          "name": "A"
+        },
+        {
+          "name": "A"
+        },
+        {
+          "name": "A"
+        },
+        {
+          "name": "A"
+        },
+        {
+          "name": "A"
+        },
+        {
+          "name": "A"
+        }
+      ]
+    }
+  }
+}

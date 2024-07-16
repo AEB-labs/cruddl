@@ -1,0 +1,11 @@
+mutation ExplicitDeleteAllFirstExceedsLimit {
+    deleteAllHeroes(first: 6) {
+        name
+    }
+}
+
+query DataCheck {
+    allHeroes(first: 4) {
+        id
+    }
+}

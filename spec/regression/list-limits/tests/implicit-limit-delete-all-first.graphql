@@ -1,0 +1,11 @@
+mutation ImplicitLimitDeleteAllFirst {
+    deleteAllHeroes(first: 4) {
+        name
+    }
+}
+
+query DataCheck {
+    allHeroes(first: 4) {
+        id
+    }
+}

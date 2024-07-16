@@ -1,0 +1,11 @@
+mutation ExplicitUpdateAllFirst {
+    updateAllHeroes(first: 4, input: { name: "A" }, orderBy: [id_ASC]) {
+        name
+    }
+}
+
+query DataCheck {
+    allHeroes(first: 4, orderBy: [id_ASC]) {
+        name
+    }
+}

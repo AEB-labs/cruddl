@@ -1,6 +1,8 @@
 import { GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
+import { ExecutionOptions } from '../execution/execution-options';
 import { Type } from '../model';
 import {
+    ARGUMENT_OUT_OF_RANGE_ERROR,
     BinaryOperationQueryNode,
     BinaryOperator,
     BinaryOperatorWithAnalyzer,
@@ -9,12 +11,15 @@ import {
     INVALID_CURSOR_ERROR,
     LiteralQueryNode,
     NOT_SUPPORTED_ERROR,
+    NoImplicitlyTruncatedListValidator,
     OrderDirection,
     OrderSpecification,
+    PreExecQueryParms,
     QueryNode,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     VariableQueryNode,
+    WithPreExecutionQueryNode,
 } from '../query-tree';
 import { FlexSearchQueryNode } from '../query-tree/flex-search';
 import {
@@ -37,9 +42,18 @@ import {
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
 import { RootFieldHelper } from './root-field-helper';
-import { orderArgMatchesPrimarySort } from './utils/flex-search-utils';
 import { and, binaryOp, binaryOpWithAnaylzer } from './utils/input-types';
 import { getOrderByValues } from './utils/pagination';
+
+export enum LimitTypeCheckType {
+    RESULT_VALIDATOR = 'RESULT_VALIDATOR',
+    RESOLVER = 'RESOLVER',
+}
+
+export interface OrderByAndPaginationAugmentationOptions {
+    firstLimitCheckType?: LimitTypeCheckType;
+    operation?: 'query' | 'mutation';
+}
 
 /**
  * Augments list fields with orderBy argument
@@ -50,7 +64,11 @@ export class OrderByAndPaginationAugmentation {
         private readonly rootFieldHelper: RootFieldHelper,
     ) {}
 
-    augment(schemaField: QueryNodeField, type: Type): QueryNodeField {
+    augment(
+        schemaField: QueryNodeField,
+        type: Type,
+        options: OrderByAndPaginationAugmentationOptions = {},
+    ): QueryNodeField {
         if (!type.isObjectType) {
             return schemaField;
         }
@@ -91,12 +109,55 @@ export class OrderByAndPaginationAugmentation {
                     description: `The number of items to include in the result. If omitted, all remaining items will be included (which can cause performance problems on large collections).`,
                 },
             },
+            transformResult: (data: any, args: object, executionOptions: ExecutionOptions) => {
+                if (
+                    options.firstLimitCheckType !== LimitTypeCheckType.RESOLVER ||
+                    'first' in args
+                ) {
+                    return data;
+                }
+                if (
+                    executionOptions.implicitLimitForRootEntityQueries &&
+                    data.length > executionOptions.implicitLimitForRootEntityQueries
+                ) {
+                    throw new Error(
+                        `Collection is truncated by default to ${executionOptions.implicitLimitForRootEntityQueries} elements but contains more elements than this limit. Specify a limit manually to retrieve all elements of the collection.`,
+                    );
+                }
+                return data;
+            },
             resolve: (sourceNode, args, info) => {
                 let listNode = schemaField.resolve(sourceNode, args, info);
                 let itemVariable = new VariableQueryNode(decapitalize(type.name));
                 let objectNode = this.rootFieldHelper.getRealItemNode(itemVariable, info);
 
-                const maxCount: number | undefined = args[FIRST_ARG];
+                let maxCount: number | undefined = args[FIRST_ARG];
+
+                if (
+                    options.firstLimitCheckType &&
+                    info.maxLimitForRootEntityQueries &&
+                    maxCount !== undefined &&
+                    maxCount > info.maxLimitForRootEntityQueries
+                ) {
+                    return new RuntimeErrorQueryNode(
+                        `The requested number of elements via the \"first\" parameter (${maxCount}) exceeds the maximum limit of ${info.maxLimitForRootEntityQueries}.`,
+                        { code: ARGUMENT_OUT_OF_RANGE_ERROR },
+                    );
+                }
+
+                let wrapQueryNodeInResultValidator = false;
+
+                if (
+                    options.firstLimitCheckType &&
+                    info.implicitLimitForRootEntityQueries &&
+                    maxCount === undefined
+                ) {
+                    maxCount = info.implicitLimitForRootEntityQueries + 1;
+                    if (options.firstLimitCheckType === LimitTypeCheckType.RESULT_VALIDATOR) {
+                        wrapQueryNodeInResultValidator = true;
+                    }
+                }
+
                 const skip = args[SKIP_ARG];
                 const afterArg = args[AFTER_ARG];
                 const isCursorRequested = info.selectionStack[
@@ -244,7 +305,7 @@ export class OrderByAndPaginationAugmentation {
                     // TODO only really do this here if there is an index covering this
                     // (however, it's not that easy - it needs to include the filter stuff that is already baked into
                     // listNode)
-                    return this.getPaginatedNodeUsingMultiIndexOptimization({
+                    const optimizedQueryNode = this.getPaginatedNodeUsingMultiIndexOptimization({
                         orderBy,
                         itemVariable,
                         objectNode,
@@ -254,9 +315,23 @@ export class OrderByAndPaginationAugmentation {
                         maxCount,
                         filterNode,
                     });
+
+                    if (
+                        options.firstLimitCheckType === LimitTypeCheckType.RESULT_VALIDATOR &&
+                        options.operation &&
+                        args[FIRST_ARG] === undefined
+                    ) {
+                        return this.wrapWithImplicitListTruncationResultValidator(
+                            optimizedQueryNode,
+                            maxCount,
+                            options.operation,
+                        );
+                    }
+
+                    return optimizedQueryNode;
                 }
 
-                return new TransformListQueryNode({
+                const transformListNode = new TransformListQueryNode({
                     listNode,
                     itemVariable,
                     orderBy,
@@ -267,8 +342,36 @@ export class OrderByAndPaginationAugmentation {
                             ? and(filterNode, paginationFilter)
                             : filterNode || paginationFilter,
                 });
+
+                if (wrapQueryNodeInResultValidator && options.operation) {
+                    return this.wrapWithImplicitListTruncationResultValidator(
+                        transformListNode,
+                        info.implicitLimitForRootEntityQueries!,
+                        options.operation,
+                    );
+                }
+
+                return transformListNode;
             },
         };
+    }
+
+    private wrapWithImplicitListTruncationResultValidator(
+        queryNode: QueryNode,
+        maxCount: number,
+        operation: string,
+    ): QueryNode {
+        const v = new VariableQueryNode();
+        return new WithPreExecutionQueryNode({
+            preExecQueries: [
+                new PreExecQueryParms({
+                    query: queryNode,
+                    resultVariable: v,
+                    resultValidator: new NoImplicitlyTruncatedListValidator(maxCount, operation),
+                }),
+            ],
+            resultNode: v,
+        });
     }
 
     private getPaginatedNodeUsingMultiIndexOptimization({

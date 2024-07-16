@@ -1,12 +1,28 @@
-import { GraphQLFieldConfig, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLOutputType, resolveReadonlyArrayThunk } from 'graphql';
+import {
+    GraphQLFieldConfig,
+    GraphQLList,
+    GraphQLNonNull,
+    GraphQLObjectType,
+    GraphQLOutputType,
+    resolveReadonlyArrayThunk,
+} from 'graphql';
 import { ThunkReadonlyArray } from 'graphql/type/definition';
 import { chain, uniq, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
-import { QueryNodeField, QueryNodeListType, QueryNodeNonNullType, QueryNodeObjectType, QueryNodeOutputType } from './definition';
-import { fieldResolver } from './field-resolver';
+import { SchemaTransformationContext } from '../../schema/preparation/transformation-pipeline';
+import {
+    QueryNodeField,
+    QueryNodeListType,
+    QueryNodeNonNullType,
+    QueryNodeObjectType,
+    QueryNodeOutputType,
+} from './definition';
+import { getFieldResolver } from './field-resolver';
 import { isGraphQLOutputType } from './utils';
 
 export class QueryNodeObjectTypeConverter {
+    constructor(private readonly context: SchemaTransformationContext) {}
+
     @memorize()
     convertToGraphQLObjectType(type: QueryNodeObjectType): GraphQLObjectType {
         return new GraphQLObjectType({
@@ -20,7 +36,7 @@ export class QueryNodeObjectTypeConverter {
                             description: field.description,
                             deprecationReason: field.deprecationReason,
                             args: field.args,
-                            resolve: fieldResolver,
+                            resolve: getFieldResolver(this.context, field.transformResult),
                             type: this.convertToGraphQLType(field.type),
                         }),
                     )

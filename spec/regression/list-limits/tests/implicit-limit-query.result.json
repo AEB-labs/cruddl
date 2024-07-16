@@ -1,0 +1,33 @@
+{
+  "ImplicitLimitQuery": {
+    "data": {
+      "allHeroes": null,
+      "withExplicitLimit": [
+        {
+          "name": "Riley"
+        },
+        {
+          "name": "Ratliff"
+        },
+        {
+          "name": "Christa"
+        },
+        {
+          "name": "Rebekah"
+        }
+      ]
+    },
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 5,
+            "line": 2
+          }
+        ],
+        "message": "Collection is truncated by default to 3 elements but contains more elements than this limit. Specify a limit manually to retrieve all elements of the collection.",
+        "path": ["allHeroes"]
+      }
+    ]
+  }
+}

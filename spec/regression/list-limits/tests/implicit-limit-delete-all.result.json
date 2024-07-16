@@ -1,0 +1,44 @@
+{
+  "ImplicitDeleteAll": {
+    "data": null,
+    "errors": [
+      {
+        "locations": [
+          {
+            "column": 5,
+            "line": 2
+          }
+        ],
+        "message": "Mutation would affect more than 3 objects. Specify \"first\" to increase the limit or truncate the result",
+        "path": ["deleteAllHeroes"]
+      }
+    ]
+  },
+  "DataCheck": {
+    "data": {
+      "allHeroes": [
+        {
+          "id": "@ids/Hero/0"
+        },
+        {
+          "id": "@ids/Hero/1"
+        },
+        {
+          "id": "@ids/Hero/2"
+        },
+        {
+          "id": "@ids/Hero/3"
+        },
+        {
+          "id": "@ids/Hero/4"
+        },
+        {
+          "id": "@ids/Hero/5"
+        },
+        {
+          "id": "@ids/Hero/6"
+        }
+      ]
+    }
+  }
+}

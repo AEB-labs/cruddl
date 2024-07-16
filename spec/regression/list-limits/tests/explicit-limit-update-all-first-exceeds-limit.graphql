@@ -1,0 +1,11 @@
+mutation ExplicitUpdateAllFirstExceedsLimit {
+    updateAllHeroes(first: 6, input: { name: "A" }) {
+        name
+    }
+}
+
+query DataCheck {
+    allHeroes(first: 4) {
+        name
+    }
+}

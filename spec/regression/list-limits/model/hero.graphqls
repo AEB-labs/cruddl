@@ -1,0 +1,3 @@
+type Hero @rootEntity(flexSearch: true) {
+    name: String @flexSearch
+}

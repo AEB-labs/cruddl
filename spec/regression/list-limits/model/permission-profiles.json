@@ -1,0 +1,12 @@
+{
+  "permissionProfiles": {
+    "default": {
+      "permissions": [
+        {
+          "roles": ["users"],
+          "access": "readWrite"
+        }
+      ]
+    }
+  }
+}

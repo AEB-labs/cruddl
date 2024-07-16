@@ -1,0 +1,11 @@
+mutation ImplicitUpdateAll {
+    updateAllHeroes(input: { name: "A" }) {
+        name
+    }
+}
+
+query DataCheck {
+    allHeroes(first: 7) {
+        name
+    }
+}

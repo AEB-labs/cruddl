@@ -1,5 +1,6 @@
-import { FieldSelection } from '../../graphql/query-distiller';
+import type { ExecutionOptions } from '../../execution/execution-options';
 import { Clock, IDGenerator } from '../../execution/execution-options';
+import { FieldSelection } from '../../graphql/query-distiller';
 
 /**
  * A token that corresponds to a FieldSelection but is local to one execution
@@ -50,4 +51,14 @@ export interface FieldContext {
      * An interface to generate IDs, e.g. for new child entities
      */
     readonly idGenerator: IDGenerator;
+
+    /**
+     * Refer to {@link ExecutionOptions.maxLimitForRootEntityQueries} for a description of this property.
+     */
+    readonly maxLimitForRootEntityQueries?: number;
+
+    /**
+     * Refer to {@link ExecutionOptions.implicitLimitForRootEntityQueries} for a description of this property.
+     */
+    readonly implicitLimitForRootEntityQueries?: number;
 }

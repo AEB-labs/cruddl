@@ -17,7 +17,7 @@ export class SchemaGenerator {
     constructor(private context: SchemaTransformationContext) {
         this.operationResolver = new OperationResolver(context);
         this.rootTypesGenerator = new RootTypesGenerator(context.schemaOptions);
-        this.queryNodeObjectTypeConverter = new QueryNodeObjectTypeConverter();
+        this.queryNodeObjectTypeConverter = new QueryNodeObjectTypeConverter(this.context);
     }
 
     generate(model: Model) {

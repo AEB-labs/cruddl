@@ -1,0 +1,35 @@
+{
+  "ImplicitLimitDeleteAllFirst": {
+    "data": {
+      "deleteAllHeroes": [
+        {
+          "name": "Riley"
+        },
+        {
+          "name": "Ratliff"
+        },
+        {
+          "name": "Christa"
+        },
+        {
+          "name": "Rebekah"
+        }
+      ]
+    }
+  },
+  "DataCheck": {
+    "data": {
+      "allHeroes": [
+        {
+          "id": "@ids/Hero/4"
+        },
+        {
+          "id": "@ids/Hero/5"
+        },
+        {
+          "id": "@ids/Hero/6"
+        }
+      ]
+    }
+  }
+}

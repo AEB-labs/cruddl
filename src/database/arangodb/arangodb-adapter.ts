@@ -259,6 +259,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                         for (const key in query.resultValidator) {
                             if (key in validators) {
                                 validators[key](query.resultValidator[key], resultData);
+                            } else {
+                                // noinspection ExceptionCaughtLocallyJS
+                                throw new Error(`Validator "${key}" missing.`);
                             }
                         }
                     }

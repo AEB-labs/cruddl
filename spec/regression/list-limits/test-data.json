@@ -1,0 +1,35 @@
+{
+  "roles": ["users"],
+  "rootEntities": {
+    "Hero": [
+      {
+        "@id": "0",
+        "name": "Riley"
+      },
+      {
+        "@id": "1",
+        "name": "Ratliff"
+      },
+      {
+        "@id": "2",
+        "name": "Christa"
+      },
+      {
+        "@id": "3",
+        "name": "Rebekah"
+      },
+      {
+        "@id": "4",
+        "name": "Daniel"
+      },
+      {
+        "@id": "5",
+        "name": "Oneal"
+      },
+      {
+        "@id": "6",
+        "name": "Cain"
+      }
+    ]
+  }
+}
