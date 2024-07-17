@@ -53,7 +53,7 @@ describe('ObjectType', () => {
         const result = validate(type);
         expect(result.messages.length).to.equal(2);
         for (const message of result.messages) {
-            expect(message.severity).to.equal(Severity.Error);
+            expect(message.severity).to.equal(Severity.ERROR);
             expect(message.message).to.equal(`Duplicate field name: "deliveryNumber".`);
         }
     });

@@ -35,7 +35,7 @@ describe('EnityExtensionType', () => {
         expectSingleMessageToInclude(
             type,
             `EntityTypes cannot recursively contain an EntityType of their own type.`,
-            Severity.Error,
+            Severity.ERROR,
         );
     });
 
@@ -80,7 +80,7 @@ describe('EnityExtensionType', () => {
         expectSingleMessageToInclude(
             type,
             `EntityTypes cannot recursively contain an EntityType of their own type.`,
-            Severity.Error,
+            Severity.ERROR,
         );
     });
 });

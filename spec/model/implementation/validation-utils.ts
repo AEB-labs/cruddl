@@ -17,11 +17,11 @@ export function expectToBeValid(component: ModelComponent) {
 }
 
 export function expectSingleErrorToInclude(component: ModelComponent, errorPart: string) {
-    expectSingleMessageToInclude(component, errorPart, Severity.Error);
+    expectSingleMessageToInclude(component, errorPart, Severity.ERROR);
 }
 
 export function expectSingleWarningToInclude(component: ModelComponent, errorPart: string) {
-    expectSingleMessageToInclude(component, errorPart, Severity.Warning);
+    expectSingleMessageToInclude(component, errorPart, Severity.WARNING);
 }
 
 export function expectSingleMessageToInclude(

@@ -30,12 +30,12 @@ export class FlexSearchPrimarySortClause implements ModelComponent {
         const subContext = new ValidationContext();
         this.field.validate(subContext);
         for (const message of subContext.validationMessages) {
-            if (message.severity === Severity.Error) {
+            if (message.severity === Severity.ERROR) {
                 // we did not report any errors previously. In a transition period, we make it clear
                 // that these warnings will be errors in the future.
                 context.addMessage(
                     new ValidationMessage(
-                        Severity.Warning,
+                        Severity.WARNING,
                         message.message +
                             (message.message.endsWith('.') ? '' : '.') +
                             ' This will be an error in a future release.',

@@ -374,7 +374,7 @@ describe('Field', () => {
                 const result = validate(field);
                 expect(result.messages.length).to.equal(2);
                 for (const message of result.messages) {
-                    expect(message.severity).to.equal(Severity.Error);
+                    expect(message.severity).to.equal(Severity.ERROR);
                     expect(message.message).to.equal(
                         'Multiple fields ("Delivery.packager", "Delivery.shipper") declare inverseOf to "Person.delivery".',
                     );
@@ -385,7 +385,7 @@ describe('Field', () => {
                 const field = shipmentType.getFieldOrThrow('delivery');
                 const result = validate(field);
                 expect(result.messages.length, result.toString()).to.equal(1);
-                expect(result.messages[0].severity).to.equal(Severity.Warning);
+                expect(result.messages[0].severity).to.equal(Severity.WARNING);
                 expect(result.messages[0].message).to.equal(
                     'This field and "Delivery.shipment" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.',
                 );
@@ -738,7 +738,7 @@ describe('Field', () => {
 
             const res = validate(field);
             expect(res.messages.length, res.toString()).to.equal(1);
-            expect(res.messages[0].severity, res.toString()).to.equal(Severity.Info); // warning about no type checking for default values
+            expect(res.messages[0].severity, res.toString()).to.equal(Severity.INFO); // warning about no type checking for default values
         });
 
         it('accepts on value object types', () => {
@@ -753,7 +753,7 @@ describe('Field', () => {
 
             const res = validate(field);
             expect(res.messages.length, res.toString()).to.equal(1);
-            expect(res.messages[0].severity, res.toString()).to.equal(Severity.Info); // warning about no type checking for default values
+            expect(res.messages[0].severity, res.toString()).to.equal(Severity.INFO); // warning about no type checking for default values
         });
     });
 
@@ -818,7 +818,7 @@ describe('Field', () => {
             const result = validate(field);
             expect(result.messages.length).to.equal(2);
             for (const message of result.messages) {
-                expect(message.severity).to.equal(Severity.Error);
+                expect(message.severity).to.equal(Severity.ERROR);
                 expect(message.message).to.equal(
                     `Permission profile and explicit role specifiers cannot be combined.`,
                 );
