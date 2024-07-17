@@ -3,6 +3,7 @@ import { ValidationMessage } from '../validation';
 import { BillingConfig } from './billing';
 import { LocalizationConfig } from './i18n';
 import { NamespacedPermissionProfileConfigMap, TimeToLiveConfig } from './index';
+import { ModuleConfig } from './module';
 import { TypeConfig } from './type';
 
 export interface ModelConfig {
@@ -13,4 +14,5 @@ export interface ModelConfig {
     readonly billing?: BillingConfig;
     readonly timeToLiveConfigs?: ReadonlyArray<TimeToLiveConfig>;
     readonly options?: ModelOptions;
+    readonly modules?: ReadonlyArray<ModuleConfig>;
 }

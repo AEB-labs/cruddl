@@ -7,6 +7,9 @@ import {
     COLLECT_DIRECTIVE,
     FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT,
     FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
+    MODULES_ALL_ARG,
+    MODULES_DIRECTIVE,
+    MODULES_INCLUDE_ALL_FIELDS_ARG,
     PARENT_DIRECTIVE,
     REFERENCE_DIRECTIVE,
     RELATION_DIRECTIVE,
@@ -42,6 +45,9 @@ import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
+import { FieldModuleSpecification } from './modules/field-module-specification';
+import { EffectiveModuleSpecification } from './modules/effective-module-specification';
+import { hasIn } from 'lodash';
 
 export interface SystemFieldConfig extends FieldConfig {
     readonly isSystemField?: boolean;
@@ -82,6 +88,8 @@ export class Field implements ModelComponent {
      */
     readonly isSystemField: boolean;
 
+    readonly moduleSpecification: FieldModuleSpecification | undefined;
+
     constructor(
         private readonly input: SystemFieldConfig,
         public readonly declaringType: ObjectType,
@@ -112,6 +120,12 @@ export class Field implements ModelComponent {
         this.isSystemField = input.isSystemField || false;
         this.isAccessField = input.isAccessField ?? false;
         this.isHidden = !!input.isHidden;
+        if (input.moduleSpecification) {
+            this.moduleSpecification = new FieldModuleSpecification(
+                input.moduleSpecification,
+                this.model,
+            );
+        }
     }
 
     /**
@@ -310,6 +324,35 @@ export class Field implements ModelComponent {
         return this.model.i18n.getFieldLocalization(this, resolutionOrder);
     }
 
+    @memorize()
+    get effectiveModuleSpecification(): EffectiveModuleSpecification {
+        if (!this.moduleSpecification) {
+            return EffectiveModuleSpecification.EMPTY;
+        }
+        if (
+            this.moduleSpecification.all ||
+            this.declaringType.moduleSpecification?.includeAllFields
+        ) {
+            return this.declaringType.effectiveModuleSpecification;
+        }
+        if (!this.moduleSpecification.clauses) {
+            // this is a validation error - best recovery is to assume no modules are specified
+            return EffectiveModuleSpecification.EMPTY;
+        }
+        // "clauses" being null either means all: true is set, or it is implicitly set via includeAllFields,
+        // or there is a validation error. In all cases, it probab
+        if (!this.moduleSpecification || !this.moduleSpecification.clauses) {
+            return new EffectiveModuleSpecification({ orCombinedClauses: [] });
+        }
+
+        // TODO also consider fields that are traversed 
+        return this.declaringType.effectiveModuleSpecification.andCombineWith(
+            new EffectiveModuleSpecification({
+                orCombinedClauses: this.moduleSpecification.clauses,
+            }),
+        );
+    }
+
     validate(context: ValidationContext) {
         this.validateName(context);
         this.validateType(context);
@@ -326,6 +369,7 @@ export class Field implements ModelComponent {
         this.validateRootField(context);
         this.validateFlexSearch(context);
         this.validateAccessField(context);
+        this.validateModuleSpecification(context);
     }
 
     private validateName(context: ValidationContext) {
@@ -1858,6 +1902,35 @@ export class Field implements ModelComponent {
                 ),
             );
         }
+    }
+
+    private validateModuleSpecification(context: ValidationContext) {
+        if (!this.moduleSpecification) {
+            if (
+                !this.isSystemField &&
+                this.declaringType.moduleSpecification &&
+                !this.declaringType.moduleSpecification.includeAllFields
+            ) {
+                context.addMessage(
+                    ValidationMessage.error(
+                        `Missing module specification. Either add @${MODULES_DIRECTIVE} on field "${this.name}", or specify @${MODULES_DIRECTIVE}(${MODULES_INCLUDE_ALL_FIELDS_ARG}: true) on type "${this.declaringType.name}".`,
+                        this.astNode,
+                    ),
+                );
+            }
+            return;
+        }
+
+        if (this.declaringType.moduleSpecification?.includeAllFields) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `@${MODULES_DIRECTIVE} cannot be specified here because @${MODULES_DIRECTIVE}(${MODULES_INCLUDE_ALL_FIELDS_ARG}: true) is specified on type "${this.declaringType.name}", and therefore @${MODULES_DIRECTIVE}(${MODULES_ALL_ARG}: true) is implicitly configured for all its fields.`,
+                    this.astNode,
+                ),
+            );
+        }
+
+        this.moduleSpecification.validate(context);
     }
 
     get isFlexSearchIndexed(): boolean {

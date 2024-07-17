@@ -6,6 +6,7 @@ export enum Severity {
     ERROR = 'ERROR',
     WARNING = 'WARNING',
     INFO = 'INFO',
+    COMPATIBILITY_ISSUE = 'COMPATIBILITY_ISSUE',
 }
 
 export class SourcePosition {
@@ -125,6 +126,10 @@ export class ValidationMessage {
         return new ValidationMessage(Severity.ERROR, message, location);
     }
 
+    public static compatibilityIssue(message: string, location: LocationLike | undefined) {
+        return new ValidationMessage(Severity.COMPATIBILITY_ISSUE, message, location);
+    }
+
     public static warn(message: string, location: LocationLike | undefined) {
         return new ValidationMessage(Severity.WARNING, message, location);
     }
@@ -147,6 +152,8 @@ function severityToString(severity: Severity) {
             return 'Info';
         case Severity.WARNING:
             return 'Warning';
+        case Severity.COMPATIBILITY_ISSUE:
+            return 'Compatibility issue';
     }
 }
 
