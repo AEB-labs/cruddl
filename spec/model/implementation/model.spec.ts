@@ -83,7 +83,7 @@ describe('Model', () => {
         const result = validate(model);
         expect(result.messages.length).to.equal(2);
         for (const message of result.messages) {
-            expect(message.severity).to.equal(Severity.Error);
+            expect(message.severity).to.equal(Severity.ERROR);
             expect(message.message).to.equal(`Duplicate type name: "Delivery".`);
         }
     });

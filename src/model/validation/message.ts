@@ -3,9 +3,9 @@ import { ProjectSource } from '../../project/source';
 import { getLineAndColumnFromPosition } from '../../schema/schema-utils';
 
 export enum Severity {
-    Error = 'ERROR',
-    Warning = 'WARNING',
-    Info = 'INFO',
+    ERROR = 'ERROR',
+    WARNING = 'WARNING',
+    INFO = 'INFO',
 }
 
 export class SourcePosition {
@@ -122,15 +122,15 @@ export class ValidationMessage {
     }
 
     public static error(message: string, location: LocationLike | undefined) {
-        return new ValidationMessage(Severity.Error, message, location);
+        return new ValidationMessage(Severity.ERROR, message, location);
     }
 
     public static warn(message: string, location: LocationLike | undefined) {
-        return new ValidationMessage(Severity.Warning, message, location);
+        return new ValidationMessage(Severity.WARNING, message, location);
     }
 
     public static info(message: string, location: LocationLike | undefined) {
-        return new ValidationMessage(Severity.Info, message, location);
+        return new ValidationMessage(Severity.INFO, message, location);
     }
 
     public toString() {
@@ -141,11 +141,11 @@ export class ValidationMessage {
 
 function severityToString(severity: Severity) {
     switch (severity) {
-        case Severity.Error:
+        case Severity.ERROR:
             return 'Error';
-        case Severity.Info:
+        case Severity.INFO:
             return 'Info';
-        case Severity.Warning:
+        case Severity.WARNING:
             return 'Warning';
     }
 }

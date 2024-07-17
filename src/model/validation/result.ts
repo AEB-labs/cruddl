@@ -8,27 +8,27 @@ export class ValidationResult {
     }
 
     public hasErrors() {
-        return this.messages.some((message) => message.severity === Severity.Error);
+        return this.messages.some((message) => message.severity === Severity.ERROR);
     }
 
     public getErrors() {
-        return this.messages.filter((message) => message.severity === Severity.Error);
+        return this.messages.filter((message) => message.severity === Severity.ERROR);
     }
 
     public hasWarnings() {
-        return this.messages.some((message) => message.severity === Severity.Warning);
+        return this.messages.some((message) => message.severity === Severity.WARNING);
     }
 
     public getWarnings() {
-        return this.messages.filter((message) => message.severity === Severity.Warning);
+        return this.messages.filter((message) => message.severity === Severity.WARNING);
     }
 
     public hasInfos() {
-        return this.messages.some((message) => message.severity === Severity.Info);
+        return this.messages.some((message) => message.severity === Severity.INFO);
     }
 
     public getInfos() {
-        return this.messages.filter((message) => message.severity === Severity.Info);
+        return this.messages.filter((message) => message.severity === Severity.INFO);
     }
 
     toString() {

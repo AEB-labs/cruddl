@@ -98,7 +98,7 @@ describe('sidecar-schema validator', () => {
         );
         expect(messages.length).to.equal(1);
         expect(messages[0].message).to.equal('must NOT have additional properties');
-        expect(messages[0].severity).to.equal(Severity.Warning);
+        expect(messages[0].severity).to.equal(Severity.WARNING);
     });
 
     it('reports errors in files with comments', () => {

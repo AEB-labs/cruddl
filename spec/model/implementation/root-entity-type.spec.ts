@@ -457,7 +457,7 @@ describe('RootEntityType', () => {
             const result = validate(type);
             expect(result.messages.length, result.toString()).to.equal(2);
             for (const message of result.messages) {
-                expect(message.severity).to.equal(Severity.Error);
+                expect(message.severity).to.equal(Severity.ERROR);
                 expect(message.message).to.equal(
                     `Permission profile and explicit role specifiers cannot be combined.`,
                 );

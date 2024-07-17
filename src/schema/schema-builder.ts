@@ -197,7 +197,7 @@ function parseYAMLSource(
     }
 
     root.errors.forEach((error) => {
-        const severity = error.isWarning ? Severity.Warning : Severity.Error;
+        const severity = error.isWarning ? Severity.WARNING : Severity.ERROR;
         const endPos = getLineEndPosition(error.mark.line + 1, projectSource);
         validationContext.addMessage(
             new ValidationMessage(

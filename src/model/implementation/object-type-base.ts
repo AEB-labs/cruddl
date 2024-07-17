@@ -84,7 +84,7 @@ export abstract class ObjectTypeBase extends TypeBase {
             if (systemField.type.name !== systemFieldOverride.typeName) {
                 context.addMessage(
                     new ValidationMessage(
-                        Severity.Error,
+                        Severity.ERROR,
                         `System field "${systemField.name}" must be of type "${systemField.type.name}"`,
                         systemField.astNode,
                     ),
@@ -94,7 +94,7 @@ export abstract class ObjectTypeBase extends TypeBase {
             if (!systemFieldOverride.astNode?.directives?.length) {
                 context.addMessage(
                     new ValidationMessage(
-                        Severity.Warning,
+                        Severity.WARNING,
                         `Manually declaring system field "${systemField.name}" is redundant. Either add a suitable directive or consider removing the field`,
                         systemField.astNode,
                     ),
@@ -110,7 +110,7 @@ export abstract class ObjectTypeBase extends TypeBase {
             for (const forbiddenDirective of forbiddenSystemFieldDirectives) {
                 context.addMessage(
                     new ValidationMessage(
-                        Severity.Error,
+                        Severity.ERROR,
                         `Directive "@${forbiddenDirective.name.value}" is not allowed on system field "${systemFieldOverride.name}" and will be discarded`,
                         forbiddenDirective,
                     ),
