@@ -7,6 +7,7 @@ import { ModelComponent, ValidationContext } from '../validation/validation-cont
 import { TypeLocalization } from './i18n';
 import { Model } from './model';
 import { Namespace } from './namespace';
+import { EffectiveModuleSpecification } from './modules/effective-module-specification';
 
 export abstract class TypeBase implements ModelComponent {
     readonly name: string;
@@ -111,6 +112,17 @@ export abstract class TypeBase implements ModelComponent {
             }
         }
         return res;
+    }
+
+    @memorize()
+    get effectiveModuleSpecification(): EffectiveModuleSpecification {
+        // TODO - determine where the types is used
+        // need to figure out how to do this without infinite recursion
+        return new EffectiveModuleSpecification({
+            orCombinedClauses: this.model.modules.map((module) => ({
+                andCombinedModules: [module.name],
+            })),
+        }).simplify();
     }
 
     abstract readonly isObjectType: boolean;

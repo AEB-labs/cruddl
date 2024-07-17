@@ -53,6 +53,7 @@ export function assertValidatorAcceptsAndDoesNotWarn(
 export interface ValidationOptions {
     readonly permissionProfiles?: PermissionProfileConfigMap;
     timeToLive?: ReadonlyArray<TimeToLiveConfig>;
+    withModuleDefinitions?: boolean;
 }
 
 export function validate(
@@ -81,33 +82,39 @@ export function validate(
         return intermediateResult;
     }
 
-    const model = createModel({
-        sources: [
-            {
-                kind: ParsedProjectSourceBaseKind.GRAPHQL,
-                document: ast,
-                namespacePath: [],
-            },
-            {
-                kind: ParsedProjectSourceBaseKind.OBJECT,
-                object: {
-                    permissionProfiles: options.permissionProfiles || {
-                        default: {
-                            permissions: [
-                                {
-                                    roles: ['admin'],
-                                    access: 'readWrite',
-                                },
-                            ],
-                        },
-                    },
-                    timeToLive: options.timeToLive,
+    const model = createModel(
+        {
+            sources: [
+                {
+                    kind: ParsedProjectSourceBaseKind.GRAPHQL,
+                    document: ast,
+                    namespacePath: [],
                 },
-                namespacePath: [],
-                pathLocationMap: {},
-            },
-        ],
-    });
+                {
+                    kind: ParsedProjectSourceBaseKind.OBJECT,
+                    object: {
+                        permissionProfiles: options.permissionProfiles || {
+                            default: {
+                                permissions: [
+                                    {
+                                        roles: ['admin'],
+                                        access: 'readWrite',
+                                    },
+                                ],
+                            },
+                        },
+                        timeToLive: options.timeToLive,
+                        modules: options.withModuleDefinitions
+                            ? ['module1', 'module2', 'module3']
+                            : undefined,
+                    },
+                    namespacePath: [],
+                    pathLocationMap: {},
+                },
+            ],
+        },
+        { withModuleDefinitions: options.withModuleDefinitions },
+    );
     const astResults = validatePostMerge(ast, model);
 
     return new ValidationResult([

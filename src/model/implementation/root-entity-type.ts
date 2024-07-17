@@ -7,6 +7,7 @@ import {
     FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
     FLEX_SEARCH_INDEXED_DIRECTIVE,
     ID_FIELD,
+    MODULES_DIRECTIVE,
     SCALAR_INT,
     SCALAR_STRING,
 } from '../../schema/constants';
@@ -18,7 +19,7 @@ import {
     FlexSearchPrimarySortClauseConfig,
     PermissionsConfig,
     RootEntityTypeConfig,
-    TypeKind
+    TypeKind,
 } from '../config';
 import { ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
@@ -33,6 +34,7 @@ import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { ScalarType } from './scalar-type';
 import { TimeToLiveType } from './time-to-live';
+import { EffectiveModuleSpecification } from './modules/effective-module-specification';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};
@@ -230,6 +232,7 @@ export class RootEntityType extends ObjectTypeBase {
         this.validatePermissions(context);
         this.validateIndices(context);
         this.validateFlexSearch(context);
+        this.validateRootEntityModuleSpecification(context);
     }
 
     private validateKeyField(context: ValidationContext) {
@@ -472,6 +475,18 @@ export class RootEntityType extends ObjectTypeBase {
         }
     }
 
+    private validateRootEntityModuleSpecification(context: ValidationContext) {
+        const withModuleDefinitions = this.model.options?.withModuleDefinitions ?? false;
+        if (withModuleDefinitions && !this.moduleSpecification) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Missing module specification. Add ${MODULES_DIRECTIVE}(in: ...) to specify the modules of this root entity type.`,
+                    this.nameASTNode,
+                ),
+            );
+        }
+    }
+
     @memorize()
     get billingEntityConfig() {
         return this.model.billingEntityTypes.find((value) => value.rootEntityType === this);
@@ -512,6 +527,18 @@ export class RootEntityType extends ObjectTypeBase {
         return this.model.timeToLiveTypes.filter(
             (ttlType) => ttlType.rootEntityType && ttlType.rootEntityType.name === this.name,
         );
+    }
+
+    @memorize()
+    get effectiveModuleSpecification(): EffectiveModuleSpecification {
+        // the default behavior for an ObjectType is to be included wherever a type is used.
+        // for root entity types, this is not good - they generate API on their own, so they
+        // should always be explicit. (this is also validated, but just to be sure)
+        if (!this.moduleSpecification || !this.moduleSpecification.clauses) {
+            return EffectiveModuleSpecification.EMPTY;
+        }
+
+        return super.effectiveModuleSpecification;
     }
 }
 

@@ -4,31 +4,46 @@ import {
     ModelComponent,
     ValidationContext,
 } from '../../../src/model/validation/validation-context';
+import { Project } from '../../../src/project/project';
 
-export function validate(component: ModelComponent): ValidationResult {
+type Validatable = ModelComponent | ValidationResult | Project;
+
+export function validate(component: Validatable): ValidationResult {
+    if (component instanceof ValidationResult) {
+        return component;
+    }
     const context = new ValidationContext();
-    component.validate(context);
+    const callResult = component.validate(context);
+    if (callResult !== undefined) {
+        // handle the case where a Project is given
+        if ((callResult as unknown) instanceof ValidationResult) {
+            return callResult;
+        }
+        throw new Error(
+            `validate() unexpectedly had a return value that is not a ValidationResult`,
+        );
+    }
     return context.asResult();
 }
 
-export function expectToBeValid(component: ModelComponent) {
+export function expectToBeValid(component: Validatable) {
     const result = validate(component);
     expect(result.hasMessages(), result.toString()).to.be.false;
 }
 
-export function expectSingleError(component: ModelComponent, errorPart: string) {
+export function expectSingleError(component: Validatable, errorPart: string) {
     expectSingleMessage(component, errorPart, Severity.ERROR);
 }
 
-export function expectSingleWarning(component: ModelComponent, errorPart: string) {
+export function expectSingleCompatibilityIssue(component: Validatable, errorPart: string) {
+    expectSingleMessage(component, errorPart, Severity.COMPATIBILITY_ISSUE);
+}
+
+export function expectSingleWarning(component: Validatable, errorPart: string) {
     expectSingleMessage(component, errorPart, Severity.WARNING);
 }
 
-export function expectSingleMessage(
-    component: ModelComponent,
-    errorPart: string,
-    severity: Severity,
-) {
+export function expectSingleMessage(component: Validatable, errorPart: string, severity: Severity) {
     const result = validate(component);
     expect(result.messages.length, result.toString()).to.equal(1);
     const message = result.messages[0];

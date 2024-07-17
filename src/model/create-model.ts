@@ -55,6 +55,10 @@ import {
     INVERSE_OF_ARG,
     KEY_FIELD_ARG,
     KEY_FIELD_DIRECTIVE,
+    MODULES_ALL_ARG,
+    MODULES_DIRECTIVE,
+    MODULES_IN_ARG,
+    MODULES_INCLUDE_ALL_FIELDS_ARG,
     NAMESPACE_DIRECTIVE,
     NAMESPACE_NAME_ARG,
     NAMESPACE_SEPARATOR,
@@ -106,22 +110,32 @@ import {
     TypeKind,
 } from './config';
 import { BillingConfig } from './config/billing';
+import { ModuleConfig } from './config/module';
+import {
+    FieldModuleSpecificationConfig,
+    TypeModuleSpecificationConfig,
+} from './config/module-specification';
 import { Model } from './implementation';
 import { OrderDirection } from './implementation/order';
 import { parseBillingConfigs } from './parse-billing';
 import { parseI18nConfigs } from './parse-i18n';
+import { parseModuleConfigs } from './parse-modules';
 import { parseTTLConfigs } from './parse-ttl';
 import { ValidationContext, ValidationMessage } from './validation';
 
-export function createModel(parsedProject: ParsedProject, options?: ModelOptions): Model {
+export function createModel(parsedProject: ParsedProject, options: ModelOptions = {}): Model {
     const validationContext = new ValidationContext();
     return new Model({
-        types: createTypeInputs(parsedProject, validationContext, options ?? {}),
+        types: createTypeInputs(parsedProject, validationContext, options),
         permissionProfiles: extractPermissionProfiles(parsedProject),
         i18n: extractI18n(parsedProject),
-        validationMessages: validationContext.validationMessages,
         billing: extractBilling(parsedProject),
         timeToLiveConfigs: extractTimeToLive(parsedProject),
+        modules: extractModules(parsedProject, options, validationContext),
+
+        // access this after the other function calls so we have collected all messages
+        // (it's currently passed by reference but let's not rely on that)
+        validationMessages: validationContext.validationMessages,
         options,
     });
 }
@@ -220,6 +234,7 @@ function createObjectTypeInput(
         fields: (definition.fields || []).map((field) => createFieldInput(field, context, options)),
         namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
         flexSearchLanguage: getDefaultLanguage(definition, context),
+        moduleSpecification: getTypeModuleSpecification(definition, context, options),
     };
 
     const businessObjectDirective = findDirectiveWithName(definition, BUSINESS_OBJECT_DIRECTIVE);
@@ -660,6 +675,7 @@ function createFieldInput(
         accessFieldDirectiveASTNode,
         isHidden: !!hiddenDirectiveASTNode,
         isHiddenASTNode: hiddenDirectiveASTNode,
+        moduleSpecification: getFieldModuleSpecification(fieldNode, context, options),
     };
 }
 
@@ -1174,6 +1190,19 @@ function extractTimeToLive(parsedProject: ParsedProject): TimeToLiveConfig[] {
         .reduce((previousValue, currentValue) => previousValue.concat(currentValue), []);
 }
 
+function extractModules(
+    parsedProject: ParsedProject,
+    options: ModelOptions,
+    validationContext: ValidationContext,
+): ReadonlyArray<ModuleConfig> {
+    const objectSchemaParts = parsedProject.sources.filter(
+        (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT,
+    ) as ReadonlyArray<ParsedObjectProjectSource>;
+    return objectSchemaParts
+        .map((source) => parseModuleConfigs(source, options, validationContext))
+        .reduce((previousValue, currentValue) => previousValue.concat(currentValue), []);
+}
+
 // fake input type for index mapping
 const indexDefinitionInputObjectType: GraphQLInputObjectType = new GraphQLInputObjectType({
     fields: {
@@ -1197,3 +1226,100 @@ const flexSearchOrderInputObjectType: GraphQLInputObjectType = new GraphQLInputO
         },
     },
 });
+
+function getCombinedModuleSpecification(
+    definition: ObjectTypeDefinitionNode | FieldDefinitionNode,
+    context: ValidationContext,
+    options: ModelOptions,
+): (TypeModuleSpecificationConfig & FieldModuleSpecificationConfig) | undefined {
+    const astNode = findDirectiveWithName(definition, MODULES_DIRECTIVE);
+    if (!astNode) {
+        return undefined;
+    }
+
+    if (!options.withModuleDefinitions) {
+        context.addMessage(
+            ValidationMessage.error(
+                `Module specifications are not supported in this context.`,
+                astNode,
+            ),
+        );
+        return undefined;
+    }
+
+    const inAstNode = astNode.arguments?.find((a) => a.name.value === MODULES_IN_ARG);
+    let allAstNode = astNode.arguments?.find((a) => a.name.value === MODULES_ALL_ARG);
+    let includeAllFieldsAstNode = astNode.arguments?.find(
+        (a) => a.name.value === MODULES_INCLUDE_ALL_FIELDS_ARG,
+    );
+
+    // graphql allows you to omit the [] on lists...
+    const inNodes =
+        inAstNode?.value.kind === Kind.STRING
+            ? [inAstNode.value]
+            : inAstNode?.value.kind === Kind.LIST
+            ? inAstNode.value.values
+            : undefined;
+
+    const config: TypeModuleSpecificationConfig & FieldModuleSpecificationConfig = {
+        astNode,
+        inAstNode,
+        allAstNode,
+        includeAllFieldsAstNode,
+
+        in: inNodes?.map((astNode) => ({
+            astNode,
+            expression: astNode.kind === Kind.STRING ? astNode.value : '',
+        })),
+        all: allAstNode?.value?.kind === Kind.BOOLEAN ? allAstNode.value.value : false,
+        includeAllFields:
+            includeAllFieldsAstNode?.value?.kind === Kind.BOOLEAN
+                ? includeAllFieldsAstNode.value.value
+                : false,
+    };
+    return config;
+}
+
+function getTypeModuleSpecification(
+    definition: ObjectTypeDefinitionNode,
+    context: ValidationContext,
+    options: ModelOptions,
+): TypeModuleSpecificationConfig | undefined {
+    const config = getCombinedModuleSpecification(definition, context, options);
+    if (!config) {
+        return config;
+    }
+
+    if (config.allAstNode) {
+        context.addMessage(
+            ValidationMessage.error(
+                `"${MODULES_ALL_ARG}" can only be specified on field declarations.`,
+                config.allAstNode,
+            ),
+        );
+    }
+
+    return config;
+}
+
+function getFieldModuleSpecification(
+    definition: FieldDefinitionNode,
+    context: ValidationContext,
+    options: ModelOptions,
+): FieldModuleSpecificationConfig | undefined {
+    const config = getCombinedModuleSpecification(definition, context, options);
+    if (!config) {
+        return config;
+    }
+
+    if (config.includeAllFieldsAstNode) {
+        context.addMessage(
+            ValidationMessage.error(
+                `"${MODULES_INCLUDE_ALL_FIELDS_ARG}" can only be specified on type declarations.`,
+                config.includeAllFieldsAstNode,
+            ),
+        );
+    }
+
+    return config;
+}
