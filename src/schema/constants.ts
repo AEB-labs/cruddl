@@ -39,6 +39,11 @@ export const INVERSE_OF_ARG = 'inverseOf';
 export const ON_DELETE_ARG = 'onDelete';
 export const KEY_FIELD_ARG = 'keyField';
 
+export const MODULES_DIRECTIVE = 'modules';
+export const MODULES_IN_ARG = 'in';
+export const MODULES_ALL_ARG = 'all';
+export const MODULES_INCLUDE_ALL_FIELDS_ARG = 'includeAllFields';
+
 export const QUERY_TYPE = 'Query';
 export const MUTATION_TYPE = 'Mutation';
 export const QUERY_META_TYPE = '_QueryMeta';

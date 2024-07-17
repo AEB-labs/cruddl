@@ -9,10 +9,12 @@ import { SchemaExecutor } from '../execution/schema-executor';
 import { TransactionError } from '../execution/transaction-error';
 import { getMetaSchema } from '../meta-schema/meta-schema';
 import { Model, TimeToLiveType, ValidationResult } from '../model';
+import { checkModel } from '../model/compatibility-check/check-model';
 import { ListQueryNode, QueryNode } from '../query-tree';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
+import { ModuleSelectionOptions, selectModulesInProject } from './select-modules-in-sources';
 import { ProjectSource, SourceLike, SourceType } from './source';
-import { getQueryNodeForTTLType, getTTLInfoQueryNode, TTLInfo } from './time-to-live';
+import { TTLInfo, getQueryNodeForTTLType, getTTLInfoQueryNode } from './time-to-live';
 
 export { ProjectOptions };
 
@@ -144,6 +146,35 @@ export class Project {
     @memorize()
     getModel(): Model {
         return getModel(this);
+    }
+
+    /**
+     * Generates a new project from this one where only types and fields of the given modules are included
+     *
+     * Only works if modelOptions.withModuleDefinitions is set in the options of this project
+     *
+     * The resulting project's sources will be modified as well, so they can be used to serialize the resulting model.
+     */
+    withModuleSelection(
+        selectedModules: ReadonlyArray<string>,
+        options: ModuleSelectionOptions = {},
+    ): Project {
+        return selectModulesInProject(this, selectedModules, options);
+    }
+
+    /**
+     * Checks if this project is compatible with another project
+     *
+     * A project is compatible with another project if it declares all types and fields of it in a compatible manner.
+     * It can have additional types and fields, and it can differ in some ways that are considered compatible (e.g.
+     * the flexSearchLanguage arguments can differ).
+     *
+     * If the baselineProject includes module declarations, the module names will be used in the messages.
+     *
+     * @return a ValidationResult, with messages of severity COMPATIBILITY_ISSUE if there are compatibility issues, or none if the project is compatible
+     */
+    checkCompatibility(baselineProject: Project): ValidationResult {
+        return checkModel(this.getModel(), baselineProject.getModel());
     }
 
     /**

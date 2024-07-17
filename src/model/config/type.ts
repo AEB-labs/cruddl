@@ -10,8 +10,8 @@ import {
 import { FixedPointDecimalInfo } from '../implementation/scalar-type';
 import { FieldConfig, FlexSearchLanguage } from './field';
 import { FlexSearchIndexConfig, IndexDefinitionConfig } from './indices';
+import { TypeModuleSpecificationConfig } from './module-specification';
 import { PermissionsConfig } from './permissions';
-import { TimeToLiveConfig } from './time-to-live';
 
 export enum TypeKind {
     SCALAR = 'SCALAR',
@@ -34,6 +34,7 @@ export interface TypeConfigBase {
 export interface ObjectTypeConfigBase extends TypeConfigBase {
     readonly fields: ReadonlyArray<FieldConfig>;
     readonly astNode?: ObjectTypeDefinitionNode;
+    readonly moduleSpecification?: TypeModuleSpecificationConfig;
 }
 
 export interface RootEntityTypeConfig extends ObjectTypeConfigBase {

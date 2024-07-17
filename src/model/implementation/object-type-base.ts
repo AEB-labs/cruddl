@@ -6,6 +6,9 @@ import { Field, SystemFieldConfig } from './field';
 import { Model } from './model';
 import { ObjectType } from './type';
 import { TypeBase } from './type-base';
+import { TypeModuleSpecification } from './modules/type-module-specification';
+import memorize from 'memorize-decorator';
+import { EffectiveModuleSpecification } from './modules/effective-module-specification';
 
 export abstract class ObjectTypeBase extends TypeBase {
     readonly fields: ReadonlyArray<Field>;
@@ -13,6 +16,7 @@ export abstract class ObjectTypeBase extends TypeBase {
     readonly systemFieldOverrides: ReadonlyMap<string, FieldConfig>;
     readonly systemFields: ReadonlyMap<string, Field>;
     readonly systemFieldConfigs: ReadonlyMap<string, SystemFieldConfig>;
+    readonly moduleSpecification?: TypeModuleSpecification;
 
     protected constructor(
         input: ObjectTypeConfig,
@@ -56,6 +60,13 @@ export abstract class ObjectTypeBase extends TypeBase {
 
         this.fields = [...systemFields, ...customFields];
         this.fieldMap = new Map(this.fields.map((field): [string, Field] => [field.name, field]));
+
+        if (input.moduleSpecification) {
+            this.moduleSpecification = new TypeModuleSpecification(
+                input.moduleSpecification,
+                this.model,
+            );
+        }
     }
 
     validate(context: ValidationContext) {
@@ -76,6 +87,8 @@ export abstract class ObjectTypeBase extends TypeBase {
         for (const field of this.fields) {
             field.validate(context);
         }
+
+        this.validateModuleSpecification(context);
     }
 
     private validateSystemFieldOverrides(context: ValidationContext): void {
@@ -140,6 +153,12 @@ export abstract class ObjectTypeBase extends TypeBase {
         }
     }
 
+    private validateModuleSpecification(context: ValidationContext) {
+        if (this.moduleSpecification) {
+            this.moduleSpecification.validate(context);
+        }
+    }
+
     getField(name: string): Field | undefined {
         return this.fieldMap.get(name);
     }
@@ -169,6 +188,19 @@ export abstract class ObjectTypeBase extends TypeBase {
             isHidden: !!override.isHidden,
             isHiddenASTNode: override.isHiddenASTNode,
         };
+    }
+
+    @memorize()
+    get effectiveModuleSpecification(): EffectiveModuleSpecification {
+        // clauses being undefined is an error state, recover gracefully
+        if (!this.moduleSpecification || !this.moduleSpecification.clauses) {
+            // if modules are not specified, do not restrict this - just included it whenever the types are used
+            return super.effectiveModuleSpecification;
+        }
+
+        return new EffectiveModuleSpecification({
+            orCombinedClauses: this.moduleSpecification.clauses,
+        });
     }
 
     readonly isObjectType: true = true;

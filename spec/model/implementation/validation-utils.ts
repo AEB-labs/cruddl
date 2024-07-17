@@ -5,27 +5,40 @@ import {
     ValidationContext,
 } from '../../../src/model/validation/validation-context';
 
-export function validate(component: ModelComponent): ValidationResult {
+export function validate(component: ModelComponent | ValidationResult): ValidationResult {
+    if (component instanceof ValidationResult) {
+        return component;
+    }
     const context = new ValidationContext();
     component.validate(context);
     return context.asResult();
 }
 
-export function expectToBeValid(component: ModelComponent) {
+export function expectToBeValid(component: ModelComponent | ValidationResult) {
     const result = validate(component);
     expect(result.hasMessages(), result.toString()).to.be.false;
 }
 
-export function expectSingleError(component: ModelComponent, errorPart: string) {
+export function expectSingleError(component: ModelComponent | ValidationResult, errorPart: string) {
     expectSingleMessage(component, errorPart, Severity.ERROR);
 }
 
-export function expectSingleWarning(component: ModelComponent, errorPart: string) {
+export function expectSingleCompatibilityIssue(
+    component: ModelComponent | ValidationResult,
+    errorPart: string,
+) {
+    expectSingleMessage(component, errorPart, Severity.COMPATIBILITY_ISSUE);
+}
+
+export function expectSingleWarning(
+    component: ModelComponent | ValidationResult,
+    errorPart: string,
+) {
     expectSingleMessage(component, errorPart, Severity.WARNING);
 }
 
 export function expectSingleMessage(
-    component: ModelComponent,
+    component: ModelComponent | ValidationResult,
     errorPart: string,
     severity: Severity,
 ) {

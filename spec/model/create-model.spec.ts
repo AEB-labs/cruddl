@@ -1,6 +1,10 @@
 import { expect } from 'chai';
 import { DocumentNode } from 'graphql';
 import gql from 'graphql-tag';
+import { Project, ProjectSource } from '../../core-exports';
+import { Severity, ValidationContext, createModel } from '../../src/model';
+import { parseProject } from '../../src/schema/schema-builder';
+import { expectSingleError, expectToBeValid } from './implementation/validation-utils';
 import { createSimpleModel } from './model-spec.helper';
 
 describe('createModel', () => {
@@ -375,5 +379,82 @@ describe('createModel', () => {
         expect(type.getFieldOrThrow('updatedAt').isHidden).to.be.true;
         expect(type.getFieldOrThrow('createdAt').isHidden).to.be.false;
         expect(type.getFieldOrThrow('test2').isHidden).to.be.true;
+    });
+
+    describe('with modules', () => {
+        it('extracts the module definitions', () => {
+            const validationContext = new ValidationContext();
+            const parsedProject = parseProject(
+                new Project([
+                    new ProjectSource(
+                        'modules.json',
+                        JSON.stringify({
+                            modules: ['module1', 'module2'],
+                        }),
+                    ),
+                ]),
+                validationContext,
+            );
+            expectToBeValid(validationContext.asResult());
+            const model = createModel(parsedProject, {
+                withModuleDefinitions: true,
+            });
+            expectToBeValid(model);
+            const modules = model.modules;
+            expect(modules).to.have.lengthOf(2);
+            const module1 = modules[0];
+            expect(module1.name).to.equal('module1');
+            expect(module1.loc?.start.offset).to.equal(12);
+            expect(module1.loc?.end.offset).to.equal(21);
+        });
+
+        it('does not allow module declarations if withModuleDeclarations is not set', () => {
+            const validationContext = new ValidationContext();
+            const parsedProject = parseProject(
+                new Project([
+                    new ProjectSource(
+                        'modules.json',
+                        JSON.stringify({
+                            modules: ['module1', 'module2'],
+                        }),
+                    ),
+                ]),
+                validationContext,
+            );
+            expectToBeValid(validationContext.asResult());
+            const model = createModel(parsedProject);
+            expectSingleError(model, 'Module declarations are not supported in this context.');
+            const modules = model.modules;
+            expect(modules).to.have.lengthOf(0);
+        });
+
+        it('does not allow duplicate module names', () => {
+            const validationContext = new ValidationContext();
+            const parsedProject = parseProject(
+                new Project([
+                    new ProjectSource(
+                        'modules.json',
+                        JSON.stringify({
+                            modules: ['module1', 'module1'],
+                        }),
+                    ),
+                ]),
+                validationContext,
+            );
+            expectToBeValid(validationContext.asResult());
+            const model = createModel(parsedProject, {
+                withModuleDefinitions: true,
+            });
+            const validationResult = model.validate();
+            expect(validationResult.messages.length).to.equal(2);
+            expect(validationResult.messages[0].severity).to.equal(Severity.ERROR);
+            expect(validationResult.messages[0].message).to.equal(
+                'Duplicate module declaration: "module1".',
+            );
+            expect(validationResult.messages[1].severity).to.equal(Severity.ERROR);
+            expect(validationResult.messages[1].message).to.equal(
+                'Duplicate module declaration: "module1".',
+            );
+        });
     });
 });
