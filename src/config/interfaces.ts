@@ -54,6 +54,11 @@ export interface ModelOptions {
      * A list of root entity names that are not allowed.
      */
     readonly forbiddenRootEntityNames?: ReadonlyArray<string>;
+
+    /**
+     * If set to true, the project is expected to define modules and assign them to types and fields using the @modules directive
+     */
+    readonly withModuleDefinitions?: boolean;
 }
 
 export interface ProjectOptions {

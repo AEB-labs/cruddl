@@ -8,6 +8,7 @@ import {
     ValueNode,
 } from 'graphql';
 import { PermissionsConfig } from './permissions';
+import { FieldModuleSpecificationConfig } from './module-specification';
 
 export interface FieldConfig {
     readonly name: string;
@@ -74,6 +75,8 @@ export interface FieldConfig {
      */
     readonly isHidden?: boolean;
     readonly isHiddenASTNode?: DirectiveNode;
+
+    readonly moduleSpecification?: FieldModuleSpecificationConfig;
 }
 
 export enum RelationDeleteAction {

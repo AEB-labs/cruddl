@@ -20,6 +20,7 @@ import { ScalarType } from './scalar-type';
 import { TimeToLiveType } from './time-to-live';
 import { createType, InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
+import { ModuleDeclaration } from './modules/module-declaration';
 
 export class Model implements ModelComponent {
     private readonly typeMap: ReadonlyMap<string, Type>;
@@ -37,6 +38,7 @@ export class Model implements ModelComponent {
     readonly modelValidationOptions?: ModelOptions;
     readonly options?: ModelOptions;
     readonly timeToLiveTypes: ReadonlyArray<TimeToLiveType>;
+    readonly modules: ReadonlyArray<ModuleDeclaration>;
 
     constructor(private input: ModelConfig) {
         this.builtInTypes = createBuiltInTypes(this);
@@ -62,9 +64,16 @@ export class Model implements ModelComponent {
         this.timeToLiveTypes = input.timeToLiveConfigs
             ? input.timeToLiveConfigs.map((ttlConfig) => new TimeToLiveType(ttlConfig, this))
             : [];
+        this.modules = input.modules ? input.modules.map((m) => new ModuleDeclaration(m)) : [];
     }
 
     validate(context = new ValidationContext()): ValidationResult {
+        if (this.input.validationMessages) {
+            for (const message of this.input.validationMessages) {
+                context.addMessage(message);
+            }
+        }
+
         this.validateDuplicateTypes(context);
 
         this.i18n.validate(context);
@@ -85,10 +94,9 @@ export class Model implements ModelComponent {
             permissionProfile.validate(context);
         }
 
-        return new ValidationResult([
-            ...(this.input.validationMessages || []),
-            ...context.validationMessages,
-        ]);
+        this.validateDuplicateModules(context);
+
+        return context.asResult();
     }
 
     private validateDuplicateTypes(context: ValidationContext) {
@@ -118,6 +126,22 @@ export class Model implements ModelComponent {
                         ),
                     );
                 }
+            }
+        }
+    }
+
+    private validateDuplicateModules(context: ValidationContext) {
+        const duplicateModules = objectValues(groupBy(this.modules, (type) => type.name)).filter(
+            (types) => types.length > 1,
+        );
+        for (const modules of duplicateModules) {
+            for (const module of modules) {
+                context.addMessage(
+                    ValidationMessage.error(
+                        `Duplicate module declaration: "${module.name}".`,
+                        module.loc,
+                    ),
+                );
             }
         }
     }
