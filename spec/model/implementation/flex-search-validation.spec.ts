@@ -14,7 +14,7 @@ import {
     validate,
 } from '../../schema/ast-validation-modules/helpers';
 import { createSimpleModel } from '../model-spec.helper';
-import { expectSingleErrorToInclude } from './validation-utils';
+import { expectSingleError } from './validation-utils';
 
 describe('FlexSearch', () => {
     it('rejects flexSearch on relation', () => {
@@ -275,7 +275,10 @@ describe('FlexSearch', () => {
             ],
         });
         const type = <RootEntityType>model.types.find((value) => value.name === 'HandlingUnit');
-        expectSingleErrorToInclude(type.fields.find((value) => value.name === 'accessGroup')!, '');
+        expectSingleError(
+            type.getFieldOrThrow('accessGroup'),
+            'The permission profile "restricted" uses "restrictToAccessGroups", and this fields defining type is marked with "flexSearch: true", but this field is not marked with "@flexSearch".',
+        );
     });
 
     it('accepts a valid primarySort', () => {

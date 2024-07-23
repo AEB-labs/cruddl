@@ -16,15 +16,15 @@ export function expectToBeValid(component: ModelComponent) {
     expect(result.hasMessages(), result.toString()).to.be.false;
 }
 
-export function expectSingleErrorToInclude(component: ModelComponent, errorPart: string) {
-    expectSingleMessageToInclude(component, errorPart, Severity.ERROR);
+export function expectSingleError(component: ModelComponent, errorPart: string) {
+    expectSingleMessage(component, errorPart, Severity.ERROR);
 }
 
-export function expectSingleWarningToInclude(component: ModelComponent, errorPart: string) {
-    expectSingleMessageToInclude(component, errorPart, Severity.WARNING);
+export function expectSingleWarning(component: ModelComponent, errorPart: string) {
+    expectSingleMessage(component, errorPart, Severity.WARNING);
 }
 
-export function expectSingleMessageToInclude(
+export function expectSingleMessage(
     component: ModelComponent,
     errorPart: string,
     severity: Severity,
@@ -32,6 +32,6 @@ export function expectSingleMessageToInclude(
     const result = validate(component);
     expect(result.messages.length, result.toString()).to.equal(1);
     const message = result.messages[0];
-    expect(message.message).to.include(errorPart);
+    expect(message.message).to.equal(errorPart);
     expect(message.severity).to.equal(severity);
 }

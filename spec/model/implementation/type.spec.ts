@@ -1,10 +1,6 @@
 import { GraphQLString } from 'graphql';
 import { Model, ScalarType, TypeKind } from '../../../src/model';
-import {
-    expectSingleErrorToInclude,
-    expectSingleWarningToInclude,
-    expectToBeValid,
-} from './validation-utils';
+import { expectSingleError, expectSingleWarning, expectToBeValid } from './validation-utils';
 
 // This test uses a ScalarType because that is a concrete class without much addition to TypeBase
 describe('Type', () => {
@@ -34,7 +30,7 @@ describe('Type', () => {
                 model,
             );
 
-            expectSingleErrorToInclude(type, `Type name is empty.`);
+            expectSingleError(type, `Type name is empty.`);
         });
 
         it('warns about type names containing underscores', () => {
@@ -47,7 +43,7 @@ describe('Type', () => {
                 model,
             );
 
-            expectSingleWarningToInclude(type, `Type names should not include underscores.`);
+            expectSingleWarning(type, `Type names should not include underscores.`);
         });
 
         it('rejects names starting with an underscore', () => {
@@ -59,7 +55,7 @@ describe('Type', () => {
                 },
                 model,
             );
-            expectSingleErrorToInclude(type, `Type names cannot start with an underscore.`);
+            expectSingleError(type, `Type names cannot start with an underscore.`);
         });
 
         it('warns about type names starting with a lowercase character', () => {
@@ -72,10 +68,7 @@ describe('Type', () => {
                 model,
             );
 
-            expectSingleWarningToInclude(
-                type,
-                `Type names should start with an uppercase character.`,
-            );
+            expectSingleWarning(type, `Type names should start with an uppercase character.`);
         });
     });
 });

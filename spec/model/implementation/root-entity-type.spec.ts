@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { Model, RootEntityType, Severity, TypeKind } from '../../../src/model';
-import { expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
+import { expectSingleError, expectToBeValid, validate } from './validation-utils';
 
 describe('RootEntityType', () => {
     const modelWithoutDefaultProfile = new Model({
@@ -183,10 +183,7 @@ describe('RootEntityType', () => {
                 model,
             );
 
-            expectSingleErrorToInclude(
-                type,
-                `Field "undefined" does not exist on type "Delivery".`,
-            );
+            expectSingleError(type, `Field "undefined" does not exist on type "Delivery".`);
         });
 
         it('rejects a list field', () => {
@@ -206,7 +203,7 @@ describe('RootEntityType', () => {
                 model,
             );
 
-            expectSingleErrorToInclude(type, `List fields cannot be used as key field.`);
+            expectSingleError(type, `List fields cannot be used as key field.`);
         });
 
         it('rejects an object type field', () => {
@@ -225,7 +222,7 @@ describe('RootEntityType', () => {
                 model,
             );
 
-            expectSingleErrorToInclude(
+            expectSingleError(
                 type,
                 `Only fields of type "String", "Int", "Int53", "ID", "LocalDate", and enum types can be used as key field.`,
             );
@@ -482,7 +479,7 @@ describe('RootEntityType', () => {
                 model,
             );
 
-            expectSingleErrorToInclude(type, `Permission profile "undefined" not found`);
+            expectSingleError(type, `Permission profile "undefined" not found.`);
         });
 
         it('accepts with neither roles nor permission profile', () => {

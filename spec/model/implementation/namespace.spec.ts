@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { Model, Namespace, PermissionProfile, RootEntityType, TypeKind } from '../../../src/model';
-import { expectSingleWarningToInclude, expectToBeValid, validate } from './validation-utils';
+import { expectSingleWarning, expectToBeValid, validate } from './validation-utils';
 
 const model = new Model({
     types: [],
@@ -200,7 +200,10 @@ describe('Namespace', () => {
                     ],
                 });
                 const sub = parent.getChildNamespaceOrThrow('sub');
-                expectSingleWarningToInclude(sub, `shadow`);
+                expectSingleWarning(
+                    sub,
+                    `Permission profile: "test" shadows the profile in namespace "" with the same name.`,
+                );
             });
 
             it('does not warn about shadowed default namespaces with', () => {
