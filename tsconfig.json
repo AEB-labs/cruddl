@@ -15,7 +15,6 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "lib": ["ES2022"],
-    "baseUrl": "./",
     "paths": {
       "*": ["./src/typings/*"]
     },
