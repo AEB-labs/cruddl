@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { CalcMutationsOperator, Field, Model, Severity, TypeKind } from '../../../src/model';
 import {
-    expectSingleErrorToInclude,
-    expectSingleWarningToInclude,
+    expectSingleError,
+    expectSingleWarning,
     expectToBeValid,
     validate,
 } from './validation-utils';
@@ -177,7 +177,7 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            expectSingleErrorToInclude(field, 'UndefinedType');
+            expectSingleError(field, 'Type "UndefinedType" not found.');
         });
 
         it('falls back to pseudo type if typeName is not found', () => {
@@ -204,7 +204,7 @@ describe('Field', () => {
                 },
                 deliveryType,
             );
-            expectSingleErrorToInclude(field, `Field name is empty.`);
+            expectSingleError(field, `Field name is empty.`);
         });
 
         it('accepts one-character names', () => {
@@ -227,7 +227,7 @@ describe('Field', () => {
                 },
                 deliveryType,
             );
-            expectSingleWarningToInclude(field, `Field names should not include underscores.`);
+            expectSingleWarning(field, `Field names should not include underscores.`);
         });
 
         it('rejects names starting with an underscore', () => {
@@ -238,7 +238,7 @@ describe('Field', () => {
                 },
                 deliveryType,
             );
-            expectSingleErrorToInclude(field, `Field names cannot start with an underscore.`);
+            expectSingleError(field, `Field names cannot start with an underscore.`);
         });
 
         it('warns about names starting with an uppercase character', () => {
@@ -249,10 +249,7 @@ describe('Field', () => {
                 },
                 deliveryType,
             );
-            expectSingleWarningToInclude(
-                field,
-                `Field names should start with a lowercase character.`,
-            );
+            expectSingleWarning(field, `Field names should start with a lowercase character.`);
         });
     });
 
@@ -266,7 +263,10 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            expectSingleErrorToInclude(field, 'root entity');
+            expectSingleError(
+                field,
+                'Type "Country" is a root entity type and cannot be embedded. Consider adding @reference or @relation.',
+            );
         });
 
         it('rejects fields with both @relation and @reference', () => {
@@ -281,7 +281,7 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            expectSingleErrorToInclude(field, '@reference and @relation cannot be combined');
+            expectSingleError(field, '@reference and @relation cannot be combined.');
         });
     });
 
@@ -295,9 +295,9 @@ describe('Field', () => {
                 },
                 addressType,
             );
-            expectSingleErrorToInclude(
+            expectSingleError(
                 field,
-                'Relations can only be defined on root entity types. Consider using @reference instead',
+                'Relations can only be defined on root entity types. Consider using @reference instead.',
             );
         });
 
@@ -311,9 +311,9 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            expectSingleErrorToInclude(
+            expectSingleError(
                 field,
-                'Type "Address" cannot be used with @relation because it is not a root entity type',
+                'Type "Address" cannot be used with @relation because it is not a root entity type.',
             );
         });
 
@@ -444,9 +444,9 @@ describe('Field', () => {
                     deliveryType,
                 );
 
-                expectSingleErrorToInclude(
+                expectSingleError(
                     field,
-                    'Field "undefinedField" does not exist on type "Shipment"',
+                    'Field "undefinedField" does not exist on type "Shipment".',
                 );
             });
 
@@ -461,9 +461,9 @@ describe('Field', () => {
                     deliveryType,
                 );
 
-                expectSingleErrorToInclude(
+                expectSingleError(
                     field,
-                    'Field "Shipment.deliveryNonRelation" used as inverse field of "Delivery.shipment" does not have the @relation directive',
+                    'Field "Shipment.deliveryNonRelation" used as inverse field of "Delivery.shipment" does not have the @relation directive.',
                 );
             });
 
@@ -478,9 +478,9 @@ describe('Field', () => {
                     deliveryType,
                 );
 
-                expectSingleErrorToInclude(
+                expectSingleError(
                     field,
-                    'Field "Shipment.deliveryWithInverseOf" used as inverse field of "Delivery.shipment" should not declare inverseOf itself',
+                    'Field "Shipment.deliveryWithInverseOf" used as inverse field of "Delivery.shipment" should not declare inverseOf itself.',
                 );
             });
 
@@ -495,9 +495,9 @@ describe('Field', () => {
                     deliveryType,
                 );
 
-                expectSingleErrorToInclude(
+                expectSingleError(
                     field,
-                    'Field "Shipment.handlingUnits" used as inverse field of "Delivery.shipment" has named type "HandlingUnit" but should be of type "Delivery"',
+                    'Field "Shipment.handlingUnits" used as inverse field of "Delivery.shipment" has named type "HandlingUnit" but should be of type "Delivery".',
                 );
             });
 
@@ -542,9 +542,9 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            expectSingleErrorToInclude(
+            expectSingleError(
                 field,
-                `"HandlingUnit" cannot be used as @reference type because it does not have a field annotated with @key`,
+                `"HandlingUnit" cannot be used as @reference type because it does not have a field annotated with @key.`,
             );
         });
 
@@ -558,7 +558,7 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            expectSingleErrorToInclude(
+            expectSingleError(
                 field,
                 `"Address" cannot be used as @reference type because is not a root entity type.`,
             );
@@ -576,7 +576,7 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            expectSingleErrorToInclude(
+            expectSingleError(
                 field,
                 `@reference is not supported with list types. Consider wrapping the reference in a child entity or value object type.`,
             );
@@ -629,7 +629,7 @@ describe('Field', () => {
                 addressType,
             );
 
-            expectSingleErrorToInclude(
+            expectSingleError(
                 field,
                 `Type "DangerousGoodsInfo" is an entity extension type and cannot be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`,
             );
@@ -645,7 +645,7 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            expectSingleErrorToInclude(
+            expectSingleError(
                 field,
                 `Type "DangerousGoodsInfo" is an entity extension type and cannot be used in a list. Change the field type to "DangerousGoodsInfo" (without brackets), or use a child entity or value object type instead.`,
             );
@@ -702,7 +702,7 @@ describe('Field', () => {
                 addressType,
             );
 
-            expectSingleErrorToInclude(
+            expectSingleError(
                 field,
                 `Type "Item" is a child entity type and cannot be used within value object types. Change "Address" to an entity extension type or use a value object type for "items".`,
             );
@@ -718,7 +718,7 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            expectSingleErrorToInclude(
+            expectSingleError(
                 field,
                 `Type "Item" is a child entity type and can only be used in a list. Change the field type to "[Item]", or use an entity extension or value object type instead.`,
             );
@@ -837,7 +837,7 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            expectSingleErrorToInclude(field, `Permission profile "undefined" not found`);
+            expectSingleError(field, `Permission profile "undefined" not found.`);
         });
     });
 
@@ -881,7 +881,7 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            expectSingleErrorToInclude(
+            expectSingleError(
                 field,
                 `Type "Boolean" does not support any calc mutation operators.`,
             );
@@ -897,7 +897,7 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            expectSingleErrorToInclude(
+            expectSingleError(
                 field,
                 `Calc mutation operator "APPEND" is not supported on type "Int" (supported operators: "MULTIPLY", "DIVIDE", "ADD", "SUBTRACT", "MODULO").`,
             );
@@ -913,7 +913,7 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            expectSingleErrorToInclude(
+            expectSingleError(
                 field,
                 `Calc mutation operator "MULTIPLY" is not supported on type "String" (supported operators: "APPEND", "PREPEND").`,
             );
@@ -930,7 +930,7 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            expectSingleErrorToInclude(field, `Calc mutations are not supported on list fields.`);
+            expectSingleError(field, `Calc mutations are not supported on list fields.`);
         });
 
         it('warns about @calcMutations within a value object', () => {
@@ -943,7 +943,7 @@ describe('Field', () => {
                 addressType,
             );
 
-            expectSingleWarningToInclude(
+            expectSingleWarning(
                 field,
                 `Calc mutations do not work within value objects because value objects cannot be updated. This will be an error in a future release.`,
             );

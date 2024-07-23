@@ -1,7 +1,7 @@
 import { TypeKind } from '../../../src/model/config';
 import { EntityExtensionType, Model } from '../../../src/model/implementation';
 import { Severity } from '../../../src/model/validation';
-import { expectSingleMessageToInclude } from './validation-utils';
+import { expectSingleMessage } from './validation-utils';
 
 describe('EnityExtensionType', () => {
     it('rejects EntityExtensions with recursion', () => {
@@ -32,7 +32,7 @@ describe('EnityExtensionType', () => {
             }),
         );
 
-        expectSingleMessageToInclude(
+        expectSingleMessage(
             type,
             `EntityTypes cannot recursively contain an EntityType of their own type.`,
             Severity.ERROR,
@@ -77,7 +77,7 @@ describe('EnityExtensionType', () => {
             }),
         );
 
-        expectSingleMessageToInclude(
+        expectSingleMessage(
             type,
             `EntityTypes cannot recursively contain an EntityType of their own type.`,
             Severity.ERROR,

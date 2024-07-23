@@ -5,7 +5,7 @@ import {
     Severity,
     TypeKind,
 } from '../../../src/model';
-import { expectSingleErrorToInclude, expectToBeValid, validate } from './validation-utils';
+import { expectSingleError, expectToBeValid, validate } from './validation-utils';
 
 describe('Model', () => {
     const permissionProfiles: ReadonlyArray<NamespacedPermissionProfileConfigMap> = [
@@ -105,6 +105,6 @@ describe('Model', () => {
             permissionProfiles,
         });
 
-        expectSingleErrorToInclude(model, `Type name "Int" is reserved by a built-in type.`);
+        expectSingleError(model, `Type name "Int" is reserved by a built-in type.`);
     });
 });
