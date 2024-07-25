@@ -1,0 +1,13 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["index.ts!", "spec/**/*.spec.ts", "src/project/project-from-fs.ts!"],
+  "project": ["src/**/*.ts!", "spec/**/*.ts"],
+  "rules": {
+    "exports": "off",
+    "types": "off",
+    "enumMembers": "off",
+    "duplicates": "off"
+  },
+  "ignoreDependencies": ["@arangodb", "internal", "tslib", "cpy-cli"],
+  "ignoreBinaries": ["arangodb"]
+}
