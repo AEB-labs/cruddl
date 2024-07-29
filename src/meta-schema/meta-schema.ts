@@ -766,13 +766,16 @@ export function getMetaSchema(project: Project): GraphQLSchema {
             };
         }
 
+        const authContext = options.authContext ?? {};
+
         // one additional check that is normally done indirectly
+        // (e.g. you cannot resolve a reference to a type you cannot access, even if you can access the referencing field)
         if (field.type.isRootEntityType && field.type !== field.declaringType) {
             const descriptor = getPermissionDescriptorOfRootEntityType(field.type);
-            // be optimistic on CONDITIONAL types
+            // treat CONDITIONAL like GRANTED - the user can access the field in some/most cases, so e.g. UIs should display it
+            // (this is also documented in the meta schema descriptions)
             if (
-                descriptor.canAccess(options.authContext ?? {}, AccessOperation.READ) ===
-                PermissionResult.DENIED
+                descriptor.canAccess(authContext, AccessOperation.READ) === PermissionResult.DENIED
             ) {
                 return {
                     canRead: false,
@@ -782,14 +785,13 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         }
 
         const descriptor = getPermissionDescriptorOfField(field);
-        const authContext = options.authContext ?? {};
+        // treat CONDITIONAL like GRANTED for consistency (and future-proofing) - CONDITIONAL currently does not happen here
         return {
             canRead:
-                descriptor.canAccess(options.authContext ?? {}, AccessOperation.READ) ===
-                PermissionResult.GRANTED,
+                descriptor.canAccess(authContext, AccessOperation.READ) !== PermissionResult.DENIED,
             canWrite:
-                descriptor.canAccess(authContext, AccessOperation.UPDATE) ===
-                PermissionResult.GRANTED,
+                descriptor.canAccess(authContext, AccessOperation.UPDATE) !==
+                PermissionResult.DENIED,
         };
     }
 
@@ -817,19 +819,20 @@ export function getMetaSchema(project: Project): GraphQLSchema {
 
         const descriptor = getPermissionDescriptorOfRootEntityType(rootEntityType);
         const authContext = options.authContext ?? {};
+        // treat CONDITIONAL like GRANTED - the user can access the type in some/most cases, so e.g. UIs should display it
+        // (this is also documented in the meta schema descriptions)
         return {
             canRead:
-                descriptor.canAccess(authContext, AccessOperation.READ) ===
-                PermissionResult.GRANTED,
+                descriptor.canAccess(authContext, AccessOperation.READ) !== PermissionResult.DENIED,
             canCreate:
-                descriptor.canAccess(authContext, AccessOperation.CREATE) ===
-                PermissionResult.GRANTED,
+                descriptor.canAccess(authContext, AccessOperation.CREATE) !==
+                PermissionResult.DENIED,
             canUpdate:
-                descriptor.canAccess(authContext, AccessOperation.UPDATE) ===
-                PermissionResult.GRANTED,
+                descriptor.canAccess(authContext, AccessOperation.UPDATE) !==
+                PermissionResult.DENIED,
             canDelete:
-                descriptor.canAccess(authContext, AccessOperation.DELETE) ===
-                PermissionResult.GRANTED,
+                descriptor.canAccess(authContext, AccessOperation.DELETE) !==
+                PermissionResult.DENIED,
         };
     }
 
