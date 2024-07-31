@@ -109,31 +109,6 @@ export function getValueObjectTypes(model: DocumentNode): ReadonlyArray<ObjectTy
     );
 }
 
-function getScalarFieldsOfObjectDefinition(
-    ast: DocumentNode,
-    objectDefinition: ObjectTypeDefinitionNode,
-): ReadonlyArray<FieldDefinitionNode> {
-    return (objectDefinition.fields || []).filter((field) => {
-        switch (field.type.kind) {
-            case Kind.NAMED_TYPE:
-                return (
-                    getNamedTypeDefinitionAST(ast, field.type.name.value).kind ===
-                    Kind.SCALAR_TYPE_DEFINITION
-                );
-            case Kind.NON_NULL_TYPE:
-                if (field.type.type.kind !== Kind.NAMED_TYPE) {
-                    return false;
-                }
-                return (
-                    getNamedTypeDefinitionAST(ast, field.type.type.name.value).kind ===
-                    Kind.SCALAR_TYPE_DEFINITION
-                );
-            default:
-                return false;
-        }
-    });
-}
-
 function getNamedTypeDefinitionASTIfExists(
     ast: DocumentNode,
     name: string,
