@@ -30,82 +30,56 @@ import { CORE_SCALARS } from './graphql-base';
  * @returns {ReadonlyArray<ObjectTypeDefinitionNode>}
  */
 export function getObjectTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
-    return <ReadonlyArray<ObjectTypeDefinitionNode>>(
-        model.definitions.filter((def) => def.kind === Kind.OBJECT_TYPE_DEFINITION)
-    );
+    return model.definitions.filter((def) => def.kind === Kind.OBJECT_TYPE_DEFINITION);
 }
 
-export function getEnumTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
-    return <ReadonlyArray<ObjectTypeDefinitionNode>>(
-        model.definitions.filter((def) => def.kind === Kind.ENUM_TYPE_DEFINITION)
-    );
+export function getEnumTypes(model: DocumentNode): ReadonlyArray<EnumTypeDefinitionNode> {
+    return model.definitions.filter((def) => def.kind === Kind.ENUM_TYPE_DEFINITION);
 }
 
 /**
  * Get all @link ObjectTypeDefinitionNode annotated with @rootEntity directive of a model.
- * @param {DocumentNode} model (ast)
- * @returns {ReadonlyArray<ObjectTypeDefinitionNode>}
  */
 export function getRootEntityTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
-    return <ReadonlyArray<ObjectTypeDefinitionNode>>(
-        model.definitions.filter(
-            (def) =>
-                def.kind === Kind.OBJECT_TYPE_DEFINITION &&
-                def.directives &&
-                def.directives.some((directive) => directive.name.value === ROOT_ENTITY_DIRECTIVE),
-        )
+    return getObjectTypes(model).filter(
+        (def) =>
+            def.directives &&
+            def.directives.some((directive) => directive.name.value === ROOT_ENTITY_DIRECTIVE),
     );
 }
 
 /**
  * Get all @link ObjectTypeDefinitionNode annotated with @childEntity directive of a model.
- * @param {DocumentNode} model (ast)
- * @returns {ReadonlyArray<ObjectTypeDefinitionNode>}
  */
 export function getChildEntityTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
-    return <ReadonlyArray<ObjectTypeDefinitionNode>>(
-        model.definitions.filter(
-            (def) =>
-                def.kind === Kind.OBJECT_TYPE_DEFINITION &&
-                def.directives &&
-                def.directives.some((directive) => directive.name.value === CHILD_ENTITY_DIRECTIVE),
-        )
+    return getObjectTypes(model).filter(
+        (def) =>
+            def.directives &&
+            def.directives.some((directive) => directive.name.value === CHILD_ENTITY_DIRECTIVE),
     );
 }
 
 /**
  * Get all @link ObjectTypeDefinitionNode annotated with @entityExtension directive of a model.
- * @param {DocumentNode} model (ast)
- * @returns {ReadonlyArray<ObjectTypeDefinitionNode>}
  */
 export function getEntityExtensionTypes(
     model: DocumentNode,
 ): ReadonlyArray<ObjectTypeDefinitionNode> {
-    return <ReadonlyArray<ObjectTypeDefinitionNode>>(
-        model.definitions.filter(
-            (def) =>
-                def.kind === Kind.OBJECT_TYPE_DEFINITION &&
-                def.directives &&
-                def.directives.some(
-                    (directive) => directive.name.value === ENTITY_EXTENSION_DIRECTIVE,
-                ),
-        )
+    return getObjectTypes(model).filter(
+        (def) =>
+            def.directives &&
+            def.directives.some((directive) => directive.name.value === ENTITY_EXTENSION_DIRECTIVE),
     );
 }
 
 /**
  * Get all @link ObjectTypeDefinitionNode annotated with @valueObject directive of a model.
- * @param {DocumentNode} model (ast)
- * @returns {ReadonlyArray<ObjectTypeDefinitionNode>}
  */
 export function getValueObjectTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
-    return <ReadonlyArray<ObjectTypeDefinitionNode>>(
-        model.definitions.filter(
-            (def) =>
-                def.kind === Kind.OBJECT_TYPE_DEFINITION &&
-                def.directives &&
-                def.directives.some((directive) => directive.name.value === VALUE_OBJECT_DIRECTIVE),
-        )
+    return getObjectTypes(model).filter(
+        (def) =>
+            def.directives &&
+            def.directives.some((directive) => directive.name.value === VALUE_OBJECT_DIRECTIVE),
     );
 }
 
