@@ -8,7 +8,7 @@ export const VALIDATION_ERROR_INVALID_OBJECT_TYPE =
     'A @key field can only be declared on root entities.';
 
 export class KeyFieldValidator implements ASTValidator {
-    validate(ast: DocumentNode): ValidationMessage[] {
+    validate(ast: DocumentNode): ReadonlyArray<ValidationMessage> {
         const validationMessages: ValidationMessage[] = [];
         getObjectTypes(ast).forEach((objectTypeDefinition) => {
             let counter = 0;

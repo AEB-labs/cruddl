@@ -40,7 +40,7 @@ import { MessageLocation } from '../model/';
 import { Project, ProjectOptions } from '../project/project';
 import { ProjectSource, SourceType } from '../project/source';
 import { SchemaGenerator } from '../schema-generation';
-import { flatMap, PlainObject } from '../utils/utils';
+import { flatMap, isReadonlyArray, PlainObject } from '../utils/utils';
 import {
     validateParsedProjectSource,
     validatePostMerge,
@@ -285,7 +285,7 @@ function parseJSONSource(
     const data: PlainObject = parseResult.data;
 
     // arrays are not forbidden by json-lint
-    if (Array.isArray(data)) {
+    if (isReadonlyArray(data)) {
         validationContext.addMessage(
             ValidationMessage.error(
                 `JSON file should define an object (is array)`,
@@ -453,7 +453,7 @@ export function extractJSONFromYAML(
         return undefined;
     }
 
-    if (Array.isArray(result)) {
+    if (isReadonlyArray(result)) {
         validationContext.addMessage(
             ValidationMessage.error(
                 `YAML file should define an object (is array)`,

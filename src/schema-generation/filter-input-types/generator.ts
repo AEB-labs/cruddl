@@ -143,7 +143,7 @@ export class FilterTypeGenerator {
         return [];
     }
 
-    private generateFilterFieldsForNonListScalar(field: Field): FilterField[] {
+    private generateFilterFieldsForNonListScalar(field: Field): ReadonlyArray<FilterField> {
         if (field.isList || !field.type.isScalarType) {
             throw new Error(`Expected "${field.name}" to be a non-list scalar`);
         }
@@ -179,7 +179,7 @@ export class FilterTypeGenerator {
     private generateFilterFieldsForEnumField(
         field: Field,
         graphQLEnumType: GraphQLEnumType,
-    ): FilterField[] {
+    ): ReadonlyArray<FilterField> {
         if (field.isList || !field.type.isEnumType) {
             throw new Error(`Expected "${field.name}" to be a non-list enum`);
         }
@@ -203,7 +203,7 @@ export class FilterTypeGenerator {
         return [...quantifierFields, new EmptyListFilterField(field)];
     }
 
-    private buildScalarFilterFields(type: ScalarType): ScalarOrEnumFilterField[] {
+    private buildScalarFilterFields(type: ScalarType): ReadonlyArray<ScalarOrEnumFilterField> {
         const filterFields = this.getFilterFieldsByType(type);
         return filterFields.map(
             (name) =>

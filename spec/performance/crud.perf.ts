@@ -42,7 +42,7 @@ function getOneOfXRootEntities(config: {
     onlyFewFields?: boolean;
 }): BenchmarkConfig {
     let env: TestEnvironment;
-    let sampledIDs: string[] = [];
+    let sampledIDs: ReadonlyArray<string> = [];
     const sizeFactor = getSizeFactorForJSONLength(config.documentLength);
     return {
         name: `Get ${config.onlyFewFields ? 'two fields of ' : ''} one of ${

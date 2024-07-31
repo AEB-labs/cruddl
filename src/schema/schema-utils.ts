@@ -27,16 +27,16 @@ import { CORE_SCALARS } from './graphql-base';
 /**
  * Get all @link ObjectTypeDefinitionNode a model.
  * @param {DocumentNode} model (ast)
- * @returns {ObjectTypeDefinitionNode[]}
+ * @returns {ReadonlyArray<ObjectTypeDefinitionNode>}
  */
 export function getObjectTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
-    return <ObjectTypeDefinitionNode[]>(
+    return <ReadonlyArray<ObjectTypeDefinitionNode>>(
         model.definitions.filter((def) => def.kind === Kind.OBJECT_TYPE_DEFINITION)
     );
 }
 
 export function getEnumTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
-    return <ObjectTypeDefinitionNode[]>(
+    return <ReadonlyArray<ObjectTypeDefinitionNode>>(
         model.definitions.filter((def) => def.kind === Kind.ENUM_TYPE_DEFINITION)
     );
 }
@@ -44,10 +44,10 @@ export function getEnumTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefin
 /**
  * Get all @link ObjectTypeDefinitionNode annotated with @rootEntity directive of a model.
  * @param {DocumentNode} model (ast)
- * @returns {ObjectTypeDefinitionNode[]}
+ * @returns {ReadonlyArray<ObjectTypeDefinitionNode>}
  */
 export function getRootEntityTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
-    return <ObjectTypeDefinitionNode[]>(
+    return <ReadonlyArray<ObjectTypeDefinitionNode>>(
         model.definitions.filter(
             (def) =>
                 def.kind === Kind.OBJECT_TYPE_DEFINITION &&
@@ -60,10 +60,10 @@ export function getRootEntityTypes(model: DocumentNode): ReadonlyArray<ObjectTyp
 /**
  * Get all @link ObjectTypeDefinitionNode annotated with @childEntity directive of a model.
  * @param {DocumentNode} model (ast)
- * @returns {ObjectTypeDefinitionNode[]}
+ * @returns {ReadonlyArray<ObjectTypeDefinitionNode>}
  */
 export function getChildEntityTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
-    return <ObjectTypeDefinitionNode[]>(
+    return <ReadonlyArray<ObjectTypeDefinitionNode>>(
         model.definitions.filter(
             (def) =>
                 def.kind === Kind.OBJECT_TYPE_DEFINITION &&
@@ -76,12 +76,12 @@ export function getChildEntityTypes(model: DocumentNode): ReadonlyArray<ObjectTy
 /**
  * Get all @link ObjectTypeDefinitionNode annotated with @entityExtension directive of a model.
  * @param {DocumentNode} model (ast)
- * @returns {ObjectTypeDefinitionNode[]}
+ * @returns {ReadonlyArray<ObjectTypeDefinitionNode>}
  */
 export function getEntityExtensionTypes(
     model: DocumentNode,
 ): ReadonlyArray<ObjectTypeDefinitionNode> {
-    return <ObjectTypeDefinitionNode[]>(
+    return <ReadonlyArray<ObjectTypeDefinitionNode>>(
         model.definitions.filter(
             (def) =>
                 def.kind === Kind.OBJECT_TYPE_DEFINITION &&
@@ -96,10 +96,10 @@ export function getEntityExtensionTypes(
 /**
  * Get all @link ObjectTypeDefinitionNode annotated with @valueObject directive of a model.
  * @param {DocumentNode} model (ast)
- * @returns {ObjectTypeDefinitionNode[]}
+ * @returns {ReadonlyArray<ObjectTypeDefinitionNode>}
  */
 export function getValueObjectTypes(model: DocumentNode): ReadonlyArray<ObjectTypeDefinitionNode> {
-    return <ObjectTypeDefinitionNode[]>(
+    return <ReadonlyArray<ObjectTypeDefinitionNode>>(
         model.definitions.filter(
             (def) =>
                 def.kind === Kind.OBJECT_TYPE_DEFINITION &&

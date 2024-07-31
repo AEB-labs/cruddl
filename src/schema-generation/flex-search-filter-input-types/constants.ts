@@ -106,7 +106,7 @@ const ID_FLEX_SEARCH_FILTER_FIELDS = [
     INPUT_FIELD_NOT_IN,
 ];
 
-export const FLEX_SEARCH_FILTER_FIELDS_BY_TYPE: { [name: string]: string[] } = {
+export const FLEX_SEARCH_FILTER_FIELDS_BY_TYPE: { [name: string]: ReadonlyArray<string> } = {
     [GraphQLString.name]: STRING_FLEX_SEARCH_FILTER_FIELDS,
     [GraphQLID.name]: ID_FLEX_SEARCH_FILTER_FIELDS,
     [GraphQLDateTime.name]: NUMERIC_FILTER_FIELDS,

@@ -1,11 +1,11 @@
 export type PlainObject = { [key: string]: AnyValue };
 export type AnyValue = unknown;
-export type Constructor<T> = { new (...args: any[]): T };
+export type Constructor<T> = { new (...args: ReadonlyArray<any>): T };
 
 export function flatMap<TOut, TIn>(
     arr: ReadonlyArray<TIn>,
     f: (t: TIn) => ReadonlyArray<TOut>,
-): TOut[] {
+): ReadonlyArray<TOut> {
     return arr.reduce((ys: any, x: any) => {
         return ys.concat(f.call(null, x));
     }, []);
@@ -33,7 +33,7 @@ export function mapFirstDefined<TIn, TOut>(
     return undefined;
 }
 
-export function flatten<T>(arr: ReadonlyArray<ReadonlyArray<T>>): T[] {
+export function flatten<T>(arr: ReadonlyArray<ReadonlyArray<T>>): ReadonlyArray<T> {
     return arr.reduce((ys: any, x: any) => {
         return ys.concat(x);
     }, []);
@@ -68,12 +68,12 @@ export function decapitalize(string: string) {
  * Groups items in an array by common keys
  * @param items the input items
  * @param keyFn a function that computes the key value of an item
- * @returns {Map<TKey, TItem[]>} a map from key values to the list of items that have that key
+ * @returns {Map<TKey, ReadonlyArray<TItem>>} a map from key values to the list of items that have that key
  */
 export function groupArray<TItem, TKey>(
     items: ReadonlyArray<TItem>,
     keyFn: (item: TItem) => TKey,
-): Map<TKey, TItem[]> {
+): Map<TKey, ReadonlyArray<TItem>> {
     const map = new Map<TKey, TItem[]>();
     for (const item of items) {
         const key = keyFn(item);
@@ -114,7 +114,7 @@ export function indent(input: string, indentation: string | number = INDENTATION
  * @param count the number of items for the array
  * @returns the array
  */
-export function range(count: number): number[] {
+export function range(count: number): ReadonlyArray<number> {
     return Array.from(Array(count).keys());
 }
 
@@ -138,11 +138,11 @@ export function arrayToObject<TValue>(
     return result;
 }
 
-export function compact<T>(arr: ReadonlyArray<T | undefined | null>): T[] {
-    return arr.filter((a) => a != undefined) as T[];
+export function compact<T>(arr: ReadonlyArray<T | undefined | null>): ReadonlyArray<T> {
+    return arr.filter((a) => a != undefined) as ReadonlyArray<T>;
 }
 
-export function objectValues<T>(obj: { [name: string]: T }): T[] {
+export function objectValues<T>(obj: { [name: string]: T }): ReadonlyArray<T> {
     return Object.keys(obj).map((i) => obj[i]);
 }
 
@@ -280,4 +280,15 @@ export function joinWithAnd(items: ReadonlyArray<string>): string {
     const upToSecondLast = items.slice();
     const last = upToSecondLast.pop();
     return upToSecondLast.join(', ') + ', and ' + last;
+}
+
+/**
+ * Checks if a value is an array using Array.isArray()
+ *
+ * The runtime behavior is identical to Array.is.Array(), but it fixes a shortcoming of TypeScript if the
+ * passed value is a union of a readonly array and something else. Array.isArray() would narrow the value
+ * to Array<any> instead of ReadonlyArray<T> (see https://github.com/microsoft/TypeScript/issues/17002).
+ */
+export function isReadonlyArray<T>(obj: unknown | ReadonlyArray<T>): obj is ReadonlyArray<T> {
+    return Array.isArray(obj);
 }

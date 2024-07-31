@@ -40,7 +40,7 @@ const rules: ReadonlyArray<ValidationRule> = [
 const sdlRules: ReadonlyArray<SDLValidationRule> = [UniqueEnumValueNamesRule];
 
 export class GraphQLRulesValidator implements ParsedSourceValidator {
-    validate(source: ParsedProjectSource): ValidationMessage[] {
+    validate(source: ParsedProjectSource): ReadonlyArray<ValidationMessage> {
         if (source.kind != ParsedProjectSourceBaseKind.GRAPHQL) {
             return [];
         }

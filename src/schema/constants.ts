@@ -129,9 +129,9 @@ export const CALC_MUTATIONS_OPERATORS_ARG = 'operators';
 export type CalcMutationOperator = {
     name: 'MULTIPLY' | 'DIVIDE' | 'ADD' | 'SUBTRACT' | 'MODULO' | 'APPEND' | 'PREPEND';
     prefix: string;
-    supportedTypes: string[];
+    supportedTypes: ReadonlyArray<string>;
 };
-export const CALC_MUTATIONS_OPERATORS: CalcMutationOperator[] = [
+export const CALC_MUTATIONS_OPERATORS: ReadonlyArray<CalcMutationOperator> = [
     { name: 'MULTIPLY', prefix: 'multiplyWith_', supportedTypes: numberTypeNames },
     { name: 'DIVIDE', prefix: 'divideBy_', supportedTypes: numberTypeNames },
     { name: 'ADD', prefix: 'addTo_', supportedTypes: numberTypeNames },

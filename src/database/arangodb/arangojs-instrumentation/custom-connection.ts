@@ -3,6 +3,7 @@ import { normalizeUrl } from 'arangojs/lib/normalizeUrl';
 import { ArangojsResponse } from 'arangojs/lib/request';
 import { RequestInstrumentation, requestInstrumentationBodyKey } from './config';
 import { createRequest, RequestOptions as CustomRequestOptions } from './custom-request';
+import { isReadonlyArray } from '../../../utils/utils';
 
 /**
  * @internal
@@ -111,8 +112,8 @@ export class CustomConnection extends Connection {
         });
     }
 
-    addToHostList(urls: string | string[]): string[] {
-        const cleanUrls = (Array.isArray(urls) ? urls : [urls]).map((url) => normalizeUrl(url));
+    addToHostList(urls: string | ReadonlyArray<string>): string[] {
+        const cleanUrls = (isReadonlyArray(urls) ? urls : [urls]).map((url) => normalizeUrl(url));
         const newUrls = cleanUrls.filter((url) => this._hostUrls.indexOf(url) === -1);
         this._hostUrls.push(...newUrls);
         this._hosts.push(

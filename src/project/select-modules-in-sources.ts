@@ -20,6 +20,7 @@ import { parseProjectSource } from '../schema/schema-builder';
 import { findDirectiveWithName } from '../schema/schema-utils';
 import { Project, ProjectOptions } from './project';
 import { ProjectSource } from './source';
+import { isReadonlyArray } from '../utils/utils';
 
 export interface ModuleSelectionOptions {
     /**
@@ -136,9 +137,11 @@ function selectModulesInObjectSource({
         const newObject = { ...parsedSource.object };
         if (removeModuleDeclarations) {
             delete newObject.modules;
-        } else if (Array.isArray(parsedSource.object.modules)) {
+        } else if (isReadonlyArray(parsedSource.object.modules)) {
             // if we shouldn't remove the module declarations completely, filter it down
-            newObject.modules = parsedSource.object.modules.filter((m) => selectedModules.has(m));
+            newObject.modules = parsedSource.object.modules.filter(
+                (m) => selectedModules.has(m as string), // type assertion is safe for the .has() argument
+            );
         }
         return JSON.stringify(newObject, undefined, '  ');
     }

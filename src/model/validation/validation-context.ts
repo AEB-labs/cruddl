@@ -3,7 +3,7 @@ import { ValidationMessage, ValidationResult } from './index';
 export class ValidationContext {
     private readonly _validationMessages: ValidationMessage[] = [];
 
-    addMessage(...messages: ValidationMessage[]) {
+    addMessage(...messages: ReadonlyArray<ValidationMessage>) {
         messages.forEach((msg) => this._validationMessages.push(msg));
     }
 

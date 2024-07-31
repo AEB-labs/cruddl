@@ -1,7 +1,8 @@
 import { ASTNode, GraphQLScalarType, Kind } from 'graphql';
+import { isReadonlyArray } from '../../utils/utils';
 
 function ensureStringMap(value: any) {
-    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    if (typeof value !== 'object' || value === null || isReadonlyArray(value)) {
         throw new TypeError(`Expected object value`);
     }
     let hasClonedValue = false;

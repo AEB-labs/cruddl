@@ -399,7 +399,7 @@ export function collectFieldNodesInPath(
         throw new Error(`Aliases must not be empty`);
     }
 
-    let currentSelectionSets: SelectionSetNode[] = [selectionSet];
+    let currentSelectionSets: ReadonlyArray<SelectionSetNode> = [selectionSet];
     const fieldNodesInPath: FieldNode[] = [];
     for (const alias of aliases) {
         if (!currentSelectionSets.length) {

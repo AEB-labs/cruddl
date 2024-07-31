@@ -14,6 +14,7 @@ import { simplifyBooleans } from '../query-tree/utils';
 import { createFieldPathNode } from '../schema-generation/field-path-node';
 import { ACCESS_GROUP_FIELD } from '../schema/constants';
 import { AccessOperation, AuthContext } from './auth-basics';
+import { isReadonlyArray } from '../utils/utils';
 
 export enum ConditionExplanationContext {
     BEFORE_WRITE,
@@ -248,7 +249,7 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
 
             if (restriction.claim !== undefined) {
                 const claimValue = authContext.claims?.[restriction.claim];
-                const claimValues = Array.isArray(claimValue) ? claimValue : [claimValue];
+                const claimValues = isReadonlyArray(claimValue) ? claimValue : [claimValue];
                 const sanitizedClaimValues = claimValues.filter(
                     (v) => !!v && typeof v === 'string',
                 );

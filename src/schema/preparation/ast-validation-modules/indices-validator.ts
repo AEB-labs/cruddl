@@ -13,7 +13,7 @@ export const VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES =
     'Indices are only allowed in root entity fields. You can add indices to fields of embedded objects with @rootEntities(indices: [...]).';
 
 export class IndicesValidator implements ASTValidator {
-    validate(ast: DocumentNode): ValidationMessage[] {
+    validate(ast: DocumentNode): ReadonlyArray<ValidationMessage> {
         const validationMessages: ValidationMessage[] = [];
         [
             ...getChildEntityTypes(ast),

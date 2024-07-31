@@ -22,7 +22,7 @@ function indentLineBreaks(val: string, level: number) {
 }
 
 export class JSCodeBuildingContext {
-    private boundValues: any[] = [];
+    private boundValues: unknown[] = [];
     private variableBindings = new Map<JSVariable, string>();
     private preExecInjectedVariablesMap = new Map<JSQueryResultVariable, string>();
     private nextIndexPerLabel = new Map<string, number>();
@@ -180,7 +180,7 @@ export class JSBoundValue extends JSFragment {
 }
 
 export class JSCompoundFragment extends JSFragment {
-    constructor(public readonly fragments: JSFragment[]) {
+    constructor(public readonly fragments: ReadonlyArray<JSFragment>) {
         super();
     }
 
@@ -271,7 +271,7 @@ export function js(
 }
 
 export namespace js {
-    export function join(fragments: JSFragment[], separator: JSFragment): JSFragment {
+    export function join(fragments: ReadonlyArray<JSFragment>, separator: JSFragment): JSFragment {
         const newFragments: JSFragment[] = [];
         let isFirst = true;
         for (const fragment of fragments) {
@@ -291,7 +291,7 @@ export namespace js {
         return new JSCodeFragment(code);
     }
 
-    export function lines(...fragments: JSFragment[]) {
+    export function lines(...fragments: ReadonlyArray<JSFragment>) {
         return join(fragments, js`\n`);
     }
 
@@ -353,7 +353,7 @@ export namespace js {
  */
 export class JSCompoundQuery extends JSFragment {
     constructor(
-        public readonly preExecQueries: JSCompoundQuery[],
+        public readonly preExecQueries: ReadonlyArray<JSCompoundQuery>,
         public readonly jsQuery: JSFragment,
         public readonly resultVar: JSQueryResultVariable | undefined,
         public readonly resultValidator: QueryResultValidator | undefined,
@@ -366,14 +366,14 @@ export class JSCompoundQuery extends JSFragment {
      *
      * The returned transaction steps are to be executed sequentially.
      */
-    getExecutableQueries(): JSExecutableQuery[] {
+    getExecutableQueries(): ReadonlyArray<JSExecutableQuery> {
         const resultVarToNameMap = new Map<JSQueryResultVariable, string>();
         return this.getExecutableQueriesRecursive(resultVarToNameMap);
     }
 
     private getExecutableQueriesRecursive(
         resultVarToNameMap: Map<JSQueryResultVariable, string>,
-    ): JSExecutableQuery[] {
+    ): ReadonlyArray<JSExecutableQuery> {
         const executableQueries = flatMap(this.preExecQueries, (JSQuery) =>
             JSQuery.getExecutableQueriesRecursive(resultVarToNameMap),
         );

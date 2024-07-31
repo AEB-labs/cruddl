@@ -16,7 +16,7 @@ export async function createTempDatabase(): Promise<ArangoDBConfig> {
     const dbs = await systemDatabase.listDatabases();
     if (dbs.indexOf(DATABASE_NAME) >= 0) {
         const db = systemDatabase.database(DATABASE_NAME);
-        const colls = (await db.collections(true)) as Collection[];
+        const colls = await db.collections(true);
         await Promise.all(colls.map((coll) => coll.drop()));
     } else {
         await systemDatabase.createDatabase(DATABASE_NAME);
@@ -144,7 +144,7 @@ export async function initTestData(
     return { fillTemplateStrings };
 }
 
-function wrapNamespaceForQuery(stuff: string, namespace: string[]) {
+function wrapNamespaceForQuery(stuff: string, namespace: ReadonlyArray<string>) {
     if (!namespace) {
         return stuff;
     }
@@ -155,7 +155,7 @@ function wrapNamespaceForQuery(stuff: string, namespace: string[]) {
     return result;
 }
 
-function retrieveIdFromResult(result: ExecutionResult, namespace: string[]) {
+function retrieveIdFromResult(result: ExecutionResult, namespace: ReadonlyArray<string>) {
     const ns = [...namespace];
     let node = result.data as any;
     while (ns.length) {

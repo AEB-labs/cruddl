@@ -97,7 +97,7 @@ export function extractVariableAssignments(
  */
 export function prependVariableAssignments(
     node: QueryNode,
-    variableAssignmentsList: VariableAssignmentQueryNode[],
+    variableAssignmentsList: ReadonlyArray<VariableAssignmentQueryNode>,
 ) {
     return variableAssignmentsList.reduce(
         (currentNode, assignmentNode) =>

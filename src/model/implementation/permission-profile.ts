@@ -1,6 +1,6 @@
 import { AccessOperation, AuthContext } from '../../authorization/auth-basics';
 import { WILDCARD_CHARACTER } from '../../schema/constants';
-import { escapeRegExp } from '../../utils/utils';
+import { escapeRegExp, isReadonlyArray } from '../../utils/utils';
 import {
     MessageLocation,
     PermissionAccessKind,
@@ -42,7 +42,7 @@ export class Permission implements ModelComponent {
 
     constructor(config: PermissionConfig) {
         this.roles = new RoleSpecifier(config.roles);
-        this.access = Array.isArray(config.access) ? config.access : [config.access];
+        this.access = isReadonlyArray(config.access) ? config.access : [config.access];
         this.restrictToAccessGroups = config.restrictToAccessGroups;
         this.hasDynamicAccessGroups =
             !!this.restrictToAccessGroups &&

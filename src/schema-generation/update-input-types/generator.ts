@@ -106,7 +106,7 @@ export class UpdateInputTypeGenerator {
             skipID = false,
             skipRelations = false,
         }: { skipID?: boolean; skipRelations?: boolean } = {},
-    ): UpdateInputField[] {
+    ): ReadonlyArray<UpdateInputField> {
         if (field.isSystemField) {
             if (
                 !skipID &&

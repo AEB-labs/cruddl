@@ -88,7 +88,7 @@ export interface BenchmarkResultConfig {
 
     readonly elapsedTime: number;
     readonly setUpTime: number;
-    readonly cycleDetails: BenchmarkCycleDetails[];
+    readonly cycleDetails: ReadonlyArray<BenchmarkCycleDetails>;
 }
 
 export class BenchmarkResult {
@@ -100,7 +100,7 @@ export class BenchmarkResult {
     /**
      * Detailed information about each cycle
      */
-    public readonly cycleDetails: BenchmarkCycleDetails[];
+    public readonly cycleDetails: ReadonlyArray<BenchmarkCycleDetails>;
 
     /**
      * The mean time, in seconds, per iteration
@@ -154,7 +154,9 @@ export async function benchmark(
     config: BenchmarkConfig,
     callbacks?: BenchmarkExecutionCallbacks,
 ): Promise<BenchmarkResult> {
-    async function cycle(count: number): Promise<{ times: number[]; netTime: number }> {
+    async function cycle(
+        count: number,
+    ): Promise<{ times: ReadonlyArray<number>; netTime: number }> {
         if (config.before) {
             await config.before({ count });
         }
@@ -171,7 +173,9 @@ export async function benchmark(
         };
     }
 
-    async function cycleSync(count: number): Promise<{ times: number[]; netTime: number }> {
+    async function cycleSync(
+        count: number,
+    ): Promise<{ times: ReadonlyArray<number>; netTime: number }> {
         if (config.before) {
             await config.before({ count });
         }
@@ -188,7 +192,9 @@ export async function benchmark(
         };
     }
 
-    async function cycleDetailed(count: number): Promise<{ times: number[]; netTime: number }> {
+    async function cycleDetailed(
+        count: number,
+    ): Promise<{ times: ReadonlyArray<number>; netTime: number }> {
         if (config.before) {
             await config.before({ count });
         }
@@ -359,7 +365,7 @@ const tTable: { [key: string]: number } = {
     infinity: 1.96,
 };
 
-function getTimings(times: number[]): Timings {
+function getTimings(times: ReadonlyArray<number>): Timings {
     const mean: number = stats.mean(times);
     // Compute the sample standard deviation (estimate of the population standard deviation).
     const sd = stats.stdev(times);

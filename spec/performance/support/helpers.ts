@@ -10,7 +10,8 @@ import { Log4jsLoggerProvider } from '../../helpers/log4js-logger-provider';
 import { createTempDatabase } from '../../regression/initialization';
 
 // arangojs typings for this are completely broken
-export const aql: (template: TemplateStringsArray, ...args: any[]) => any = require('arangojs').aql;
+export const aql: (template: TemplateStringsArray, ...args: ReadonlyArray<any>) => any =
+    require('arangojs').aql;
 
 const MODEL_PATH = resolve(__dirname, '../../regression/papers/model');
 
@@ -130,7 +131,7 @@ export async function addNumberedPapersWithAQL(environment: TestEnvironment, cou
 export async function getRandomPaperIDsWithAQL(
     environment: TestEnvironment,
     count: number,
-): Promise<string[]> {
+): Promise<ReadonlyArray<string>> {
     const cursor = await environment
         .getDB()
         .query(aql`FOR node IN papers SORT RAND() LIMIT ${count} RETURN { id: node._key }`);

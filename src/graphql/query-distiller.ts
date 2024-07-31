@@ -231,7 +231,7 @@ function distillSelections(
  * Not supported are unions, interfaces and possibly other features.
  */
 function buildFieldRequest(
-    fieldNodes: Array<FieldNode>,
+    fieldNodes: ReadonlyArray<FieldNode>,
     parentType: GraphQLCompositeType,
     context: Context,
 ): FieldRequest {
