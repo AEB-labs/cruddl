@@ -1,6 +1,7 @@
 import {
     ArgumentNode,
     DirectiveNode,
+    EnumTypeDefinitionNode,
     EnumValueDefinitionNode,
     EnumValueNode,
     FieldDefinitionNode,
@@ -107,6 +108,7 @@ import {
     RolesSpecifierConfig,
     TimeToLiveConfig,
     TypeConfig,
+    TypeConfigBase,
     TypeKind,
 } from './config';
 import { BillingConfig } from './config/billing';
@@ -181,23 +183,30 @@ function createTypeInputs(
                     return undefined;
                 }
 
-                const common = {
+                const commonConfig: Omit<TypeConfigBase, 'kind'> = {
+                    namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
                     description: definition.description ? definition.description.value : undefined,
                     name: definition.name.value,
+                    moduleSpecification: getTypeModuleSpecification(definition, context, options),
                 };
 
                 switch (definition.kind) {
                     case Kind.ENUM_TYPE_DEFINITION:
                         const enumTypeInput: EnumTypeConfig = {
-                            ...common,
-                            namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
+                            ...commonConfig,
                             astNode: definition,
                             kind: TypeKind.ENUM,
                             values: createEnumValues(definition.values || []),
                         };
                         return enumTypeInput;
                     case Kind.OBJECT_TYPE_DEFINITION:
-                        return createObjectTypeInput(definition, schemaPart, context, options);
+                        return createObjectTypeInput(
+                            definition,
+                            commonConfig,
+                            schemaPart,
+                            context,
+                            options,
+                        );
                     default:
                         return undefined;
                 }
@@ -221,6 +230,7 @@ function createEnumValues(
 
 function createObjectTypeInput(
     definition: ObjectTypeDefinitionNode,
+    commonConfig: Omit<TypeConfigBase, 'kind'>,
     schemaPart: ParsedGraphQLProjectSource,
     context: ValidationContext,
     options: ModelOptions,
@@ -228,13 +238,10 @@ function createObjectTypeInput(
     const entityType = getKindOfObjectTypeNode(definition, context);
 
     const common = {
-        name: definition.name.value,
-        description: definition.description ? definition.description.value : undefined,
+        ...commonConfig,
         astNode: definition,
         fields: (definition.fields || []).map((field) => createFieldInput(field, context, options)),
-        namespacePath: getNamespacePath(definition, schemaPart.namespacePath),
         flexSearchLanguage: getDefaultLanguage(definition, context),
-        moduleSpecification: getTypeModuleSpecification(definition, context, options),
     };
 
     const businessObjectDirective = findDirectiveWithName(definition, BUSINESS_OBJECT_DIRECTIVE);
@@ -610,6 +617,7 @@ function createFieldInput(
     options: ModelOptions,
 ): FieldConfig {
     const inverseOfASTNode = getInverseOfASTNode(fieldNode, context);
+    const relationAstNode = findDirectiveWithName(fieldNode, RELATION_DIRECTIVE);
     const relationDeleteActionASTNode = getRelationDeleteActionASTNode(fieldNode, context);
     const referenceDirectiveASTNode = findDirectiveWithName(fieldNode, REFERENCE_DIRECTIVE);
     const referenceKeyFieldASTNode = getReferenceKeyFieldASTNode(fieldNode, context);
@@ -642,9 +650,11 @@ function createFieldInput(
             (fieldNode.type.kind === Kind.NON_NULL_TYPE &&
                 fieldNode.type.type.kind === Kind.LIST_TYPE),
         isReference: !!referenceDirectiveASTNode,
+        referenceAstNode: referenceDirectiveASTNode,
         referenceKeyField: referenceKeyFieldASTNode ? referenceKeyFieldASTNode.value : undefined,
         referenceKeyFieldASTNode,
-        isRelation: !!findDirectiveWithName(fieldNode, RELATION_DIRECTIVE),
+        isRelation: !!relationAstNode,
+        relationAstNode,
         parentDirectiveNode,
         isParentField: !!parentDirectiveNode,
         rootDirectiveNode,
@@ -1228,7 +1238,7 @@ const flexSearchOrderInputObjectType: GraphQLInputObjectType = new GraphQLInputO
 });
 
 function getCombinedModuleSpecification(
-    definition: ObjectTypeDefinitionNode | FieldDefinitionNode,
+    definition: ObjectTypeDefinitionNode | EnumTypeDefinitionNode | FieldDefinitionNode,
     context: ValidationContext,
     options: ModelOptions,
 ): (TypeModuleSpecificationConfig & FieldModuleSpecificationConfig) | undefined {
@@ -1281,7 +1291,7 @@ function getCombinedModuleSpecification(
 }
 
 function getTypeModuleSpecification(
-    definition: ObjectTypeDefinitionNode,
+    definition: ObjectTypeDefinitionNode | EnumTypeDefinitionNode,
     context: ValidationContext,
     options: ModelOptions,
 ): TypeModuleSpecificationConfig | undefined {
