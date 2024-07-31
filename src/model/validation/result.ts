@@ -31,6 +31,14 @@ export class ValidationResult {
         return this.messages.filter((message) => message.severity === Severity.INFO);
     }
 
+    public hasCompatibilityIssues() {
+        return this.messages.some((message) => message.severity === Severity.COMPATIBILITY_ISSUE);
+    }
+
+    public getCompatibilityIssues() {
+        return this.messages.filter((message) => message.severity === Severity.COMPATIBILITY_ISSUE);
+    }
+
     toString() {
         return this.messages.map((m) => m.toString()).join('\n');
     }
