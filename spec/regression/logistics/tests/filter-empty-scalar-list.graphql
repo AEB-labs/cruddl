@@ -1,0 +1,37 @@
+# note that delivery 3 has serialNumbers = null (not initialized)
+mutation init {
+    updateDelivery(input: { id: "@{ids/Delivery/2}", serialNumbers: [] }) {
+        deliveryNumber
+        serialNumbers
+    }
+}
+
+query empty {
+    allDeliveries(filter: { serialNumbers_empty: true }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+        serialNumbers
+    }
+}
+
+# this is the old version which also works
+query none {
+    allDeliveries(filter: { serialNumbers_none: {} }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+        serialNumbers
+    }
+}
+
+query not_empty {
+    allDeliveries(filter: { serialNumbers_empty: false }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+        serialNumbers
+    }
+}
+
+# this is the old version which also works
+query some {
+    allDeliveries(filter: { serialNumbers_some: {} }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+        serialNumbers
+    }
+}

@@ -430,7 +430,8 @@ register(TransformListQueryNode, (node, context) => {
 });
 
 register(CountQueryNode, (node, context) => {
-    return js`${processNode(node.listNode, context)}.length`;
+    // in arangodb LENGTH(null) is 0, which can be useful sometimes, so let's just mimick the behavior
+    return js`(${processNode(node.listNode, context)}?.length ?? 0)`;
 });
 
 register(AggregationQueryNode, (node, context) => {

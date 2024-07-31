@@ -1,0 +1,64 @@
+{
+  "init": {
+    "data": {
+      "updateDelivery": {
+        "deliveryNumber": "1000521",
+        "serialNumbers": []
+      }
+    }
+  },
+  "empty": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521",
+          "serialNumbers": []
+        },
+        {
+          "deliveryNumber": "1000522",
+          "serialNumbers": []
+        }
+      ]
+    }
+  },
+  "none": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521",
+          "serialNumbers": []
+        },
+        {
+          "deliveryNumber": "1000522",
+          "serialNumbers": []
+        }
+      ]
+    }
+  },
+  "not_empty": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "serialNumbers": [
+            "12345",
+            "67890"
+          ]
+        }
+      ]
+    }
+  },
+  "some": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "serialNumbers": [
+            "12345",
+            "67890"
+          ]
+        }
+      ]
+    }
+  }
+}
