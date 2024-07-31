@@ -2,7 +2,7 @@ import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphq
 import { Field, Multiplicity } from '../../model';
 import { PreExecQueryParms, QueryNode } from '../../query-tree';
 import { getCreateRelatedEntityFieldName } from '../../schema/names';
-import { AnyValue, PlainObject } from '../../utils/utils';
+import { AnyValue, isReadonlyArray, PlainObject } from '../../utils/utils';
 import { FieldContext } from '../query-node-object-type';
 import {
     getAddEdgesStatements,
@@ -84,7 +84,7 @@ export class AddEdgesCreateInputField extends AbstractRelationCreateInputField {
         if (value == undefined) {
             return [];
         }
-        if (!Array.isArray(value)) {
+        if (!isReadonlyArray(value)) {
             throw new Error(
                 `Expected value of "${this.name}" to be an array, but is ${typeof value}`,
             );
@@ -115,7 +115,7 @@ export class CreateAndAddEdgesCreateInputField extends AbstractRelationCreateInp
         if (value == undefined) {
             return [];
         }
-        if (!Array.isArray(value)) {
+        if (!isReadonlyArray(value)) {
             throw new Error(
                 `Expected value of "${this.name}" to be an array, but is ${typeof value}`,
             );
@@ -152,7 +152,7 @@ export class CreateAndSetEdgeCreateInputField extends AbstractRelationCreateInpu
         if (value == undefined) {
             return [];
         }
-        if (Array.isArray(value)) {
+        if (isReadonlyArray(value)) {
             throw new Error(
                 `Expected value of "${this.name}" to be an object, but is ${typeof value}`,
             );

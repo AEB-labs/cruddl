@@ -203,7 +203,7 @@ export class RegressionSuite {
 
         const operations = parse(gqlSource).definitions.filter(
             (def) => def.kind == 'OperationDefinition',
-        ) as OperationDefinitionNode[];
+        ) as ReadonlyArray<OperationDefinitionNode>;
         this._isSetUpClean =
             this._isSetUpClean && !operations.some((op) => op.operation == 'mutation');
         const hasNamedOperations = operations.length && operations[0].name;

@@ -6,7 +6,7 @@ import {
     getCreateRelatedEntityFieldName,
     getRemoveRelationFieldName,
 } from '../../schema/names';
-import { AnyValue, PlainObject } from '../../utils/utils';
+import { AnyValue, isReadonlyArray, PlainObject } from '../../utils/utils';
 import { CreateRootEntityInputType } from '../create-input-types';
 import { FieldContext } from '../query-node-object-type';
 import {
@@ -85,7 +85,7 @@ export class AddEdgesInputField extends AbstractRelationUpdateInputField {
         if (value == undefined) {
             return [];
         }
-        if (!Array.isArray(value)) {
+        if (!isReadonlyArray(value)) {
             throw new Error(
                 `Expected value of "${this.name}" to be an array, but is ${typeof value}`,
             );
@@ -110,7 +110,7 @@ export class RemoveEdgesInputField extends AbstractRelationUpdateInputField {
         if (value == undefined) {
             return [];
         }
-        if (!Array.isArray(value)) {
+        if (!isReadonlyArray(value)) {
             throw new Error(
                 `Expected value of "${this.name}" to be an array, but is ${typeof value}`,
             );
@@ -140,7 +140,7 @@ export class CreateAndAddEdgesInputField extends AbstractRelationUpdateInputFiel
         if (value == undefined) {
             return [];
         }
-        if (!Array.isArray(value)) {
+        if (!isReadonlyArray(value)) {
             throw new Error(
                 `Expected value of "${this.name}" to be an array, but is ${typeof value}`,
             );
@@ -177,7 +177,7 @@ export class CreateAndSetEdgeInputField extends AbstractRelationUpdateInputField
         if (value == undefined) {
             return [];
         }
-        if (Array.isArray(value)) {
+        if (isReadonlyArray(value)) {
             throw new Error(
                 `Expected value of "${this.name}" to be an object, but is ${typeof value}`,
             );

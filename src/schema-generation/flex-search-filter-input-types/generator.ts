@@ -318,7 +318,7 @@ export class FlexSearchFilterTypeGenerator {
     private generateFilterFieldsForNonListEnumField(
         field: Field,
         graphQLEnumType: GraphQLEnumType,
-    ): FlexSearchFilterField[] {
+    ): ReadonlyArray<FlexSearchFilterField> {
         if (field.isList || !field.type.isEnumType) {
             throw new Error(`Expected "${field.name}" to be a non-list enum`);
         }
@@ -338,7 +338,7 @@ export class FlexSearchFilterTypeGenerator {
     private generateTypeSpecificListFieldFilterFields(
         field: Field,
         path?: ReadonlyArray<Field>,
-    ): FlexSearchFilterField[] {
+    ): ReadonlyArray<FlexSearchFilterField> {
         const pathParam = path ? path : [];
         if (field.type instanceof ScalarType) {
             return this.buildFilterFieldsForListScalar(field.type, field, pathParam);
@@ -358,7 +358,7 @@ export class FlexSearchFilterTypeGenerator {
         type: ScalarType,
         field: Field,
         path?: ReadonlyArray<Field>,
-    ): FlexSearchScalarOrEnumFieldFilterField[] {
+    ): ReadonlyArray<FlexSearchScalarOrEnumFieldFilterField> {
         const filterFields = this.getFilterFieldsByType(type);
 
         let scalarFields: FlexSearchScalarOrEnumFieldFilterField[] = [];

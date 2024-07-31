@@ -328,7 +328,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     async executeExt({ queryTree, ...options }: ExecutionArgs): Promise<ExecutionResult> {
         const prepStartTime = getPreciseTime();
         globalContext.registerContext(this.schemaContext);
-        let executableQueries: AQLExecutableQuery[];
+        let executableQueries: ReadonlyArray<AQLExecutableQuery>;
         let aqlQuery: AQLCompoundQuery;
         const oldEnableIndentationForCode = aqlConfig.enableIndentationForCode;
         aqlConfig.enableIndentationForCode = !!options.recordPlan;

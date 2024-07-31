@@ -10,6 +10,7 @@ import {
     TransformListQueryNode,
     VariableQueryNode,
 } from '../../query-tree';
+import { isReadonlyArray } from '../../utils/utils';
 
 export function getMapNode(listNode: QueryNode, projection: (itemNode: QueryNode) => QueryNode) {
     if (listNode instanceof ListQueryNode) {
@@ -61,7 +62,7 @@ export function mapToIDNodesWithOptimizations(listNode: QueryNode): QueryNode {
                 if (
                     filterNode.operator === BinaryOperator.IN &&
                     filterNode.rhs instanceof LiteralQueryNode &&
-                    Array.isArray(filterNode.rhs.value)
+                    isReadonlyArray(filterNode.rhs.value)
                 ) {
                     if (listNode.maxCount == undefined) {
                         return filterNode.rhs;

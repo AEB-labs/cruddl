@@ -22,7 +22,7 @@ import {
     OR_FILTER_FIELD,
 } from '../../schema/constants';
 import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../schema/scalars/offset-date-time';
-import { AnyValue, decapitalize, PlainObject } from '../../utils/utils';
+import { AnyValue, decapitalize, isReadonlyArray, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants';
@@ -340,7 +340,7 @@ export class AndFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        if (!Array.isArray(filterValue) || !filterValue.length) {
+        if (!isReadonlyArray(filterValue) || !filterValue.length) {
             return new ConstBoolQueryNode(true);
         }
         const values = (filterValue || []) as ReadonlyArray<PlainObject>;
@@ -363,7 +363,7 @@ export class OrFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        if (!Array.isArray(filterValue)) {
+        if (!isReadonlyArray(filterValue)) {
             return new ConstBoolQueryNode(true); // regard as omitted
         }
         const values = filterValue as ReadonlyArray<PlainObject>;

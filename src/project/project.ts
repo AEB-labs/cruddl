@@ -15,6 +15,7 @@ import { createSchema, getModel, validateSchema } from '../schema/schema-builder
 import { ModuleSelectionOptions, selectModulesInProject } from './select-modules-in-sources';
 import { ProjectSource, SourceLike, SourceType } from './source';
 import { TTLInfo, getQueryNodeForTTLType, getTTLInfoQueryNode } from './time-to-live';
+import { isReadonlyArray } from '../utils/utils';
 
 export { ProjectOptions };
 
@@ -107,10 +108,10 @@ export class Project {
 
     readonly options: ProjectOptions;
 
-    constructor(config: ProjectConfig | SourceLike[]) {
-        if (Array.isArray(config)) {
-            config = { sources: config };
-        }
+    constructor(configOrSources: ProjectConfig | ReadonlyArray<SourceLike>) {
+        const config: ProjectConfig = isReadonlyArray(configOrSources)
+            ? { sources: configOrSources }
+            : configOrSources;
         this.sources = config.sources.map((config) => ProjectSource.fromConfig(config));
         this.loggerProvider = config.loggerProvider || DEFAULT_LOGGER_PROVIDER;
         this.options = {
@@ -124,7 +125,7 @@ export class Project {
         };
     }
 
-    getSourcesOfType(type: SourceType): ProjectSource[] {
+    getSourcesOfType(type: SourceType): ReadonlyArray<ProjectSource> {
         return this.sources.filter((source) => source.type == type);
     }
 

@@ -1,11 +1,14 @@
 import { ParsedObjectProjectSource } from '../config/parsed-project';
+import { isReadonlyArray } from '../utils/utils';
 import { TimeToLiveConfig } from './config';
 
-export function parseTTLConfigs(source: ParsedObjectProjectSource): TimeToLiveConfig[] {
-    if (!source.object || !source.object.timeToLive || !Array.isArray(source.object.timeToLive)) {
+export function parseTTLConfigs(
+    source: ParsedObjectProjectSource,
+): ReadonlyArray<TimeToLiveConfig> {
+    if (!source.object || !source.object.timeToLive || !isReadonlyArray(source.object.timeToLive)) {
         return [];
     }
-    const ttlConfigs = source.object.timeToLive as TimeToLiveConfig[];
+    const ttlConfigs = source.object.timeToLive as ReadonlyArray<TimeToLiveConfig>;
     return ttlConfigs.map((ttlConfig, index) => ({
         ...ttlConfig,
         typeNameLoc: source.pathLocationMap[`/timeToLive/${index}/typeName`],

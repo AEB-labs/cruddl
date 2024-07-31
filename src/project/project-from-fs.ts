@@ -21,11 +21,11 @@ export async function loadProjectFromDir(
 async function loadSourcesFromDir(
     dirPath: string,
     parentSourcePath: string = '',
-): Promise<ProjectSource[]> {
-    const fileNames: string[] = await readdir(dirPath);
+): Promise<ReadonlyArray<ProjectSource>> {
+    const fileNames: ReadonlyArray<string> = await readdir(dirPath);
     return flatten(await Promise.all(fileNames.map(processFile)));
 
-    async function processFile(fileName: string): Promise<ProjectSource[]> {
+    async function processFile(fileName: string): Promise<ReadonlyArray<ProjectSource>> {
         const sourcePath = concatSourcePaths(parentSourcePath, fileName);
         const filePath = resolve(dirPath, fileName);
         const stats = await stat(filePath);

@@ -1,7 +1,7 @@
 import { Severity, ValidationMessage } from './message';
 
 export class ValidationResult {
-    constructor(public readonly messages: ValidationMessage[]) {}
+    constructor(public readonly messages: ReadonlyArray<ValidationMessage>) {}
 
     public hasMessages() {
         return this.messages.length > 0;

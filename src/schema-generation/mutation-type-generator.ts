@@ -106,7 +106,7 @@ export class MutationTypeGenerator {
         };
     }
 
-    private generateFields(rootEntityType: RootEntityType): QueryNodeField[] {
+    private generateFields(rootEntityType: RootEntityType): ReadonlyArray<QueryNodeField> {
         const canCreatePluralFields = rootEntityType.name !== rootEntityType.pluralName;
 
         return compact([

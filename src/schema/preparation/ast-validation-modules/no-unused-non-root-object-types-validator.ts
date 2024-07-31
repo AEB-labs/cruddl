@@ -9,7 +9,7 @@ import {
 import { ASTValidator } from '../ast-validator';
 
 export class NoUnusedNonRootObjectTypesValidator implements ASTValidator {
-    validate(ast: DocumentNode): ValidationMessage[] {
+    validate(ast: DocumentNode): ReadonlyArray<ValidationMessage> {
         // store all object types to a set
         const objectTypeNames = new Set<ObjectTypeDefinitionNode>(
             getObjectTypes(ast).map((objectType) => objectType),

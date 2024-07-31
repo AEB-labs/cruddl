@@ -63,7 +63,7 @@ const invalidValueWithComments = `{
 describe('sidecar-schema validator', () => {
     const validator = new SidecarSchemaValidator();
 
-    function getValidatorMessages(ps: ProjectSource): ValidationMessage[] {
+    function getValidatorMessages(ps: ProjectSource): ReadonlyArray<ValidationMessage> {
         const parsedSource = parseProjectSource(ps, {}, new ValidationContext());
         if (parsedSource) {
             return validator.validate(parsedSource);

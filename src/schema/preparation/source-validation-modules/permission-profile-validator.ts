@@ -8,7 +8,7 @@ import {
     createRoleSpecifierEntry,
     InvalidRoleSpecifierError,
 } from '../../../model/implementation/permission-profile';
-import { flatMap } from '../../../utils/utils';
+import { flatMap, isReadonlyArray } from '../../../utils/utils';
 import { ParsedSourceValidator } from '../ast-validator';
 
 export class PermissionProfileValidator implements ParsedSourceValidator {
@@ -22,7 +22,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
         if (
             !data ||
             !data.permissionProfiles ||
-            Array.isArray(data.permissionProfiles) ||
+            isReadonlyArray(data.permissionProfiles) ||
             typeof data.permissionProfiles !== 'object'
         ) {
             return [];
@@ -46,7 +46,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
         name: string;
         pathLocationMap: PathLocationMap;
     }): ReadonlyArray<ValidationMessage> {
-        if (!profile || !Array.isArray(profile.permissions)) {
+        if (!profile || !isReadonlyArray(profile.permissions)) {
             return [];
         }
 
@@ -66,7 +66,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
         index: string;
         pathLocationMap: PathLocationMap;
     }): ReadonlyArray<ValidationMessage> {
-        if (!permission || !Array.isArray(permission.roles)) {
+        if (!permission || !isReadonlyArray(permission.roles)) {
             return [];
         }
 
@@ -101,7 +101,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
 
         if (
             hasRoleExpressionWithoutCaptureGroup &&
-            Array.isArray(permission.restrictToAccessGroups)
+            isReadonlyArray(permission.restrictToAccessGroups)
         ) {
             let accessGroupIndex = 0;
             for (const accessGroupExpression of permission.restrictToAccessGroups) {

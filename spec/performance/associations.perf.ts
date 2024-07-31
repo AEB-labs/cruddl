@@ -48,7 +48,7 @@ function testFetchWithAssociations(config: {
     associationCount: number;
 }): BenchmarkConfig {
     let env: TestEnvironment;
-    let sampledIDs: string[] = [];
+    let sampledIDs: ReadonlyArray<string> = [];
     return {
         name: `Fetch one of one root entity with one level deep associations (${config.paperCount} papers, ${config.userCount} users, ${config.associationCount} associations`,
         async beforeAll() {

@@ -36,7 +36,7 @@ import {
     INPUT_FIELD_STARTS_WITH,
     OR_FILTER_FIELD,
 } from '../../schema/constants';
-import { AnyValue, PlainObject } from '../../utils/utils';
+import { AnyValue, isReadonlyArray, PlainObject } from '../../utils/utils';
 import {
     FilterField,
     getScalarFilterLiteralValue,
@@ -367,7 +367,7 @@ export class FlexSearchAndFilterField implements FlexSearchFilterField {
         path: ReadonlyArray<Field>,
         info: QueryNodeResolveInfo,
     ): QueryNode {
-        if (!Array.isArray(filterValue) || !filterValue.length) {
+        if (!isReadonlyArray(filterValue) || !filterValue.length) {
             return new ConstBoolQueryNode(true);
         }
         const values = (filterValue || []) as ReadonlyArray<PlainObject>;
@@ -397,7 +397,7 @@ export class FlexSearchOrFilterField implements FlexSearchFilterField {
         path: ReadonlyArray<Field>,
         info: QueryNodeResolveInfo,
     ): QueryNode {
-        if (!Array.isArray(filterValue)) {
+        if (!isReadonlyArray(filterValue)) {
             return new ConstBoolQueryNode(true); // regard as omitted
         }
         const values = filterValue as ReadonlyArray<PlainObject>;
@@ -517,7 +517,7 @@ export function resolveFilterField(
     }
     if (
         filterField.operatorName == INPUT_FIELD_IN &&
-        Array.isArray(filterValue) &&
+        isReadonlyArray(filterValue) &&
         filterValue.includes(null)
     ) {
         return new BinaryOperationQueryNode(
@@ -539,7 +539,7 @@ export function resolveFilterField(
     }
     if (
         filterField.operatorName == INPUT_FIELD_NOT_IN &&
-        Array.isArray(filterValue) &&
+        isReadonlyArray(filterValue) &&
         filterValue.includes(null)
     ) {
         return new BinaryOperationQueryNode(

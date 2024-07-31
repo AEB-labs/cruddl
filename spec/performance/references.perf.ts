@@ -36,7 +36,7 @@ function testReferenceLookup(config: {
     referenceCountEach: number;
 }): BenchmarkConfig {
     let env: TestEnvironment;
-    let sampledIDs: string[] = [];
+    let sampledIDs: ReadonlyArray<string> = [];
     return {
         name: `Set up ${config.paperCount} root entities with ${config.referenceCountEach} references each, then fetch a random root entity with all its references`,
         async beforeAll() {

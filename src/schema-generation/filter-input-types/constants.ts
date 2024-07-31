@@ -142,7 +142,7 @@ export const FILTER_DESCRIPTIONS: { [name: string]: string | { [typeName: string
 
 export const OPERATORS_WITH_LIST_OPERAND = [INPUT_FIELD_IN, INPUT_FIELD_NOT_IN];
 
-export const FILTER_FIELDS_BY_TYPE: { [name: string]: string[] } = {
+export const FILTER_FIELDS_BY_TYPE: { [name: string]: ReadonlyArray<string> } = {
     [GraphQLString.name]: STRING_FILTER_FIELDS,
     [GraphQLID.name]: NUMERIC_FILTER_FIELDS,
     [GraphQLDateTime.name]: NUMERIC_FILTER_FIELDS,

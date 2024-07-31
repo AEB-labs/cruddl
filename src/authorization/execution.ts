@@ -14,7 +14,7 @@ import { AuthContext } from './auth-basics';
 import { moveErrorsToOutputNodes } from './move-errors-to-output-nodes';
 import { transformNode } from './transformers';
 
-const MUTATIONS: Function[] = [
+const MUTATIONS: ReadonlyArray<Function> = [
     CreateEntityQueryNode,
     UpdateEntitiesQueryNode,
     DeleteEntitiesQueryNode,

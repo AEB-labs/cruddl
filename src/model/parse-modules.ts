@@ -1,5 +1,6 @@
 import { ModelOptions } from '../config/interfaces';
 import { ParsedObjectProjectSource } from '../config/parsed-project';
+import { isReadonlyArray } from '../utils/utils';
 import { ModuleConfig } from './config/module';
 import { ValidationContext, ValidationMessage } from './validation';
 
@@ -8,7 +9,7 @@ export function parseModuleConfigs(
     options: ModelOptions,
     validationContext: ValidationContext,
 ): ReadonlyArray<ModuleConfig> {
-    if (!source.object || !source.object.modules || !Array.isArray(source.object.modules)) {
+    if (!source.object || !source.object.modules || !isReadonlyArray(source.object.modules)) {
         return [];
     }
 

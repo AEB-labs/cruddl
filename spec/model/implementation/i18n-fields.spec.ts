@@ -5,7 +5,7 @@ const FULLY = 'fully';
 const PARTIALLY = 'partially';
 const NAMESPACED = 'namespaced';
 
-const i18n: LocalizationConfig[] = [
+const i18n: ReadonlyArray<LocalizationConfig> = [
     {
         language: FULLY,
         namespacePath: [],

@@ -71,7 +71,7 @@ import {
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
 import { not } from '../../schema-generation/utils/input-types';
-import { Constructor, decapitalize } from '../../utils/utils';
+import { Constructor, decapitalize, isReadonlyArray } from '../../utils/utils';
 import { FlexSearchTokenizable } from '../database-adapter';
 import { analyzeLikePatternPrefix } from '../like-helpers';
 import {
@@ -286,7 +286,7 @@ class QueryContext {
         return variable;
     }
 
-    getPreExecuteQueries(): AQLCompoundQuery[] {
+    getPreExecuteQueries(): ReadonlyArray<AQLCompoundQuery> {
         return this.preExecQueries;
     }
 
@@ -1862,7 +1862,7 @@ function getFullIDsFromKeysNode(
     }
     if (
         idsNode instanceof LiteralQueryNode &&
-        Array.isArray(idsNode.value) &&
+        isReadonlyArray(idsNode.value) &&
         idsNode.value.every((v) => typeof v === 'string')
     ) {
         const collName = getCollectionNameForRootEntity(rootEntityType);

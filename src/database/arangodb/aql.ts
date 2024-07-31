@@ -26,7 +26,7 @@ function indentLineBreaks(val: string, level: number) {
 }
 
 export class AQLCodeBuildingContext {
-    private readonly boundValues: any[] = [];
+    private readonly boundValues: unknown[] = [];
     private readonly boundCollectionNames = new Set<string>();
     private variableBindings = new Map<AQLVariable, string>();
     private preExecInjectedVariablesMap = new Map<AQLQueryResultVariable, string>();
@@ -340,7 +340,10 @@ export namespace aql {
         return new AQLCompoundFragment(fragments);
     }
 
-    export function join(fragments: AQLFragment[], separator: AQLFragment): AQLFragment {
+    export function join(
+        fragments: ReadonlyArray<AQLFragment>,
+        separator: AQLFragment,
+    ): AQLFragment {
         const newFragments: AQLFragment[] = [];
         let isFirst = true;
         for (const fragment of fragments) {
@@ -360,7 +363,7 @@ export namespace aql {
         return new AQLCodeFragment(code);
     }
 
-    export function lines(...fragments: AQLFragment[]) {
+    export function lines(...fragments: ReadonlyArray<AQLFragment>) {
         return join(fragments, aql`\n`);
     }
 
@@ -424,7 +427,7 @@ export namespace aql {
  */
 export class AQLCompoundQuery extends AQLFragment {
     constructor(
-        public readonly preExecQueries: AQLCompoundQuery[],
+        public readonly preExecQueries: ReadonlyArray<AQLCompoundQuery>,
         public readonly aqlQuery: AQLFragment,
         public readonly resultVar: AQLQueryResultVariable | undefined,
         public readonly resultValidator: QueryResultValidator | undefined,
@@ -439,14 +442,14 @@ export class AQLCompoundQuery extends AQLFragment {
      *
      * The returned transaction steps are to be executed sequentially.
      */
-    getExecutableQueries(): AQLExecutableQuery[] {
+    getExecutableQueries(): ReadonlyArray<AQLExecutableQuery> {
         const resultVarToNameMap = new Map<AQLQueryResultVariable, string>();
         return this.getExecutableQueriesRecursive(resultVarToNameMap);
     }
 
     private getExecutableQueriesRecursive(
         resultVarToNameMap: Map<AQLQueryResultVariable, string>,
-    ): AQLExecutableQuery[] {
+    ): ReadonlyArray<AQLExecutableQuery> {
         const executableQueries = flatMap(this.preExecQueries, (aqlQuery) =>
             aqlQuery.getExecutableQueriesRecursive(resultVarToNameMap),
         );

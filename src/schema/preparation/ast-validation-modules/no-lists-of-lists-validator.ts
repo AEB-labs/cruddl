@@ -6,7 +6,7 @@ import { ASTValidator } from '../ast-validator';
 export const VALIDATION_ERROR_LISTS_OF_LISTS_NOT_ALLOWED = 'Lists of lists are not allowed.';
 
 export class NoListsOfListsValidator implements ASTValidator {
-    validate(ast: DocumentNode): ValidationMessage[] {
+    validate(ast: DocumentNode): ReadonlyArray<ValidationMessage> {
         const validationMessages: ValidationMessage[] = [];
         getObjectTypes(ast).forEach((ot) =>
             (ot.fields || []).forEach((field) => {

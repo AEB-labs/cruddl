@@ -79,7 +79,7 @@ export class CreateInputTypeGenerator {
         );
     }
 
-    private generateFields(field: Field): CreateInputField[] {
+    private generateFields(field: Field): ReadonlyArray<CreateInputField> {
         if (field.isSystemField) {
             return [];
         }

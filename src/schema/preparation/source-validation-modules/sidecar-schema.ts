@@ -4,7 +4,7 @@ import { ParsedSourceValidator } from '../ast-validator';
 import validate from './schema/validate-schema';
 
 export class SidecarSchemaValidator implements ParsedSourceValidator {
-    validate(source: ParsedProjectSource): ValidationMessage[] {
+    validate(source: ParsedProjectSource): ReadonlyArray<ValidationMessage> {
         if (source.kind != ParsedProjectSourceBaseKind.OBJECT) {
             return [];
         }
@@ -22,8 +22,7 @@ export class SidecarSchemaValidator implements ParsedSourceValidator {
 
             // we allow top-level additional properties because they indicate new features, so it might be ok to omit them
             const isWarning =
-                err.instancePath === '' &&
-                err.message === 'must NOT have additional properties';
+                err.instancePath === '' && err.message === 'must NOT have additional properties';
             if (isWarning) {
                 if (path in source.pathLocationMap) {
                     const loc = source.pathLocationMap[path];

@@ -19,7 +19,7 @@ import {
     getUpdateChildEntitiesFieldName,
 } from '../../schema/names';
 import { GraphQLOffsetDateTime, serializeForStorage } from '../../schema/scalars/offset-date-time';
-import { AnyValue, PlainObject } from '../../utils/utils';
+import { AnyValue, isReadonlyArray, PlainObject } from '../../utils/utils';
 import { CreateChildEntityInputType, CreateObjectInputType } from '../create-input-types';
 import { createFieldNode } from '../field-nodes';
 import { FieldContext } from '../query-node-object-type';
@@ -136,7 +136,7 @@ export class BasicListUpdateInputField extends BasicUpdateInputField {
     protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
         // null is not a valid list value - if the user specified it, coerce it to [] to not have a mix of [] and
         // null in the database
-        let listValue = Array.isArray(value) ? value : [];
+        let listValue = isReadonlyArray(value) ? value : [];
         return listValue.map((itemValue) => super.coerceValue(itemValue, context));
     }
 }
@@ -225,12 +225,14 @@ export class UpdateValueObjectListInputField extends BasicUpdateInputField {
         if (value === undefined) {
             return undefined;
         }
-        if (!Array.isArray(value)) {
+        if (!isReadonlyArray(value)) {
             throw new Error(
                 `Expected value for "${this.name}" to be an array, but is "${typeof value}"`,
             );
         }
-        return value.map((value) => this.objectInputType.prepareValue(value, context));
+        return value.map((value) =>
+            this.objectInputType.prepareValue(value as PlainObject, context),
+        );
     }
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
@@ -238,14 +240,14 @@ export class UpdateValueObjectListInputField extends BasicUpdateInputField {
         if (value == undefined) {
             return;
         }
-        if (!Array.isArray(value)) {
+        if (!isReadonlyArray(value)) {
             throw new Error(
                 `Expected value for "${this.name}" to be an array, but is "${typeof value}"`,
             );
         }
 
         value.forEach((value) =>
-            this.objectInputType.collectAffectedFields(value, fields, context),
+            this.objectInputType.collectAffectedFields(value as PlainObject, fields, context),
         );
     }
 }

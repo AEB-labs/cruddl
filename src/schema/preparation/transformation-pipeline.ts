@@ -4,7 +4,7 @@ import { ParsedProject, ParsedProjectSourceBaseKind } from '../../config/parsed-
 import { DatabaseAdapter } from '../../database/database-adapter';
 import { AddNamespacesToTypesTransformer } from './pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer';
 
-const preMergePipeline: ASTTransformer[] = [new AddNamespacesToTypesTransformer()];
+const preMergePipeline: ReadonlyArray<ASTTransformer> = [new AddNamespacesToTypesTransformer()];
 
 export function executePreMergeTransformationPipeline(parsedProject: ParsedProject): ParsedProject {
     return {

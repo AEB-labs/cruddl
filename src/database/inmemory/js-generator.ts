@@ -192,7 +192,7 @@ class QueryContext {
         return js`${variable}`;
     }
 
-    getPreExecuteQueries(): JSCompoundQuery[] {
+    getPreExecuteQueries(): ReadonlyArray<JSCompoundQuery> {
         return this.preExecQueries;
     }
 }
@@ -220,7 +220,7 @@ namespace jsExt {
         }
     }
 
-    export function executingFunction(...content: JSFragment[]): JSFragment {
+    export function executingFunction(...content: ReadonlyArray<JSFragment>): JSFragment {
         return js.lines(js`(function() {`, js.indent(js.lines(...content)), js`})()`);
     }
 
@@ -1339,7 +1339,7 @@ function processNode(node: QueryNode, context: QueryContext): JSFragment {
 }
 
 // TODO I think JSCompoundQuery (JS transaction node) should not be the exported type
-// we should rather export JSExecutableQuery[] (as JS transaction) directly.
+// we should rather export ReadonlyArray<JSExecutableQuery> (as JS transaction) directly.
 export function getJSQuery(
     node: QueryNode,
     options: Partial<QueryGenerationOptions> = {},

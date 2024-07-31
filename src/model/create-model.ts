@@ -1181,7 +1181,7 @@ function extractBilling(parsedProject: ParsedProject): BillingConfig {
         );
 }
 
-function extractTimeToLive(parsedProject: ParsedProject): TimeToLiveConfig[] {
+function extractTimeToLive(parsedProject: ParsedProject): ReadonlyArray<TimeToLiveConfig> {
     const objectSchemaParts = parsedProject.sources.filter(
         (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT,
     ) as ReadonlyArray<ParsedObjectProjectSource>;

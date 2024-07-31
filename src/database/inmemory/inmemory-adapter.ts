@@ -16,9 +16,10 @@ import { JSCompoundQuery, JSExecutableQuery } from './js';
 import { getJSQuery } from './js-generator';
 import { v4 as uuid } from 'uuid';
 import { DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
+import { isReadonlyArray } from '../../utils/utils';
 
 export class InMemoryDB {
-    collections: { [name: string]: any[] } = {};
+    collections: { [name: string]: ReadonlyArray<any> } = {};
 }
 
 export class InMemoryAdapter implements DatabaseAdapter {
@@ -42,7 +43,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
      * @returns {string}
      */
     private executeQueries(
-        queries: JSExecutableQuery[],
+        queries: ReadonlyArray<JSExecutableQuery>,
         { idGenerator }: { idGenerator: IDGenerator },
     ) {
         const validators = new Map(
@@ -97,8 +98,8 @@ export class InMemoryAdapter implements DatabaseAdapter {
                     return 1;
                 }
 
-                if (Array.isArray(lhs)) {
-                    if (!Array.isArray(rhs)) {
+                if (isReadonlyArray(lhs)) {
+                    if (!isReadonlyArray(rhs)) {
                         return -1;
                     }
 
@@ -112,7 +113,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
                         }
                     }
                 }
-                if (Array.isArray(rhs)) {
+                if (isReadonlyArray(rhs)) {
                     return 1;
                 }
 
@@ -196,7 +197,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
             likePatternToRegExp,
 
             ensureArray: (arg: unknown) => {
-                if (Array.isArray(arg)) {
+                if (isReadonlyArray(arg)) {
                     return arg;
                 }
                 return [arg];
@@ -262,7 +263,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
 
     async executeExt(args: ExecutionArgs): Promise<ExecutionResult> {
         globalContext.registerContext(this.schemaContext);
-        let executableQueries: JSExecutableQuery[];
+        let executableQueries: ReadonlyArray<JSExecutableQuery>;
         let jsQuery: JSCompoundQuery;
         try {
             jsQuery = getJSQuery(args.queryTree, {

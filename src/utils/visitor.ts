@@ -1,3 +1,5 @@
+import { isReadonlyArray } from './utils';
+
 export type VisitResult<T> = {
     recurse?: boolean;
     newValue: T;
@@ -43,14 +45,14 @@ function visitObjectProperties<T extends object>(object: T, visitor: Visitor<T>)
 }
 
 function visitObjectOrArray<T>(
-    nodeOrArray: T | T[],
+    nodeOrArray: T | ReadonlyArray<T>,
     visitor: Visitor<any>,
     key: string | undefined,
-): T | T[] {
+): T | ReadonlyArray<T> {
     if (typeof nodeOrArray != 'object' || nodeOrArray === null) {
         return nodeOrArray;
     }
-    if (!Array.isArray(nodeOrArray)) {
+    if (!isReadonlyArray(nodeOrArray)) {
         return visitObject0(nodeOrArray as T, visitor, key);
     }
     return nodeOrArray.map((item) => visitObject0(item, visitor, key));

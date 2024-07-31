@@ -160,7 +160,7 @@ function testQueryPipeline(params: {
 
     let schema: GraphQLSchema;
     let model: Model;
-    let preparedQueries: PreparedQuery[];
+    let preparedQueries: ReadonlyArray<PreparedQuery>;
 
     return {
         name: `Run query pipeline with ${optionsStr}`,

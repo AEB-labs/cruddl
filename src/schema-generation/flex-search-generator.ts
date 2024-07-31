@@ -267,7 +267,7 @@ export class FlexSearchGenerator {
 
         const expression = expressionParam;
 
-        function getQueryNodeFromField(field: Field, path: Field[] = []): QueryNode {
+        function getQueryNodeFromField(field: Field, path: ReadonlyArray<Field> = []): QueryNode {
             if (field.type.isObjectType) {
                 return field.type.fields
                     .filter((f) => f.isIncludedInSearch || f.isFulltextIncludedInSearch)
