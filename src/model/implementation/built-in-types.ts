@@ -22,6 +22,7 @@ import { TypeKind } from '../config';
 import { Model } from './model';
 import { ScalarType } from './scalar-type';
 import { Type } from './type';
+import { ModuleSpecificationClauseConfig } from '../config/module-specification';
 
 const graphQLTypes: ReadonlyArray<GraphQLScalarType> = [
     GraphQLID,
@@ -64,14 +65,23 @@ function buildScalarType(type: GraphQLScalarType, model: Model) {
         {
             kind: TypeKind.SCALAR,
             name: type.name,
+            isBuiltinType: true,
             description: type.description || undefined,
             graphQLScalarType: type,
             isNumberType: numberTypes.includes(type),
+            moduleSpecification: model.options?.withModuleDefinitions
+                ? {
+                      in: model.modules.map(
+                          (m): ModuleSpecificationClauseConfig => ({ expression: m.name }),
+                      ),
+                      includeAllFields: false,
+                  }
+                : undefined,
 
-            // please don't kill me
+            // this is hacky, but the type names are defined statically within this file, so it should be ok
             fixedPointDecimalInfo: type.name.startsWith('Decimal')
                 ? {
-                      digits: Number(type.name.substr('Decimal'.length)),
+                      digits: Number(type.name.substring('Decimal'.length)),
                   }
                 : undefined,
         },

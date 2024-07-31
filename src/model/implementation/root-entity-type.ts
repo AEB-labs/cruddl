@@ -232,7 +232,6 @@ export class RootEntityType extends ObjectTypeBase {
         this.validatePermissions(context);
         this.validateIndices(context);
         this.validateFlexSearch(context);
-        this.validateRootEntityModuleSpecification(context);
     }
 
     private validateKeyField(context: ValidationContext) {
@@ -470,18 +469,6 @@ export class RootEntityType extends ObjectTypeBase {
                 ValidationMessage.error(
                     `Cannot be negative.`,
                     perfParams?.cleanupIntervalStepASTNode,
-                ),
-            );
-        }
-    }
-
-    private validateRootEntityModuleSpecification(context: ValidationContext) {
-        const withModuleDefinitions = this.model.options?.withModuleDefinitions ?? false;
-        if (withModuleDefinitions && !this.moduleSpecification) {
-            context.addMessage(
-                ValidationMessage.error(
-                    `Missing module specification. Add ${MODULES_DIRECTIVE}(in: ...) to specify the modules of this root entity type.`,
-                    this.nameASTNode,
                 ),
             );
         }

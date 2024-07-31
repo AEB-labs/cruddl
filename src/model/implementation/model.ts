@@ -41,6 +41,8 @@ export class Model implements ModelComponent {
     readonly modules: ReadonlyArray<ModuleDeclaration>;
 
     constructor(private input: ModelConfig) {
+        this.modules = input.modules ? input.modules.map((m) => new ModuleDeclaration(m)) : [];
+        // do this after the modules have been set because it uses the module list to make built-in types available in all modules
         this.builtInTypes = createBuiltInTypes(this);
         this.types = [
             ...this.builtInTypes,
@@ -64,7 +66,6 @@ export class Model implements ModelComponent {
         this.timeToLiveTypes = input.timeToLiveConfigs
             ? input.timeToLiveConfigs.map((ttlConfig) => new TimeToLiveType(ttlConfig, this))
             : [];
-        this.modules = input.modules ? input.modules.map((m) => new ModuleDeclaration(m)) : [];
     }
 
     validate(context = new ValidationContext()): ValidationResult {

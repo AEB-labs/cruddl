@@ -25,16 +25,17 @@ export enum TypeKind {
 export interface TypeConfigBase {
     readonly kind: TypeKind;
     readonly name: string;
+    readonly isBuiltinType?: boolean;
     readonly namespacePath?: ReadonlyArray<string>;
     readonly description?: string;
     readonly astNode?: TypeDefinitionNode;
     readonly flexSearchLanguage?: FlexSearchLanguage;
+    readonly moduleSpecification?: TypeModuleSpecificationConfig;
 }
 
 export interface ObjectTypeConfigBase extends TypeConfigBase {
     readonly fields: ReadonlyArray<FieldConfig>;
     readonly astNode?: ObjectTypeDefinitionNode;
-    readonly moduleSpecification?: TypeModuleSpecificationConfig;
 }
 
 export interface RootEntityTypeConfig extends ObjectTypeConfigBase {

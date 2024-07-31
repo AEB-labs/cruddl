@@ -25,6 +25,55 @@ describe('modules validator', () => {
         });
     });
 
+    describe('on enum types', () => {
+        it('accepts a simple @modules', () => {
+            assertValidatorAcceptsAndDoesNotWarn(
+                `
+                    enum Foo @modules(in: ["module1", "module2"]) {
+                        VALUE1, VALUE2
+                    }
+                `,
+                { withModuleDefinitions: true },
+            );
+        });
+
+        it('rejects includeAllFields', () => {
+            assertValidatorRejects(
+                `
+                    enum Foo @modules(in: ["module1", "module2"], includeAllFields: true) {
+                        VALUE1, VALUE2
+                    }
+                `,
+                'includeAllFields cannot be specified for enum types.',
+                { withModuleDefinitions: true },
+            );
+        });
+
+        it('rejects all: true', () => {
+            assertValidatorRejects(
+                `
+                    enum Foo @modules(in: ["module1"], all: true ) {
+                        VALUE1, VALUE2
+                    }
+                `,
+                '"all" can only be specified on field declarations.',
+                { withModuleDefinitions: true },
+            );
+        });
+
+        it('rejects a missing @modules', () => {
+            assertValidatorRejects(
+                `
+                    enum Foo {
+                        VALUE1, VALUE2
+                    }
+                `,
+                'Type "Foo" is missing a module specification. Add @modules(in: ...) to specify the modules.',
+                { withModuleDefinitions: true },
+            );
+        });
+    });
+
     describe('on object types', () => {
         it('accepts a simple @modules', () => {
             assertValidatorAcceptsAndDoesNotWarn(
@@ -80,14 +129,13 @@ describe('modules validator', () => {
                         foo: String @modules(all: true)
                     }
                 `,
-                'Missing module specification. Add modules(in: ...) to specify the modules of this root entity type.',
+                'Type "Foo" is missing a module specification. Add @modules(in: ...) to specify the modules.',
                 { withModuleDefinitions: true },
             );
         });
 
-        it('accepts a missing @modules on a child entity type', () => {
-            // might want to enforce this in the future, but for now, non-root-entity types are just included in all modules that somehow use them
-            assertValidatorAcceptsAndDoesNotWarn(
+        it('rejects a missing @modules on a child entity type', () => {
+            assertValidatorRejects(
                 `
                     type Foo @rootEntity @modules(in: "module1") {
                         bar: [Bar] @modules(all: true)
@@ -97,13 +145,13 @@ describe('modules validator', () => {
                         foo: String
                     }
                 `,
+                'Type "Bar" is missing a module specification. Add @modules(in: ...) to specify the modules.',
                 { withModuleDefinitions: true },
             );
         });
 
-        it('accepts a missing @modules on an entity extension type', () => {
-            // might want to enforce this in the future, but for now, non-root-entity types are just included in all modules that somehow use them
-            assertValidatorAcceptsAndDoesNotWarn(
+        it('rejects a missing @modules on an entity extension type', () => {
+            assertValidatorRejects(
                 `
                     type Foo @rootEntity @modules(in: "module1") {
                         bar: Bar @modules(all: true)
@@ -113,13 +161,13 @@ describe('modules validator', () => {
                         foo: String
                     }
                 `,
+                'Type "Bar" is missing a module specification. Add @modules(in: ...) to specify the modules.',
                 { withModuleDefinitions: true },
             );
         });
 
-        it('accepts a missing @modules on a value object type', () => {
-            // might want to enforce this in the future, but for now, non-root-entity types are just included in all modules that somehow use them
-            assertValidatorAcceptsAndDoesNotWarn(
+        it('rejects a missing @modules on a value object type', () => {
+            assertValidatorRejects(
                 `
                     type Foo @rootEntity @modules(in: "module1") {
                         bar: Bar @modules(all: true)
@@ -129,6 +177,7 @@ describe('modules validator', () => {
                         foo: String
                     }
                 `,
+                'Type "Bar" is missing a module specification. Add @modules(in: ...) to specify the modules.',
                 { withModuleDefinitions: true },
             );
         });

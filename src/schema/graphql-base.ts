@@ -254,20 +254,19 @@ export const DIRECTIVES: DocumentNode = gql`
     directive @modules(
         """
         A list of modules this type or field should be part of.
-        
+
         Can be an expression like module1 && module2.
-        
+
         Can include modules that are not listed in the declaring type.
         """
         in: [String!]
 
         "Specifies that this field should be included in all modules that include the declaring type."
         all: Boolean
-        
 
         "Specifies that all fields in this type should be included in all modules declared on this type."
         includeAllFields: Boolean
-    ) on OBJECT | FIELD_DEFINITION
+    ) on OBJECT | ENUM | FIELD_DEFINITION
 `;
 
 export const CORE_SCALARS: DocumentNode = gql`
