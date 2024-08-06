@@ -106,6 +106,8 @@ export class Field implements ModelComponent {
     readonly aggregationOperatorAstNode: ASTNode | undefined;
     readonly defaultValueAstNode: DirectiveNode | undefined;
     readonly calcMutationsAstNode: DirectiveNode | undefined;
+    readonly rootDirectiveAstNode: DirectiveNode | undefined;
+    readonly parentDirectiveAstNode: DirectiveNode | undefined;
 
     constructor(
         private readonly input: SystemFieldConfig,
@@ -152,6 +154,8 @@ export class Field implements ModelComponent {
         this.aggregationOperatorAstNode = input.collect?.aggregationOperatorASTNode;
         this.defaultValueAstNode = input.defaultValueASTNode;
         this.calcMutationsAstNode = input.calcMutationAstNode;
+        this.rootDirectiveAstNode = input.rootDirectiveNode;
+        this.parentDirectiveAstNode = input.parentDirectiveNode;
     }
 
     /**

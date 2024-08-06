@@ -1,5 +1,10 @@
 import { print, valueFromAST } from 'graphql';
-import { CALC_MUTATIONS_OPERATORS_ARG, ID_FIELD } from '../../schema/constants';
+import {
+    CALC_MUTATIONS_OPERATORS_ARG,
+    ID_FIELD,
+    PARENT_DIRECTIVE,
+    ROOT_DIRECTIVE,
+} from '../../schema/constants';
 import { RelationDeleteAction } from '../config/field';
 import { Field } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
@@ -15,6 +20,7 @@ export function checkField(fieldToCheck: Field, baselineField: Field, context: V
     checkCollectField(fieldToCheck, baselineField, context);
     checkDefaultValue(fieldToCheck, baselineField, context);
     checkCalcMutations(fieldToCheck, baselineField, context);
+    checkRootAndParentDirectives(fieldToCheck, baselineField, context);
 }
 
 function checkTypeAndList(fieldToCheck: Field, baselineField: Field, context: ValidationContext) {
@@ -455,5 +461,58 @@ function checkCalcMutations(fieldToCheck: Field, baselineField: Field, context: 
             ),
         );
         return;
+    }
+}
+
+/**
+ * Checks whether @root and @parent are specified exactly when they are specified in the baseline field
+ */
+function checkRootAndParentDirectives(
+    fieldToCheck: Field,
+    baselineField: Field,
+    context: ValidationContext,
+) {
+    if (fieldToCheck.isRootField && !baselineField.isRootField) {
+        context.addMessage(
+            ValidationMessage.compatibilityIssue(
+                `Field "${baselineField.declaringType.name}.${
+                    baselineField.name
+                }" should not be decorated with @root${getRequiredBySuffix(baselineField)}.`,
+                fieldToCheck.rootDirectiveAstNode ?? fieldToCheck.astNode,
+            ),
+        );
+    }
+
+    if (!fieldToCheck.isRootField && baselineField.isRootField) {
+        context.addMessage(
+            ValidationMessage.compatibilityIssue(
+                `Field "${baselineField.declaringType.name}.${
+                    baselineField.name
+                }" should be decorated with @root${getRequiredBySuffix(baselineField)}.`,
+                fieldToCheck.astNode,
+            ),
+        );
+    }
+
+    if (fieldToCheck.isParentField && !baselineField.isParentField) {
+        context.addMessage(
+            ValidationMessage.compatibilityIssue(
+                `Field "${baselineField.declaringType.name}.${
+                    baselineField.name
+                }" should not be decorated with @parent${getRequiredBySuffix(baselineField)}.`,
+                fieldToCheck.rootDirectiveAstNode ?? fieldToCheck.astNode,
+            ),
+        );
+    }
+
+    if (!fieldToCheck.isParentField && baselineField.isParentField) {
+        context.addMessage(
+            ValidationMessage.compatibilityIssue(
+                `Field "${baselineField.declaringType.name}.${
+                    baselineField.name
+                }" should be decorated with @parent${getRequiredBySuffix(baselineField)}.`,
+                fieldToCheck.astNode,
+            ),
+        );
     }
 }
