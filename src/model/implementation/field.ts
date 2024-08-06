@@ -105,6 +105,7 @@ export class Field implements ModelComponent {
     readonly collectPathAstNode: ASTNode | undefined;
     readonly aggregationOperatorAstNode: ASTNode | undefined;
     readonly defaultValueAstNode: DirectiveNode | undefined;
+    readonly calcMutationsAstNode: DirectiveNode | undefined;
 
     constructor(
         private readonly input: SystemFieldConfig,
@@ -150,6 +151,7 @@ export class Field implements ModelComponent {
         this.collectPathAstNode = input.collect?.pathASTNode;
         this.aggregationOperatorAstNode = input.collect?.aggregationOperatorASTNode;
         this.defaultValueAstNode = input.defaultValueASTNode;
+        this.calcMutationsAstNode = input.calcMutationAstNode;
     }
 
     /**

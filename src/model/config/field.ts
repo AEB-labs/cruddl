@@ -23,6 +23,7 @@ export interface FieldConfig {
     readonly defaultValue?: any;
     readonly defaultValueASTNode?: DirectiveNode;
     readonly calcMutationOperators?: ReadonlyArray<CalcMutationsOperator>;
+    readonly calcMutationAstNode?: DirectiveNode;
 
     readonly isReference?: boolean;
     readonly referenceAstNode?: ASTNode;
