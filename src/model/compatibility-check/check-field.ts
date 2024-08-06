@@ -1,5 +1,5 @@
 import { print, valueFromAST } from 'graphql';
-import { ID_FIELD } from '../../schema/constants';
+import { CALC_MUTATIONS_OPERATORS_ARG, ID_FIELD } from '../../schema/constants';
 import { RelationDeleteAction } from '../config/field';
 import { Field } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
@@ -14,6 +14,7 @@ export function checkField(fieldToCheck: Field, baselineField: Field, context: V
     checkRelation(fieldToCheck, baselineField, context);
     checkCollectField(fieldToCheck, baselineField, context);
     checkDefaultValue(fieldToCheck, baselineField, context);
+    checkCalcMutations(fieldToCheck, baselineField, context);
 }
 
 function checkTypeAndList(fieldToCheck: Field, baselineField: Field, context: ValidationContext) {
@@ -396,6 +397,61 @@ function checkDefaultValue(fieldToCheck: Field, baselineField: Field, context: V
                     baselineField,
                 )}.`,
                 fieldToCheck.astNode,
+            ),
+        );
+        return;
+    }
+}
+
+/**
+ * Checks whether all calc mutations defined in the baseline field are also present in the field to check
+ */
+function checkCalcMutations(fieldToCheck: Field, baselineField: Field, context: ValidationContext) {
+    if (!baselineField.calcMutationOperators.size) {
+        return;
+    }
+
+    const operators = [...baselineField.calcMutationOperators];
+
+    // missing @calcMutations
+    if (!fieldToCheck.calcMutationOperators.size) {
+        const operatorsDesc = operators.map((o) => o.toString()).join(', ');
+        const expectedDeclaration = `@calcMutations(operators: [${operatorsDesc}])`;
+        context.addMessage(
+            ValidationMessage.compatibilityIssue(
+                `Field "${baselineField.declaringType.name}.${
+                    baselineField.name
+                }" should be decorated with ${expectedDeclaration}${getRequiredBySuffix(
+                    baselineField,
+                )}.`,
+                fieldToCheck.astNode,
+            ),
+        );
+        return;
+    }
+
+    // missing operators
+    const missingOperators = operators.filter((o) => !fieldToCheck.calcMutationOperators.has(o));
+    if (missingOperators.length) {
+        let message;
+        if (missingOperators.length === 1) {
+            message = `Operator ${missingOperators[0]} is missing`;
+        } else {
+            message =
+                'Operators ' +
+                missingOperators.slice(0, missingOperators.length - 1).join(', ') +
+                ' and ' +
+                missingOperators[missingOperators.length - 1] +
+                ' are missing';
+        }
+
+        const operatorsAstNode = fieldToCheck.calcMutationsAstNode?.arguments?.find(
+            (a) => a.name.value === CALC_MUTATIONS_OPERATORS_ARG,
+        );
+        context.addMessage(
+            ValidationMessage.compatibilityIssue(
+                `${message}${getRequiredBySuffix(baselineField)}.`,
+                operatorsAstNode ?? fieldToCheck.calcMutationsAstNode ?? fieldToCheck.astNode,
             ),
         );
         return;

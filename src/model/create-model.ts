@@ -629,13 +629,15 @@ function createFieldInput(
     );
     const accessFieldDirectiveASTNode = findDirectiveWithName(fieldNode, ACCESS_FIELD_DIRECTIVE);
     const hiddenDirectiveASTNode = findDirectiveWithName(fieldNode, HIDDEN_DIRECTIVE);
+    const calcMutationsDirective = findDirectiveWithName(fieldNode, CALC_MUTATIONS_DIRECTIVE);
 
     return {
         name: fieldNode.name.value,
         description: fieldNode.description ? fieldNode.description.value : undefined,
         deprecationReason: getDeprecationReason(fieldNode),
         astNode: fieldNode,
-        calcMutationOperators: getCalcMutationOperators(fieldNode, context),
+        calcMutationAstNode: calcMutationsDirective,
+        calcMutationOperators: getCalcMutationOperators(calcMutationsDirective, context),
         defaultValueASTNode: findDirectiveWithName(fieldNode, DEFAULT_VALUE_DIRECTIVE),
         defaultValue: getDefaultValue(fieldNode, context),
         inverseOfASTNode,
@@ -690,10 +692,9 @@ function createFieldInput(
 }
 
 function getCalcMutationOperators(
-    fieldNode: FieldDefinitionNode,
+    calcMutationsDirective: DirectiveNode | undefined,
     context: ValidationContext,
 ): ReadonlyArray<CalcMutationsOperator> {
-    const calcMutationsDirective = findDirectiveWithName(fieldNode, CALC_MUTATIONS_DIRECTIVE);
     if (!calcMutationsDirective) {
         return [];
     }
