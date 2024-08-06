@@ -31,6 +31,17 @@ export function expectToBeValid(component: Validatable) {
     expect(result.hasMessages(), result.toString()).to.be.false;
 }
 
+export function expectNoErrors(component: Validatable) {
+    const result = validate(component);
+    expect(
+        result.hasErrors(),
+        result
+            .getErrors()
+            .map((e) => e.toString())
+            .join('\n'),
+    ).to.be.false;
+}
+
 export function expectSingleError(component: Validatable, errorPart: string) {
     expectSingleMessage(component, errorPart, Severity.ERROR);
 }

@@ -1,5 +1,6 @@
 import { Type } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
+import { checkEnumType } from './check-enum-type';
 import { checkObjectType } from './check-object-type';
 import { getRequiredBySuffix } from './describe-module-specification';
 import { describeTypeKind } from './utils';
@@ -17,11 +18,11 @@ export function checkType(typeToCheck: Type, baselineType: Type, context: Valida
         return;
     }
 
-    if (baselineType.isObjectType) {
-        if (!typeToCheck.isObjectType) {
-            // covered by kind check above
-            throw new Error(`Expected isObjectType to be true`);
-        }
+    if (typeToCheck.isObjectType && baselineType.isObjectType) {
         checkObjectType(typeToCheck, baselineType, context);
+    }
+
+    if (typeToCheck.isEnumType && baselineType.isEnumType) {
+        checkEnumType(typeToCheck, baselineType, context);
     }
 }

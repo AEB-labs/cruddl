@@ -1,4 +1,12 @@
-import { FieldDefinitionNode, GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
+import {
+    ASTNode,
+    DirectiveNode,
+    FieldDefinitionNode,
+    GraphQLBoolean,
+    GraphQLID,
+    GraphQLInt,
+    GraphQLString,
+} from 'graphql';
 import memorize from 'memorize-decorator';
 import {
     ACCESS_GROUP_FIELD,
@@ -40,14 +48,13 @@ import { CollectPath } from './collect-path';
 import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from './flex-search';
 import { FieldLocalization } from './i18n';
 import { Model } from './model';
+import { EffectiveModuleSpecification } from './modules/effective-module-specification';
+import { FieldModuleSpecification } from './modules/field-module-specification';
 import { PermissionProfile } from './permission-profile';
 import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
-import { FieldModuleSpecification } from './modules/field-module-specification';
-import { EffectiveModuleSpecification } from './modules/effective-module-specification';
-import { hasIn } from 'lodash';
 
 export interface SystemFieldConfig extends FieldConfig {
     readonly isSystemField?: boolean;
@@ -90,6 +97,14 @@ export class Field implements ModelComponent {
 
     readonly moduleSpecification: FieldModuleSpecification | undefined;
 
+    readonly referenceAstNode: ASTNode | undefined;
+    readonly relationAstNode: ASTNode | undefined;
+    readonly inverseOfAstNode: ASTNode | undefined;
+    readonly relationDeleteActionAstNode: ASTNode | undefined;
+    readonly collectAstNode: DirectiveNode | undefined;
+    readonly collectPathAstNode: ASTNode | undefined;
+    readonly aggregationOperatorAstNode: ASTNode | undefined;
+
     constructor(
         private readonly input: SystemFieldConfig,
         public readonly declaringType: ObjectType,
@@ -126,6 +141,13 @@ export class Field implements ModelComponent {
                 this.model,
             );
         }
+        this.referenceAstNode = input.referenceAstNode;
+        this.relationAstNode = input.relationAstNode;
+        this.inverseOfAstNode = input.inverseOfASTNode;
+        this.relationDeleteActionAstNode = input.relationDeleteActionASTNode;
+        this.collectAstNode = input.collect?.astNode;
+        this.collectPathAstNode = input.collect?.pathASTNode;
+        this.aggregationOperatorAstNode = input.collect?.aggregationOperatorASTNode;
     }
 
     /**
@@ -326,28 +348,21 @@ export class Field implements ModelComponent {
 
     @memorize()
     get effectiveModuleSpecification(): EffectiveModuleSpecification {
-        if (!this.moduleSpecification) {
-            return EffectiveModuleSpecification.EMPTY;
-        }
         if (
-            this.moduleSpecification.all ||
+            this.moduleSpecification?.all ||
             this.declaringType.moduleSpecification?.includeAllFields
         ) {
             return this.declaringType.effectiveModuleSpecification;
-        }
-        if (!this.moduleSpecification.clauses) {
-            // this is a validation error - best recovery is to assume no modules are specified
-            return EffectiveModuleSpecification.EMPTY;
         }
         // "clauses" being null either means all: true is set or it is implicitly set via includeAllFields
         // (in which case we would have already returned above),
         // or there is a validation error. In case of a validation error, it's safer to just not include the
         // field in any module.
         if (!this.moduleSpecification || !this.moduleSpecification.clauses) {
-            return new EffectiveModuleSpecification({ orCombinedClauses: [] });
+            return EffectiveModuleSpecification.EMPTY;
         }
 
-        // TODO also consider fields that are traversed 
+        // TODO also consider fields that are traversed
         return this.declaringType.effectiveModuleSpecification.andCombineWith(
             new EffectiveModuleSpecification({
                 orCombinedClauses: this.moduleSpecification.clauses,
@@ -1907,6 +1922,10 @@ export class Field implements ModelComponent {
     }
 
     private validateModuleSpecification(context: ValidationContext) {
+        if (this.isSystemField) {
+            return;
+        }
+
         if (!this.moduleSpecification) {
             if (
                 !this.isSystemField &&
@@ -1923,11 +1942,14 @@ export class Field implements ModelComponent {
             return;
         }
 
-        if (this.declaringType.moduleSpecification?.includeAllFields) {
+        if (
+            this.input.moduleSpecification &&
+            this.declaringType.moduleSpecification?.includeAllFields
+        ) {
             context.addMessage(
                 ValidationMessage.error(
                     `@${MODULES_DIRECTIVE} cannot be specified here because @${MODULES_DIRECTIVE}(${MODULES_INCLUDE_ALL_FIELDS_ARG}: true) is specified on type "${this.declaringType.name}", and therefore @${MODULES_DIRECTIVE}(${MODULES_ALL_ARG}: true) is implicitly configured for all its fields.`,
-                    this.astNode,
+                    this.moduleSpecification.astNode ?? this.astNode,
                 ),
             );
         }
