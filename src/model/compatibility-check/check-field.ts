@@ -1,8 +1,11 @@
+import { print, valueFromAST } from 'graphql';
 import { ID_FIELD } from '../../schema/constants';
 import { RelationDeleteAction } from '../config/field';
 import { Field } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
 import { getRequiredBySuffix } from './describe-module-specification';
+import { createValueNodeFromValue } from '../../graphql/value-to-ast';
+import { isDeepStrictEqual } from 'util';
 
 export function checkField(fieldToCheck: Field, baselineField: Field, context: ValidationContext) {
     checkTypeAndList(fieldToCheck, baselineField, context);
@@ -10,6 +13,7 @@ export function checkField(fieldToCheck: Field, baselineField: Field, context: V
     checkReference(fieldToCheck, baselineField, context);
     checkRelation(fieldToCheck, baselineField, context);
     checkCollectField(fieldToCheck, baselineField, context);
+    checkDefaultValue(fieldToCheck, baselineField, context);
 }
 
 function checkTypeAndList(fieldToCheck: Field, baselineField: Field, context: ValidationContext) {
@@ -340,5 +344,60 @@ function checkCollectField(fieldToCheck: Field, baselineField: Field, context: V
                     fieldToCheck.astNode,
             ),
         );
+    }
+}
+
+function checkDefaultValue(fieldToCheck: Field, baselineField: Field, context: ValidationContext) {
+    // superfluous @defaultValue
+    if (
+        fieldToCheck.hasDefaultValue &&
+        fieldToCheck.defaultValue !== null &&
+        !baselineField.hasDefaultValue
+    ) {
+        context.addMessage(
+            ValidationMessage.compatibilityIssue(
+                `Field "${baselineField.declaringType.name}.${
+                    baselineField.name
+                }" should not have a default value${getRequiredBySuffix(baselineField)}.`,
+                fieldToCheck.defaultValueAstNode ?? fieldToCheck.astNode,
+            ),
+        );
+        return;
+    }
+
+    // no default value on either side
+    if (!baselineField.hasDefaultValue || baselineField.defaultValue === null) {
+        return;
+    }
+
+    const expectedDefaultValue = print(createValueNodeFromValue(baselineField.defaultValue));
+
+    // missing @defaultValue
+    if (!fieldToCheck.hasDefaultValue) {
+        const expectedDeclaration = `@defaultValue(value: ${expectedDefaultValue})`;
+        context.addMessage(
+            ValidationMessage.compatibilityIssue(
+                `Field "${baselineField.declaringType.name}.${
+                    baselineField.name
+                }" should be decorated with ${expectedDeclaration}${getRequiredBySuffix(
+                    baselineField,
+                )}.`,
+                fieldToCheck.astNode,
+            ),
+        );
+        return;
+    }
+
+    // wrong default value
+    if (!isDeepStrictEqual(fieldToCheck.defaultValue, baselineField.defaultValue)) {
+        context.addMessage(
+            ValidationMessage.compatibilityIssue(
+                `Default value should be ${expectedDefaultValue}${getRequiredBySuffix(
+                    baselineField,
+                )}.`,
+                fieldToCheck.astNode,
+            ),
+        );
+        return;
     }
 }
