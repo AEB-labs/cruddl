@@ -36,7 +36,7 @@ describe('selectModulesInProjectSource', () => {
                         two: String @modules(in: ["module2"])
                         extra1: String @modules(in: ["extra1"])
                         
-                        one: String @modules(in: "module1")
+                        one: String @modules(in: ["module1"])
                     }
 
                     type Two @rootEntity @modules(in: ["module2"]) {
@@ -45,6 +45,25 @@ describe('selectModulesInProjectSource', () => {
                     }
 
                     
+                `);
+        });
+
+        it('keeps id: ID @key', () => {
+            // special case because system fields are usually not specified in the source, but id: ID @key needs to stay
+            const result = run(
+                gql`
+                    type Test @rootEntity @modules(in: ["module1", "module2"]) {
+                        id: ID @key
+                        field: String @modules(in: ["module1", "module2"])
+                    }
+                `,
+                ['module1'],
+            );
+            expect(result).to.equal(`
+                    type Test @rootEntity @modules(in: ["module1"]) {
+                        id: ID @key
+                        field: String @modules(in: ["module1"])
+                    }
                 `);
         });
 
@@ -77,6 +96,26 @@ describe('selectModulesInProjectSource', () => {
                 'module1',
                 'module2',
             ]);
+        });
+
+        it('works with includeAllFields: true', () => {
+            const result = run(
+                gql`
+                    type Test @rootEntity @modules(in: "module1", includeAllFields: true) {
+                        field: Test @reference(keyField: "keyField")
+                        key: String @key
+                        keyField: String
+                    }
+                `,
+                ['module1'],
+            );
+            expect(result).to.equal(`
+                    type Test @rootEntity @modules(includeAllFields: true, in: ["module1"]) {
+                        field: Test @reference(keyField: "keyField")
+                        key: String @key
+                        keyField: String
+                    }
+                `);
         });
     });
 

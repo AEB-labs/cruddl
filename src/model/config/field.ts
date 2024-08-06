@@ -1,5 +1,6 @@
 import {
     ArgumentNode,
+    ASTNode,
     DirectiveNode,
     EnumValueNode,
     FieldDefinitionNode,
@@ -24,10 +25,12 @@ export interface FieldConfig {
     readonly calcMutationOperators?: ReadonlyArray<CalcMutationsOperator>;
 
     readonly isReference?: boolean;
+    readonly referenceAstNode?: ASTNode;
     readonly referenceKeyField?: string;
     readonly referenceKeyFieldASTNode?: ValueNode;
 
     readonly isRelation?: boolean;
+    readonly relationAstNode?: DirectiveNode;
     readonly inverseOfFieldName?: string;
     readonly inverseOfASTNode?: ValueNode;
     readonly relationDeleteAction?: RelationDeleteAction;
