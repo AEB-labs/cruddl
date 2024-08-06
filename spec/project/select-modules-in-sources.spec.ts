@@ -15,6 +15,7 @@ describe('selectModulesInProjectSource', () => {
                         two: String @modules(in: "module2")
                         extra1: String @modules(in: ["extra1", "module2 && extra2"])
                         extra2: String @modules(in: ["extra2"])
+                        one: String @modules(in: "module1")
                     }
 
                     type Two @rootEntity @modules(in: ["module2", "module3"]) {
@@ -35,6 +36,7 @@ describe('selectModulesInProjectSource', () => {
                         two: String @modules(in: ["module2"])
                         extra1: String @modules(in: ["extra1"])
                         
+                        one: String @modules(in: "module1")
                     }
 
                     type Two @rootEntity @modules(in: ["module2"]) {
