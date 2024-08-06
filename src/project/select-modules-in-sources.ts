@@ -240,7 +240,7 @@ function selectModulesInGraphQLSource({
                         }
                         // remove field
                         changes.push({ location: fieldDef.loc });
-                        break;
+                        continue;
                     }
 
                     const moduleChange = changeModuleDirectiveIfNecessary(fieldDef, {
