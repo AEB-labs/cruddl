@@ -1,13 +1,10 @@
 import gql from 'graphql-tag';
-import {
-    expectSingleCompatibilityIssue,
-    expectToBeValid
-} from '../implementation/validation-utils';
+import { expectSingleCompatibilityIssue } from '../implementation/validation-utils';
 import { runCheck } from './utils';
 
 describe('checkModel', () => {
-    describe('basics', () => {
-        it('accepts a simple case', () => {
+    describe('field type', () => {
+        it('rejects if a field has the wrong type', () => {
             const result = runCheck(
                 gql`
                     type Test @rootEntity @modules(in: "module1") {
@@ -16,14 +13,36 @@ describe('checkModel', () => {
                 `,
                 gql`
                     type Test @rootEntity {
+                        field: Int
+                    }
+                `,
+            );
+            expectSingleCompatibilityIssue(
+                result,
+                'Field "Test.field" needs to be of type "String" (required by module "module1").',
+            );
+        });
+
+        it('rejects if a field should be a list', () => {
+            const result = runCheck(
+                gql`
+                    type Test @rootEntity @modules(in: "module1") {
+                        field: [String] @modules(all: true)
+                    }
+                `,
+                gql`
+                    type Test @rootEntity {
                         field: String
                     }
                 `,
             );
-            expectToBeValid(result);
+            expectSingleCompatibilityIssue(
+                result,
+                'Field "Test.field" needs to be a list (required by module "module1").',
+            );
         });
 
-        it('rejects if a type is missing', () => {
+        it('rejects if a field wrongly is a list', () => {
             const result = runCheck(
                 gql`
                     type Test @rootEntity @modules(in: "module1") {
@@ -31,34 +50,14 @@ describe('checkModel', () => {
                     }
                 `,
                 gql`
-                    type WrongTypeName @rootEntity {
-                        field: String
+                    type Test @rootEntity {
+                        field: [String]
                     }
                 `,
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Type "Test" is missing (required by module "module1").',
-            );
-        });
-
-        it('rejects if a type is of a completely wrong kind', () => {
-            const result = runCheck(
-                gql`
-                    type Test @rootEntity @modules(in: "module1") {
-                        field: String @modules(all: true)
-                    }
-                `,
-                gql`
-                    enum Test {
-                        VALUE1
-                        VALUE2
-                    }
-                `,
-            );
-            expectSingleCompatibilityIssue(
-                result,
-                'Type "Test" needs to be a root entity type (required by module "module1").',
+                'Field "Test.field" should not be a list (required by module "module1").',
             );
         });
     });
