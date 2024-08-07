@@ -37,4 +37,4 @@ export { TransactionError } from './src/execution/transaction-error';
 export { ConflictRetriesExhaustedError } from './src/execution/runtime-errors';
 export { AuthContext } from './src/authorization/auth-basics';
 export { ChangeSet, TextChange } from './src/model/change-set/change-set';
-export { applyChangeSet, applyChanges } from './src/model/change-set/apply-changes';
+export { applyChangeSet } from './src/model/change-set/apply-change-set';
