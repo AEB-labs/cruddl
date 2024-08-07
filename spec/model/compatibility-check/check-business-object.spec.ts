@@ -1,16 +1,16 @@
 import gql from 'graphql-tag';
 import {
     expectSingleCompatibilityIssue,
-    expectToBeValid
+    expectToBeValid,
 } from '../implementation/validation-utils';
 import { runCheck } from './utils';
 
 describe('checkModel', () => {
-    describe('basics', () => {
-        it('accepts a simple case', () => {
+    describe('@businessObject', () => {
+        it('rejects if a type should be a business object', () => {
             const result = runCheck(
                 gql`
-                    type Test @rootEntity @modules(in: "module1") {
+                    type Test @rootEntity @businessObject @modules(in: "module1") {
                         field: String @modules(all: true)
                     }
                 `,
@@ -20,29 +20,29 @@ describe('checkModel', () => {
                     }
                 `,
             );
-            expectToBeValid(result);
+            expectSingleCompatibilityIssue(
+                result,
+                'Type "Test" needs to be decorated with @businessObject (required by module "module1").',
+            );
         });
 
-        it('rejects if a type is missing', () => {
+        it('accepts a correct @businessObject', () => {
             const result = runCheck(
                 gql`
-                    type Test @rootEntity @modules(in: "module1") {
+                    type Test @rootEntity @businessObject @modules(in: "module1") {
                         field: String @modules(all: true)
                     }
                 `,
                 gql`
-                    type WrongTypeName @rootEntity {
+                    type Test @rootEntity @businessObject {
                         field: String
                     }
                 `,
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Type "Test" is missing (required by module "module1").',
-            );
+            expectToBeValid(result);
         });
 
-        it('rejects if a type is of a completely wrong kind', () => {
+        it('accepts an additional @businessObject', () => {
             const result = runCheck(
                 gql`
                     type Test @rootEntity @modules(in: "module1") {
@@ -50,16 +50,12 @@ describe('checkModel', () => {
                     }
                 `,
                 gql`
-                    enum Test {
-                        VALUE1
-                        VALUE2
+                    type Test @rootEntity @businessObject {
+                        field: String
                     }
                 `,
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Type "Test" needs to be a root entity type (required by module "module1").',
-            );
+            expectToBeValid(result);
         });
     });
 });
