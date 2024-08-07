@@ -1,6 +1,9 @@
 import { expect } from 'chai';
 import { MessageLocation } from '../../../src/model';
-import { applyChangeSet, InvalidChangeSetError } from '../../../src/model/change-set/apply-changes';
+import {
+    applyChangeSet,
+    InvalidChangeSetError,
+} from '../../../src/model/change-set/apply-change-set';
 import { ChangeSet, TextChange } from '../../../src/model/change-set/change-set';
 import { Project } from '../../../src/project/project';
 import { ProjectSource } from '../../../src/project/source';

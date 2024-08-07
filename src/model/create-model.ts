@@ -124,10 +124,19 @@ import { parseI18nConfigs } from './parse-i18n';
 import { parseModuleConfigs } from './parse-modules';
 import { parseTTLConfigs } from './parse-ttl';
 import { ValidationContext, ValidationMessage } from './validation';
+import { Project } from '../project/project';
 
-export function createModel(parsedProject: ParsedProject, options: ModelOptions = {}): Model {
+export interface CreateModelOptions extends ModelOptions {
+    project?: Project;
+}
+
+export function createModel(
+    parsedProject: ParsedProject,
+    { project, ...options }: CreateModelOptions = {},
+): Model {
     const validationContext = new ValidationContext();
     return new Model({
+        project,
         types: createTypeInputs(parsedProject, validationContext, options),
         permissionProfiles: extractPermissionProfiles(parsedProject),
         i18n: extractI18n(parsedProject),

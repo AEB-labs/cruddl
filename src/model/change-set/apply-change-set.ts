@@ -10,23 +10,40 @@ export class InvalidChangeSetError extends Error {
 }
 
 export function applyChangeSet(project: Project, changeSet: ChangeSet): Project {
-    const newSources = project.sources.map((source) => {
-        const changes = changeSet.changes.filter((c) => c.source.name === source.name);
-        return applyChanges(source, changes);
+    const changedSources = project.sources.map((source) => {
+        const textChanges = changeSet.textChanges.filter((c) => c.source.name === source.name);
+        const appendChanges = changeSet.appendChanges.filter((c) => c.sourceName === source.name);
+        let newText = applyChanges(source, textChanges);
+        for (const change of appendChanges) {
+            newText += (newText.length ? '\n' : '') + change.text;
+        }
+        if (newText === source.body) {
+            return source;
+        } else {
+            return new ProjectSource(source.name, newText, source.filePath);
+        }
+    });
+    const existingSourceNames = new Set(project.sources.map((s) => s.name));
+    const appendSourceNames = new Set(changeSet.appendChanges.map((c) => c.sourceName));
+    const newSourceNames = [...appendSourceNames].filter((name) => !existingSourceNames.has(name));
+    const newSources = [...newSourceNames].map((sourceName) => {
+        const appendChanges = changeSet.appendChanges.filter((c) => c.sourceName === sourceName);
+        let newText = '';
+        for (const change of appendChanges) {
+            newText += (newText.length ? '\n' : '') + change.text;
+        }
+        return new ProjectSource(sourceName, newText);
     });
 
     return new Project({
         ...project,
-        sources: newSources,
+        sources: [...changedSources, ...newSources],
     });
 }
 
-export function applyChanges(
-    source: ProjectSource,
-    changes: ReadonlyArray<TextChange>,
-): ProjectSource {
+function applyChanges(source: ProjectSource, changes: ReadonlyArray<TextChange>): string {
     if (!changes.length) {
-        return source;
+        return source.body;
     }
 
     const sortedChanges = [...changes].sort(
@@ -55,7 +72,7 @@ export function applyChanges(
         }
         lastChange = change;
     }
-    return new ProjectSource(source.name, output, source.filePath);
+    return output;
 }
 
 function formatChangeLocation(change: TextChange | undefined): string {

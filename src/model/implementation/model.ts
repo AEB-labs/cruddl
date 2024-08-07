@@ -21,11 +21,13 @@ import { TimeToLiveType } from './time-to-live';
 import { createType, InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
 import { ModuleDeclaration } from './modules/module-declaration';
+import { Project } from '../../project/project';
 
 export class Model implements ModelComponent {
     private readonly typeMap: ReadonlyMap<string, Type>;
     private readonly builtInTypes: ReadonlyArray<Type>;
 
+    readonly project: Project | undefined;
     readonly rootNamespace: Namespace;
     readonly namespaces: ReadonlyArray<Namespace>;
     readonly types: ReadonlyArray<Type>;
@@ -41,6 +43,7 @@ export class Model implements ModelComponent {
     readonly modules: ReadonlyArray<ModuleDeclaration>;
 
     constructor(private input: ModelConfig) {
+        this.project = input.project;
         this.modules = input.modules ? input.modules.map((m) => new ModuleDeclaration(m)) : [];
         // do this after the modules have been set because it uses the module list to make built-in types available in all modules
         this.builtInTypes = createBuiltInTypes(this);
