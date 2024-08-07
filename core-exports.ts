@@ -24,6 +24,7 @@ export {
     SourcePosition,
     ValidationResult,
     Model,
+    QuickFix,
 } from './src/model';
 export { DatabaseAdapter } from './src/database/database-adapter';
 export { DIRECTIVES, CORE_SCALARS } from './src/schema/graphql-base';
@@ -35,3 +36,5 @@ export { NoOperationIdentifierError } from './src/graphql/operation-based-resolv
 export { TransactionError } from './src/execution/transaction-error';
 export { ConflictRetriesExhaustedError } from './src/execution/runtime-errors';
 export { AuthContext } from './src/authorization/auth-basics';
+export { ChangeSet, TextChange } from './src/model/change-set/change-set';
+export { applyChangeSet, applyChanges } from './src/model/change-set/apply-changes';
