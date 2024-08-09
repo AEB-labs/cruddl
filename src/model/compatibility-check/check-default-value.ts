@@ -1,5 +1,5 @@
+import deepEqual from 'deep-equal';
 import { print } from 'graphql';
-import { isDeepStrictEqual } from 'util';
 import { createValueNodeFromValue } from '../../graphql/value-to-ast';
 import { Field } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
@@ -54,7 +54,7 @@ export function checkDefaultValue(
     }
 
     // wrong default value
-    if (!isDeepStrictEqual(fieldToCheck.defaultValue, baselineField.defaultValue)) {
+    if (!deepEqual(fieldToCheck.defaultValue, baselineField.defaultValue)) {
         context.addMessage(
             ValidationMessage.compatibilityIssue(
                 `Default value should be ${expectedDefaultValue}${getRequiredBySuffix(
