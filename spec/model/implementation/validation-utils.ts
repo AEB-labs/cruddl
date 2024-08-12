@@ -63,10 +63,20 @@ export function expectSingleMessage(component: Validatable, errorPart: string, s
     expect(message.severity).to.equal(severity);
 }
 
+export interface ExpectQuickFixOptions {
+    /**
+     * Optionally, the project that was validated
+     *
+     * Needed if the quick fix change set is not just a simple TextChange on a single file
+     */
+    readonly project?: Project;
+}
+
 export function expectQuickFix(
     component: Validatable,
     expectedDescription: string,
     expectedBody: string,
+    { project }: ExpectQuickFixOptions = {},
 ) {
     const result = validate(component);
     const quickfixes = result.messages.flatMap((m) => m.quickFixes);
@@ -76,10 +86,19 @@ export function expectQuickFix(
     const quickfix = matchingQuickfixes[0];
     const changeSet = quickfix.getChangeSet();
     expect(changeSet.changes).not.to.be.empty;
-    // dirty hack that works because our quickfix tests only use one file
-    const project = new Project([changeSet.changes[0].location.source]);
+
+    // in most simple test cases, we can recreate the project from the quick fix
+    if (!project) {
+        expect(changeSet.appendChanges).to.be.empty;
+        const source = changeSet.textChanges[0].source;
+        for (const change of changeSet.textChanges) {
+            expect(change.source).to.equal(source);
+        }
+        project = new Project([source]);
+    }
+
     const newProject = applyChangeSet(project, changeSet);
-    expectToBeValid(newProject); // expect the fix to acutally fix the issues
+    expectToBeValid(newProject); // expect the fix to actually fix the issues
     expect(newProject.sources).to.have.a.lengthOf(1);
     expect(newProject.sources[0].body).to.equal(expectedBody);
 }

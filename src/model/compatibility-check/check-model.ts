@@ -1,5 +1,8 @@
+import { Kind, ObjectTypeDefinitionNode, print, TypeDefinitionNode } from 'graphql';
+import { MODULES_DIRECTIVE } from '../../schema/constants';
+import { AppendChange, ChangeSet } from '../change-set/change-set';
 import { Model } from '../implementation';
-import { ValidationResult, ValidationMessage, ValidationContext } from '../validation';
+import { QuickFix, ValidationContext, ValidationMessage, ValidationResult } from '../validation';
 import { checkType } from './check-type';
 import { getRequiredBySuffix } from './describe-module-specification';
 
@@ -12,10 +15,46 @@ export function checkModel(modelToCheck: Model, baselineModel: Model): Validatio
     for (const baselineType of baselineModel.types) {
         const matchingType = modelToCheck.getType(baselineType.name);
         if (!matchingType) {
+            const quickFixes: QuickFix[] = [];
+            if (baselineType.astNode) {
+                let cleanedAstNode: TypeDefinitionNode = {
+                    ...baselineType.astNode,
+                    directives: (baselineType.astNode.directives ?? []).filter(
+                        (d) => d.name.value !== MODULES_DIRECTIVE,
+                    ),
+                };
+                if (
+                    baselineType.astNode.kind === Kind.OBJECT_TYPE_DEFINITION &&
+                    cleanedAstNode.kind === Kind.OBJECT_TYPE_DEFINITION
+                ) {
+                    cleanedAstNode = {
+                        ...cleanedAstNode,
+                        fields: baselineType.astNode.fields?.map((fieldDef) => ({
+                            ...fieldDef,
+                            directives: (fieldDef.directives ?? []).filter(
+                                (d) => d.name.value !== MODULES_DIRECTIVE,
+                            ),
+                        })),
+                    };
+                }
+                const sourceName = baselineType.astNode.loc?.source.name ?? 'new.graphqls';
+
+                quickFixes.push(
+                    new QuickFix({
+                        description: `Add type "${baselineType.name}"`,
+                        isPreferred: true,
+                        changeSet: new ChangeSet([
+                            new AppendChange(sourceName, print(cleanedAstNode) + '\n'),
+                        ]),
+                    }),
+                );
+            }
+
             context.addMessage(
                 ValidationMessage.compatibilityIssue(
                     `Type "${baselineType.name}" is missing${getRequiredBySuffix(baselineType)}.`,
                     undefined,
+                    { quickFixes },
                 ),
             );
             continue;
