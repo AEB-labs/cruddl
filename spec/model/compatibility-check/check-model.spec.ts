@@ -1,9 +1,12 @@
 import gql from 'graphql-tag';
 import {
+    expectQuickFix,
     expectSingleCompatibilityIssue,
-    expectToBeValid
+    expectToBeValid,
 } from '../implementation/validation-utils';
 import { runCheck } from './utils';
+import { Project, ProjectSource } from '../../../core-exports';
+import { print } from 'graphql';
 
 describe('checkModel', () => {
     describe('basics', () => {
@@ -24,21 +27,41 @@ describe('checkModel', () => {
         });
 
         it('rejects if a type is missing', () => {
+            const projectToCheck = new Project([
+                new ProjectSource(
+                    // use the same name as in the baseline project to test the case where the quickfix appends it to the file
+                    'baseline.graphql',
+                    print(gql`
+                        type WrongTypeName @rootEntity {
+                            field: String
+                        }
+                    `),
+                ),
+            ]);
             const result = runCheck(
                 gql`
                     type Test @rootEntity @modules(in: "module1") {
                         field: String @modules(all: true)
                     }
                 `,
-                gql`
-                    type WrongTypeName @rootEntity {
-                        field: String
-                    }
-                `,
+                projectToCheck,
             );
             expectSingleCompatibilityIssue(
                 result,
                 'Type "Test" is missing (required by module "module1").',
+            );
+            expectQuickFix(
+                result,
+                'Add type "Test"',
+                `type WrongTypeName @rootEntity {
+  field: String
+}
+
+type Test @rootEntity {
+  field: String
+}
+`,
+                { project: projectToCheck },
             );
         });
 

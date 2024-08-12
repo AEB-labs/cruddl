@@ -2,10 +2,7 @@ import { DocumentNode, print } from 'graphql';
 import { ValidationResult } from '../../../src/model/validation/result';
 import { Project } from '../../../src/project/project';
 import { ProjectSource } from '../../../src/project/source';
-import {
-    expectNoErrors,
-    expectToBeValid
-} from '../implementation/validation-utils';
+import { expectNoErrors, expectToBeValid } from '../implementation/validation-utils';
 
 interface RunOptions {
     allowWarningsAndInfosInProjectToCheck?: boolean;
@@ -14,12 +11,16 @@ interface RunOptions {
 
 export function runCheck(
     baselineDoc: DocumentNode,
-    docToCheck: DocumentNode,
+    docToCheck: DocumentNode | Project,
     options: RunOptions = {},
 ): ValidationResult {
-    const projectToCheck = new Project({
-        sources: [new ProjectSource('to-check.graphql', print(docToCheck))],
-    });
+    // allow this to be a Project in case the caller needs this for applyChangeSet
+    const projectToCheck =
+        docToCheck instanceof Project
+            ? docToCheck
+            : new Project({
+                  sources: [new ProjectSource('to-check.graphql', print(docToCheck))],
+              });
     if (options.allowWarningsAndInfosInProjectToCheck) {
         expectNoErrors(projectToCheck);
     } else {
