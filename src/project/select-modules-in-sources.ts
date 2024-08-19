@@ -66,7 +66,7 @@ export function selectModulesInProject(
     }
 
     return new Project({
-        ...project,
+        ...project.options,
         sources: newSources,
         modelOptions: {
             ...(project.options.modelOptions ?? {}),
