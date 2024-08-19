@@ -29,18 +29,33 @@ export class EffectiveModuleSpecification {
     }
 
     /**
-     * Sorts the clauses by name and removes duplicates
+     * Sorts the clauses by name and removes duplicates and redundant clauses (e.g. ["a", "a && b"] is simplified to ["a"])
      */
     simplify(): EffectiveModuleSpecification {
-        const map = new Map(
-            this.orCombinedClauses.map((clause) => {
-                const normalized = clause.normalize();
-                return [normalized.toString(), normalized];
-            }),
-        );
-        const keys = Array.from(map.keys()).sort();
-        const normalizedClauses = keys.map((k) => map.get(k)!);
-        return new EffectiveModuleSpecification({ orCombinedClauses: normalizedClauses });
+        // sort by length so we prefer shorter clauses
+        // sort by toString() secondarily to get a normalized representation
+        const clausesSortedByLength = this.orCombinedClauses
+            .map((c) => c.normalize())
+            .sort((a, b) => a.toString().localeCompare(b.toString()))
+            .sort((a, b) => a.andCombinedModules.length - b.andCombinedModules.length);
+        const nonRedundantClauses: EffectiveModuleSpecificationClause[] = [];
+        // this has quadratic runtime w.r.t. number atoms, but we don't expect huge module specifications
+        for (const clause of clausesSortedByLength) {
+            const modulesInClause = new Set(clause.andCombinedModules);
+            let clauseIsRedundant = false;
+            for (const existingClause of nonRedundantClauses) {
+                if (existingClause.andCombinedModules.every((m) => modulesInClause.has(m))) {
+                    // existingClause implies clause
+                    clauseIsRedundant = true;
+                    break;
+                }
+            }
+            if (!clauseIsRedundant) {
+                nonRedundantClauses.push(clause);
+            }
+        }
+
+        return new EffectiveModuleSpecification({ orCombinedClauses: nonRedundantClauses });
     }
 
     orCombineWith(other: EffectiveModuleSpecification) {
@@ -67,6 +82,10 @@ export class EffectiveModuleSpecification {
             orCombinedClauses: clauses,
         });
         return combined.simplify();
+    }
+
+    toString() {
+        return this.orCombinedClauses.map((c) => c.toString()).join(', ');
     }
 }
 
