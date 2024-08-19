@@ -36,7 +36,7 @@ export function applyChangeSet(project: Project, changeSet: ChangeSet): Project 
     });
 
     return new Project({
-        ...project,
+        ...project.options,
         sources: [...changedSources, ...newSources],
     });
 }
