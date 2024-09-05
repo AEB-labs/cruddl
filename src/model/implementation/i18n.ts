@@ -368,7 +368,7 @@ function checkForTypeConstraints(
 
                 if (!modelType) {
                     validationContext.addMessage(
-                        ValidationMessage.warn(
+                        ValidationMessage.nonSuppressableWarning(
                             'There is no type "' +
                                 typeKey +
                                 '" in the model specification. This might be a spelling error.',
@@ -384,7 +384,7 @@ function checkForTypeConstraints(
                         for (const field in type.fields) {
                             if (!objectType.fields.find((f) => f.name === field)) {
                                 validationContext.addMessage(
-                                    ValidationMessage.warn(
+                                    ValidationMessage.nonSuppressableWarning(
                                         'The type "' +
                                             typeKey +
                                             '" has no field "' +
@@ -421,7 +421,7 @@ function checkForTypeConstraints(
                             for (const value in type.values) {
                                 if (!enumType.values.find((v) => v.value === value)) {
                                     validationContext.addMessage(
-                                        ValidationMessage.warn(
+                                        ValidationMessage.nonSuppressableWarning(
                                             'The enum type "' +
                                                 typeKey +
                                                 '" has no value "' +

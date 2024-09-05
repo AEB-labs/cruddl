@@ -13,11 +13,13 @@ export function checkCollectField(
     // superfluous @collect
     if (fieldToCheck.isCollectField && !baselineField.isCollectField) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'COLLECT',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should not be a collect field${getRequiredBySuffix(baselineField)}.`,
-                fieldToCheck.collectAstNode,
+                fieldToCheck.astNode,
+                { location: fieldToCheck.collectAstNode },
             ),
         );
         return;
@@ -39,7 +41,8 @@ export function checkCollectField(
             expectedAggregateDeclaration ? ', ' + expectedAggregateDeclaration : ''
         })`;
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'COLLECT',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should be decorated with ${expectedCollectDeclaration}${getRequiredBySuffix(
@@ -58,13 +61,13 @@ export function checkCollectField(
         fieldToCheck.collectPath.path !== baselineField.collectPath.path
     ) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'COLLECT',
                 `Path should be "${baselineField.collectPath.path}"${getRequiredBySuffix(
                     baselineField,
                 )}.`,
-                fieldToCheck.collectPathAstNode ??
-                    fieldToCheck.collectAstNode ??
-                    fieldToCheck.astNode,
+                fieldToCheck.astNode,
+                { location: fieldToCheck.collectPathAstNode ?? fieldToCheck.collectAstNode },
             ),
         );
         return;
@@ -73,9 +76,11 @@ export function checkCollectField(
     // superfluous aggregate
     if (fieldToCheck.aggregationOperator && !baselineField.aggregationOperator) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'COLLECT',
                 `No aggregation should be used here${getRequiredBySuffix(baselineField)}.`,
-                fieldToCheck.aggregationOperatorAstNode ?? fieldToCheck.astNode,
+                fieldToCheck.astNode,
+                { location: fieldToCheck.aggregationOperatorAstNode },
             ),
         );
     }
@@ -86,13 +91,13 @@ export function checkCollectField(
         fieldToCheck.aggregationOperator !== baselineField.aggregationOperator
     ) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'COLLECT',
                 `Collect field should specify ${expectedAggregateDeclaration}${getRequiredBySuffix(
                     baselineField,
                 )}.`,
-                fieldToCheck.inverseOfAstNode ??
-                    fieldToCheck.relationAstNode ??
-                    fieldToCheck.astNode,
+                fieldToCheck.astNode,
+                { location: fieldToCheck.aggregationOperatorAstNode },
             ),
         );
     }

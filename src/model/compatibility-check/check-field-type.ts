@@ -31,32 +31,44 @@ export function checkFieldType(
 
     if (fieldToCheck.type.name !== baselineField.type.name) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'FIELD_TYPE',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" needs to be of type "${expectedType}"${getRequiredBySuffix(baselineField)}.`,
-                fieldToCheck.astNode?.type,
-                { quickFixes },
+                fieldToCheck.astNode,
+                {
+                    location: fieldToCheck.astNode?.type,
+                    quickFixes,
+                },
             ),
         );
     } else if (fieldToCheck.isList && !baselineField.isList) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'FIELD_TYPE',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should not be a list${getRequiredBySuffix(baselineField)}.`,
-                fieldToCheck.astNode?.type,
-                { quickFixes },
+                fieldToCheck.astNode,
+                {
+                    location: fieldToCheck.astNode?.type,
+                    quickFixes,
+                },
             ),
         );
     } else if (!fieldToCheck.isList && baselineField.isList) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'FIELD_TYPE',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" needs to be a list${getRequiredBySuffix(baselineField)}.`,
-                fieldToCheck.astNode?.type,
-                { quickFixes },
+                fieldToCheck.astNode,
+                {
+                    location: fieldToCheck.astNode?.type,
+                    quickFixes,
+                },
             ),
         );
     }

@@ -12,11 +12,15 @@ export function checkReference(
 ) {
     if (fieldToCheck.isReference && !baselineField.isReference) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'REFERENCE',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should not be a reference${getRequiredBySuffix(baselineField)}.`,
-                fieldToCheck.referenceAstNode ?? fieldToCheck.astNode,
+                fieldToCheck.astNode,
+                {
+                    location: fieldToCheck.referenceAstNode,
+                },
             ),
         );
         return;
@@ -38,7 +42,8 @@ export function checkReference(
     // missing reference
     if (!fieldToCheck.isReference) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'REFERENCE',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should be decorated with ${expectedReferenceDeclaration}${getRequiredBySuffix(
@@ -57,9 +62,13 @@ export function checkReference(
         baselineField.referenceKeyField === baselineField
     ) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'REFERENCE',
                 `Reference should not declare a keyField${getRequiredBySuffix(baselineField)}.`,
-                fieldToCheck.referenceAstNode,
+                fieldToCheck.astNode,
+                {
+                    location: fieldToCheck.referenceAstNode,
+                },
             ),
         );
         return;
@@ -75,11 +84,15 @@ export function checkReference(
         baselineField.getReferenceKeyFieldOrThrow().name
     ) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'REFERENCE',
                 `Reference should declare ${expectedKeyFieldDeclaration}${getRequiredBySuffix(
                     baselineField,
                 )}.`,
-                fieldToCheck.referenceAstNode,
+                fieldToCheck.astNode,
+                {
+                    location: fieldToCheck.referenceAstNode,
+                },
             ),
         );
     }

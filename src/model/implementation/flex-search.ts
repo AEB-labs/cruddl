@@ -4,6 +4,7 @@ import { ModelComponent, ValidationContext } from '../validation/validation-cont
 import { FlexSearchPrimarySortClauseConfig } from '../config';
 import { RootEntityType } from './root-entity-type';
 import { Severity, ValidationMessage } from '../validation';
+import { WarningCode } from '../../schema/message-codes';
 
 export const IDENTITY_ANALYZER = 'identity';
 export const NORM_CI_ANALYZER = 'norm_ci';
@@ -14,7 +15,7 @@ export class FlexSearchPrimarySortClause implements ModelComponent {
 
     constructor(
         private readonly config: FlexSearchPrimarySortClauseConfig,
-        baseType: RootEntityType,
+        private readonly baseType: RootEntityType,
     ) {
         this.field = new FieldPath({
             path: config.field,
@@ -34,12 +35,13 @@ export class FlexSearchPrimarySortClause implements ModelComponent {
                 // we did not report any errors previously. In a transition period, we make it clear
                 // that these warnings will be errors in the future.
                 context.addMessage(
-                    new ValidationMessage(
-                        Severity.WARNING,
+                    ValidationMessage.suppressableWarning(
+                        'DEPRECATED',
                         message.message +
                             (message.message.endsWith('.') ? '' : '.') +
                             ' This will be an error in a future release.',
-                        message.location,
+                        this.baseType.astNode,
+                        { location: message.location },
                     ),
                 );
             } else {
@@ -56,9 +58,11 @@ export class FlexSearchPrimarySortClause implements ModelComponent {
 
         if (!lastField.type.isScalarType && !lastField.type.isEnumType) {
             context.addMessage(
-                ValidationMessage.warn(
+                ValidationMessage.suppressableWarning(
+                    'DEPRECATED',
                     `Field "${lastField.declaringType.name}.${lastField.name}" is an object field, but only scalar and enum fields are supported in flexSearchOrder. Choose a subfield or a different field. This will be an error in a future release.`,
-                    this.config.fieldASTNode,
+                    this.baseType.astNode,
+                    { location: this.config.fieldASTNode },
                 ),
             );
         }

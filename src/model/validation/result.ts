@@ -1,7 +1,13 @@
 import { Severity, ValidationMessage } from './message';
 
 export class ValidationResult {
-    constructor(public readonly messages: ReadonlyArray<ValidationMessage>) {}
+    readonly messages: ReadonlyArray<ValidationMessage>;
+    readonly suppressedMessages: ReadonlyArray<ValidationMessage>;
+
+    constructor(public readonly allMessages: ReadonlyArray<ValidationMessage>) {
+        this.suppressedMessages = allMessages.filter((m) => m.isSuppressed);
+        this.messages = allMessages.filter((m) => !m.isSuppressed);
+    }
 
     public hasMessages() {
         return this.messages.length > 0;

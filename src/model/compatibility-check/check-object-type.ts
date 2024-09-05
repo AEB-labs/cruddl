@@ -45,12 +45,13 @@ export function checkObjectType(
             }
 
             context.addMessage(
-                ValidationMessage.compatibilityIssue(
+                ValidationMessage.suppressableCompatibilityIssue(
+                    'MISSING_FIELD',
                     `Field "${baselineType.name}.${
                         baselineField.name
                     }" is missing${getRequiredBySuffix(baselineField)}.`,
-                    typeToCheck.nameASTNode,
-                    { quickFixes },
+                    typeToCheck.astNode,
+                    { location: typeToCheck.nameASTNode, quickFixes },
                 ),
             );
             continue;

@@ -7,6 +7,7 @@ import {
     getTypeNameIgnoringNonNullAndList,
 } from '../../schema-utils';
 import { ASTValidator } from '../ast-validator';
+import { WarningCode } from '../../message-codes';
 
 export class NoUnusedNonRootObjectTypesValidator implements ASTValidator {
     validate(ast: DocumentNode): ReadonlyArray<ValidationMessage> {
@@ -31,7 +32,12 @@ export class NoUnusedNonRootObjectTypesValidator implements ASTValidator {
         );
         // remaining object types in set are unused, create warnings for them
         return Array.from(objectTypeNames).map((unusedType) =>
-            ValidationMessage.warn(`Type "${unusedType.name.value}" is not used.`, unusedType.name),
+            ValidationMessage.suppressableWarning(
+                'UNUSED',
+                `Type "${unusedType.name.value}" is not used.`,
+                unusedType,
+                { location: unusedType.name },
+            ),
         );
     }
 }

@@ -105,7 +105,7 @@ export class MessageLocation {
     }
 }
 
-function isASTNode(obj: LocationLike): obj is ASTNode {
+export function isASTNode(obj: LocationLike): obj is ASTNode {
     return 'kind' in obj;
 }
 
