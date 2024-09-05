@@ -124,6 +124,7 @@ import { parseI18nConfigs } from './parse-i18n';
 import { parseModuleConfigs } from './parse-modules';
 import { parseTTLConfigs } from './parse-ttl';
 import { ValidationContext, ValidationMessage } from './validation';
+import { WarningCode } from '../schema/message-codes';
 
 export function createModel(parsedProject: ParsedProject, options: ModelOptions = {}): Model {
     const validationContext = new ValidationContext();
@@ -307,7 +308,8 @@ function processKeyField(
             keyFieldASTNode = underscoreKeyField.astNode;
             keyFieldName = ID_FIELD;
             context.addMessage(
-                ValidationMessage.warn(
+                ValidationMessage.suppressableWarning(
+                    'DEPRECATED',
                     `The field "_key" is deprecated and should be replaced with "id" (of type "ID").`,
                     underscoreKeyField.astNode,
                 ),
@@ -345,6 +347,7 @@ function getDefaultValue(fieldNode: FieldDefinitionNode, context: ValidationCont
 
 function getFlexSearchOrder(
     rootEntityDirective: DirectiveNode,
+    objectNode: ObjectTypeDefinitionNode,
     context: ValidationContext,
 ): ReadonlyArray<FlexSearchPrimarySortClauseConfig> {
     const argumentNode: ArgumentNode | undefined = getNodeByName(
@@ -357,10 +360,12 @@ function getFlexSearchOrder(
     }
 
     if (argumentNode.value.kind === Kind.LIST) {
-        return argumentNode.value.values.map((v) => createFlexSearchPrimarySortClause(v, context));
+        return argumentNode.value.values.map((v) =>
+            createFlexSearchPrimarySortClause(v, objectNode, context),
+        );
     } else {
         // graphql syntax allows list values to be defined without [] which results in an OBJECT
-        return [createFlexSearchPrimarySortClause(argumentNode.value, context)];
+        return [createFlexSearchPrimarySortClause(argumentNode.value, objectNode, context)];
     }
 }
 
@@ -412,6 +417,7 @@ function getFlexSearchPerformanceParams(
 
 function createFlexSearchPrimarySortClause(
     valueNode: ValueNode,
+    objectTypeNode: ObjectTypeDefinitionNode,
     context: ValidationContext,
 ): FlexSearchPrimarySortClauseConfig {
     if (valueNode.kind !== Kind.OBJECT) {
@@ -437,9 +443,13 @@ function createFlexSearchPrimarySortClause(
         // a missing direction was just silently be ignored and assumed to be ASC in the past
         // for a migration period, treat it as a warning
         context.addMessage(
-            ValidationMessage.warn(
+            ValidationMessage.suppressableWarning(
+                'DEPRECATED',
                 `Field "FlexSearchOrderArgument.direction" of required type "OrderDirection!" was not provided. "ASC" will be assumed. This will be an error in a future release.`,
-                valueNode,
+                objectTypeNode,
+                {
+                    location: valueNode,
+                },
             ),
         );
         direction = OrderDirection.ASCENDING;
@@ -485,7 +495,7 @@ function createFlexSearchDefinitionInputs(
     return {
         isIndexed,
         directiveASTNode: directive,
-        primarySort: directive ? getFlexSearchOrder(directive, context) : [],
+        primarySort: directive ? getFlexSearchOrder(directive, objectNode, context) : [],
         performanceParams: directive ? getFlexSearchPerformanceParams(directive) : undefined,
     };
 }

@@ -5,14 +5,22 @@ import { getRequiredBySuffix } from './describe-module-specification';
 /**
  * Checks whether the @reference directives on the field and on the baseline field match
  */
-export function checkReference(fieldToCheck: Field, baselineField: Field, context: ValidationContext) {
+export function checkReference(
+    fieldToCheck: Field,
+    baselineField: Field,
+    context: ValidationContext,
+) {
     if (fieldToCheck.isReference && !baselineField.isReference) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'REFERENCE',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should not be a reference${getRequiredBySuffix(baselineField)}.`,
-                fieldToCheck.referenceAstNode ?? fieldToCheck.astNode,
+                fieldToCheck.astNode,
+                {
+                    location: fieldToCheck.referenceAstNode,
+                },
             ),
         );
         return;
@@ -34,7 +42,8 @@ export function checkReference(fieldToCheck: Field, baselineField: Field, contex
     // missing reference
     if (!fieldToCheck.isReference) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'REFERENCE',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should be decorated with ${expectedReferenceDeclaration}${getRequiredBySuffix(
@@ -53,9 +62,13 @@ export function checkReference(fieldToCheck: Field, baselineField: Field, contex
         baselineField.referenceKeyField === baselineField
     ) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'REFERENCE',
                 `Reference should not declare a keyField${getRequiredBySuffix(baselineField)}.`,
-                fieldToCheck.referenceAstNode,
+                fieldToCheck.astNode,
+                {
+                    location: fieldToCheck.referenceAstNode,
+                },
             ),
         );
         return;
@@ -71,11 +84,15 @@ export function checkReference(fieldToCheck: Field, baselineField: Field, contex
         baselineField.getReferenceKeyFieldOrThrow().name
     ) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'REFERENCE',
                 `Reference should declare ${expectedKeyFieldDeclaration}${getRequiredBySuffix(
                     baselineField,
                 )}.`,
-                fieldToCheck.referenceAstNode,
+                fieldToCheck.astNode,
+                {
+                    location: fieldToCheck.referenceAstNode,
+                },
             ),
         );
     }

@@ -238,7 +238,7 @@ export class Namespace implements ModelComponent {
                     const shadowed = this.parent.getPermissionProfile(profile.name);
                     if (shadowed) {
                         context.addMessage(
-                            ValidationMessage.warn(
+                            ValidationMessage.nonSuppressableWarning(
                                 `Permission profile: "${
                                     profile.name
                                 }" shadows the profile in namespace "${shadowed.namespacePath.join(

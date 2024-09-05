@@ -1,12 +1,18 @@
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { RolesSpecifierConfig } from '../config';
 import { ValidationMessage } from '../validation';
+import { WarningCode } from '../../schema/message-codes';
+import { Type } from './type';
+import { Field } from './field';
 
 export class RolesSpecifier implements ModelComponent {
     readonly read: ReadonlyArray<string>;
     readonly readWrite: ReadonlyArray<string>;
 
-    constructor(private readonly input: RolesSpecifierConfig) {
+    constructor(
+        private readonly input: RolesSpecifierConfig,
+        private readonly declaringFieldOrType: Type | Field,
+    ) {
         this.read = input.read || [];
         this.readWrite = input.readWrite || [];
     }
@@ -14,16 +20,23 @@ export class RolesSpecifier implements ModelComponent {
     validate(context: ValidationContext) {
         if (this.read.length === 0 && this.readWrite.length === 0) {
             context.addMessage(
-                ValidationMessage.warn(
+                ValidationMessage.suppressableWarning(
+                    'NO_ROLES',
                     `No roles with read access are specified. Access is denied for everyone.`,
-                    this.input.astNode,
+                    this.declaringFieldOrType.astNode,
+                    { location: this.input.astNode },
                 ),
             );
         }
 
         if ([...this.read, ...this.readWrite].some((role) => role === '')) {
             context.addMessage(
-                ValidationMessage.warn(`Specified empty string as role.`, this.input.astNode),
+                ValidationMessage.suppressableWarning(
+                    'EMPTY_NAME',
+                    `Specified empty string as role.`,
+                    this.declaringFieldOrType.astNode,
+                    { location: this.input.astNode },
+                ),
             );
         }
     }

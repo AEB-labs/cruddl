@@ -11,6 +11,7 @@ import { RootEntityType } from './root-entity-type';
 import { ScalarType } from './scalar-type';
 import { Type } from './type';
 import { FieldPath } from './field-path';
+import { WarningCode } from '../../schema/message-codes';
 
 export class TimeToLiveType implements ModelComponent {
     readonly cascadeFields: ReadonlyArray<FieldPath> = [];
@@ -161,7 +162,7 @@ export class TimeToLiveType implements ModelComponent {
 
         if (cascadeField.lastField.relationDeleteAction === RelationDeleteAction.CASCADE) {
             context.addMessage(
-                ValidationMessage.warn(
+                ValidationMessage.nonSuppressableWarning(
                     `Field ${lastFieldDesc} is already annotated with @relation(onDelete=CASCADE) and listing it here does not have an effect.`,
                     cascadeField.location,
                 ),

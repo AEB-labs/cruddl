@@ -14,11 +14,13 @@ export function checkRelation(
     // superfluous relation
     if (fieldToCheck.isRelation && !baselineField.isRelation) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'RELATION',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should not be a relation${getRequiredBySuffix(baselineField)}.`,
-                fieldToCheck.relationAstNode ?? fieldToCheck.astNode,
+                fieldToCheck.astNode,
+                { location: fieldToCheck.relationAstNode },
             ),
         );
         return;
@@ -46,7 +48,8 @@ export function checkRelation(
                 ? `@relation(${expectedInverseOfDeclaration}${expectedOnDeleteDeclaration})`
                 : `@relation`;
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'RELATION',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should be decorated with ${expectedRelationDeclaration}${getRequiredBySuffix(
@@ -61,13 +64,15 @@ export function checkRelation(
     // superfluous inverseOf
     if (fieldToCheck.inverseOf && !baselineField.inverseOf) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'RELATION',
                 `Relation "${
                     baselineField.name
                 }" should be a forward relation, not an inverse relation${getRequiredBySuffix(
                     baselineField,
                 )}.`,
-                fieldToCheck.inverseOfAstNode ?? fieldToCheck.astNode,
+                fieldToCheck.astNode,
+                { location: fieldToCheck.inverseOfAstNode },
             ),
         );
     }
@@ -78,15 +83,15 @@ export function checkRelation(
         (!fieldToCheck.inverseOf || fieldToCheck.inverseOf.name !== baselineField.inverseOf.name)
     ) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'RELATION',
                 `Relation "${
                     baselineField.name
                 }" should be an inverse relation with ${expectedInverseOfDeclaration}${getRequiredBySuffix(
                     baselineField,
                 )}.`,
-                fieldToCheck.inverseOfAstNode ??
-                    fieldToCheck.relationAstNode ??
-                    fieldToCheck.astNode,
+                fieldToCheck.astNode,
+                { location: fieldToCheck.inverseOfAstNode ?? fieldToCheck.relationAstNode },
             ),
         );
     }
@@ -98,13 +103,16 @@ export function checkRelation(
             ? `specify ${expectedOnDeleteDeclaration}`
             : `omit the "onDelete" argument`;
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'RELATION',
                 `Relation "${baselineField.name}" should ${hint}${getRequiredBySuffix(
                     baselineField,
                 )}.`,
-                fieldToCheck.relationDeleteActionAstNode ??
-                    fieldToCheck.relationAstNode ??
-                    fieldToCheck.astNode,
+                fieldToCheck.astNode,
+                {
+                    location:
+                        fieldToCheck.relationDeleteActionAstNode ?? fieldToCheck.relationAstNode,
+                },
             ),
         );
     }

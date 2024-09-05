@@ -21,7 +21,7 @@ import {
     RootEntityTypeConfig,
     TypeKind,
 } from '../config';
-import { ValidationContext, ValidationMessage } from '../validation';
+import { QuickFix, ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
 import { FieldPath } from './field-path';
 import { FlexSearchPrimarySortClause } from './flex-search';
@@ -35,6 +35,7 @@ import { RolesSpecifier } from './roles-specifier';
 import { ScalarType } from './scalar-type';
 import { TimeToLiveType } from './time-to-live';
 import { EffectiveModuleSpecification } from './modules/effective-module-specification';
+import { WarningCode } from '../../schema/message-codes';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};
@@ -57,7 +58,7 @@ export class RootEntityType extends ObjectTypeBase {
         this.permissions = input.permissions || {};
         this.roles =
             input.permissions && input.permissions.roles
-                ? new RolesSpecifier(input.permissions.roles)
+                ? new RolesSpecifier(input.permissions.roles, this)
                 : undefined;
         this.isBusinessObject = input.isBusinessObject || false;
         if (input.flexSearchIndexConfig && input.flexSearchIndexConfig.isIndexed) {
@@ -397,18 +398,20 @@ export class RootEntityType extends ObjectTypeBase {
                 // (definition is useful because it shows the exact path within the field that is wrong)
                 for (const message of nestedContext.validationMessages) {
                     context.addMessage(
-                        new ValidationMessage(
-                            message.severity,
-                            `Permission profile "${this.permissionProfile.name}" defines restrictions that cannot be applied to type "${this.name}": ${message.message}`,
-                            this.input.permissions?.permissionProfileNameAstNode,
-                        ),
+                        new ValidationMessage({
+                            severity: message.severity,
+                            message: `Permission profile "${this.permissionProfile.name}" defines restrictions that cannot be applied to type "${this.name}": ${message.message}`,
+                            location: this.input.permissions?.permissionProfileNameAstNode,
+                            quickFixes: message.quickFixes,
+                        }),
                     );
                     context.addMessage(
-                        new ValidationMessage(
-                            message.severity,
-                            `Cannot be applied to type "${this.name}": ${message.message}`,
-                            message.location,
-                        ),
+                        new ValidationMessage({
+                            severity: message.severity,
+                            message: `Cannot be applied to type "${this.name}": ${message.message}`,
+                            location: message.location,
+                            quickFixes: message.quickFixes,
+                        }),
                     );
                 }
             }
@@ -433,9 +436,11 @@ export class RootEntityType extends ObjectTypeBase {
             )
         ) {
             context.addMessage(
-                ValidationMessage.warn(
+                ValidationMessage.suppressableWarning(
+                    'INEFFECTIVE_FLEX_SEARCH',
                     `The type contains fields that are annotated with ${FLEX_SEARCH_INDEXED_DIRECTIVE} or ${FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE}, but the type itself is not marked with flexSearch = true.`,
-                    this.input.astNode!.name,
+                    this.input.astNode,
+                    { location: this.input.astNode?.name },
                 ),
             );
         }

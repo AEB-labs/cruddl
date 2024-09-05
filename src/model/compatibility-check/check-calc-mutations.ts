@@ -22,7 +22,8 @@ export function checkCalcMutations(
         const operatorsDesc = operators.map((o) => o.toString()).join(', ');
         const expectedDeclaration = `@calcMutations(operators: [${operatorsDesc}])`;
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'CALC_MUTATIONS',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should be decorated with ${expectedDeclaration}${getRequiredBySuffix(
@@ -53,9 +54,13 @@ export function checkCalcMutations(
             (a) => a.name.value === CALC_MUTATIONS_OPERATORS_ARG,
         );
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'CALC_MUTATIONS',
                 `${message}${getRequiredBySuffix(baselineField)}.`,
-                operatorsAstNode ?? fieldToCheck.calcMutationsAstNode ?? fieldToCheck.astNode,
+                fieldToCheck.astNode,
+                {
+                    location: operatorsAstNode ?? fieldToCheck.calcMutationsAstNode,
+                },
             ),
         );
         return;

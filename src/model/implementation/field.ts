@@ -55,6 +55,7 @@ import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
+import { WarningCode } from '../../schema/message-codes';
 
 export interface SystemFieldConfig extends FieldConfig {
     readonly isSystemField?: boolean;
@@ -134,7 +135,7 @@ export class Field implements ModelComponent {
         this.calcMutationOperators = new Set(input.calcMutationOperators || []);
         this.roles =
             input.permissions && input.permissions.roles
-                ? new RolesSpecifier(input.permissions.roles)
+                ? new RolesSpecifier(input.permissions.roles, this)
                 : undefined;
         this.isSystemField = input.isSystemField || false;
         this.isAccessField = input.isAccessField ?? false;
@@ -418,14 +419,19 @@ export class Field implements ModelComponent {
 
         if (this.name.includes('_')) {
             context.addMessage(
-                ValidationMessage.warn(`Field names should not include underscores.`, this.astNode),
+                ValidationMessage.suppressableWarning(
+                    'NAMING',
+                    `Field names should not include underscores.`,
+                    this.astNode,
+                ),
             );
             return;
         }
 
         if (!this.name.match(/^[a-z]/)) {
             context.addMessage(
-                ValidationMessage.warn(
+                ValidationMessage.suppressableWarning(
+                    'NAMING',
                     `Field names should start with a lowercase character.`,
                     this.astNode,
                 ),
@@ -581,7 +587,8 @@ export class Field implements ModelComponent {
                 );
                 if (matchingRelation) {
                     context.addMessage(
-                        ValidationMessage.warn(
+                        ValidationMessage.suppressableWarning(
+                            'MIRRORED_RELATIONS',
                             `This field and "${matchingRelation.declaringType.name}.${matchingRelation.name}" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.`,
                             this.astNode,
                         ),
@@ -711,7 +718,8 @@ export class Field implements ModelComponent {
         } else if (!this.input.referenceKeyField) {
             // can only format this nicely if we have the key field
             context.addMessage(
-                ValidationMessage.warn(
+                ValidationMessage.suppressableWarning(
+                    'DEPRECATED_REFERENCE',
                     `Usage of @reference without the keyField argument is deprecated. Add a field of type "${this.type.keyField.type.name}" and specify it in @reference(keyField: "...")`,
                     this.astNode,
                 ),
@@ -815,9 +823,11 @@ export class Field implements ModelComponent {
                 }
 
                 // even for boolean lists, we show a warning because boolean lists are sparingly used and e.g. using EVERY might be misleading there
+                // TODO don't we need to check if teh aggregation operator already is *_TRUE, or would we not take this branch then?
                 if (lastSegment && lastSegment.field.type.name === GraphQLBoolean.name) {
                     context.addMessage(
-                        ValidationMessage.warn(
+                        ValidationMessage.suppressableWarning(
+                            'BOOLEAN_AGGREGATION',
                             `Aggregation operator "${
                                 this.aggregationOperator
                             }" only checks the number of items. "${
@@ -825,7 +835,8 @@ export class Field implements ModelComponent {
                             }" is of type "Boolean", so you may want to use the operator "${
                                 this.aggregationOperator + '_TRUE'
                             }" instead which specifically checks for boolean "true".`,
-                            this.input.collect.aggregationOperatorASTNode,
+                            this.input.astNode,
+                            { location: this.input.collect.aggregationOperatorASTNode },
                         ),
                     );
                 }
@@ -1301,9 +1312,11 @@ export class Field implements ModelComponent {
         }
 
         context.addMessage(
-            ValidationMessage.info(
+            ValidationMessage.suppressableInfo(
+                'NO_TYPE_CHECKS',
                 `Take care, there are no type checks for default values yet.`,
-                this.input.defaultValueASTNode || this.astNode,
+                this.astNode,
+                { location: this.input.defaultValueASTNode || this.astNode },
             ),
         );
     }
@@ -1359,7 +1372,8 @@ export class Field implements ModelComponent {
 
         if (this.declaringType.isValueObjectType) {
             context.addMessage(
-                ValidationMessage.warn(
+                ValidationMessage.suppressableWarning(
+                    'DEPRECATED',
                     `Calc mutations do not work within value objects because value objects cannot be updated. This will be an error in a future release.`,
                     this.astNode,
                 ),
@@ -1531,9 +1545,11 @@ export class Field implements ModelComponent {
                 }
             }
             context.addMessage(
-                ValidationMessage.warn(
+                ValidationMessage.suppressableWarning(
+                    'UNSUPPORTED_PARENT_FIELD',
                     `Parent fields currently can't be selected within collect fields, so this field will probably be useless.${rootNote}`,
-                    this.input.parentDirectiveNode,
+                    this.astNode,
+                    { location: this.input.parentDirectiveNode },
                 ),
             );
         }
@@ -1734,9 +1750,11 @@ export class Field implements ModelComponent {
             // this used to be accepted silently in the past
             // report a warning for the transition period, and change this to an error later
             context.addMessage(
-                ValidationMessage.warn(
+                ValidationMessage.suppressableWarning(
+                    'DEPRECATED',
                     `@flexSearch is not supported on type "${this.type.name}". Remove this directive. This will be an error in a future release.`,
-                    this.input.isFlexSearchIndexedASTNode,
+                    this.input.astNode,
+                    { location: this.input.isFlexSearchIndexedASTNode },
                 ),
             );
         }
@@ -1785,10 +1803,16 @@ export class Field implements ModelComponent {
             )
         ) {
             context.addMessage(
-                ValidationMessage.warn(
+                ValidationMessage.suppressableWarning(
+                    'INEFFECTIVE_INCLUDE_IN_SEARCH',
                     `"includeInSearch: true" does not have an effect because none of the fields in type "${this.type.name}" have "includeInSearch: true".`,
-                    this.input.isFlexSearchIndexedASTNode ??
-                        this.input.isFlexSearchFulltextIndexedASTNode,
+
+                    this.input.astNode,
+                    {
+                        location:
+                            this.input.isFlexSearchIndexedASTNode ??
+                            this.input.isFlexSearchFulltextIndexedASTNode,
+                    },
                 ),
             );
         }

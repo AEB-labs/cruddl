@@ -51,7 +51,7 @@ export function checkModel(modelToCheck: Model, baselineModel: Model): Validatio
             }
 
             context.addMessage(
-                ValidationMessage.compatibilityIssue(
+                ValidationMessage.nonSuppressableCompatibilityIssue(
                     `Type "${baselineType.name}" is missing${getRequiredBySuffix(baselineType)}.`,
                     undefined,
                     { quickFixes },

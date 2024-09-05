@@ -1,7 +1,19 @@
-import { DocumentNode } from 'graphql';
+import {
+    DocumentNode,
+    EnumTypeDefinitionNode,
+    EnumValueDefinitionNode,
+    Kind,
+    TypeKind,
+} from 'graphql';
 import gql from 'graphql-tag';
+import {
+    COMPATIBILITY_ISSUE_CODES,
+    INFO_CODES,
+    MessageCodes,
+    WARNING_CODES,
+} from './message-codes';
 
-export const DIRECTIVES: DocumentNode = gql`
+const directivesBase: DocumentNode = gql`
     "Declares a type for root-level objects with ids that are stored directly in the data base"
     directive @rootEntity(
         indices: [IndexDefinition!]
@@ -267,7 +279,71 @@ export const DIRECTIVES: DocumentNode = gql`
         "Specifies that all fields in this type should be included in all modules declared on this type."
         includeAllFields: Boolean
     ) on OBJECT | ENUM | FIELD_DEFINITION
+
+    "Disables one or multiple non-error messages on a type, field or other declaration"
+    directive @suppress(
+        warnings: [WarningCode!]
+        infos: [InfoCode!]
+        compatibilityIssues: [CompatibilityIssueCode!]
+    ) on OBJECT | ENUM | FIELD_DEFINITION
+
+    "Codes that can be used with @suppress(warnings: [...])"
+    enum WarningCode {
+        DUMMY
+    }
+
+    "Codes that can be used with @suppress(infos: [...])"
+    enum InfoCode {
+        DUMMY
+    }
+
+    "Codes that can be used with @suppress(compatibilityIssues: [...])"
+    enum CompatibilityIssueCode {
+        DUMMY
+    }
 `;
+
+export const DIRECTIVES = generateDirectivesAst();
+
+function generateDirectivesAst(): DocumentNode {
+    return {
+        ...directivesBase,
+        definitions: directivesBase.definitions.map((def) => {
+            if (def.kind !== Kind.ENUM_TYPE_DEFINITION) {
+                return def;
+            }
+            switch (def.name.value) {
+                case 'WarningCode':
+                    return buildEnumValues(def, WARNING_CODES);
+                case 'InfoCode':
+                    return buildEnumValues(def, INFO_CODES);
+                case 'CompatibilityIssueCode':
+                    return buildEnumValues(def, COMPATIBILITY_ISSUE_CODES);
+                default:
+                    return def;
+            }
+        }),
+    };
+}
+
+function buildEnumValues(baseDefinitions: EnumTypeDefinitionNode, codes: MessageCodes) {
+    return {
+        ...baseDefinitions,
+        values: Object.entries(codes).map(
+            ([name, description]): EnumValueDefinitionNode => ({
+                kind: Kind.ENUM_VALUE_DEFINITION,
+                name: {
+                    kind: Kind.NAME,
+                    value: name,
+                },
+                description: {
+                    kind: Kind.STRING,
+                    value: description as string,
+                },
+            }),
+        ),
+    };
+}
 
 export const CORE_SCALARS: DocumentNode = gql`
     """

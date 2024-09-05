@@ -20,11 +20,13 @@ export function checkDefaultValue(
         !baselineField.hasDefaultValue
     ) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'DEFAULT_VALUE',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should not have a default value${getRequiredBySuffix(baselineField)}.`,
-                fieldToCheck.defaultValueAstNode ?? fieldToCheck.astNode,
+                fieldToCheck.astNode,
+                { location: fieldToCheck.defaultValueAstNode },
             ),
         );
         return;
@@ -41,13 +43,15 @@ export function checkDefaultValue(
     if (!fieldToCheck.hasDefaultValue) {
         const expectedDeclaration = `@defaultValue(value: ${expectedDefaultValue})`;
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'DEFAULT_VALUE',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should be decorated with ${expectedDeclaration}${getRequiredBySuffix(
                     baselineField,
                 )}.`,
                 fieldToCheck.astNode,
+                { location: fieldToCheck.defaultValueAstNode },
             ),
         );
         return;
@@ -56,11 +60,13 @@ export function checkDefaultValue(
     // wrong default value
     if (!deepEqual(fieldToCheck.defaultValue, baselineField.defaultValue)) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'DEFAULT_VALUE',
                 `Default value should be ${expectedDefaultValue}${getRequiredBySuffix(
                     baselineField,
                 )}.`,
                 fieldToCheck.astNode,
+                { location: fieldToCheck.defaultValueAstNode },
             ),
         );
         return;

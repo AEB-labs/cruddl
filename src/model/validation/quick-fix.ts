@@ -9,7 +9,7 @@ export interface QuickFixParams {
     /**
      * Whether this is likely a fix of the underlying problem
      *
-     * For example, a code fix to add a missing field would be preferred, while a code fix to add a @supress directive would not be preferred.
+     * For example, a code fix to add a missing field would be preferred, while a code fix to add a @suppress directive would not be preferred.
      *
      * Can be used by UIs to apply a quick fix via a hotkey, or to offer a "fix all issues" feature.
      */
@@ -36,7 +36,7 @@ export class QuickFix {
     /**
      * Whether this is likely a fix of the underlying problem
      *
-     * For example, a code fix to add a missing field would be preferred, while a code fix to add a @supress directive would not be preferred.
+     * For example, a code fix to add a missing field would be preferred, while a code fix to add a @suppress directive would not be preferred.
      *
      * Can be used by UIs to apply a quick fix via a hotkey, or to offer a "fix all issues" feature.
      *

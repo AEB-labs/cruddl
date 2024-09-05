@@ -44,6 +44,11 @@ export const MODULES_IN_ARG = 'in';
 export const MODULES_ALL_ARG = 'all';
 export const MODULES_INCLUDE_ALL_FIELDS_ARG = 'includeAllFields';
 
+export const SUPPRESS_DIRECTIVE = 'suppress';
+export const SUPPRESS_COMPATIBILITY_ISSUES_ARG = 'compatibilityIssues';
+export const SUPPRESS_WARNINGS_ARG = 'warnings';
+export const SUPPRESS_INFOS_ARG = 'infos';
+
 export const QUERY_TYPE = 'Query';
 export const MUTATION_TYPE = 'Mutation';
 export const QUERY_META_TYPE = '_QueryMeta';

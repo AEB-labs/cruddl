@@ -26,9 +26,9 @@ export class SidecarSchemaValidator implements ParsedSourceValidator {
             if (isWarning) {
                 if (path in source.pathLocationMap) {
                     const loc = source.pathLocationMap[path];
-                    return ValidationMessage.warn(err.message!, loc);
+                    return ValidationMessage.nonSuppressableWarning(err.message!, loc);
                 } else {
-                    return ValidationMessage.warn(
+                    return ValidationMessage.nonSuppressableWarning(
                         `${err.message} (at ${err.instancePath})`,
                         undefined,
                     );

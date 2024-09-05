@@ -11,6 +11,7 @@ import { EffectiveModuleSpecification } from './modules/effective-module-specifi
 import { MODULES_DIRECTIVE } from '../../schema/constants';
 import { TypeModuleSpecification } from './modules/type-module-specification';
 import { Type } from './type';
+import { WarningCode } from '../../schema/message-codes';
 
 export abstract class TypeBase implements ModelComponent {
     readonly name: string;
@@ -78,9 +79,11 @@ export abstract class TypeBase implements ModelComponent {
 
         if (this.name.includes('_')) {
             context.addMessage(
-                ValidationMessage.warn(
+                ValidationMessage.suppressableWarning(
+                    'NAMING',
                     `Type names should not include underscores.`,
-                    this.nameASTNode,
+                    this.astNode,
+                    { location: this.nameASTNode },
                 ),
             );
             return;
@@ -88,9 +91,11 @@ export abstract class TypeBase implements ModelComponent {
 
         if (!this.name.match(/^[A-Z]/)) {
             context.addMessage(
-                ValidationMessage.warn(
+                ValidationMessage.suppressableWarning(
+                    'NAMING',
                     `Type names should start with an uppercase character.`,
-                    this.nameASTNode,
+                    this.astNode,
+                    { location: this.nameASTNode },
                 ),
             );
         }
