@@ -38,7 +38,7 @@ export function checkObjectType(
                         description: `Add field "${baselineField.name}"`,
                         isPreferred: true,
                         changeSet: new ChangeSet([
-                            new TextChange(quickFixLocation, '  ' + print(cleanedAstNode) + '\n'),
+                            new TextChange(quickFixLocation, '    ' + print(cleanedAstNode) + '\n'),
                         ]),
                     }),
                 );
