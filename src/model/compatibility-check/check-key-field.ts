@@ -23,16 +23,19 @@ export function checkKeyField(
         // (because it's an automatic system field). We need to tell the user that the field needs to be added.
         if (fieldToCheck.isSystemField && fieldToCheck.name === ID_FIELD && !fieldToCheck.astNode) {
             context.addMessage(
-                ValidationMessage.compatibilityIssue(
+                ValidationMessage.suppressableCompatibilityIssue(
+                    'MISSING_FIELD',
                     `Field "id: ID @key" needs to be specified${getRequiredBySuffix(
                         baselineField,
                     )}.`,
-                    fieldToCheck.declaringType.nameASTNode,
+                    fieldToCheck.declaringType.astNode,
+                    { location: fieldToCheck.declaringType.nameASTNode },
                 ),
             );
         } else {
             context.addMessage(
-                ValidationMessage.compatibilityIssue(
+                ValidationMessage.suppressableCompatibilityIssue(
+                    'KEY_FIELD',
                     `Field "${baselineField.declaringType.name}.${
                         baselineField.name
                     }" needs to be decorated with @key${getRequiredBySuffix(baselineField)}.`,

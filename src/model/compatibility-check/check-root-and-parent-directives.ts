@@ -12,18 +12,21 @@ export function checkRootAndParentDirectives(
 ) {
     if (fieldToCheck.isRootField && !baselineField.isRootField) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'ROOT_FIELD',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should not be decorated with @root${getRequiredBySuffix(baselineField)}.`,
-                fieldToCheck.rootDirectiveAstNode ?? fieldToCheck.astNode,
+                fieldToCheck.astNode,
+                { location: fieldToCheck.rootDirectiveAstNode },
             ),
         );
     }
 
     if (!fieldToCheck.isRootField && baselineField.isRootField) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'ROOT_FIELD',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should be decorated with @root${getRequiredBySuffix(baselineField)}.`,
@@ -34,18 +37,21 @@ export function checkRootAndParentDirectives(
 
     if (fieldToCheck.isParentField && !baselineField.isParentField) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'PARENT_FIELD',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should not be decorated with @parent${getRequiredBySuffix(baselineField)}.`,
-                fieldToCheck.rootDirectiveAstNode ?? fieldToCheck.astNode,
+                fieldToCheck.astNode,
+                { location: fieldToCheck.parentDirectiveAstNode },
             ),
         );
     }
 
     if (!fieldToCheck.isParentField && baselineField.isParentField) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'PARENT_FIELD',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
                 }" should be decorated with @parent${getRequiredBySuffix(baselineField)}.`,

@@ -6,6 +6,7 @@ import { EnumValueLocalization } from './i18n';
 import { Model } from './model';
 import { TypeBase } from './type-base';
 import memorize from 'memorize-decorator';
+import { WarningCode } from '../../schema/message-codes';
 
 export class EnumType extends TypeBase {
     constructor(input: EnumTypeConfig, model: Model) {
@@ -66,7 +67,11 @@ export class EnumValue implements ModelComponent {
         }
         if (this.value.toUpperCase() !== this.value) {
             context.addMessage(
-                ValidationMessage.warn(`Enum values should be UPPER_CASE.`, this.astNode),
+                ValidationMessage.suppressableWarning(
+                    'NAMING',
+                    `Enum values should be UPPER_CASE.`,
+                    this.astNode,
+                ),
             );
         }
     }

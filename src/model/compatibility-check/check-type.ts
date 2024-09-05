@@ -8,11 +8,14 @@ import { describeTypeKind } from './utils';
 export function checkType(typeToCheck: Type, baselineType: Type, context: ValidationContext) {
     if (typeToCheck.kind !== baselineType.kind) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'TYPE_KIND',
                 `Type "${baselineType.name}" needs to be ${describeTypeKind(
                     baselineType.kind,
                 )}${getRequiredBySuffix(baselineType)}.`,
-                typeToCheck.nameASTNode,
+
+                typeToCheck.astNode,
+                { location: typeToCheck.nameASTNode },
             ),
         );
         return;

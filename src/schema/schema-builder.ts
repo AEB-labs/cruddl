@@ -200,10 +200,10 @@ function parseYAMLSource(
         const severity = error.isWarning ? Severity.WARNING : Severity.ERROR;
         const endPos = getLineEndPosition(error.mark.line + 1, projectSource);
         validationContext.addMessage(
-            new ValidationMessage(
+            new ValidationMessage({
                 severity,
-                error.reason,
-                new MessageLocation(
+                message: error.reason,
+                location: new MessageLocation(
                     projectSource,
                     new SourcePosition(
                         error.mark.position,
@@ -212,7 +212,7 @@ function parseYAMLSource(
                     ),
                     endPos,
                 ),
-            ),
+            }),
         );
     });
 

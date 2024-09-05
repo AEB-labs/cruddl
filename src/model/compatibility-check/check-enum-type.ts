@@ -11,11 +11,13 @@ export function checkEnumType(
         const matchingValue = typeToCheck.values.find((v) => v.value === baselineValue.value);
         if (!matchingValue) {
             context.addMessage(
-                ValidationMessage.compatibilityIssue(
+                ValidationMessage.suppressableCompatibilityIssue(
+                    'MISSING_ENUM_VALUE',
                     `Enum value "${baselineValue.value}" is missing${getRequiredBySuffix(
                         baselineType,
                     )}.`,
-                    typeToCheck.nameASTNode,
+                    typeToCheck.astNode,
+                    { location: typeToCheck.nameASTNode },
                 ),
             );
         }

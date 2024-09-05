@@ -10,11 +10,13 @@ export function checkRootEntityType(
 ) {
     if (baselineType.isBusinessObject && !typeToCheck.isBusinessObject) {
         context.addMessage(
-            ValidationMessage.compatibilityIssue(
+            ValidationMessage.suppressableCompatibilityIssue(
+                'BUSINESS_OBJECT',
                 `Type "${
                     baselineType.name
                 }" needs to be decorated with @businessObject${getRequiredBySuffix(baselineType)}.`,
-                typeToCheck.nameASTNode,
+                typeToCheck.astNode,
+                { location: typeToCheck.nameASTNode },
             ),
         );
     }
