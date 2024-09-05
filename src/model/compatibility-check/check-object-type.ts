@@ -6,6 +6,7 @@ import { MessageLocation, QuickFix, ValidationContext, ValidationMessage } from 
 import { checkField } from './check-field';
 import { checkRootEntityType } from './check-root-entity-type';
 import { getRequiredBySuffix } from './describe-module-specification';
+import { prettyPrint } from '../../graphql/pretty-print';
 
 export function checkObjectType(
     typeToCheck: ObjectType,
@@ -38,7 +39,10 @@ export function checkObjectType(
                         description: `Add field "${baselineField.name}"`,
                         isPreferred: true,
                         changeSet: new ChangeSet([
-                            new TextChange(quickFixLocation, '  ' + print(cleanedAstNode) + '\n'),
+                            new TextChange(
+                                quickFixLocation,
+                                '    ' + prettyPrint(cleanedAstNode) + '\n',
+                            ),
                         ]),
                     }),
                 );

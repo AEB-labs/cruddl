@@ -1,8 +1,9 @@
-import { DocumentNode, print } from 'graphql';
+import { DocumentNode } from 'graphql';
 import { ValidationResult } from '../../../src/model/validation/result';
 import { Project } from '../../../src/project/project';
 import { ProjectSource } from '../../../src/project/source';
 import { expectNoErrors, expectToBeValid } from '../implementation/validation-utils';
+import { prettyPrint } from '../../../src/graphql/pretty-print';
 
 interface RunOptions {
     allowWarningsAndInfosInProjectToCheck?: boolean;
@@ -19,7 +20,7 @@ export function runCheck(
         docToCheck instanceof Project
             ? docToCheck
             : new Project({
-                  sources: [new ProjectSource('to-check.graphql', print(docToCheck))],
+                  sources: [new ProjectSource('to-check.graphql', prettyPrint(docToCheck))],
               });
     if (options.allowWarningsAndInfosInProjectToCheck) {
         expectNoErrors(projectToCheck);
@@ -29,7 +30,7 @@ export function runCheck(
 
     const projectWithModules = new Project({
         sources: [
-            new ProjectSource('baseline.graphql', print(baselineDoc)),
+            new ProjectSource('baseline.graphql', prettyPrint(baselineDoc)),
             new ProjectSource(
                 'modules.json',
                 JSON.stringify({ modules: ['module1', 'module2', 'module3', 'extra1', 'extra2'] }),

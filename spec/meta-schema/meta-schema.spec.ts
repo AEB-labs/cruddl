@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { DocumentNode, graphql, print } from 'graphql';
+import { DocumentNode, graphql } from 'graphql';
 import gql from 'graphql-tag';
 import { CRUDDL_VERSION } from '../../src/cruddl-version';
 import {
@@ -10,6 +10,7 @@ import { getMetaSchema } from '../../src/meta-schema/meta-schema';
 import { AggregationOperator, Model, TypeKind } from '../../src/model';
 import { Project } from '../../src/project/project';
 import { stopMetaServer } from '../dev/server';
+import { prettyPrint } from '../../src/graphql/pretty-print';
 
 describe('Meta schema API', () => {
     const introQuery = gql`
@@ -499,7 +500,7 @@ describe('Meta schema API', () => {
     async function execute(doc: DocumentNode, contextValue?: unknown) {
         const { data, errors } = await graphql({
             schema: metaSchema,
-            source: print(doc),
+            source: prettyPrint(doc),
             rootValue: {},
             contextValue,
         });

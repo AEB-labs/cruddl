@@ -12,10 +12,9 @@ import {
     GraphQLDirective,
     GraphQLError,
     GraphQLField,
-    valueFromAST,
-    VariableNode,
-    print,
     GraphQLNonNull,
+    print,
+    valueFromAST,
 } from 'graphql';
 import { arrayToObject } from '../utils/utils';
 

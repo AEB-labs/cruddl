@@ -1,11 +1,11 @@
 import { expect } from 'chai';
-import { print } from 'graphql';
 import gql from 'graphql-tag';
 import { ParsedProjectSource } from '../../../src/config/parsed-project';
 import { ValidationContext } from '../../../src/model/validation';
 import { ProjectSource } from '../../../src/project/source';
 import { GraphQLRulesValidator } from '../../../src/schema/preparation/source-validation-modules/graphql-rules';
 import { parseProjectSource } from '../../../src/schema/schema-builder';
+import { prettyPrint } from '../../../src/graphql/pretty-print';
 
 describe('graphql-rules validator', () => {
     const validator = new GraphQLRulesValidator();
@@ -21,7 +21,7 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(gql`
+                    prettyPrint(gql`
                         type Test @unknownDirective {
                             field: String
                         }
@@ -38,7 +38,7 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(gql`
+                    prettyPrint(gql`
                         type Test @rootEntity(indices: true) {
                             field: String
                         }
@@ -57,7 +57,7 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(gql`
+                    prettyPrint(gql`
                         type Test @namespace {
                             field: String
                         }
@@ -76,7 +76,7 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(gql`
+                    prettyPrint(gql`
                         type Test @rootEntity(nonExistant: true) {
                             field: String
                         }
@@ -95,7 +95,7 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(gql`
+                    prettyPrint(gql`
                         type Test @rootEntity(indices: [{ unique: true }]) {
                             field: String
                         }
@@ -114,7 +114,7 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(gql`
+                    prettyPrint(gql`
                         type Test @rootEntity(indices: [{ fields: [], nonExistant: true }]) {
                             field: String
                         }
@@ -133,7 +133,7 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(gql`
+                    prettyPrint(gql`
                         type Test @rootEntity {
                             field: String
                         }
@@ -149,7 +149,7 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(gql`
+                    prettyPrint(gql`
                         type Test @rootEntity {
                             field: String @roles(read: "role")
                         }

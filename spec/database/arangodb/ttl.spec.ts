@@ -1,12 +1,13 @@
 import gql from 'graphql-tag';
 import { Project } from '../../../src/project/project';
 import { ProjectSource } from '../../../src/project/source';
-import { graphql, GraphQLSchema, print } from 'graphql';
+import { graphql, GraphQLSchema } from 'graphql';
 import { ArangoDBAdapter } from '../../../src/database/arangodb';
 import { isArangoDBDisabled } from './arangodb-test-utils';
 import { createTempDatabase } from '../../regression/initialization';
 import { expect } from 'chai';
 import { TimeToLiveConfig } from '../../../src/model';
+import { prettyPrint } from '../../../src/graphql/pretty-print';
 
 interface Setup {
     readonly schema: GraphQLSchema;
@@ -38,7 +39,7 @@ async function setUp(
         sources: [
             new ProjectSource(
                 'source.graphqls',
-                print(gql`
+                prettyPrint(gql`
                     type Test @rootEntity {
                         key: String
                         finishedAt: DateTime
@@ -73,7 +74,7 @@ async function setUp(
 
     const initResult = await graphql({
         schema,
-        source: print(gql`
+        source: prettyPrint(gql`
             mutation init($data: [CreateTestInput!]!) {
                 createTests(input: $data) {
                     key
@@ -93,7 +94,7 @@ async function setUp(
         getAllKeys: async () => {
             const result = await graphql({
                 schema,
-                source: print(gql`
+                source: prettyPrint(gql`
                     {
                         allTests(orderBy: key_ASC) {
                             key
@@ -107,7 +108,7 @@ async function setUp(
         getN1Keys: async () => {
             const result = await graphql({
                 schema,
-                source: print(gql`
+                source: prettyPrint(gql`
                     {
                         allN1s(orderBy: key_ASC) {
                             key
@@ -121,7 +122,7 @@ async function setUp(
         getN2Keys: async () => {
             const result = await graphql({
                 schema,
-                source: print(gql`
+                source: prettyPrint(gql`
                     {
                         allN2s(orderBy: key_ASC) {
                             key

@@ -25,8 +25,8 @@ describe('checkModel', () => {
                 result,
                 'Add field "field"',
                 `type Test @rootEntity {
-  wrongFieldName: String
-  field: String
+    wrongFieldName: String
+    field: String
 }`,
             );
         });
@@ -56,8 +56,8 @@ describe('checkModel', () => {
                 result,
                 'Add field "field"',
                 `type Test @rootEntity {
-  wrongFieldName: String
-  field: String @calcMutations(operators: APPEND) @key @roles(read: ["a", "b"])
+    wrongFieldName: String
+    field: String @calcMutations(operators: APPEND) @key @roles(read: ["a", "b"])
 }`,
             );
         });
