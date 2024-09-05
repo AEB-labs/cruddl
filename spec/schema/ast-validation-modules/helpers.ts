@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { DocumentNode, parse, print, Source } from 'graphql';
+import { DocumentNode, parse, Source } from 'graphql';
 import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project';
 import {
     createModel,
@@ -15,6 +15,7 @@ import {
     validateSource,
 } from '../../../src/schema/preparation/ast-validator';
 import { parseProjectSource } from '../../../src/schema/schema-builder';
+import { prettyPrint } from '../../../src/graphql/pretty-print';
 
 export function assertValidatorRejects(
     source: string | DocumentNode,
@@ -63,7 +64,7 @@ export function validate(
     const ast = typeof source === 'string' ? parse(new Source(source, 'schema.graphqls')) : source;
     const projectSource = new ProjectSource(
         'schema.graphqls',
-        typeof source === 'string' ? source : (source.loc?.source?.body ?? print(source)),
+        typeof source === 'string' ? source : (source.loc?.source?.body ?? prettyPrint(source)),
     );
     const sourceResults = validateSource(projectSource);
     const validationContext = new ValidationContext();

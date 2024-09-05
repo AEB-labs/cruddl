@@ -1,10 +1,11 @@
-import { Kind, ObjectTypeDefinitionNode, print, TypeDefinitionNode } from 'graphql';
+import { Kind, print, TypeDefinitionNode } from 'graphql';
 import { MODULES_DIRECTIVE } from '../../schema/constants';
 import { AppendChange, ChangeSet } from '../change-set/change-set';
 import { Model } from '../implementation';
 import { QuickFix, ValidationContext, ValidationMessage, ValidationResult } from '../validation';
 import { checkType } from './check-type';
 import { getRequiredBySuffix } from './describe-module-specification';
+import { prettyPrint } from '../../graphql/pretty-print';
 
 /**
  * Checks whether a model (modelToCheck) can be used in a place where another model (baselineModel) is expected.
@@ -44,7 +45,7 @@ export function checkModel(modelToCheck: Model, baselineModel: Model): Validatio
                         description: `Add type "${baselineType.name}"`,
                         isPreferred: true,
                         changeSet: new ChangeSet([
-                            new AppendChange(sourceName, print(cleanedAstNode) + '\n'),
+                            new AppendChange(sourceName, prettyPrint(cleanedAstNode) + '\n'),
                         ]),
                     }),
                 );

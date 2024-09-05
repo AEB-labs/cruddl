@@ -6,7 +6,7 @@ import {
 } from '../implementation/validation-utils';
 import { runCheck } from './utils';
 import { Project, ProjectSource } from '../../../core-exports';
-import { print } from 'graphql';
+import { prettyPrint } from '../../../src/graphql/pretty-print';
 
 describe('checkModel', () => {
     describe('basics', () => {
@@ -31,7 +31,7 @@ describe('checkModel', () => {
                 new ProjectSource(
                     // use the same name as in the baseline project to test the case where the quickfix appends it to the file
                     'baseline.graphql',
-                    print(gql`
+                    prettyPrint(gql`
                         type WrongTypeName @rootEntity {
                             field: String
                         }
@@ -54,11 +54,11 @@ describe('checkModel', () => {
                 result,
                 'Add type "Test"',
                 `type WrongTypeName @rootEntity {
-  field: String
+    field: String
 }
 
 type Test @rootEntity {
-  field: String
+    field: String
 }
 `,
                 { project: projectToCheck },

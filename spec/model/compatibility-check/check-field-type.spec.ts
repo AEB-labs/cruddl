@@ -45,7 +45,7 @@ describe('checkModel', () => {
                 result,
                 'Change type to "String"',
                 `type Test @rootEntity {
-  field: String
+    field: String
 }`,
             );
         });
@@ -71,7 +71,7 @@ describe('checkModel', () => {
                 result,
                 'Change type to "[String]"',
                 `type Test @rootEntity {
-  field: [String]
+    field: [String]
 }`,
             );
         });
@@ -97,7 +97,7 @@ describe('checkModel', () => {
                 result,
                 'Change type to "String"',
                 `type Test @rootEntity {
-  field: String
+    field: String
 }`,
             );
         });

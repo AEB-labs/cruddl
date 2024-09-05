@@ -25,13 +25,13 @@ import {
 } from '../query-tree/flex-search';
 import { evaluateQueryStatically } from '../query-tree/utils';
 import {
+    buildConditionalObjectQueryNode,
     FieldContext,
     QueryNodeObjectType,
     SelectionToken,
-    buildConditionalObjectQueryNode,
 } from '../schema-generation/query-node-object-type';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
-import { Watch, getPreciseTime } from '../utils/watch';
+import { getPreciseTime, Watch } from '../utils/watch';
 import { DefaultClock, ExecutionOptions, UUIDGenerator } from './execution-options';
 import { ExecutionResult } from './execution-result';
 

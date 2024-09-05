@@ -1,11 +1,11 @@
-import { print } from 'graphql';
 import gql from 'graphql-tag';
 import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
+import { prettyPrint } from '../../../src/graphql/pretty-print';
 
 describe('@businessObject validation', () => {
     it('is invalid on entity extension types', () => {
         assertValidatorRejects(
-            print(gql`
+            prettyPrint(gql`
                 type Root @rootEntity {
                     ext: Test
                 }
@@ -20,7 +20,7 @@ describe('@businessObject validation', () => {
 
     it('is valid on root entity types', () => {
         assertValidatorAcceptsAndDoesNotWarn(
-            print(gql`
+            prettyPrint(gql`
                 type Test @rootEntity @businessObject {
                     a: String
                 }
