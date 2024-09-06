@@ -5,7 +5,11 @@ import { getRequiredBySuffix } from './describe-module-specification';
 /**
  * Checks whether the @reference directives on the field and on the baseline field match
  */
-export function checkReference(fieldToCheck: Field, baselineField: Field, context: ValidationContext) {
+export function checkReference(
+    fieldToCheck: Field,
+    baselineField: Field,
+    context: ValidationContext,
+) {
     if (fieldToCheck.isReference && !baselineField.isReference) {
         context.addMessage(
             ValidationMessage.compatibilityIssue(

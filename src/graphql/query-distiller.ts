@@ -105,7 +105,10 @@ export class FieldSelection {
      * @param propertyName the name of the property the field request's value should be put in
      * @param fieldRequest determines the value for that property
      */
-    constructor(public readonly propertyName: string, public readonly fieldRequest: FieldRequest) {}
+    constructor(
+        public readonly propertyName: string,
+        public readonly fieldRequest: FieldRequest,
+    ) {}
 
     equals(other: FieldSelection) {
         return (

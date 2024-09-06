@@ -63,7 +63,7 @@ export function validate(
     const ast = typeof source === 'string' ? parse(new Source(source, 'schema.graphqls')) : source;
     const projectSource = new ProjectSource(
         'schema.graphqls',
-        typeof source === 'string' ? source : source.loc?.source?.body ?? print(source),
+        typeof source === 'string' ? source : (source.loc?.source?.body ?? print(source)),
     );
     const sourceResults = validateSource(projectSource);
     const validationContext = new ValidationContext();

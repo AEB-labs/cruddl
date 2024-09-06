@@ -16,7 +16,11 @@ import { CreateRootEntityInputType } from './input-types';
 export abstract class AbstractRelationCreateInputField implements CreateInputField {
     readonly description: string;
 
-    constructor(public readonly field: Field, public readonly name: string, description: string) {
+    constructor(
+        public readonly field: Field,
+        public readonly name: string,
+        description: string,
+    ) {
         this.description = description + (field.description ? '\n\n' + field.description : '');
     }
 
@@ -97,7 +101,10 @@ export class AddEdgesCreateInputField extends AbstractRelationCreateInputField {
 export class CreateAndAddEdgesCreateInputField extends AbstractRelationCreateInputField {
     readonly inputType: GraphQLInputType;
 
-    constructor(field: Field, public readonly objectInputType: CreateRootEntityInputType) {
+    constructor(
+        field: Field,
+        public readonly objectInputType: CreateRootEntityInputType,
+    ) {
         super(
             field,
             getCreateRelatedEntityFieldName(field.name),
@@ -134,7 +141,10 @@ export class CreateAndAddEdgesCreateInputField extends AbstractRelationCreateInp
 export class CreateAndSetEdgeCreateInputField extends AbstractRelationCreateInputField {
     readonly inputType: GraphQLInputType;
 
-    constructor(field: Field, public readonly objectInputType: CreateRootEntityInputType) {
+    constructor(
+        field: Field,
+        public readonly objectInputType: CreateRootEntityInputType,
+    ) {
         super(
             field,
             getCreateRelatedEntityFieldName(field.name),

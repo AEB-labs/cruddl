@@ -9,9 +9,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "flexSearchHandlingUnits"
-        ],
+        "path": ["flexSearchHandlingUnits"],
         "extensions": {
           "code": "FLEX_SEARCH_TOO_MANY_OBJECTS"
         }

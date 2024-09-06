@@ -78,7 +78,10 @@ export class UpdateFilterInputField implements UpdateInputField {
     readonly name: string;
     readonly description: string;
 
-    constructor(public readonly field: Field, public readonly inputType: GraphQLInputType) {
+    constructor(
+        public readonly field: Field,
+        public readonly inputType: GraphQLInputType,
+    ) {
         this.name = this.field.name;
         this.description = `The \`${this.field.name}\` of the \`${field.declaringType.name}\` to be updated (does not change the \`${this.field.name}\`).`;
     }
@@ -188,7 +191,10 @@ export class CalcMutationInputField extends BasicUpdateInputField {
 }
 
 export class UpdateValueObjectInputField extends BasicUpdateInputField {
-    constructor(field: Field, public readonly objectInputType: CreateObjectInputType) {
+    constructor(
+        field: Field,
+        public readonly objectInputType: CreateObjectInputType,
+    ) {
         super(field, objectInputType.getInputType());
     }
 
@@ -211,7 +217,10 @@ export class UpdateValueObjectInputField extends BasicUpdateInputField {
 }
 
 export class UpdateValueObjectListInputField extends BasicUpdateInputField {
-    constructor(field: Field, public readonly objectInputType: CreateObjectInputType) {
+    constructor(
+        field: Field,
+        public readonly objectInputType: CreateObjectInputType,
+    ) {
         super(field, new GraphQLList(new GraphQLNonNull(objectInputType.getInputType())));
     }
 
@@ -339,7 +348,10 @@ export abstract class AbstractChildEntityInputField implements UpdateInputField 
 export class ReplaceChildEntitiesInputField extends AbstractChildEntityInputField {
     public readonly inputType: GraphQLInputType;
 
-    constructor(field: Field, public readonly createInputType: CreateChildEntityInputType) {
+    constructor(
+        field: Field,
+        public readonly createInputType: CreateChildEntityInputType,
+    ) {
         super(
             field,
             getReplaceChildEntitiesFieldName(field.name),
@@ -359,7 +371,10 @@ export class ReplaceChildEntitiesInputField extends AbstractChildEntityInputFiel
 export class AddChildEntitiesInputField extends AbstractChildEntityInputField {
     public readonly inputType: GraphQLInputType;
 
-    constructor(field: Field, public readonly createInputType: CreateChildEntityInputType) {
+    constructor(
+        field: Field,
+        public readonly createInputType: CreateChildEntityInputType,
+    ) {
         super(
             field,
             getAddChildEntitiesFieldName(field.name),
@@ -379,7 +394,10 @@ export class AddChildEntitiesInputField extends AbstractChildEntityInputField {
 export class UpdateChildEntitiesInputField extends AbstractChildEntityInputField {
     public readonly inputType: GraphQLInputType;
 
-    constructor(field: Field, public readonly updateInputType: UpdateChildEntityInputType) {
+    constructor(
+        field: Field,
+        public readonly updateInputType: UpdateChildEntityInputType,
+    ) {
         super(
             field,
             getUpdateChildEntitiesFieldName(field.name),

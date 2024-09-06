@@ -1,12 +1,12 @@
-import {Database} from 'arangojs';
-import {CollectionType} from 'arangojs/collection';
-import {ArangoDBConfig, initDatabase} from '../config';
+import { Database } from 'arangojs';
+import { CollectionType } from 'arangojs/collection';
+import { ArangoDBConfig, initDatabase } from '../config';
 import {
     ERROR_ARANGO_DATA_SOURCE_NOT_FOUND,
     ERROR_ARANGO_DUPLICATE_NAME,
     ERROR_ARANGO_INDEX_NOT_FOUND,
 } from '../error-codes';
-import {configureForBackgroundCreation, isEqualProperties} from './arango-search-helpers';
+import { configureForBackgroundCreation, isEqualProperties } from './arango-search-helpers';
 import {
     CreateArangoSearchAnalyzerMigration,
     CreateArangoSearchViewMigration,
@@ -56,15 +56,13 @@ export class MigrationPerformer {
     }
 
     private async createIndex(migration: CreateIndexMigration) {
-        await this.db.collection(migration.index.collectionName).ensureIndex(
-            {
-                type: 'persistent',
-                fields: migration.index.fields.slice(),
-                unique: migration.index.unique,
-                sparse: migration.index.sparse,
-                inBackground: this.config.createIndicesInBackground,
-            },
-        );
+        await this.db.collection(migration.index.collectionName).ensureIndex({
+            type: 'persistent',
+            fields: migration.index.fields.slice(),
+            unique: migration.index.unique,
+            sparse: migration.index.sparse,
+            inBackground: this.config.createIndicesInBackground,
+        });
     }
 
     private async dropIndex(migration: DropIndexMigration) {

@@ -805,8 +805,8 @@ register(AggregationQueryNode, (node, context) => {
         aggregationFunction
             ? aql`COLLECT AGGREGATE ${aggregationVar} = ${aggregationFunction}(${itemFrag})`
             : distinct
-            ? aql`COLLECT ${aggregationVar} = ${itemFrag}`
-            : aql``,
+              ? aql`COLLECT ${aggregationVar} = ${itemFrag}`
+              : aql``,
         aql`RETURN ${resultFragment}`,
     );
 });

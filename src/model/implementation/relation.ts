@@ -103,7 +103,10 @@ export class RelationSide {
      */
     public readonly targetField: Field | undefined;
 
-    constructor(public readonly relation: Relation, private readonly side: RelationFieldSide) {
+    constructor(
+        public readonly relation: Relation,
+        private readonly side: RelationFieldSide,
+    ) {
         switch (side) {
             case RelationFieldSide.FROM_SIDE:
                 this.sourceType = relation.fromType;

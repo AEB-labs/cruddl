@@ -4,7 +4,10 @@ import { QueryNode } from './base';
  * A node that performs an operation with one operand
  */
 export class UnaryOperationQueryNode extends QueryNode {
-    constructor(public readonly valueNode: QueryNode, public readonly operator: UnaryOperator) {
+    constructor(
+        public readonly valueNode: QueryNode,
+        public readonly operator: UnaryOperator,
+    ) {
         super();
     }
 

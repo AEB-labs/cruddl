@@ -75,7 +75,10 @@ export class TransformListQueryNode extends QueryNode {
 }
 
 export class OrderClause extends QueryNode {
-    constructor(public readonly valueNode: QueryNode, public readonly direction: OrderDirection) {
+    constructor(
+        public readonly valueNode: QueryNode,
+        public readonly direction: OrderDirection,
+    ) {
         super();
     }
 
@@ -160,7 +163,10 @@ export class FirstOfListQueryNode extends QueryNode {
  * A node that evaluates to a specific item of a list, or NULL if the list is empty
  */
 export class ListItemQueryNode extends QueryNode {
-    constructor(public readonly listNode: QueryNode, readonly index: number) {
+    constructor(
+        public readonly listNode: QueryNode,
+        readonly index: number,
+    ) {
         super();
     }
 

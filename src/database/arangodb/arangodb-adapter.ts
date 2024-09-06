@@ -104,7 +104,10 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     private readonly doNonMandatoryMigrations: boolean;
     private readonly arangoExecutionFunction: string;
 
-    constructor(private readonly config: ArangoDBConfig, private schemaContext?: ProjectOptions) {
+    constructor(
+        private readonly config: ArangoDBConfig,
+        private schemaContext?: ProjectOptions,
+    ) {
         this.logger = getArangoDBLogger(schemaContext);
         this.db = initDatabase(config);
         this.analyzer = new SchemaAnalyzer(config, schemaContext);

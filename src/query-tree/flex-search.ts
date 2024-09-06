@@ -109,7 +109,10 @@ export interface FlexSearchTokenization {
  * A node that performs an EXISTS Check (true if the field exists and is not an empty array)
  */
 export class FlexSearchFieldExistsQueryNode extends QueryNode {
-    constructor(public readonly sourceNode: QueryNode, public readonly analyzer?: string) {
+    constructor(
+        public readonly sourceNode: QueryNode,
+        public readonly analyzer?: string,
+    ) {
         super();
     }
 

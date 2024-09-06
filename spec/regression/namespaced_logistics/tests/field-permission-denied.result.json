@@ -20,12 +20,7 @@
             "column": 17
           }
         ],
-        "path": [
-          "logistics",
-          "delivery",
-          "Delivery",
-          "totalValue"
-        ],
+        "path": ["logistics", "delivery", "Delivery", "totalValue"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -38,12 +33,7 @@
             "column": 17
           }
         ],
-        "path": [
-          "logistics",
-          "delivery",
-          "Delivery",
-          "forwarder"
-        ],
+        "path": ["logistics", "delivery", "Delivery", "forwarder"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -56,13 +46,7 @@
             "column": 17
           }
         ],
-        "path": [
-          "logistics",
-          "delivery",
-          "allDeliveries",
-          0,
-          "totalValue"
-        ],
+        "path": ["logistics", "delivery", "allDeliveries", 0, "totalValue"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -75,13 +59,7 @@
             "column": 21
           }
         ],
-        "path": [
-          "logistics",
-          "delivery",
-          "HandlingUnit",
-          "delivery",
-          "totalValue"
-        ],
+        "path": ["logistics", "delivery", "HandlingUnit", "delivery", "totalValue"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -94,11 +72,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "foundation",
-          "Country",
-          "totalInvestment"
-        ],
+        "path": ["foundation", "Country", "totalInvestment"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -144,10 +118,7 @@
             "column": 9
           }
         ],
-        "path": [
-          "logistics",
-          "allForwarders"
-        ],
+        "path": ["logistics", "allForwarders"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -160,11 +131,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "logistics",
-          "_allForwardersMeta",
-          "count"
-        ],
+        "path": ["logistics", "_allForwardersMeta", "count"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -189,11 +156,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "logistics",
-          "delivery",
-          "direct"
-        ],
+        "path": ["logistics", "delivery", "direct"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -206,11 +169,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "logistics",
-          "delivery",
-          "startsWith"
-        ],
+        "path": ["logistics", "delivery", "startsWith"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -223,11 +182,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "logistics",
-          "delivery",
-          "throughRelation"
-        ],
+        "path": ["logistics", "delivery", "throughRelation"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -240,11 +195,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "logistics",
-          "delivery",
-          "toUnaccessibleEntity"
-        ],
+        "path": ["logistics", "delivery", "toUnaccessibleEntity"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -257,10 +208,7 @@
             "column": 9
           }
         ],
-        "path": [
-          "simple",
-          "SecretKey"
-        ],
+        "path": ["simple", "SecretKey"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -290,11 +238,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "logistics",
-          "delivery",
-          "direct"
-        ],
+        "path": ["logistics", "delivery", "direct"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -307,11 +251,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "logistics",
-          "delivery",
-          "throughRelation"
-        ],
+        "path": ["logistics", "delivery", "throughRelation"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -336,11 +276,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "logistics",
-          "delivery",
-          "createDelivery"
-        ],
+        "path": ["logistics", "delivery", "createDelivery"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -353,10 +289,7 @@
             "column": 9
           }
         ],
-        "path": [
-          "logistics",
-          "createForwarder"
-        ],
+        "path": ["logistics", "createForwarder"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -376,11 +309,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "logistics",
-          "delivery",
-          "updateDelivery"
-        ],
+        "path": ["logistics", "delivery", "updateDelivery"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -393,11 +322,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "logistics",
-          "delivery",
-          "update2"
-        ],
+        "path": ["logistics", "delivery", "update2"],
         "extensions": {
           "code": "ATOMICITY_SKIP"
         }
@@ -410,10 +335,7 @@
             "column": 9
           }
         ],
-        "path": [
-          "logistics",
-          "updateForwarder"
-        ],
+        "path": ["logistics", "updateForwarder"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -439,10 +361,7 @@
             "column": 9
           }
         ],
-        "path": [
-          "logistics",
-          "deleteForwarder"
-        ],
+        "path": ["logistics", "deleteForwarder"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }

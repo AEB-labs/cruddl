@@ -5,7 +5,11 @@ import { getRequiredBySuffix } from './describe-module-specification';
 /**
  * Checks whether the @collect directives on the field and on the baseline fields match
  */
-export function checkCollectField(fieldToCheck: Field, baselineField: Field, context: ValidationContext) {
+export function checkCollectField(
+    fieldToCheck: Field,
+    baselineField: Field,
+    context: ValidationContext,
+) {
     // superfluous @collect
     if (fieldToCheck.isCollectField && !baselineField.isCollectField) {
         context.addMessage(

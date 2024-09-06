@@ -26,7 +26,10 @@ export class InMemoryAdapter implements DatabaseAdapter {
     private db = new InMemoryDB();
     private logger: Logger;
 
-    constructor(options: { db?: InMemoryDB } = {}, private schemaContext?: ProjectOptions) {
+    constructor(
+        options: { db?: InMemoryDB } = {},
+        private schemaContext?: ProjectOptions,
+    ) {
         if (options.db) {
             this.db = options.db;
         }

@@ -12,8 +12,6 @@ import { expect } from 'chai';
 import { runCheck } from './utils';
 
 describe('checkModel', () => {
-    
-
     describe('@root and @parent', () => {
         it('rejects a missing @root', () => {
             const result = runCheck(

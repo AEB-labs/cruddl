@@ -8,7 +8,10 @@ import { BaseModuleSpecification } from './base-module-specification';
 export class FieldModuleSpecification extends BaseModuleSpecification {
     readonly all: boolean;
 
-    constructor(private readonly config: FieldModuleSpecificationConfig, model: Model) {
+    constructor(
+        private readonly config: FieldModuleSpecificationConfig,
+        model: Model,
+    ) {
         super(config, model);
         this.all = config.all;
     }

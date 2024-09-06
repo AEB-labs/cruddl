@@ -52,7 +52,10 @@ export class RootEntityType extends ObjectTypeBase {
     readonly flexSearchPrimarySort: ReadonlyArray<FlexSearchPrimarySortClause>;
     readonly flexSearchPerformanceParams: FlexSearchPerformanceParams;
 
-    constructor(private readonly input: RootEntityTypeConfig, model: Model) {
+    constructor(
+        private readonly input: RootEntityTypeConfig,
+        model: Model,
+    ) {
         super(input, model, systemFieldInputs);
         this.permissions = input.permissions || {};
         this.roles =

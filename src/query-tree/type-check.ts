@@ -4,7 +4,10 @@ import { QueryNode } from './base';
  * A query that evaluates to true if a value is of a certain type, or false otherwise
  */
 export class TypeCheckQueryNode extends QueryNode {
-    constructor(public readonly valueNode: QueryNode, public type: BasicType) {
+    constructor(
+        public readonly valueNode: QueryNode,
+        public type: BasicType,
+    ) {
         super();
     }
 

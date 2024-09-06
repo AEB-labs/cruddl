@@ -57,7 +57,10 @@ export class RegressionSuite {
     private databaseVersion: string | undefined;
     private nodeVersion: string;
 
-    constructor(private readonly path: string, private options: RegressionSuiteOptions = {}) {
+    constructor(
+        private readonly path: string,
+        private options: RegressionSuiteOptions = {},
+    ) {
         this.databaseSpecifier = options.database || 'arangodb';
         this.nodeVersion = process.versions.node.split('.')[0];
     }

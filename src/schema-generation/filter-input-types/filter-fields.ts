@@ -286,7 +286,10 @@ export class NestedObjectFilterField implements FilterField {
     readonly name: string;
     readonly description: string;
 
-    constructor(public readonly field: Field, public readonly inputType: FilterObjectType) {
+    constructor(
+        public readonly field: Field,
+        public readonly inputType: FilterObjectType,
+    ) {
         this.name = this.field.name;
         this.description = `Checks if \`${this.field.name}\` is not null, and allows to filter based on its fields.`;
         if (
@@ -309,7 +312,10 @@ export class EntityExtensionFilterField implements FilterField {
     readonly name: string;
     readonly description: string;
 
-    constructor(public readonly field: Field, public readonly inputType: FilterObjectType) {
+    constructor(
+        public readonly field: Field,
+        public readonly inputType: FilterObjectType,
+    ) {
         this.name = this.field.name;
         this.description = `Allows to filter on the fields of \`${this.field.name}\`.\n\nNote that \`${this.field.name}\` is an entity extension and thus can never be \`null\`, so specifying \`null\` to this filter field has no effect.`;
     }
@@ -380,7 +386,10 @@ export class OrFilterField implements FilterField {
 export class StringMapSomeValueFilterField implements FilterField {
     readonly name: string;
 
-    constructor(public readonly field: Field, public readonly inputType: FilterObjectType) {
+    constructor(
+        public readonly field: Field,
+        public readonly inputType: FilterObjectType,
+    ) {
         this.name = `${this.field.name}_some`;
     }
 

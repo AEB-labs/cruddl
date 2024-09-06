@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import {
     expectSingleCompatibilityIssue,
-    expectToBeValid
+    expectToBeValid,
 } from '../implementation/validation-utils';
 import { runCheck } from './utils';
 

@@ -28,7 +28,10 @@ export abstract class TypeBase implements ModelComponent {
      */
     readonly isBuiltinType: boolean;
 
-    protected constructor(input: TypeConfig, public readonly model: Model) {
+    protected constructor(
+        input: TypeConfig,
+        public readonly model: Model,
+    ) {
         this.astNode = input.astNode;
         this.nameASTNode = input.astNode ? input.astNode.name : undefined;
         this.name = input.name;

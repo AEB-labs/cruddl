@@ -16,10 +16,7 @@
             "column": 9
           }
         ],
-        "path": [
-          "Delivery",
-          "totalValue"
-        ],
+        "path": ["Delivery", "totalValue"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -32,10 +29,7 @@
             "column": 9
           }
         ],
-        "path": [
-          "Delivery",
-          "forwarder"
-        ],
+        "path": ["Delivery", "forwarder"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -48,11 +42,7 @@
             "column": 9
           }
         ],
-        "path": [
-          "allDeliveries",
-          0,
-          "totalValue"
-        ],
+        "path": ["allDeliveries", 0, "totalValue"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -65,11 +55,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "HandlingUnit",
-          "delivery",
-          "totalValue"
-        ],
+        "path": ["HandlingUnit", "delivery", "totalValue"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -82,10 +68,7 @@
             "column": 9
           }
         ],
-        "path": [
-          "Country",
-          "totalInvestment"
-        ],
+        "path": ["Country", "totalInvestment"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -125,10 +108,7 @@
             "column": 9
           }
         ],
-        "path": [
-          "_allForwardersMeta",
-          "count"
-        ],
+        "path": ["_allForwardersMeta", "count"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -141,9 +121,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "allForwarders"
-        ],
+        "path": ["allForwarders"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -166,9 +144,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "direct"
-        ],
+        "path": ["direct"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -181,9 +157,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "simple"
-        ],
+        "path": ["simple"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -196,9 +170,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "startsWith"
-        ],
+        "path": ["startsWith"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -211,9 +183,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "throughRelation"
-        ],
+        "path": ["throughRelation"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -226,9 +196,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "toUnaccessibleEntity"
-        ],
+        "path": ["toUnaccessibleEntity"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -252,9 +220,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "direct"
-        ],
+        "path": ["direct"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -267,9 +233,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "throughRelation"
-        ],
+        "path": ["throughRelation"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -290,9 +254,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "createDelivery"
-        ],
+        "path": ["createDelivery"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -310,9 +272,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "updateDelivery"
-        ],
+        "path": ["updateDelivery"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -325,9 +285,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "updateForwarder"
-        ],
+        "path": ["updateForwarder"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -340,9 +298,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "update2"
-        ],
+        "path": ["update2"],
         "extensions": {
           "code": "ATOMICITY_SKIP"
         }
@@ -364,9 +320,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "deleteForwarder"
-        ],
+        "path": ["deleteForwarder"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }

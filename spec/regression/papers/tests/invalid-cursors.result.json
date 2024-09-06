@@ -9,9 +9,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "allPapers"
-        ],
+        "path": ["allPapers"],
         "extensions": {
           "code": "INVALID_CURSOR"
         }
@@ -34,9 +32,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "allPapers"
-        ],
+        "path": ["allPapers"],
         "extensions": {
           "code": "INVALID_CURSOR"
         }
@@ -56,9 +52,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "allPapers"
-        ],
+        "path": ["allPapers"],
         "extensions": {
           "code": "INVALID_CURSOR"
         }

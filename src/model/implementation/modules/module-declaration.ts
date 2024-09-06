@@ -1,7 +1,10 @@
 import { ModuleConfig } from '../../config/module';
 import { MessageLocation, ValidationMessage } from '../../validation';
 import { ModelComponent, ValidationContext } from '../../validation/validation-context';
-import { MODULE_IDENTIFIER_PATTERN, ALLOWD_MODULE_IDENTIFIER_CHARACTERS_DESCRIPTION } from './patterns';
+import {
+    MODULE_IDENTIFIER_PATTERN,
+    ALLOWD_MODULE_IDENTIFIER_CHARACTERS_DESCRIPTION,
+} from './patterns';
 
 /**
  * A module that can be assigned to types and fields

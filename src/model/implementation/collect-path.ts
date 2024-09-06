@@ -61,7 +61,10 @@ export class CollectPath {
     public readonly path: string;
     private readonly astNode: StringValueNode | undefined;
 
-    constructor(config: CollectFieldConfig, public readonly declaringType: ObjectType) {
+    constructor(
+        config: CollectFieldConfig,
+        public readonly declaringType: ObjectType,
+    ) {
         this.path = config.path;
         this.astNode = config.pathASTNode;
     }
