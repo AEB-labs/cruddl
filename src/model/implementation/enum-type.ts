@@ -6,7 +6,7 @@ import { EnumValueLocalization } from './i18n';
 import { Model } from './model';
 import { TypeBase } from './type-base';
 import memorize from 'memorize-decorator';
-import { WarningCode } from '../../schema/message-codes';
+import { WarningCode } from '../validation/suppress/message-codes';
 
 export class EnumType extends TypeBase {
     constructor(input: EnumTypeConfig, model: Model) {
