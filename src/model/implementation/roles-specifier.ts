@@ -1,7 +1,7 @@
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { RolesSpecifierConfig } from '../config';
 import { ValidationMessage } from '../validation';
-import { WarningCode } from '../../schema/message-codes';
+import { WarningCode } from '../validation/suppress/message-codes';
 import { Type } from './type';
 import { Field } from './field';
 

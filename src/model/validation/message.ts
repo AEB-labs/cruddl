@@ -1,4 +1,14 @@
-import { EnumValueDefinitionNode, FieldDefinitionNode, Kind, TypeDefinitionNode } from 'graphql';
+import {
+    ArgumentNode,
+    ASTNode,
+    DirectiveNode,
+    EnumValueDefinitionNode,
+    FieldDefinitionNode,
+    Kind,
+    ListValueNode,
+    print,
+    TypeDefinitionNode,
+} from 'graphql';
 import {
     SUPPRESS_COMPATIBILITY_ISSUES_ARG,
     SUPPRESS_DIRECTIVE,
@@ -10,9 +20,12 @@ import {
     InfoCode,
     MessageCode,
     WarningCode,
-} from '../../schema/message-codes';
+} from './suppress/message-codes';
 import { LocationLike, MessageLocation } from './location';
 import { QuickFix } from './quick-fix';
+import { ChangeSet, TextChange } from '../change-set/change-set';
+import { isSuppressed } from './suppress/is-suppressed';
+import { createSuppressQuickFix } from './suppress/quick-fix';
 
 export enum Severity {
     ERROR = 'ERROR',
@@ -70,14 +83,21 @@ export class ValidationMessage {
     ) {
         // not sure if this is the right time to do this
         // also does not allow us to detect superfluous directives at the moment
-        const isSuppressed = calculateIsSuppressed(severity, astNode, code);
+        const suppressed = isSuppressed(severity, astNode, code);
+        let quickFixes = options?.quickFixes ?? [];
+        if (!suppressed && astNode) {
+            const suppressQuickFix = createSuppressQuickFix(severity, code, astNode);
+            if (suppressQuickFix) {
+                quickFixes = [...quickFixes, suppressQuickFix];
+            }
+        }
         return new ValidationMessage({
             severity,
             code,
             message,
             location: options?.location ?? astNode,
-            isSuppressed,
-            ...options,
+            isSuppressed: suppressed,
+            quickFixes,
         });
     }
 
@@ -189,43 +209,4 @@ function severityToString(severity: Severity) {
         case Severity.COMPATIBILITY_ISSUE:
             return 'Compatibility issue';
     }
-}
-
-function calculateIsSuppressed(
-    severity: Severity,
-    location: AstNodeWithDirectives | undefined,
-    code: MessageCode,
-) {
-    const suppressDirective = location?.directives?.find(
-        (d) => d.name.value === SUPPRESS_DIRECTIVE,
-    );
-    if (!suppressDirective) {
-        return false;
-    }
-    let argName;
-    switch (severity) {
-        case Severity.COMPATIBILITY_ISSUE:
-            argName = SUPPRESS_COMPATIBILITY_ISSUES_ARG;
-            break;
-        case Severity.WARNING:
-            argName = SUPPRESS_WARNINGS_ARG;
-            break;
-        case Severity.INFO:
-            argName = SUPPRESS_INFOS_ARG;
-            break;
-        default:
-            throw new Error(`Non-suppressable severity: ${severity}`);
-    }
-    const codesArg = suppressDirective?.arguments?.find((a) => a.name.value === argName);
-    if (!codesArg) {
-        return false;
-    }
-    if (codesArg.value.kind === Kind.ENUM) {
-        // you can omit the [] in graphql if it's a single list entry
-        return codesArg.value.value === code;
-    }
-    if (codesArg.value.kind !== Kind.LIST) {
-        return false;
-    }
-    return codesArg.value.values.some((v) => v.kind === Kind.ENUM && v.value === code);
 }

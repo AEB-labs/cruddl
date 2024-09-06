@@ -35,7 +35,7 @@ import { RolesSpecifier } from './roles-specifier';
 import { ScalarType } from './scalar-type';
 import { TimeToLiveType } from './time-to-live';
 import { EffectiveModuleSpecification } from './modules/effective-module-specification';
-import { WarningCode } from '../../schema/message-codes';
+import { WarningCode } from '../validation/suppress/message-codes';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};

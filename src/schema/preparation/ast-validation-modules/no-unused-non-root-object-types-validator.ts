@@ -7,7 +7,7 @@ import {
     getTypeNameIgnoringNonNullAndList,
 } from '../../schema-utils';
 import { ASTValidator } from '../ast-validator';
-import { WarningCode } from '../../message-codes';
+import { WarningCode } from '../../../model/validation/suppress/message-codes';
 
 export class NoUnusedNonRootObjectTypesValidator implements ASTValidator {
     validate(ast: DocumentNode): ReadonlyArray<ValidationMessage> {
