@@ -21,13 +21,11 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(
-                        gql`
-                            type Test @unknownDirective {
-                                field: String
-                            }
-                        `,
-                    ),
+                    print(gql`
+                        type Test @unknownDirective {
+                            field: String
+                        }
+                    `),
                 ),
             ),
         );
@@ -40,13 +38,11 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(
-                        gql`
-                            type Test @rootEntity(indices: true) {
-                                field: String
-                            }
-                        `,
-                    ),
+                    print(gql`
+                        type Test @rootEntity(indices: true) {
+                            field: String
+                        }
+                    `),
                 ),
             ),
         );
@@ -61,13 +57,11 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(
-                        gql`
-                            type Test @namespace {
-                                field: String
-                            }
-                        `,
-                    ),
+                    print(gql`
+                        type Test @namespace {
+                            field: String
+                        }
+                    `),
                 ),
             ),
         );
@@ -82,13 +76,11 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(
-                        gql`
-                            type Test @rootEntity(nonExistant: true) {
-                                field: String
-                            }
-                        `,
-                    ),
+                    print(gql`
+                        type Test @rootEntity(nonExistant: true) {
+                            field: String
+                        }
+                    `),
                 ),
             ),
         );
@@ -103,13 +95,11 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(
-                        gql`
-                            type Test @rootEntity(indices: [{ unique: true }]) {
-                                field: String
-                            }
-                        `,
-                    ),
+                    print(gql`
+                        type Test @rootEntity(indices: [{ unique: true }]) {
+                            field: String
+                        }
+                    `),
                 ),
             ),
         );
@@ -124,13 +114,11 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(
-                        gql`
-                            type Test @rootEntity(indices: [{ fields: [], nonExistant: true }]) {
-                                field: String
-                            }
-                        `,
-                    ),
+                    print(gql`
+                        type Test @rootEntity(indices: [{ fields: [], nonExistant: true }]) {
+                            field: String
+                        }
+                    `),
                 ),
             ),
         );
@@ -145,13 +133,11 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(
-                        gql`
-                            type Test @rootEntity {
-                                field: String
-                            }
-                        `,
-                    ),
+                    print(gql`
+                        type Test @rootEntity {
+                            field: String
+                        }
+                    `),
                 ),
             ),
         );
@@ -163,13 +149,11 @@ describe('graphql-rules validator', () => {
             getParsedProjectSource(
                 new ProjectSource(
                     'file.graphql',
-                    print(
-                        gql`
-                            type Test @rootEntity {
-                                field: String @roles(read: "role")
-                            }
-                        `,
-                    ),
+                    print(gql`
+                        type Test @rootEntity {
+                            field: String @roles(read: "role")
+                        }
+                    `),
                 ),
             ),
         );

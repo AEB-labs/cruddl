@@ -43,8 +43,8 @@ export function checkRelation(
             expectedInverseOfDeclaration && expectedOnDeleteDeclaration
                 ? `@relation(${expectedInverseOfDeclaration} ${expectedOnDeleteDeclaration})`
                 : expectedInverseOfDeclaration || expectedOnDeleteDeclaration
-                ? `@relation(${expectedInverseOfDeclaration}${expectedOnDeleteDeclaration})`
-                : `@relation`;
+                  ? `@relation(${expectedInverseOfDeclaration}${expectedOnDeleteDeclaration})`
+                  : `@relation`;
         context.addMessage(
             ValidationMessage.compatibilityIssue(
                 `Field "${baselineField.declaringType.name}.${

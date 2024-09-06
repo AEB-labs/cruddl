@@ -988,8 +988,8 @@ export class Field implements ModelComponent {
                     const typeKind = resultingType.isEnumType
                         ? 'enum'
                         : resultingType.isValueObjectType
-                        ? 'value object'
-                        : 'scalar';
+                          ? 'value object'
+                          : 'scalar';
                     const suggestion = isDistinctAggregationSupported(resultingType)
                         ? ` You may want to use the "${AggregationOperator.DISTINCT}" aggregation.`
                         : `You can either collect the parent entity by removing the last path segment, or add the "aggregate" argument to aggregate the values.`;

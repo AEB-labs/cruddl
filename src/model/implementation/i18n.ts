@@ -28,7 +28,10 @@ export class ModelI18n implements ModelComponent {
         ModelLocalizationProvider
     >;
 
-    constructor(input: ReadonlyArray<LocalizationConfig>, private readonly model: Model) {
+    constructor(
+        input: ReadonlyArray<LocalizationConfig>,
+        private readonly model: Model,
+    ) {
         // collect configs by language and create one localization provider per language
         const configsByLanguage = groupArray(input, (config) => config.language);
         const localizationsByLanguage = mapValues(configsByLanguage, (configs) =>

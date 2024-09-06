@@ -2,7 +2,8 @@ import {
     GraphQLInputFieldConfig,
     GraphQLInputFieldConfigMap,
     GraphQLInputObjectType,
-    GraphQLInputType, resolveReadonlyArrayThunk
+    GraphQLInputType,
+    resolveReadonlyArrayThunk,
 } from 'graphql';
 import { ThunkReadonlyArray } from 'graphql/type/definition';
 import { chain, uniqBy } from 'lodash';

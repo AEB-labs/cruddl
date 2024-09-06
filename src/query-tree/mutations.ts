@@ -120,7 +120,10 @@ export class UpdateEntitiesQueryNode extends QueryNode {
  * Specifies one property of a an ObjectQueryNode, and indicates that this will set a field of an object
  */
 export class SetFieldQueryNode extends PropertySpecification {
-    constructor(public readonly field: Field, public readonly valueNode: QueryNode) {
+    constructor(
+        public readonly field: Field,
+        public readonly valueNode: QueryNode,
+    ) {
         super(field.name, valueNode);
     }
 }
@@ -183,7 +186,10 @@ export class AddEdgesQueryNode extends QueryNode {
     // TODO: accept one QueryNode which evaluates to the lits of edge ids somehow?
     // (currently, adding 50 edges generates 50 bound variables with the literal values)
 
-    constructor(readonly relation: Relation, readonly edges: ReadonlyArray<EdgeIdentifier>) {
+    constructor(
+        readonly relation: Relation,
+        readonly edges: ReadonlyArray<EdgeIdentifier>,
+    ) {
         super();
     }
 
@@ -200,7 +206,10 @@ export class AddEdgesQueryNode extends QueryNode {
  * A node that removes edges if they exist
  */
 export class RemoveEdgesQueryNode extends QueryNode {
-    constructor(readonly relation: Relation, readonly edgeFilter: EdgeFilter) {
+    constructor(
+        readonly relation: Relation,
+        readonly edgeFilter: EdgeFilter,
+    ) {
         super();
     }
 
@@ -248,7 +257,10 @@ export class SetEdgeQueryNode extends QueryNode {
  * pseudo code: from IN fromIDsNode && to IN toIDsNode
  */
 export class EdgeFilter extends QueryNode {
-    constructor(readonly fromIDsNode?: QueryNode, readonly toIDsNode?: QueryNode) {
+    constructor(
+        readonly fromIDsNode?: QueryNode,
+        readonly toIDsNode?: QueryNode,
+    ) {
         super();
     }
 
@@ -265,7 +277,10 @@ export class EdgeFilter extends QueryNode {
 }
 
 export class PartialEdgeIdentifier extends QueryNode {
-    constructor(public readonly fromIDNode?: QueryNode, public readonly toIDNode?: QueryNode) {
+    constructor(
+        public readonly fromIDNode?: QueryNode,
+        public readonly toIDNode?: QueryNode,
+    ) {
         super();
     }
 
@@ -282,7 +297,10 @@ export class PartialEdgeIdentifier extends QueryNode {
 }
 
 export class EdgeIdentifier extends QueryNode {
-    constructor(public readonly fromIDNode: QueryNode, public readonly toIDNode: QueryNode) {
+    constructor(
+        public readonly fromIDNode: QueryNode,
+        public readonly toIDNode: QueryNode,
+    ) {
         super();
     }
 

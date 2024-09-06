@@ -411,8 +411,8 @@ describe('Meta schema API', () => {
                             },
                             handlingUnits: {
                                 label: 'Packstücke',
-                                hint: 'Die Packstücke der Lieferung'
-                            }
+                                hint: 'Die Packstücke der Lieferung',
+                            },
                         },
                     },
                     TransportKind: {
@@ -974,17 +974,15 @@ describe('Meta schema API', () => {
     });
 
     it('can query namespaces', async () => {
-        const result = await execute(
-            gql`
-                {
-                    namespaces {
-                        name
-                        path
-                        isRoot
-                    }
+        const result = await execute(gql`
+            {
+                namespaces {
+                    name
+                    path
+                    isRoot
                 }
-            `,
-        );
+            }
+        `);
         expect(result).to.deep.equal({
             namespaces: [
                 { name: null, path: [], isRoot: true },
@@ -996,20 +994,18 @@ describe('Meta schema API', () => {
     });
 
     it('can query namespace by path', async () => {
-        const result = await execute(
-            gql`
-                {
-                    logistics: namespace(path: ["logistics"]) {
-                        name
-                        path
-                    }
-                    root: namespace(path: []) {
-                        name
-                        path
-                    }
+        const result = await execute(gql`
+            {
+                logistics: namespace(path: ["logistics"]) {
+                    name
+                    path
                 }
-            `,
-        );
+                root: namespace(path: []) {
+                    name
+                    path
+                }
+            }
+        `);
         expect(result).to.deep.equal({
             logistics: { name: 'logistics', path: ['logistics'] },
             root: { name: null, path: [] },
@@ -1095,13 +1091,13 @@ describe('Meta schema API', () => {
             de: 'Transportart der Lieferung',
         });
         const handlingUnitsField = shipmentType.fields.find(
-            (field: any) => field.name === 'handlingUnits'
+            (field: any) => field.name === 'handlingUnits',
         );
         expect(handlingUnitsField.label).to.deep.equal({
-            de: 'Packstücke'
+            de: 'Packstücke',
         });
         expect(handlingUnitsField.hint).to.deep.equal({
-            de: 'Die Packstücke der Lieferung'
+            de: 'Die Packstücke der Lieferung',
         });
 
         // test for enumType including values
@@ -1154,13 +1150,13 @@ describe('Meta schema API', () => {
 
         const adressType = result.valueObjectType;
         expect(adressType.label).to.deep.equal({
-            de: 'Adresse'
+            de: 'Adresse',
         });
         expect(adressType.labelPlural).to.deep.equal({
-            de: 'Adressen'
+            de: 'Adressen',
         });
         expect(adressType.hint).to.deep.equal({
-            de: 'Eine Adresse'
+            de: 'Eine Adresse',
         });
     });
 

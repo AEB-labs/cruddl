@@ -1,7 +1,4 @@
 {
-  "require": [
-    "ts-node/register",
-    "./spec/init.mocha.ts"
-  ],
+  "require": ["ts-node/register", "./spec/init.mocha.ts"],
   "timeout": 5000
 }

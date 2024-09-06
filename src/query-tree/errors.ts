@@ -17,7 +17,10 @@ export class UnknownValueQueryNode extends QueryNode {
 export class RuntimeErrorQueryNode extends QueryNode {
     readonly code: string | undefined;
 
-    constructor(readonly message: string, args: { readonly code?: string } = {}) {
+    constructor(
+        readonly message: string,
+        args: { readonly code?: string } = {},
+    ) {
         super();
         this.code = args.code;
     }

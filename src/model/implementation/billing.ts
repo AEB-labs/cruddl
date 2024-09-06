@@ -13,7 +13,10 @@ export class BillingEntityType implements ModelComponent {
     readonly quantityFieldPath: FieldPath | undefined;
     readonly categoryMappingFieldPath: FieldPath | undefined;
 
-    constructor(readonly input: BillingEntityConfig, readonly model: Model) {
+    constructor(
+        readonly input: BillingEntityConfig,
+        readonly model: Model,
+    ) {
         if (this.rootEntityType) {
             if (input.quantityFieldName) {
                 this.quantityFieldPath = new FieldPath({

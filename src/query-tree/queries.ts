@@ -9,7 +9,10 @@ import { QueryNode } from './base';
 import { EntitiesIdentifierKind } from './mutations';
 
 export class EntityFromIdQueryNode extends QueryNode {
-    constructor(public readonly rootEntityType: RootEntityType, public readonly idNode: QueryNode) {
+    constructor(
+        public readonly rootEntityType: RootEntityType,
+        public readonly idNode: QueryNode,
+    ) {
         super();
     }
 
@@ -38,7 +41,10 @@ export class EntitiesQueryNode extends QueryNode {
  * Note: this is unrelated to storing the value in a property of a result object, see ObjectQueryNode
  */
 export class FieldQueryNode extends QueryNode {
-    constructor(public readonly objectNode: QueryNode, public readonly field: Field) {
+    constructor(
+        public readonly objectNode: QueryNode,
+        public readonly field: Field,
+    ) {
         super();
     }
 
@@ -54,7 +60,10 @@ export class FieldQueryNode extends QueryNode {
  * Note: this is unrelated to storing the value in a property of a result object, see ObjectQueryNode
  */
 export class FieldPathQueryNode extends QueryNode {
-    constructor(public readonly objectNode: QueryNode, public readonly path: ReadonlyArray<Field>) {
+    constructor(
+        public readonly objectNode: QueryNode,
+        public readonly path: ReadonlyArray<Field>,
+    ) {
         super();
     }
 
@@ -73,7 +82,10 @@ export class FieldPathQueryNode extends QueryNode {
  * be applied.
  */
 export class PropertyAccessQueryNode extends QueryNode {
-    constructor(public readonly objectNode: QueryNode, public readonly propertyName: string) {
+    constructor(
+        public readonly objectNode: QueryNode,
+        public readonly propertyName: string,
+    ) {
         super();
     }
 
@@ -87,7 +99,10 @@ export class PropertyAccessQueryNode extends QueryNode {
  * evaluate to an object
  */
 export class DynamicPropertyAccessQueryNode extends QueryNode {
-    constructor(public readonly objectNode: QueryNode, public readonly propertyNode: QueryNode) {
+    constructor(
+        public readonly objectNode: QueryNode,
+        public readonly propertyNode: QueryNode,
+    ) {
         super();
     }
 
@@ -126,7 +141,10 @@ export class RevisionQueryNode extends QueryNode {
  * Evaluates to all root entities that are connected to a specific root entitity through a specific edge
  */
 export class FollowEdgeQueryNode extends QueryNode {
-    constructor(readonly relationSide: RelationSide, readonly sourceEntityNode: QueryNode) {
+    constructor(
+        readonly relationSide: RelationSide,
+        readonly sourceEntityNode: QueryNode,
+    ) {
         super();
     }
 

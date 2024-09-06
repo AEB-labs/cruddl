@@ -172,7 +172,10 @@ export class CreateReferenceInputField extends BasicCreateInputField {
 }
 
 export class ObjectListCreateInputField extends BasicCreateInputField {
-    constructor(field: Field, public readonly objectInputType: CreateObjectInputType) {
+    constructor(
+        field: Field,
+        public readonly objectInputType: CreateObjectInputType,
+    ) {
         super(
             field,
             undefined,

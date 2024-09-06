@@ -1220,8 +1220,8 @@ register(CreateBillingEntityQueryNode, (node, context) => {
     return jsExt.executingFunction(
         js`
             const entry = ${billingEntities}.find(value => (value.key === ${
-            node.key
-        } && value.type === ${node.rootEntityTypeName}));
+                node.key
+            } && value.type === ${node.rootEntityTypeName}));
             if(!entry){
                 ${billingEntities}.push({
                     key: ${node.key},
@@ -1245,8 +1245,8 @@ register(ConfirmForBillingQueryNode, (node, context) => {
     return jsExt.executingFunction(
         js`
             const entry = ${billingEntities}.find(value => (value.key === ${key} && value.type === ${
-            node.rootEntityTypeName
-        }));
+                node.rootEntityTypeName
+            }));
             if(!entry){
                 ${billingEntities}.push({
                     key: ${key},

@@ -17,7 +17,10 @@ export class TimeToLiveType implements ModelComponent {
 
     readonly rootEntityType: RootEntityType | undefined;
 
-    constructor(readonly input: TimeToLiveConfig, readonly model: Model) {
+    constructor(
+        readonly input: TimeToLiveConfig,
+        readonly model: Model,
+    ) {
         this.rootEntityType = model.getRootEntityType(input.typeName);
 
         if (this.rootEntityType && input.cascadeFields?.length) {

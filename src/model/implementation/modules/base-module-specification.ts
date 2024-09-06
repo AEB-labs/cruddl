@@ -14,7 +14,10 @@ export abstract class BaseModuleSpecification implements ModelComponent {
     readonly astNode: ASTNode | undefined;
     readonly inAstNode: ASTNode | undefined;
 
-    constructor(config: BaseModuleSpecificationConfig, protected readonly model: Model) {
+    constructor(
+        config: BaseModuleSpecificationConfig,
+        protected readonly model: Model,
+    ) {
         this.clauses = config.in
             ? config.in.map((clauseConfig) => new ModuleSpecificationClause(clauseConfig, model))
             : null;

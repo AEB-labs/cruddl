@@ -12,4 +12,4 @@
 
 If you encounter any vulnerability please report vulnerabilities to security@aeb.com
 
-We will answer as soon as possible and look into any report.   
+We will answer as soon as possible and look into any report.

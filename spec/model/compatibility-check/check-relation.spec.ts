@@ -2,12 +2,11 @@ import { expect } from 'chai';
 import gql from 'graphql-tag';
 import {
     expectSingleCompatibilityIssue,
-    expectToBeValid
+    expectToBeValid,
 } from '../implementation/validation-utils';
 import { runCheck } from './utils';
 
 describe('checkModel', () => {
-    
     describe('@relation', () => {
         it('rejects a missing @relation', () => {
             const result = runCheck(

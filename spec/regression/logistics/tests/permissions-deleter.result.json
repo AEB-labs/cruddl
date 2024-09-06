@@ -9,9 +9,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "createDelivery"
-        ],
+        "path": ["createDelivery"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }
@@ -29,9 +27,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "updateDelivery"
-        ],
+        "path": ["updateDelivery"],
         "extensions": {
           "code": "PERMISSION_DENIED"
         }

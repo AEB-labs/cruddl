@@ -27,7 +27,10 @@ export class ObjectQueryNode extends QueryNode {
  * Specifies one property of a an ObjectQueryNode
  */
 export class PropertySpecification extends QueryNode {
-    constructor(public readonly propertyName: string, public readonly valueNode: QueryNode) {
+    constructor(
+        public readonly propertyName: string,
+        public readonly valueNode: QueryNode,
+    ) {
         super();
     }
 

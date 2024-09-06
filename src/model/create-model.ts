@@ -1269,8 +1269,8 @@ function getCombinedModuleSpecification(
         inAstNode?.value.kind === Kind.STRING
             ? [inAstNode.value]
             : inAstNode?.value.kind === Kind.LIST
-            ? inAstNode.value.values
-            : undefined;
+              ? inAstNode.value.values
+              : undefined;
 
     const config: TypeModuleSpecificationConfig & FieldModuleSpecificationConfig = {
         astNode,

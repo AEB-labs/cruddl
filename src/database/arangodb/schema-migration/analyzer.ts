@@ -38,7 +38,10 @@ export class SchemaAnalyzer {
     private readonly db: Database;
     private readonly logger: Logger;
 
-    constructor(readonly config: ArangoDBConfig, schemaContext?: ProjectOptions) {
+    constructor(
+        readonly config: ArangoDBConfig,
+        schemaContext?: ProjectOptions,
+    ) {
         this.db = initDatabase(config);
         this.logger = getArangoDBLogger(schemaContext);
     }

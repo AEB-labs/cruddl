@@ -17,8 +17,8 @@ describe('regression tests', async () => {
     const databases: ('in-memory' | 'arangodb')[] = process.argv.includes('--db=in-memory')
         ? ['in-memory']
         : process.argv.includes('--db=arangodb')
-        ? ['arangodb']
-        : ['in-memory', 'arangodb'];
+          ? ['arangodb']
+          : ['in-memory', 'arangodb'];
 
     const filterArg = process.argv.find((arg) => arg.startsWith('--regression-tests='));
     let testNameFilter = (name: string) => true;

@@ -1,5 +1,5 @@
 import { CreateAnalyzerOptions } from 'arangojs/analyzer';
-import {ArangoSearchViewPropertiesOptions, CreateArangoSearchViewOptions} from 'arangojs/view';
+import { ArangoSearchViewPropertiesOptions, CreateArangoSearchViewOptions } from 'arangojs/view';
 import { Relation } from '../../../model/implementation';
 import { describeIndex, getIndexDescriptor, IndexDefinition } from './index-helpers';
 
@@ -92,7 +92,10 @@ export class CreateDocumentCollectionMigration {
 export class CreateEdgeCollectionMigration {
     readonly type: 'createEdgeCollection' = 'createEdgeCollection';
 
-    constructor(public readonly relation: Relation, public readonly collectionName: string) {}
+    constructor(
+        public readonly relation: Relation,
+        public readonly collectionName: string,
+    ) {}
 
     get description() {
         return `create edge collection ${this.collectionName}`;

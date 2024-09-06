@@ -21,7 +21,11 @@ import { UpdateInputField } from './input-fields';
 export abstract class AbstractRelationUpdateInputField implements UpdateInputField {
     readonly description: string;
 
-    constructor(public readonly field: Field, public readonly name: string, description: string) {
+    constructor(
+        public readonly field: Field,
+        public readonly name: string,
+        description: string,
+    ) {
         this.description = description + (field.description ? '\n\n' + field.description : '');
     }
 
@@ -123,7 +127,10 @@ export class RemoveEdgesInputField extends AbstractRelationUpdateInputField {
 export class CreateAndAddEdgesInputField extends AbstractRelationUpdateInputField {
     readonly inputType: GraphQLInputType;
 
-    constructor(field: Field, public readonly objectInputType: CreateRootEntityInputType) {
+    constructor(
+        field: Field,
+        public readonly objectInputType: CreateRootEntityInputType,
+    ) {
         super(
             field,
             getCreateRelatedEntityFieldName(field.name),
@@ -159,7 +166,10 @@ export class CreateAndAddEdgesInputField extends AbstractRelationUpdateInputFiel
 export class CreateAndSetEdgeInputField extends AbstractRelationUpdateInputField {
     readonly inputType: GraphQLInputType;
 
-    constructor(field: Field, public readonly objectInputType: CreateRootEntityInputType) {
+    constructor(
+        field: Field,
+        public readonly objectInputType: CreateRootEntityInputType,
+    ) {
         super(
             field,
             getCreateRelatedEntityFieldName(field.name),

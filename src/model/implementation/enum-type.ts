@@ -39,7 +39,10 @@ export class EnumValue implements ModelComponent {
     readonly astNode: EnumValueDefinitionNode | undefined;
     readonly model: Model;
 
-    constructor(input: EnumValueConfig, public readonly declaringType: EnumType) {
+    constructor(
+        input: EnumValueConfig,
+        public readonly declaringType: EnumType,
+    ) {
         this.value = input.value;
         this.description = input.description;
         this.deprecationReason = input.deprecationReason;
