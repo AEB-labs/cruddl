@@ -11,7 +11,7 @@ import {
     INFO_CODES,
     MessageCodes,
     WARNING_CODES,
-} from './message-codes';
+} from '../model/validation/suppress/message-codes';
 
 const directivesBase: DocumentNode = gql`
     "Declares a type for root-level objects with ids that are stored directly in the data base"
@@ -285,7 +285,7 @@ const directivesBase: DocumentNode = gql`
         warnings: [WarningCode!]
         infos: [InfoCode!]
         compatibilityIssues: [CompatibilityIssueCode!]
-    ) on OBJECT | ENUM | FIELD_DEFINITION
+    ) on OBJECT | ENUM | ENUM_VALUE | FIELD_DEFINITION
 
     "Codes that can be used with @suppress(warnings: [...])"
     enum WarningCode {

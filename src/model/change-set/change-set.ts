@@ -15,6 +15,8 @@ export class ChangeSet {
         this.textChanges = changes.filter((c) => c instanceof TextChange);
         this.appendChanges = changes.filter((c) => c instanceof AppendChange);
     }
+
+    static EMPTY = new ChangeSet([]);
 }
 
 /**

@@ -11,7 +11,7 @@ import { EffectiveModuleSpecification } from './modules/effective-module-specifi
 import { MODULES_DIRECTIVE } from '../../schema/constants';
 import { TypeModuleSpecification } from './modules/type-module-specification';
 import { Type } from './type';
-import { WarningCode } from '../../schema/message-codes';
+import { WarningCode } from '../validation/suppress/message-codes';
 
 export abstract class TypeBase implements ModelComponent {
     readonly name: string;

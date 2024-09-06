@@ -4,7 +4,7 @@ import { ModelComponent, ValidationContext } from '../validation/validation-cont
 import { FlexSearchPrimarySortClauseConfig } from '../config';
 import { RootEntityType } from './root-entity-type';
 import { Severity, ValidationMessage } from '../validation';
-import { WarningCode } from '../../schema/message-codes';
+import { WarningCode } from '../validation/suppress/message-codes';
 
 export const IDENTITY_ANALYZER = 'identity';
 export const NORM_CI_ANALYZER = 'norm_ci';

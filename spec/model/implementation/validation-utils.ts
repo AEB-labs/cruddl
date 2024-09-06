@@ -81,7 +81,7 @@ export function expectQuickFix(
     const result = validate(component);
     const quickfixes = result.messages.flatMap((m) => m.quickFixes);
     expect(quickfixes.map((q) => q.description)).to.include(expectedDescription);
-    const matchingQuickfixes = quickfixes.filter((q) => q.description);
+    const matchingQuickfixes = quickfixes.filter((q) => q.description === expectedDescription);
     expect(matchingQuickfixes).to.have.a.lengthOf(1);
     const quickfix = matchingQuickfixes[0];
     const changeSet = quickfix.getChangeSet();
