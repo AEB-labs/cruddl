@@ -11,7 +11,7 @@ import { RootEntityType } from './root-entity-type';
 import { ScalarType } from './scalar-type';
 import { Type } from './type';
 import { FieldPath } from './field-path';
-import { WarningCode } from '../../schema/message-codes';
+import { WarningCode } from '../validation/suppress/message-codes';
 
 export class TimeToLiveType implements ModelComponent {
     readonly cascadeFields: ReadonlyArray<FieldPath> = [];

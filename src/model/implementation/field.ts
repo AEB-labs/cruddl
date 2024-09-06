@@ -55,7 +55,7 @@ import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
-import { WarningCode } from '../../schema/message-codes';
+import { WarningCode } from '../validation/suppress/message-codes';
 
 export interface SystemFieldConfig extends FieldConfig {
     readonly isSystemField?: boolean;
