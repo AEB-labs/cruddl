@@ -55,6 +55,7 @@ export const COMPATIBILITY_ISSUE_CODES = {
     PARENT_FIELD: 'Missing or superfluous @parent',
     BUSINESS_OBJECT: 'Missing or superfluous @businessObject',
     TYPE_KIND: 'A type declaration is of the wrong kind (e.g. root entity, value object or enum)',
+    TTL: 'Missing or superfluous time-to-live configuration',
 } as const satisfies MessageCodes;
 
 export type CompatibilityIssueCode = keyof typeof COMPATIBILITY_ISSUE_CODES;
