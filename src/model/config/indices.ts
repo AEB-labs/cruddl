@@ -1,4 +1,5 @@
 import {
+    ArgumentNode,
     DirectiveNode,
     EnumValueNode,
     IntValueNode,
@@ -40,8 +41,9 @@ export interface FlexSearchPrimarySortClauseConfig {
 
 export interface FlexSearchIndexConfig {
     readonly isIndexed: boolean;
-    readonly directiveASTNode?: DirectiveNode;
+    readonly isIndexedAstNode?: ArgumentNode;
     readonly primarySort: ReadonlyArray<FlexSearchPrimarySortClauseConfig>;
+    readonly primarySortAstNode?: ArgumentNode;
 
     /**
      * Bundled non-functional, optional parameters for flexsearch performance optimizations

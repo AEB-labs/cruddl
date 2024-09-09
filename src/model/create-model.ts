@@ -102,6 +102,7 @@ import {
     LocalizationConfig,
     NamespacedPermissionProfileConfigMap,
     ObjectTypeConfig,
+    ObjectTypeConfigBase,
     PermissionProfileConfigMap,
     PermissionsConfig,
     RelationDeleteAction,
@@ -236,14 +237,15 @@ function createObjectTypeInput(
     context: ValidationContext,
     options: ModelOptions,
 ): ObjectTypeConfig {
-    const entityType = getKindOfObjectTypeNode(definition, context);
+    const kindDirective = getObjectTypeKindDirective(definition, context);
 
     const common = {
         ...commonConfig,
         astNode: definition,
+        kindAstNode: kindDirective,
         fields: (definition.fields || []).map((field) => createFieldInput(field, context, options)),
         flexSearchLanguage: getDefaultLanguage(definition, context),
-    };
+    } as const satisfies Partial<ObjectTypeConfigBase>;
 
     const businessObjectDirective = findDirectiveWithName(definition, BUSINESS_OBJECT_DIRECTIVE);
     if (businessObjectDirective && !findDirectiveWithName(definition, ROOT_ENTITY_DIRECTIVE)) {
@@ -255,7 +257,7 @@ function createObjectTypeInput(
         );
     }
 
-    switch (entityType) {
+    switch (kindDirective?.name.value) {
         case CHILD_ENTITY_DIRECTIVE:
             return {
                 kind: TypeKind.CHILD_ENTITY,
@@ -273,7 +275,7 @@ function createObjectTypeInput(
             };
         default:
             // interpret unknown kinds as root entity because they are least likely to cause unnecessary errors
-            // (errors are already reported in getKindOfObjectTypeNode)
+            // (errors are already reported in getObjectTypeKindDirective)
 
             return {
                 ...common,
@@ -346,19 +348,10 @@ function getDefaultValue(fieldNode: FieldDefinitionNode, context: ValidationCont
 }
 
 function getFlexSearchOrder(
-    rootEntityDirective: DirectiveNode,
+    argumentNode: ArgumentNode,
     objectNode: ObjectTypeDefinitionNode,
     context: ValidationContext,
 ): ReadonlyArray<FlexSearchPrimarySortClauseConfig> {
-    const argumentNode: ArgumentNode | undefined = getNodeByName(
-        rootEntityDirective.arguments,
-        FLEX_SEARCH_ORDER_ARGUMENT,
-    );
-
-    if (!argumentNode) {
-        return [];
-    }
-
     if (argumentNode.value.kind === Kind.LIST) {
         return argumentNode.value.values.map((v) =>
             createFlexSearchPrimarySortClause(v, objectNode, context),
@@ -478,24 +471,26 @@ function createFlexSearchDefinitionInputs(
     objectNode: ObjectTypeDefinitionNode,
     context: ValidationContext,
 ): FlexSearchIndexConfig {
-    let isIndexed = false;
     const directive = findDirectiveWithName(objectNode, ROOT_ENTITY_DIRECTIVE);
-    if (directive) {
-        const argumentIndexed: ArgumentNode | undefined = getNodeByName(
-            directive.arguments,
-            FLEX_SEARCH_INDEXED_ARGUMENT,
-        );
-        if (argumentIndexed) {
-            if (argumentIndexed.value.kind === 'BooleanValue') {
-                isIndexed = argumentIndexed.value.value;
-            }
-        }
-    }
+
+    const isIndexedAstNode = directive
+        ? getNodeByName(directive.arguments, FLEX_SEARCH_INDEXED_ARGUMENT)
+        : undefined;
+    const isIndexed =
+        isIndexedAstNode?.value.kind === 'BooleanValue' ? isIndexedAstNode.value.value : false;
+
+    const primarySortAstNode: ArgumentNode | undefined = directive
+        ? getNodeByName(directive.arguments, FLEX_SEARCH_ORDER_ARGUMENT)
+        : undefined;
+    const primarySort = primarySortAstNode
+        ? getFlexSearchOrder(primarySortAstNode, objectNode, context)
+        : [];
 
     return {
         isIndexed,
-        directiveASTNode: directive,
-        primarySort: directive ? getFlexSearchOrder(directive, objectNode, context) : [],
+        isIndexedAstNode,
+        primarySort,
+        primarySortAstNode,
         performanceParams: directive ? getFlexSearchPerformanceParams(directive) : undefined,
     };
 }
@@ -866,10 +861,10 @@ function mapIndexDefinition(index: ObjectValueNode): IndexDefinitionConfig {
     };
 }
 
-function getKindOfObjectTypeNode(
+function getObjectTypeKindDirective(
     definition: ObjectTypeDefinitionNode,
     context?: ValidationContext,
-): string | undefined {
+): DirectiveNode | undefined {
     const kindDirectives = (definition.directives || []).filter((dir) =>
         OBJECT_TYPE_KIND_DIRECTIVES.includes(dir.name.value),
     );
@@ -896,7 +891,7 @@ function getKindOfObjectTypeNode(
         return undefined;
     }
 
-    return kindDirectives[0].name.value;
+    return kindDirectives[0];
 }
 
 function getNamespacePath(

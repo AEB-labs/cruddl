@@ -1,5 +1,6 @@
 import {
     ASTNode,
+    DirectiveNode,
     EnumTypeDefinitionNode,
     EnumValueDefinitionNode,
     GraphQLScalarType,
@@ -36,6 +37,7 @@ export interface TypeConfigBase {
 export interface ObjectTypeConfigBase extends TypeConfigBase {
     readonly fields: ReadonlyArray<FieldConfig>;
     readonly astNode?: ObjectTypeDefinitionNode;
+    readonly kindAstNode?: DirectiveNode;
 }
 
 export interface RootEntityTypeConfig extends ObjectTypeConfigBase {

@@ -8,6 +8,7 @@ import { Model } from './model';
 import { EffectiveModuleSpecification } from './modules/effective-module-specification';
 import { ObjectType } from './type';
 import { TypeBase } from './type-base';
+import { DirectiveNode } from 'graphql/index';
 
 export abstract class ObjectTypeBase extends TypeBase {
     readonly fields: ReadonlyArray<Field>;
@@ -15,6 +16,7 @@ export abstract class ObjectTypeBase extends TypeBase {
     readonly systemFieldOverrides: ReadonlyMap<string, FieldConfig>;
     readonly systemFields: ReadonlyMap<string, Field>;
     readonly systemFieldConfigs: ReadonlyMap<string, SystemFieldConfig>;
+    readonly kindAstNode?: DirectiveNode;
 
     protected constructor(
         input: ObjectTypeConfig,
@@ -66,6 +68,8 @@ export abstract class ObjectTypeBase extends TypeBase {
 
         this.fields = [...systemFields, ...customFields];
         this.fieldMap = new Map(this.fields.map((field): [string, Field] => [field.name, field]));
+
+        this.kindAstNode = input.kindAstNode;
     }
 
     validate(context: ValidationContext) {

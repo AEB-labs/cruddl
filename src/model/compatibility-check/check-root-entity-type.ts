@@ -4,6 +4,7 @@ import { checkField } from './check-field';
 import { getRequiredBySuffix } from './describe-module-specification';
 import { checkBusinessObject } from './check-business-object';
 import { checkTtl } from './check-ttl';
+import { checkFlexSearchOnType } from './check-flex-search-on-type';
 
 export function checkRootEntityType(
     typeToCheck: RootEntityType,
@@ -12,4 +13,5 @@ export function checkRootEntityType(
 ) {
     checkBusinessObject(typeToCheck, baselineType, context);
     checkTtl(typeToCheck, baselineType, context);
+    checkFlexSearchOnType(typeToCheck, baselineType, context);
 }
