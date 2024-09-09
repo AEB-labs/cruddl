@@ -56,6 +56,13 @@ export const COMPATIBILITY_ISSUE_CODES = {
     BUSINESS_OBJECT: 'Missing or superfluous @businessObject',
     TYPE_KIND: 'A type declaration is of the wrong kind (e.g. root entity, value object or enum)',
     TTL: 'Missing or superfluous time-to-live configuration',
+    FLEX_SEARCH: 'Missing, superfluous or diverging flexSearch configuration on a type or field',
+
+    // this is separate because it's more likely to be intentionally diverging
+    FLEX_SEARCH_ORDER: 'Missing, superfluous or diverging flexSearchOrder configuration',
+
+    // this is separate because it's more likely to be intentionally diverging
+    FLEX_SEARCH_SEARCH: 'Missing includeInSearch in @flexSearch or @flexSearchFullText',
 } as const satisfies MessageCodes;
 
 export type CompatibilityIssueCode = keyof typeof COMPATIBILITY_ISSUE_CODES;

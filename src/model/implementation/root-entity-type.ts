@@ -1,4 +1,4 @@
-import { GraphQLID, GraphQLString } from 'graphql';
+import { ArgumentNode, GraphQLID, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
 import {
     ACCESS_FIELD_DIRECTIVE,
@@ -50,7 +50,9 @@ export class RootEntityType extends ObjectTypeBase {
     readonly isBusinessObject: boolean;
 
     readonly isFlexSearchIndexed: boolean;
+    readonly isFlexSearchIndexedAstNode: ArgumentNode | undefined;
     readonly flexSearchPrimarySort: ReadonlyArray<FlexSearchPrimarySortClause>;
+    readonly flexSearchPrimarySortAstNode: ArgumentNode | undefined;
     readonly flexSearchPerformanceParams: FlexSearchPerformanceParams;
 
     constructor(
@@ -64,11 +66,13 @@ export class RootEntityType extends ObjectTypeBase {
                 ? new RolesSpecifier(input.permissions.roles, this)
                 : undefined;
         this.isBusinessObject = input.isBusinessObject || false;
+        this.isFlexSearchIndexedAstNode = input.flexSearchIndexConfig?.isIndexedAstNode;
         if (input.flexSearchIndexConfig && input.flexSearchIndexConfig.isIndexed) {
             this.isFlexSearchIndexed = true;
             this.flexSearchPrimarySort = this.completeFlexSearchPrimarySort(
                 input.flexSearchIndexConfig.primarySort,
             );
+            this.flexSearchPrimarySortAstNode = input.flexSearchIndexConfig.primarySortAstNode;
             this.flexSearchPerformanceParams = input.flexSearchIndexConfig.performanceParams ?? {};
         } else {
             this.isFlexSearchIndexed = false;
