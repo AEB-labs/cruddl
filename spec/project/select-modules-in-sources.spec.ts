@@ -117,6 +117,279 @@ describe('selectModulesInProjectSource', () => {
                     }
                 `);
         });
+
+        it('keeps indices that are fully covered by the modules', () => {
+            const result = run(
+                gql`
+                    type Test
+                        @rootEntity(
+                            indices: [
+                                { fields: ["field1", "key"] }
+                                { fields: ["field1", "children.field1"], sparse: true }
+                            ]
+                        )
+                        @modules(in: "module1") {
+                        key: String @key @modules(in: "module1")
+                        field1: String @modules(in: "module1")
+                        children: [Child] @modules(in: "module1")
+                    }
+
+                    type Child @childEntity @modules(in: "module1") {
+                        field1: String @modules(in: "module1")
+                        field2: String @modules(in: "module1")
+                    }
+                `,
+                ['module1'],
+            );
+            expect(result).to.equal(`
+                    type Test
+                        @rootEntity(
+                            indices: [
+                                { fields: ["field1", "key"] }
+                                { fields: ["field1", "children.field1"], sparse: true }
+                            ]
+                        )
+                        @modules(in: ["module1"]) {
+                        key: String @key @modules(in: ["module1"])
+                        field1: String @modules(in: ["module1"])
+                        children: [Child] @modules(in: ["module1"])
+                    }
+
+                    type Child @childEntity @modules(in: ["module1"]) {
+                        field1: String @modules(in: ["module1"])
+                        field2: String @modules(in: ["module1"])
+                    }
+                `);
+        });
+
+        it('removes indices where none of the specified fields are included in the selected modules', () => {
+            const result = run(
+                gql`
+                    type Test
+                        @rootEntity(
+                            indices: [
+                                { fields: ["field1", "key"] }
+                                { fields: ["field2", "children.field2"], sparse: true }
+                            ]
+                        )
+                        @modules(in: "module1") {
+                        key: String @key @modules(in: "module1")
+                        field1: String @modules(in: "module1")
+                        field2: String @modules(in: "module2")
+                        children: [Child] @modules(in: "module1")
+                    }
+
+                    type Child @childEntity @modules(in: "module1") {
+                        field1: String @modules(in: "module1")
+                        field2: String @modules(in: "module2")
+                    }
+                `,
+                ['module1'],
+            );
+            expect(result).to.equal(`
+                    type Test
+                        @rootEntity(
+                            indices: [
+                                { fields: ["field1", "key"] }
+                                
+                            ]
+                        )
+                        @modules(in: ["module1"]) {
+                        key: String @key @modules(in: ["module1"])
+                        field1: String @modules(in: ["module1"])
+                        
+                        children: [Child] @modules(in: ["module1"])
+                    }
+
+                    type Child @childEntity @modules(in: ["module1"]) {
+                        field1: String @modules(in: ["module1"])
+                        
+                    }
+                `);
+        });
+
+        it('removes the whole indices arg if all indices have been removed', () => {
+            const result = run(
+                gql`
+                    type Test
+                        @rootEntity(
+                            indices: [
+                                { fields: ["field2"] }
+                                { fields: ["field2", "children.field2"], sparse: true }
+                            ]
+                        )
+                        @modules(in: "module1") {
+                        key: String @key @modules(in: "module1")
+                        field1: String @modules(in: "module1")
+                        field2: String @modules(in: "module2")
+                        children: [Child] @modules(in: "module1")
+                    }
+
+                    type Child @childEntity @modules(in: "module1") {
+                        field1: String @modules(in: "module1")
+                        field2: String @modules(in: "module2")
+                    }
+                `,
+                ['module1'],
+            );
+            expect(result).to.equal(`
+                    type Test
+                        @rootEntity
+                        @modules(in: ["module1"]) {
+                        key: String @key @modules(in: ["module1"])
+                        field1: String @modules(in: ["module1"])
+                        
+                        children: [Child] @modules(in: ["module1"])
+                    }
+
+                    type Child @childEntity @modules(in: ["module1"]) {
+                        field1: String @modules(in: ["module1"])
+                        
+                    }
+                `);
+        });
+
+        it('removes the whole indices arg if all indices have been removed (and there are other args)', () => {
+            const result = run(
+                gql`
+                    type Test
+                        @rootEntity(
+                            flexSearch: true
+                            indices: [
+                                { fields: ["field2"] }
+                                { fields: ["field2", "children.field2"], sparse: true }
+                            ]
+                        )
+                        @modules(in: "module1") {
+                        key: String @key @modules(in: "module1")
+                        field1: String @modules(in: "module1")
+                        field2: String @modules(in: "module2")
+                        children: [Child] @modules(in: "module1")
+                    }
+
+                    type Child @childEntity @modules(in: "module1") {
+                        field1: String @modules(in: "module1")
+                        field2: String @modules(in: "module2")
+                    }
+                `,
+                ['module1'],
+            );
+            expect(result).to.equal(`
+                    type Test
+                        @rootEntity(
+                            flexSearch: true
+                            
+                        )
+                        @modules(in: ["module1"]) {
+                        key: String @key @modules(in: ["module1"])
+                        field1: String @modules(in: ["module1"])
+                        
+                        children: [Child] @modules(in: ["module1"])
+                    }
+
+                    type Child @childEntity @modules(in: ["module1"]) {
+                        field1: String @modules(in: ["module1"])
+                        
+                    }
+                `);
+        });
+
+        it('removes unique indices that are partially covered by the modules', () => {
+            const result = run(
+                gql`
+                    type Test
+                        @rootEntity(
+                            indices: [
+                                { fields: ["field1", "key"] }
+                                {
+                                    fields: ["field1", "children.field1", "children.field2"]
+                                    unique: true
+                                }
+                            ]
+                        )
+                        @modules(in: "module1") {
+                        key: String @key @modules(in: "module1")
+                        field1: String @modules(in: "module1")
+                        children: [Child] @modules(in: "module1")
+                    }
+
+                    type Child @childEntity @modules(in: "module1") {
+                        field1: String @modules(in: "module1")
+                        field2: String @modules(in: "module2")
+                    }
+                `,
+                ['module1'],
+            );
+            expect(result).to.equal(`
+                    type Test
+                        @rootEntity(
+                            indices: [
+                                { fields: ["field1", "key"] }
+                                
+                            ]
+                        )
+                        @modules(in: ["module1"]) {
+                        key: String @key @modules(in: ["module1"])
+                        field1: String @modules(in: ["module1"])
+                        children: [Child] @modules(in: ["module1"])
+                    }
+
+                    type Child @childEntity @modules(in: ["module1"]) {
+                        field1: String @modules(in: ["module1"])
+                        
+                    }
+                `);
+        });
+
+        it('trims down indices that are partially covered by the modules', () => {
+            const result = run(
+                gql`
+                    type Test
+                        @rootEntity(
+                            indices: [
+                                { fields: ["field1", "key"] }
+                                {
+                                    fields: ["field1", "children.field1", "children.field2"]
+                                    sparse: true
+                                }
+                            ]
+                        )
+                        @modules(in: "module1") {
+                        key: String @key @modules(in: "module1")
+                        field1: String @modules(in: "module1")
+                        children: [Child] @modules(in: "module1")
+                    }
+
+                    type Child @childEntity @modules(in: "module1") {
+                        field1: String @modules(in: "module1")
+                        field2: String @modules(in: "module2")
+                    }
+                `,
+                ['module1'],
+            );
+            expect(result).to.equal(`
+                    type Test
+                        @rootEntity(
+                            indices: [
+                                { fields: ["field1", "key"] }
+                                {
+                                    fields: ["field1", "children.field1"]
+                                    sparse: true
+                                }
+                            ]
+                        )
+                        @modules(in: ["module1"]) {
+                        key: String @key @modules(in: ["module1"])
+                        field1: String @modules(in: ["module1"])
+                        children: [Child] @modules(in: ["module1"])
+                    }
+
+                    type Child @childEntity @modules(in: ["module1"]) {
+                        field1: String @modules(in: ["module1"])
+                        
+                    }
+                `);
+        });
     });
 
     describe('with removeModuleDeclarations = true', () => {

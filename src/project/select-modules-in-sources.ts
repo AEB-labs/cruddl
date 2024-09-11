@@ -1,21 +1,29 @@
 import {
     DirectiveNode,
     FieldDefinitionNode,
-    Kind,
-    Location,
-    TypeDefinitionNode,
     isTypeDefinitionNode,
+    Kind,
+    ListValueNode,
+    Location,
+    ObjectValueNode,
     print,
+    StringValueNode,
+    TypeDefinitionNode,
 } from 'graphql';
 import {
     ParsedGraphQLProjectSource,
     ParsedObjectProjectSource,
     ParsedProjectSourceBaseKind,
 } from '../config/parsed-project';
-import { Model, ValidationMessage } from '../model';
+import { IndexField, Model, RootEntityType, ValidationMessage } from '../model';
 import { parseModuleSpecificationExpression } from '../model/implementation/modules/expression-parser';
 import { ValidationContext } from '../model/validation/validation-context';
-import { MODULES_DIRECTIVE, MODULES_IN_ARG } from '../schema/constants';
+import {
+    INDICES_ARG,
+    MODULES_DIRECTIVE,
+    MODULES_IN_ARG,
+    ROOT_ENTITY_DIRECTIVE,
+} from '../schema/constants';
 import { parseProjectSource } from '../schema/schema-builder';
 import { findDirectiveWithName } from '../schema/schema-utils';
 import { Project, ProjectOptions } from './project';
@@ -217,6 +225,10 @@ function selectModulesInGraphQLSource({
                     continue;
                 }
 
+                if (type.isRootEntityType) {
+                    changes.push(...changeIndicesIfNecessary(typeDef, type, selectedModules));
+                }
+
                 if (!typeDef.fields) {
                     continue;
                 }
@@ -257,13 +269,14 @@ function selectModulesInGraphQLSource({
 
     let currentPosition = 0;
     let output = '';
-    for (let i = 0; i <= changes.length; i++) {
+    const sortedChanges = [...changes].sort((a, b) => a.location.start - b.location.start);
+    for (let i = 0; i <= sortedChanges.length; i++) {
         // TODO expand the spans to include leading and trailing trivia (such as comments and whitespace)
-        const change = changes[i] as Change | undefined;
+        const change = sortedChanges[i] as Change | undefined;
         const includeUntilIndex = change ? change.location.start : source.body.length;
         if (includeUntilIndex < currentPosition) {
             throw new Error(
-                `Changes are not in order: found ${includeUntilIndex} after ${currentPosition}`,
+                `Changes are overlapping: found ${includeUntilIndex} after ${currentPosition}`,
             );
         }
         output += source.body.substring(currentPosition, includeUntilIndex);
@@ -271,7 +284,7 @@ function selectModulesInGraphQLSource({
             output += change.replacement;
         }
         if (change) {
-            currentPosition = changes[i].location.end;
+            currentPosition = change.location.end;
         }
     }
 
@@ -348,4 +361,134 @@ function changeModuleDirectiveIfNecessary(
     };
     const replacement = print(newDirective);
     return { location: modulesDirectve.loc, replacement };
+}
+
+function changeIndicesIfNecessary(
+    definitionNode: TypeDefinitionNode,
+    type: RootEntityType,
+    selectedModules: ReadonlySet<string>,
+): ReadonlyArray<Change> {
+    const rootEntityDirective = findDirectiveWithName(definitionNode, ROOT_ENTITY_DIRECTIVE);
+    if (!rootEntityDirective || !rootEntityDirective.loc) {
+        return [];
+    }
+    const indicesArg = rootEntityDirective.arguments?.find((a) => a.name.value === INDICES_ARG);
+    if (!indicesArg || !indicesArg.loc || indicesArg.value.kind !== Kind.LIST) {
+        // nothing to do when there is no indices arg or if it has an invalid value (not a list),
+        // and nothing we can do if it does not have a location
+        return [];
+    }
+
+    const indexDefs = indicesArg.value.values.filter((v) => v.kind === Kind.OBJECT);
+    const changes: Change[] = [];
+    let removedIndexCount = 0;
+    for (const indexDef of indexDefs) {
+        if (!indexDef.loc) {
+            // if we don't have a location, cannot remove or change anything
+            continue;
+        }
+        const change = changeIndexIfNecessary(indexDef, type, selectedModules);
+        if (change.remove) {
+            removedIndexCount++;
+            changes.push({ location: indexDef.loc });
+        } else if (change.changeFields) {
+            const fieldsArg = indexDef.fields.find((f) => f.name.value === 'fields');
+            if (fieldsArg && fieldsArg.value.loc) {
+                const valueNode: ListValueNode = {
+                    kind: Kind.LIST,
+                    values: change.changeFields.map(
+                        (field): StringValueNode => ({
+                            kind: Kind.STRING,
+                            value: field,
+                        }),
+                    ),
+                };
+                changes.push({ location: fieldsArg.value.loc, replacement: print(valueNode) });
+            }
+        }
+    }
+
+    // If we're removing all indices, rather remove the whole argument
+    if (removedIndexCount === indicesArg.value.values.length) {
+        if (rootEntityDirective.arguments?.length === 1) {
+            // if there was no other argument besides "indices", just re-emit the @rootEntity
+            // directive (we need to remove the (), and there is nothing else that would get
+            // re-formatted by this operation
+            const newDirective: DirectiveNode = {
+                ...rootEntityDirective,
+                arguments: undefined,
+            };
+            return [{ location: rootEntityDirective.loc, replacement: print(newDirective) }];
+        } else {
+            return [{ location: indicesArg.loc }];
+        }
+    }
+
+    // does not delete potential commas between the indices. However, indices are usually so long
+    // that there is one per line, and you probably don't use commas then (prettier does not)
+    // it does leave a lot of whitespace, but that's a common problem (and can be fixed by running
+    // prettier after withModuleSelection())
+    return changes;
+}
+
+interface IndexChange {
+    readonly remove?: boolean;
+    readonly changeFields?: ReadonlyArray<string>;
+}
+
+function changeIndexIfNecessary(
+    indexDef: ObjectValueNode,
+    type: RootEntityType,
+    selectedModules: ReadonlySet<string>,
+): IndexChange {
+    const fieldsArg = indexDef.fields.find((f) => f.name.value === 'fields');
+    if (!fieldsArg) {
+        // invalid index - do not change anything
+        return {};
+    }
+    let fields: ReadonlyArray<string>;
+    if (fieldsArg.value.kind === Kind.STRING) {
+        fields = [fieldsArg.value.value];
+    } else if (fieldsArg.value.kind === Kind.LIST) {
+        fields = fieldsArg.value.values.filter((v) => v.kind === Kind.STRING).map((v) => v.value);
+    } else {
+        // invalid index - do not change anything
+        return {};
+    }
+
+    const fieldsSoFar: string[] = [];
+    for (const field of fields) {
+        // we can't really use one of the actual IndexField instances in the type because they
+        // are sometimes augmented with additional fields to make the indices unique
+        const indexField = new IndexField(field, type, undefined);
+        const fieldsInPath = indexField.fieldsInPath;
+        if (!fieldsInPath) {
+            // if there is an error resolving the field paths, we can't really do anything
+            // behave like in other situations here and in doubt do not touch the definition
+            return {};
+        }
+
+        if (fieldsInPath.some((f) => !f.effectiveModuleSpecification.includedIn(selectedModules))) {
+            // The index is not fully covered by the selected modules
+            const uniqueArg = indexDef.fields.find((f) => f.name.value === 'unique');
+            if (uniqueArg && uniqueArg.value.kind === Kind.BOOLEAN && uniqueArg.value.value) {
+                // A unique index that is not fully covered needs to be removed
+                // (if we were to keep a prefix of the index, the unique behavior would change)
+                return { remove: true };
+            }
+
+            if (fieldsSoFar.length) {
+                // for non-unique indices, include a prefix index
+                // TODO only include this prefix index if there isn't already an identical one
+                return { changeFields: fieldsSoFar };
+            } else {
+                return { remove: true };
+            }
+        }
+
+        fieldsSoFar.push(field);
+    }
+
+    // all fields are covered - no change needed
+    return {};
 }

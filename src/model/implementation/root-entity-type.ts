@@ -17,6 +17,7 @@ import { compact } from '../../utils/utils';
 import {
     FlexSearchPerformanceParams,
     FlexSearchPrimarySortClauseConfig,
+    IndexDefinitionConfig,
     PermissionsConfig,
     RootEntityTypeConfig,
     TypeKind,
@@ -54,6 +55,7 @@ export class RootEntityType extends ObjectTypeBase {
     readonly flexSearchPrimarySort: ReadonlyArray<FlexSearchPrimarySortClause>;
     readonly flexSearchPrimarySortAstNode: ArgumentNode | undefined;
     readonly flexSearchPerformanceParams: FlexSearchPerformanceParams;
+    readonly indexConfigs: ReadonlyArray<IndexDefinitionConfig>;
 
     constructor(
         private readonly input: RootEntityTypeConfig,
@@ -79,11 +81,12 @@ export class RootEntityType extends ObjectTypeBase {
             this.flexSearchPrimarySort = [];
             this.flexSearchPerformanceParams = {};
         }
+        this.indexConfigs = input.indices ?? [];
     }
 
     @memorize()
     get indices(): ReadonlyArray<Index> {
-        const indexConfigs = this.input.indices ? [...this.input.indices] : [];
+        const indexConfigs = [...this.indexConfigs];
 
         // @key implies a unique index
         // (do this to the inputs so that addIdentifyingSuffixIfNeeded is called on these, too)
