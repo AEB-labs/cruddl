@@ -349,6 +349,50 @@ describe('modules validator', () => {
             );
         });
 
+        it('accepts an expression that starts with spaces', () => {
+            assertValidatorAcceptsAndDoesNotWarn(
+                `
+                    type Foo @rootEntity @modules(in: ["    module1"]) {
+                        foo: String @modules(all: true)
+                    }
+                `,
+                { withModuleDefinitions: true },
+            );
+        });
+
+        it('accepts an expression that ends in a tab', () => {
+            assertValidatorAcceptsAndDoesNotWarn(
+                `
+                    type Foo @rootEntity @modules(in: ["module1 & module2\t"]) {
+                        foo: String @modules(all: true)
+                    }
+                `,
+                { withModuleDefinitions: true },
+            );
+        });
+
+        it('accepts an expression that ends in a space', () => {
+            assertValidatorAcceptsAndDoesNotWarn(
+                `
+                    type Foo @rootEntity @modules(in: ["module1 & module2 "]) {
+                        foo: String @modules(all: true)
+                    }
+                `,
+                { withModuleDefinitions: true },
+            );
+        });
+
+        it('accepts an and combination of two modules with multiple space characters', () => {
+            assertValidatorAcceptsAndDoesNotWarn(
+                `
+                    type Foo @rootEntity @modules(in: ["module1    &\tmodule2"]) {
+                        foo: String @modules(all: true)
+                    }
+                `,
+                { withModuleDefinitions: true },
+            );
+        });
+
         it('accepts an and combination of three modules', () => {
             assertValidatorAcceptsAndDoesNotWarn(
                 `
