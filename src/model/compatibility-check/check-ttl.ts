@@ -1,7 +1,5 @@
-import { ObjectType, RootEntityType } from '../implementation';
+import { RootEntityType } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
-import { checkField } from './check-field';
-import { getRequiredBySuffix } from './describe-module-specification';
 
 export function checkTtl(
     typeToCheck: RootEntityType,
@@ -12,7 +10,7 @@ export function checkTtl(
         context.addMessage(
             ValidationMessage.suppressableCompatibilityIssue(
                 'TTL',
-                `There should be a timeToLive configuration for type "${baselineType.name}"${getRequiredBySuffix(baselineType)}.`,
+                `There should be a timeToLive configuration for type "${baselineType.name}".`,
                 typeToCheck.astNode,
                 { location: typeToCheck.nameASTNode },
             ),

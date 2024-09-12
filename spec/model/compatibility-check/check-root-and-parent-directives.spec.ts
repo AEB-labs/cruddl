@@ -39,8 +39,8 @@ describe('checkModel', () => {
             );
             expect(result.messages.length).to.equal(2);
             expect(result.getCompatibilityIssues().map((m) => m.message)).to.deep.equal([
-                'Field "Child.root" should not be a reference (required by module "module1").',
-                'Field "Child.root" should be decorated with @root (required by module "module1").',
+                'Field "Child.root" should not be a reference.',
+                'Field "Child.root" should be decorated with @root.',
             ]);
         });
 
@@ -71,8 +71,8 @@ describe('checkModel', () => {
             );
             expect(result.messages.length).to.equal(2);
             expect(result.getCompatibilityIssues().map((m) => m.message)).to.deep.equal([
-                'Field "Child.root" should be decorated with @reference(keyField: "field") (required by module "module1").',
-                'Field "Child.root" should not be decorated with @root (required by module "module1").',
+                'Field "Child.root" should be decorated with @reference(keyField: "field").',
+                'Field "Child.root" should not be decorated with @root.',
             ]);
         });
 
@@ -130,8 +130,8 @@ describe('checkModel', () => {
             );
             expect(result.messages.length).to.equal(2);
             expect(result.getCompatibilityIssues().map((m) => m.message)).to.deep.equal([
-                'Field "Child.parent" should not be a reference (required by module "module1").',
-                'Field "Child.parent" should be decorated with @parent (required by module "module1").',
+                'Field "Child.parent" should not be a reference.',
+                'Field "Child.parent" should be decorated with @parent.',
             ]);
         });
 
@@ -162,8 +162,8 @@ describe('checkModel', () => {
             );
             expect(result.messages.length).to.equal(2);
             expect(result.getCompatibilityIssues().map((m) => m.message)).to.deep.equal([
-                'Field "Child.parent" should be decorated with @reference(keyField: "field") (required by module "module1").',
-                'Field "Child.parent" should not be decorated with @parent (required by module "module1").',
+                'Field "Child.parent" should be decorated with @reference(keyField: "field").',
+                'Field "Child.parent" should not be decorated with @parent.',
             ]);
         });
 

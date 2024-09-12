@@ -28,8 +28,8 @@ describe('checkModel', () => {
             );
             expect(result.messages.length).to.equal(2);
             expect(result.getCompatibilityIssues().map((m) => m.message)).to.deep.equal([
-                'Field "Test.field" should not be a reference (required by module "module1").',
-                'Field "Test.field" should be decorated with @relation (required by module "module1").',
+                'Field "Test.field" should not be a reference.',
+                'Field "Test.field" should be decorated with @relation.',
             ]);
         });
 
@@ -56,8 +56,8 @@ describe('checkModel', () => {
             );
             expect(result.messages.length).to.equal(2);
             expect(result.getCompatibilityIssues().map((m) => m.message)).to.deep.equal([
-                'Field "Test.backwards" should not be a reference (required by module "module1").',
-                'Field "Test.backwards" should be decorated with @relation(inverseOf: "forwards") (required by module "module1").',
+                'Field "Test.backwards" should not be a reference.',
+                'Field "Test.backwards" should be decorated with @relation(inverseOf: "forwards").',
             ]);
         });
 
@@ -80,8 +80,8 @@ describe('checkModel', () => {
             );
             expect(result.messages.length).to.equal(2);
             expect(result.getCompatibilityIssues().map((m) => m.message)).to.deep.equal([
-                'Relation "forwards" should be a forward relation, not an inverse relation (required by module "module1").',
-                'Relation "backwards" should be an inverse relation with inverseOf: "forwards" (required by module "module1").',
+                'Relation "forwards" should be a forward relation, not an inverse relation.',
+                'Relation "backwards" should be an inverse relation with inverseOf: "forwards".',
             ]);
         });
 
@@ -109,7 +109,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Relation "backwards" should be an inverse relation with inverseOf: "forwards" (required by module "module1").',
+                'Relation "backwards" should be an inverse relation with inverseOf: "forwards".',
             );
         });
 
@@ -128,7 +128,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Relation "test" should specify onDelete: RESTRICT (required by module "module1").',
+                'Relation "test" should specify onDelete: RESTRICT.',
             );
         });
 
@@ -147,7 +147,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Relation "test" should omit the "onDelete" argument (required by module "module1").',
+                'Relation "test" should omit the "onDelete" argument.',
             );
         });
 

@@ -20,10 +20,7 @@ describe('checkModel', () => {
                     }
                 `,
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Type "Test" needs to be enable flexSearch (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Type "Test" needs to be enable flexSearch.');
         });
 
         it('rejects if flexSearch is set to false', () => {
@@ -39,10 +36,7 @@ describe('checkModel', () => {
                     }
                 `,
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Type "Test" needs to be enable flexSearch (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Type "Test" needs to be enable flexSearch.');
         });
 
         it('accepts if flexSearch is set to true even if not needed', () => {
@@ -81,7 +75,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Type "Test" should specify flexSearchOrder: [{field: "field", direction: ASC}] (required by module "module1").',
+                'Type "Test" should specify flexSearchOrder: [{field: "field", direction: ASC}].',
             );
         });
 
@@ -104,7 +98,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Type "Test" should not specify a custom flexSearchOrder (required by module "module1").',
+                'Type "Test" should not specify a custom flexSearchOrder.',
             );
         });
 
@@ -132,7 +126,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Type "Test" should specify flexSearchOrder: [{field: "field", direction: DESC}] (required by module "module1").',
+                'Type "Test" should specify flexSearchOrder: [{field: "field", direction: DESC}].',
             );
         });
     });

@@ -1,6 +1,5 @@
 import { Field } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
-import { getRequiredBySuffix } from './describe-module-specification';
 
 /**
  * Checks whether the @collect directives on the field and on the baseline fields match
@@ -17,7 +16,7 @@ export function checkCollectField(
                 'COLLECT',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
-                }" should not be a collect field${getRequiredBySuffix(baselineField)}.`,
+                }" should not be a collect field.`,
                 fieldToCheck.astNode,
                 { location: fieldToCheck.collectAstNode },
             ),
@@ -45,9 +44,7 @@ export function checkCollectField(
                 'COLLECT',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
-                }" should be decorated with ${expectedCollectDeclaration}${getRequiredBySuffix(
-                    baselineField,
-                )}.`,
+                }" should be decorated with ${expectedCollectDeclaration}.`,
                 fieldToCheck.astNode,
             ),
         );
@@ -63,9 +60,7 @@ export function checkCollectField(
         context.addMessage(
             ValidationMessage.suppressableCompatibilityIssue(
                 'COLLECT',
-                `Path should be "${baselineField.collectPath.path}"${getRequiredBySuffix(
-                    baselineField,
-                )}.`,
+                `Path should be "${baselineField.collectPath.path}".`,
                 fieldToCheck.astNode,
                 { location: fieldToCheck.collectPathAstNode ?? fieldToCheck.collectAstNode },
             ),
@@ -78,7 +73,7 @@ export function checkCollectField(
         context.addMessage(
             ValidationMessage.suppressableCompatibilityIssue(
                 'COLLECT',
-                `No aggregation should be used here${getRequiredBySuffix(baselineField)}.`,
+                `No aggregation should be used here.`,
                 fieldToCheck.astNode,
                 { location: fieldToCheck.aggregationOperatorAstNode },
             ),
@@ -93,9 +88,7 @@ export function checkCollectField(
         context.addMessage(
             ValidationMessage.suppressableCompatibilityIssue(
                 'COLLECT',
-                `Collect field should specify ${expectedAggregateDeclaration}${getRequiredBySuffix(
-                    baselineField,
-                )}.`,
+                `Collect field should specify ${expectedAggregateDeclaration}.`,
                 fieldToCheck.astNode,
                 { location: fieldToCheck.aggregationOperatorAstNode },
             ),

@@ -79,10 +79,7 @@ type Test @rootEntity {
                     }
                 `,
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Type "Test" needs to be a root entity type (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Type "Test" needs to be a root entity type.');
         });
     });
 });

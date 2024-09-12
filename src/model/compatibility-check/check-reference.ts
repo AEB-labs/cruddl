@@ -1,6 +1,5 @@
 import { Field } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
-import { getRequiredBySuffix } from './describe-module-specification';
 
 /**
  * Checks whether the @reference directives on the field and on the baseline field match
@@ -16,7 +15,7 @@ export function checkReference(
                 'REFERENCE',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
-                }" should not be a reference${getRequiredBySuffix(baselineField)}.`,
+                }" should not be a reference.`,
                 fieldToCheck.astNode,
                 {
                     location: fieldToCheck.referenceAstNode,
@@ -46,9 +45,7 @@ export function checkReference(
                 'REFERENCE',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
-                }" should be decorated with ${expectedReferenceDeclaration}${getRequiredBySuffix(
-                    baselineField,
-                )}.`,
+                }" should be decorated with ${expectedReferenceDeclaration}.`,
                 fieldToCheck.astNode,
             ),
         );
@@ -64,7 +61,7 @@ export function checkReference(
         context.addMessage(
             ValidationMessage.suppressableCompatibilityIssue(
                 'REFERENCE',
-                `Reference should not declare a keyField${getRequiredBySuffix(baselineField)}.`,
+                `Reference should not declare a keyField.`,
                 fieldToCheck.astNode,
                 {
                     location: fieldToCheck.referenceAstNode,
@@ -86,9 +83,7 @@ export function checkReference(
         context.addMessage(
             ValidationMessage.suppressableCompatibilityIssue(
                 'REFERENCE',
-                `Reference should declare ${expectedKeyFieldDeclaration}${getRequiredBySuffix(
-                    baselineField,
-                )}.`,
+                `Reference should declare ${expectedKeyFieldDeclaration}.`,
                 fieldToCheck.astNode,
                 {
                     location: fieldToCheck.referenceAstNode,

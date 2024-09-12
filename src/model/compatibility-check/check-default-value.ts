@@ -3,7 +3,6 @@ import { print } from 'graphql';
 import { createValueNodeFromValue } from '../../graphql/value-to-ast';
 import { Field } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
-import { getRequiredBySuffix } from './describe-module-specification';
 
 /**
  * Checks whether the @defaultValue directive on the field and on the basleine field match
@@ -24,7 +23,7 @@ export function checkDefaultValue(
                 'DEFAULT_VALUE',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
-                }" should not have a default value${getRequiredBySuffix(baselineField)}.`,
+                }" should not have a default value.`,
                 fieldToCheck.astNode,
                 { location: fieldToCheck.defaultValueAstNode },
             ),
@@ -47,9 +46,7 @@ export function checkDefaultValue(
                 'DEFAULT_VALUE',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
-                }" should be decorated with ${expectedDeclaration}${getRequiredBySuffix(
-                    baselineField,
-                )}.`,
+                }" should be decorated with ${expectedDeclaration}.`,
                 fieldToCheck.astNode,
                 { location: fieldToCheck.defaultValueAstNode },
             ),
@@ -62,9 +59,7 @@ export function checkDefaultValue(
         context.addMessage(
             ValidationMessage.suppressableCompatibilityIssue(
                 'DEFAULT_VALUE',
-                `Default value should be ${expectedDefaultValue}${getRequiredBySuffix(
-                    baselineField,
-                )}.`,
+                `Default value should be ${expectedDefaultValue}.`,
                 fieldToCheck.astNode,
                 { location: fieldToCheck.defaultValueAstNode },
             ),

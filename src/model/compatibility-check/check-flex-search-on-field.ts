@@ -1,15 +1,10 @@
-import { Field, RootEntityType } from '../implementation';
+import { Field } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
-import { getRequiredBySuffix } from './describe-module-specification';
-import { ArgumentNode, Kind, ListValueNode, ObjectValueNode, print } from 'graphql';
-import { OrderDirection } from '../implementation/order';
 import {
     FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
     FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
     FLEX_SEARCH_INDEXED_DIRECTIVE,
-    FLEX_SEARCH_ORDER_ARGUMENT,
 } from '../../schema/constants';
-import { FlexSearchPrimarySortClause } from '../implementation/flex-search';
 
 export function checkFlexSearchOnField(
     fieldToCheck: Field,
@@ -33,9 +28,7 @@ export function checkRegularDirective(
         context.addMessage(
             ValidationMessage.suppressableCompatibilityIssue(
                 'FLEX_SEARCH',
-                `Field "${
-                    baselineField.name
-                }" should enable @${FLEX_SEARCH_INDEXED_DIRECTIVE}${getRequiredBySuffix(baselineField)}.`,
+                `Field "${baselineField.name}" should enable @${FLEX_SEARCH_INDEXED_DIRECTIVE}.`,
                 fieldToCheck.astNode,
             ),
         );
@@ -48,7 +41,7 @@ export function checkRegularDirective(
                 'FLEX_SEARCH_SEARCH',
                 `Field "${
                     baselineField.name
-                }" should enable @${FLEX_SEARCH_INDEXED_DIRECTIVE}(${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true)${getRequiredBySuffix(baselineField)}.`,
+                }" should enable @${FLEX_SEARCH_INDEXED_DIRECTIVE}(${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true).`,
                 fieldToCheck.astNode,
                 { location: fieldToCheck.isFlexSearchIndexedAstNode },
             ),
@@ -71,7 +64,7 @@ export function checkFulltextDirective(
                 'FLEX_SEARCH',
                 `Field "${
                     baselineField.name
-                }" should enable @${FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE}${getRequiredBySuffix(baselineField)}.`,
+                }" should enable @${FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE}.`,
                 fieldToCheck.astNode,
             ),
         );
@@ -84,7 +77,7 @@ export function checkFulltextDirective(
                 'FLEX_SEARCH_SEARCH',
                 `Field "${
                     baselineField.name
-                }" should enable @${FLEX_SEARCH_INDEXED_DIRECTIVE}(${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true)${getRequiredBySuffix(baselineField)}.`,
+                }" should enable @${FLEX_SEARCH_INDEXED_DIRECTIVE}(${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true).`,
                 fieldToCheck.astNode,
                 { location: fieldToCheck.isFlexSearchFullTextIndexedAstNode },
             ),

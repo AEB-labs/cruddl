@@ -2,7 +2,6 @@ import { ID_FIELD } from '../../schema/constants';
 import { Field } from '../implementation/field';
 import { ValidationMessage } from '../validation/message';
 import { ValidationContext } from '../validation/validation-context';
-import { getRequiredBySuffix } from './describe-module-specification';
 
 /**
  * If the baseline field is annotated with @key, checks whether the field is annotated with @key, too
@@ -26,9 +25,7 @@ export function checkKeyField(
             // code for "id", wait until we have a way to suppress missing fields in general.
             context.addMessage(
                 ValidationMessage.nonSuppressableCompatibilityIssue(
-                    `Field "id: ID @key" needs to be specified${getRequiredBySuffix(
-                        baselineField,
-                    )}.`,
+                    `Field "id: ID @key" needs to be specified.`,
                     fieldToCheck.declaringType.nameASTNode ?? fieldToCheck.declaringType.astNode,
                 ),
             );
@@ -38,7 +35,7 @@ export function checkKeyField(
                     'KEY_FIELD',
                     `Field "${baselineField.declaringType.name}.${
                         baselineField.name
-                    }" needs to be decorated with @key${getRequiredBySuffix(baselineField)}.`,
+                    }" needs to be decorated with @key.`,
                     fieldToCheck.astNode,
                 ),
             );

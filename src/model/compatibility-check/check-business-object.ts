@@ -1,7 +1,5 @@
-import { ObjectType, RootEntityType } from '../implementation';
+import { RootEntityType } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
-import { checkField } from './check-field';
-import { getRequiredBySuffix } from './describe-module-specification';
 
 export function checkBusinessObject(
     typeToCheck: RootEntityType,
@@ -12,9 +10,7 @@ export function checkBusinessObject(
         context.addMessage(
             ValidationMessage.suppressableCompatibilityIssue(
                 'BUSINESS_OBJECT',
-                `Type "${
-                    baselineType.name
-                }" needs to be decorated with @businessObject${getRequiredBySuffix(baselineType)}.`,
+                `Type "${baselineType.name}" needs to be decorated with @businessObject.`,
                 typeToCheck.astNode,
                 { location: typeToCheck.nameASTNode },
             ),

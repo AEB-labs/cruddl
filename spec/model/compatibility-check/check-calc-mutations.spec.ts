@@ -22,7 +22,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "Test.test" should be decorated with @calcMutations(operators: [ADD]) (required by module "module1").',
+                'Field "Test.test" should be decorated with @calcMutations(operators: [ADD]).',
             );
         });
 
@@ -41,7 +41,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "Test.test" should be decorated with @calcMutations(operators: [ADD, MULTIPLY]) (required by module "module1").',
+                'Field "Test.test" should be decorated with @calcMutations(operators: [ADD, MULTIPLY]).',
             );
         });
 
@@ -58,10 +58,7 @@ describe('checkModel', () => {
                     }
                 `,
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Operator MULTIPLY is missing (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Operator MULTIPLY is missing.');
         });
 
         it('rejects three missing operators', () => {
@@ -79,7 +76,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Operators ADD, SUBTRACT and DIVIDE are missing (required by module "module1").',
+                'Operators ADD, SUBTRACT and DIVIDE are missing.',
             );
         });
 

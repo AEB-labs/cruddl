@@ -22,7 +22,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Type "Test" needs to be decorated with @businessObject (required by module "module1").',
+                'Type "Test" needs to be decorated with @businessObject.',
             );
         });
 

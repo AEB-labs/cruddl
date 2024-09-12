@@ -20,10 +20,7 @@ describe('checkModel', () => {
                     }
                 `,
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Field "field" should enable @flexSearch (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Field "field" should enable @flexSearch.');
         });
 
         it('accepts @flexSearch is present', () => {
@@ -73,7 +70,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "field" should enable @flexSearch(includeInSearch: true) (required by module "module1").',
+                'Field "field" should enable @flexSearch(includeInSearch: true).',
             );
         });
 
@@ -92,7 +89,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "field" should enable @flexSearch(includeInSearch: true) (required by module "module1").',
+                'Field "field" should enable @flexSearch(includeInSearch: true).',
             );
         });
 
@@ -145,7 +142,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "field" should enable @flexSearchFulltext (required by module "module1").',
+                'Field "field" should enable @flexSearchFulltext.',
             );
         });
 
@@ -164,7 +161,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "field" should enable @flexSearchFulltext (required by module "module1").',
+                'Field "field" should enable @flexSearchFulltext.',
             );
         });
 
@@ -215,7 +212,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "field" should enable @flexSearch(includeInSearch: true) (required by module "module1").',
+                'Field "field" should enable @flexSearch(includeInSearch: true).',
             );
         });
 
@@ -234,7 +231,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "field" should enable @flexSearch(includeInSearch: true) (required by module "module1").',
+                'Field "field" should enable @flexSearch(includeInSearch: true).',
             );
         });
 
