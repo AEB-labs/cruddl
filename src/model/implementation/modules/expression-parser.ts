@@ -90,7 +90,7 @@ export function parseModuleSpecificationExpression(
                 if (char === '&') {
                     // expecting next module
                     state = ParserState.EXPECT_IDENTIFIER;
-                } else if (isEOF) {
+                } else if (isEOF || isWhitespace) {
                     // do nothing
                 } else {
                     return {
