@@ -22,7 +22,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "Test.field" needs to be decorated with @key (required by module "module1").',
+                'Field "Test.field" needs to be decorated with @key.',
             );
         });
         it('accepts if the field is properly decorated with @key', () => {
@@ -55,10 +55,7 @@ describe('checkModel', () => {
                     }
                 `,
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Field "id: ID @key" needs to be specified (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Field "id: ID @key" needs to be specified.');
         });
 
         it('rejects if the id field needs to be decorated with @key', () => {
@@ -79,7 +76,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "Test.id" needs to be decorated with @key (required by module "module1").',
+                'Field "Test.id" needs to be decorated with @key.',
             );
         });
 

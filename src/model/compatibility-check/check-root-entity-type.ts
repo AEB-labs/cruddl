@@ -1,7 +1,5 @@
-import { ObjectType, RootEntityType } from '../implementation';
-import { ValidationContext, ValidationMessage } from '../validation';
-import { checkField } from './check-field';
-import { getRequiredBySuffix } from './describe-module-specification';
+import { RootEntityType } from '../implementation';
+import { ValidationContext } from '../validation';
 import { checkBusinessObject } from './check-business-object';
 import { checkTtl } from './check-ttl';
 import { checkFlexSearchOnType } from './check-flex-search-on-type';

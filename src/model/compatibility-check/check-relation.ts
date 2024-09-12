@@ -1,7 +1,6 @@
 import { RelationDeleteAction } from '../config/field';
 import { Field } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
-import { getRequiredBySuffix } from './describe-module-specification';
 
 /**
  * Checks whether the @relation directive on the field and on the baseline field match
@@ -18,7 +17,7 @@ export function checkRelation(
                 'RELATION',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
-                }" should not be a relation${getRequiredBySuffix(baselineField)}.`,
+                }" should not be a relation.`,
                 fieldToCheck.astNode,
                 { location: fieldToCheck.relationAstNode },
             ),
@@ -52,9 +51,7 @@ export function checkRelation(
                 'RELATION',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
-                }" should be decorated with ${expectedRelationDeclaration}${getRequiredBySuffix(
-                    baselineField,
-                )}.`,
+                }" should be decorated with ${expectedRelationDeclaration}.`,
                 fieldToCheck.astNode,
             ),
         );
@@ -68,9 +65,7 @@ export function checkRelation(
                 'RELATION',
                 `Relation "${
                     baselineField.name
-                }" should be a forward relation, not an inverse relation${getRequiredBySuffix(
-                    baselineField,
-                )}.`,
+                }" should be a forward relation, not an inverse relation.`,
                 fieldToCheck.astNode,
                 { location: fieldToCheck.inverseOfAstNode },
             ),
@@ -87,9 +82,7 @@ export function checkRelation(
                 'RELATION',
                 `Relation "${
                     baselineField.name
-                }" should be an inverse relation with ${expectedInverseOfDeclaration}${getRequiredBySuffix(
-                    baselineField,
-                )}.`,
+                }" should be an inverse relation with ${expectedInverseOfDeclaration}.`,
                 fieldToCheck.astNode,
                 { location: fieldToCheck.inverseOfAstNode ?? fieldToCheck.relationAstNode },
             ),
@@ -105,9 +98,7 @@ export function checkRelation(
         context.addMessage(
             ValidationMessage.suppressableCompatibilityIssue(
                 'RELATION',
-                `Relation "${baselineField.name}" should ${hint}${getRequiredBySuffix(
-                    baselineField,
-                )}.`,
+                `Relation "${baselineField.name}" should ${hint}.`,
                 fieldToCheck.astNode,
                 {
                     location:

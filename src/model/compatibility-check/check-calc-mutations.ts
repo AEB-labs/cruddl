@@ -1,7 +1,6 @@
 import { CALC_MUTATIONS_OPERATORS_ARG } from '../../schema/constants';
 import { Field } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
-import { getRequiredBySuffix } from './describe-module-specification';
 
 /**
  * Checks whether all calc mutations defined in the baseline field are also present in the field to check
@@ -26,9 +25,7 @@ export function checkCalcMutations(
                 'CALC_MUTATIONS',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
-                }" should be decorated with ${expectedDeclaration}${getRequiredBySuffix(
-                    baselineField,
-                )}.`,
+                }" should be decorated with ${expectedDeclaration}.`,
                 fieldToCheck.astNode,
             ),
         );
@@ -56,7 +53,7 @@ export function checkCalcMutations(
         context.addMessage(
             ValidationMessage.suppressableCompatibilityIssue(
                 'CALC_MUTATIONS',
-                `${message}${getRequiredBySuffix(baselineField)}.`,
+                `${message}.`,
                 fieldToCheck.astNode,
                 {
                     location: operatorsAstNode ?? fieldToCheck.calcMutationsAstNode,

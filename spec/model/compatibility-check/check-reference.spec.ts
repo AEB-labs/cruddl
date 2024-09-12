@@ -27,8 +27,8 @@ describe('checkModel', () => {
             );
             expect(result.messages.length).to.equal(2);
             expect(result.getCompatibilityIssues().map((m) => m.message)).to.deep.equal([
-                'Field "Test.field" should be decorated with @reference(keyField: "keyField") (required by module "module1").',
-                'Field "Test.field" should not be a relation (required by module "module1").',
+                'Field "Test.field" should be decorated with @reference(keyField: "keyField").',
+                'Field "Test.field" should not be a relation.',
             ]);
         });
 
@@ -54,7 +54,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Reference should declare keyField: "keyField" (required by module "module1").',
+                'Reference should declare keyField: "keyField".',
             );
         });
 
@@ -75,10 +75,7 @@ describe('checkModel', () => {
                 `,
                 { allowWarningsAndInfosInBaselineProject: true },
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Reference should not declare a keyField (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Reference should not declare a keyField.');
         });
 
         it('rejects a wrong @reference(keyField)', () => {
@@ -102,7 +99,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Reference should declare keyField: "keyField" (required by module "module1").',
+                'Reference should declare keyField: "keyField".',
             );
         });
 

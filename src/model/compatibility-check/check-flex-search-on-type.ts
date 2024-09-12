@@ -1,6 +1,5 @@
 import { RootEntityType } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
-import { getRequiredBySuffix } from './describe-module-specification';
 import { ArgumentNode, Kind, ListValueNode, ObjectValueNode, print } from 'graphql';
 import { OrderDirection } from '../implementation/order';
 import { FLEX_SEARCH_ORDER_ARGUMENT } from '../../schema/constants';
@@ -15,9 +14,7 @@ export function checkFlexSearchOnType(
         context.addMessage(
             ValidationMessage.suppressableCompatibilityIssue(
                 'FLEX_SEARCH',
-                `Type "${
-                    baselineType.name
-                }" needs to be enable flexSearch${getRequiredBySuffix(baselineType)}.`,
+                `Type "${baselineType.name}" needs to be enable flexSearch.`,
                 typeToCheck.astNode,
                 { location: typeToCheck.isFlexSearchIndexedAstNode ?? typeToCheck.nameASTNode },
             ),
@@ -57,7 +54,7 @@ function checkPrimarySort(
                 'FLEX_SEARCH_ORDER',
                 `Type "${
                     baselineType.name
-                }" should not specify a custom ${FLEX_SEARCH_ORDER_ARGUMENT}${getRequiredBySuffix(baselineType)}.`,
+                }" should not specify a custom ${FLEX_SEARCH_ORDER_ARGUMENT}.`,
                 typeToCheck.astNode,
                 { location: typeToCheck.flexSearchPrimarySortAstNode ?? typeToCheck.nameASTNode },
             ),
@@ -80,9 +77,7 @@ function checkPrimarySort(
     context.addMessage(
         ValidationMessage.suppressableCompatibilityIssue(
             'FLEX_SEARCH_ORDER',
-            `Type "${
-                baselineType.name
-            }" should specify ${print(expectedArgumentNode)}${getRequiredBySuffix(baselineType)}.`,
+            `Type "${baselineType.name}" should specify ${print(expectedArgumentNode)}.`,
             typeToCheck.astNode,
             {
                 // if the user specified the argument, report it there (suggesting to change it)

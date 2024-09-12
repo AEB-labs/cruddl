@@ -32,7 +32,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "Test.items2" should not be a collect field (required by module "module1").',
+                'Field "Test.items2" should not be a collect field.',
             );
         });
 
@@ -61,7 +61,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "Test.items2" should be decorated with @collect(path: "items") (required by module "module1").',
+                'Field "Test.items2" should be decorated with @collect(path: "items").',
             );
         });
 
@@ -90,7 +90,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "Test.sum" should be decorated with @collect(path: "items.value", aggregate: SUM) (required by module "module1").',
+                'Field "Test.sum" should be decorated with @collect(path: "items.value", aggregate: SUM).',
             );
         });
 
@@ -119,10 +119,7 @@ describe('checkModel', () => {
                     }
                 `,
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Path should be "items.value1" (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Path should be "items.value1".');
         });
 
         it('rejects a wrong aggregate argument', () => {
@@ -150,7 +147,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Collect field should specify aggregate: COUNT_NULL (required by module "module1").',
+                'Collect field should specify aggregate: COUNT_NULL.',
             );
         });
 

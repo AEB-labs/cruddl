@@ -39,7 +39,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "Test.field" needs to be of type "String" (required by module "module1").',
+                'Field "Test.field" needs to be of type "String".',
             );
             expectQuickFix(
                 result,
@@ -63,10 +63,7 @@ describe('checkModel', () => {
                     }
                 `,
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Field "Test.field" needs to be a list (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Field "Test.field" needs to be a list.');
             expectQuickFix(
                 result,
                 'Change type to "[String]"',
@@ -89,10 +86,7 @@ describe('checkModel', () => {
                     }
                 `,
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Field "Test.field" should not be a list (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Field "Test.field" should not be a list.');
             expectQuickFix(
                 result,
                 'Change type to "String"',

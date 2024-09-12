@@ -27,7 +27,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "Test.field" should not have a default value (required by module "module1").',
+                'Field "Test.field" should not have a default value.',
             );
         });
 
@@ -51,7 +51,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'Field "Test.field" should be decorated with @defaultValue(value: "hello") (required by module "module1").',
+                'Field "Test.field" should be decorated with @defaultValue(value: "hello").',
             );
         });
 
@@ -73,10 +73,7 @@ describe('checkModel', () => {
                     allowWarningsAndInfosInProjectToCheck: true,
                 },
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Default value should be "correct" (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Default value should be "correct".');
         });
 
         it('rejects a wrong @defaultValue with an Int type', () => {
@@ -97,10 +94,7 @@ describe('checkModel', () => {
                     allowWarningsAndInfosInProjectToCheck: true,
                 },
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Default value should be 42 (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Default value should be 42.');
         });
 
         it('rejects a wrong @defaultValue with a Float type', () => {
@@ -121,10 +115,7 @@ describe('checkModel', () => {
                     allowWarningsAndInfosInProjectToCheck: true,
                 },
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Default value should be 6.28 (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Default value should be 6.28.');
         });
 
         it('rejects a wrong @defaultValue with an [Int] type', () => {
@@ -145,10 +136,7 @@ describe('checkModel', () => {
                     allowWarningsAndInfosInProjectToCheck: true,
                 },
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Default value should be [1, 2, 3] (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Default value should be [1, 2, 3].');
         });
 
         it('rejects a wrong @defaultValue with a value object type', () => {
@@ -179,10 +167,7 @@ describe('checkModel', () => {
                     allowWarningsAndInfosInProjectToCheck: true,
                 },
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Default value should be {a: true, b: false} (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Default value should be {a: true, b: false}.');
         });
 
         it('accepts a correct @defaultValue with a String type', () => {

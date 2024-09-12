@@ -21,10 +21,7 @@ describe('checkModel', () => {
                     }
                 `,
             );
-            expectSingleCompatibilityIssue(
-                result,
-                'Enum value "VALUE2" is missing (required by module "module1").',
-            );
+            expectSingleCompatibilityIssue(result, 'Enum value "VALUE2" is missing.');
         });
 
         it('accepts an additional enum value', () => {

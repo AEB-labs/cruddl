@@ -1,6 +1,5 @@
 import { Field } from '../implementation';
 import { ValidationContext, ValidationMessage } from '../validation';
-import { getRequiredBySuffix } from './describe-module-specification';
 
 /**
  * Checks whether @root and @parent are specified exactly when they are specified in the baseline field
@@ -16,7 +15,7 @@ export function checkRootAndParentDirectives(
                 'ROOT_FIELD',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
-                }" should not be decorated with @root${getRequiredBySuffix(baselineField)}.`,
+                }" should not be decorated with @root.`,
                 fieldToCheck.astNode,
                 { location: fieldToCheck.rootDirectiveAstNode },
             ),
@@ -29,7 +28,7 @@ export function checkRootAndParentDirectives(
                 'ROOT_FIELD',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
-                }" should be decorated with @root${getRequiredBySuffix(baselineField)}.`,
+                }" should be decorated with @root.`,
                 fieldToCheck.astNode,
             ),
         );
@@ -41,7 +40,7 @@ export function checkRootAndParentDirectives(
                 'PARENT_FIELD',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
-                }" should not be decorated with @parent${getRequiredBySuffix(baselineField)}.`,
+                }" should not be decorated with @parent.`,
                 fieldToCheck.astNode,
                 { location: fieldToCheck.parentDirectiveAstNode },
             ),
@@ -54,7 +53,7 @@ export function checkRootAndParentDirectives(
                 'PARENT_FIELD',
                 `Field "${baselineField.declaringType.name}.${
                     baselineField.name
-                }" should be decorated with @parent${getRequiredBySuffix(baselineField)}.`,
+                }" should be decorated with @parent.`,
                 fieldToCheck.astNode,
             ),
         );
