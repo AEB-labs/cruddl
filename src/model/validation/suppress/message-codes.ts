@@ -47,7 +47,6 @@ export const COMPATIBILITY_ISSUE_CODES = {
     DEFAULT_VALUE: 'Missing, superfluous or diverging @defaultValue',
     MISSING_ENUM_VALUE: 'An enum declaration is missing a value',
     FIELD_TYPE: 'A field has the wrong type',
-    MISSING_FIELD: 'An object type declaration is missing a field',
     KEY_FIELD: 'Missing or superfluous @key',
     REFERENCE: 'Missing, superfluous or diverging @reference',
     RELATION: 'Missing, superfluous or diverging @relation',

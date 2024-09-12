@@ -22,14 +22,14 @@ export function checkKeyField(
         // special case: If the baseline requires id: ID @key, the fieldToCheck might not be authored at all
         // (because it's an automatic system field). We need to tell the user that the field needs to be added.
         if (fieldToCheck.isSystemField && fieldToCheck.name === ID_FIELD && !fieldToCheck.astNode) {
+            // we currently can't suppress missing fields in general. Rather than adding a special
+            // code for "id", wait until we have a way to suppress missing fields in general.
             context.addMessage(
-                ValidationMessage.suppressableCompatibilityIssue(
-                    'MISSING_FIELD',
+                ValidationMessage.nonSuppressableCompatibilityIssue(
                     `Field "id: ID @key" needs to be specified${getRequiredBySuffix(
                         baselineField,
                     )}.`,
-                    fieldToCheck.declaringType.astNode,
-                    { location: fieldToCheck.declaringType.nameASTNode },
+                    fieldToCheck.declaringType.nameASTNode ?? fieldToCheck.declaringType.astNode,
                 ),
             );
         } else {
