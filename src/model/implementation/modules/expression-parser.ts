@@ -4,7 +4,6 @@ enum ParserState {
     EXPECT_IDENTIFIER,
     PARSING_IDENTIFIER,
     EXPECT_AMPERSAND_OR_END,
-    EXPECT_SECOND_AMPERSAND,
 }
 
 const EOF = Symbol('EOF');
@@ -70,7 +69,8 @@ export function parseModuleSpecificationExpression(
                         offset: offset - currentIdentifer.length,
                     });
                     if (char === '&') {
-                        state = ParserState.EXPECT_SECOND_AMPERSAND;
+                        // expecting next module
+                        state = ParserState.EXPECT_IDENTIFIER;
                     } else if (isWhitespace) {
                         state = ParserState.EXPECT_AMPERSAND_OR_END;
                     } else if (isEOF) {
@@ -79,36 +79,24 @@ export function parseModuleSpecificationExpression(
                         return {
                             error: {
                                 offset,
-                                message: `Expected identifier or "&&", but got "${char}".`,
+                                message: `Expected identifier or "&", but got "${char}".`,
                             },
                         };
                     }
                 }
                 break;
 
-            case ParserState.EXPECT_SECOND_AMPERSAND:
-                if (char === '&') {
-                    state = ParserState.EXPECT_IDENTIFIER;
-                } else {
-                    // user probably didn't know that you need to double the &
-                    return {
-                        error: {
-                            offset: offset - 1,
-                            message: `Expected "&&", but only got single "&".`,
-                        },
-                    };
-                }
-                break;
             case ParserState.EXPECT_AMPERSAND_OR_END:
                 if (char === '&') {
-                    state = ParserState.EXPECT_SECOND_AMPERSAND;
+                    // expecting next module
+                    state = ParserState.EXPECT_IDENTIFIER;
                 } else if (isEOF) {
                     // do nothing
                 } else {
                     return {
                         error: {
                             offset,
-                            message: `Expected "&&", but got "${char}".`,
+                            message: `Expected "&", but got "${char}".`,
                         },
                     };
                 }

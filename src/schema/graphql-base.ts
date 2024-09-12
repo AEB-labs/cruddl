@@ -267,7 +267,7 @@ const directivesBase: DocumentNode = gql`
         """
         A list of modules this type or field should be part of.
 
-        Can be an expression like module1 && module2.
+        Can be an expression like module1 & module2.
 
         Can include modules that are not listed in the declaring type.
         """
