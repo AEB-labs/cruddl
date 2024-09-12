@@ -48,14 +48,15 @@ export function checkObjectType(
                 );
             }
 
+            // cannot easily make this suppressable - if we would accept a @suppress on the type,
+            // that would supress all missing fields, not just this one
             context.addMessage(
-                ValidationMessage.suppressableCompatibilityIssue(
-                    'MISSING_FIELD',
+                ValidationMessage.nonSuppressableCompatibilityIssue(
                     `Field "${baselineType.name}.${
                         baselineField.name
                     }" is missing${getRequiredBySuffix(baselineField)}.`,
-                    typeToCheck.astNode,
-                    { location: typeToCheck.nameASTNode, quickFixes },
+                    typeToCheck.nameASTNode ?? typeToCheck.astNode,
+                    { quickFixes },
                 ),
             );
             continue;
