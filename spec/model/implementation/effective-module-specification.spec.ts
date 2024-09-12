@@ -27,7 +27,7 @@ describe('EffectiveModuleSpecification', () => {
                 ],
             });
             const output = input.simplify();
-            expect(output.toString()).to.equal('b, a && c');
+            expect(output.toString()).to.equal('b, a & c');
         });
 
         it('removes redundant clauses', () => {
@@ -39,7 +39,7 @@ describe('EffectiveModuleSpecification', () => {
                 ],
             });
             const output = input.simplify();
-            expect(output.toString()).to.equal('b, a && c');
+            expect(output.toString()).to.equal('b, a & c');
         });
 
         it('works with a more complicated case', () => {
@@ -64,7 +64,7 @@ describe('EffectiveModuleSpecification', () => {
                 ],
             });
             const output = input.simplify();
-            expect(output.toString()).to.equal('extra1, shipping, dangerous_goods && tms');
+            expect(output.toString()).to.equal('extra1, shipping, dangerous_goods & tms');
         });
     });
 });

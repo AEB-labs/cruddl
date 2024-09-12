@@ -330,7 +330,7 @@ describe('modules validator', () => {
         it('accepts an and combination of two modules', () => {
             assertValidatorAcceptsAndDoesNotWarn(
                 `
-                    type Foo @rootEntity @modules(in: ["module1 && module2"]) {
+                    type Foo @rootEntity @modules(in: ["module1 & module2"]) {
                         foo: String @modules(all: true)
                     }
                 `,
@@ -341,7 +341,7 @@ describe('modules validator', () => {
         it('accepts an and combination of two modules without space', () => {
             assertValidatorAcceptsAndDoesNotWarn(
                 `
-                    type Foo @rootEntity @modules(in: ["module1&&module2"]) {
+                    type Foo @rootEntity @modules(in: ["module1&module2"]) {
                         foo: String @modules(all: true)
                     }
                 `,
@@ -352,7 +352,7 @@ describe('modules validator', () => {
         it('accepts an and combination of three modules', () => {
             assertValidatorAcceptsAndDoesNotWarn(
                 `
-                    type Foo @rootEntity @modules(in: ["module1 && module2 && module3"]) {
+                    type Foo @rootEntity @modules(in: ["module1 & module2 & module3"]) {
                         foo: String @modules(all: true)
                     }
                 `,
@@ -372,14 +372,14 @@ describe('modules validator', () => {
             );
         });
 
-        it('rejects an expression with a singular &', () => {
+        it('rejects an expression with a double &&', () => {
             assertValidatorRejects(
                 `
-                    type Foo @rootEntity @modules(in: ["module1 & module2"]) {
+                    type Foo @rootEntity @modules(in: ["module1 && module2"]) {
                         foo: String @modules(all: true)
                     }
                 `,
-                'Expected "&&", but only got single "&".',
+                'Expected identifier, but got "&".',
                 { withModuleDefinitions: true },
             );
         });
@@ -391,15 +391,15 @@ describe('modules validator', () => {
                         foo: String @modules(all: true)
                     }
                 `,
-                'Expected "&&", but got "m".',
+                'Expected "&", but got "m".',
                 { withModuleDefinitions: true },
             );
         });
 
-        it('rejects an expression that ends with &&', () => {
+        it('rejects an expression that ends with &', () => {
             assertValidatorRejects(
                 `
-                    type Foo @rootEntity @modules(in: ["module1 &&"]) {
+                    type Foo @rootEntity @modules(in: ["module1 &"]) {
                         foo: String @modules(all: true)
                     }
                 `,
@@ -415,15 +415,15 @@ describe('modules validator', () => {
                         foo: String @modules(all: true)
                     }
                 `,
-                'Expected "&&", but only got single "&".',
+                'Expected identifier.',
                 { withModuleDefinitions: true },
             );
         });
 
-        it('rejects an expression that starts with &&', () => {
+        it('rejects an expression that starts with &', () => {
             assertValidatorRejects(
                 `
-                    type Foo @rootEntity @modules(in: ["&& module1"]) {
+                    type Foo @rootEntity @modules(in: ["& module1"]) {
                         foo: String @modules(all: true)
                     }
                 `,
@@ -439,7 +439,7 @@ describe('modules validator', () => {
                         foo: String @modules(all: true)
                     }
                 `,
-                'Expected identifier or "&&", but got "!".',
+                'Expected identifier or "&", but got "!".',
                 { withModuleDefinitions: true },
             );
         });

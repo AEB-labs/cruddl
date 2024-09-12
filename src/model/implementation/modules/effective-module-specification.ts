@@ -126,6 +126,6 @@ export class EffectiveModuleSpecificationClause {
     }
 
     toString() {
-        return this.andCombinedModules.join(' && ');
+        return this.andCombinedModules.join(' & ');
     }
 }
