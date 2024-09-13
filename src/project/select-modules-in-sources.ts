@@ -21,6 +21,7 @@ import { findDirectiveWithName } from '../schema/schema-utils';
 import { Project, ProjectOptions } from './project';
 import { ProjectSource } from './source';
 import { isReadonlyArray } from '../utils/utils';
+import { isCommentOnlySource } from '../graphql/is-comment-only-source';
 
 export interface ModuleSelectionOptions {
     /**
@@ -255,6 +256,10 @@ function selectModulesInGraphQLSource({
         }
     }
 
+    if (!changes) {
+        return source.body;
+    }
+
     let currentPosition = 0;
     let output = '';
     for (let i = 0; i <= changes.length; i++) {
@@ -273,6 +278,11 @@ function selectModulesInGraphQLSource({
         if (change) {
             currentPosition = changes[i].location.end;
         }
+    }
+
+    // if we removed everything except comments, delete the file
+    if (isCommentOnlySource(output)) {
+        return undefined;
     }
 
     return output;
