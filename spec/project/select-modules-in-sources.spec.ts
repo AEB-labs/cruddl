@@ -182,6 +182,53 @@ describe('selectModulesInProjectSource', () => {
             expect(result.getModel().modules).to.deep.equal([]);
         });
 
+        it('removes files that become comment-only', () => {
+            const project = new Project({
+                sources: [
+                    new ProjectSource(
+                        'modules.json',
+                        JSON.stringify({
+                            modules: ['module1', 'module2', 'module3', 'extra1', 'extra2'],
+                        }),
+                    ),
+                    gql`
+                        # a comment in the keeper file
+                        type Keeper @rootEntity @modules(in: "module1", includeAllFields: true) {
+                            key: String @key
+                        }
+                    `.loc!.source,
+                    gql`
+                        # a comment in the discard file
+                        type Discard @rootEntity @modules(in: "extra2", includeAllFields: true) {
+                            key: String @key
+                        }
+                    `.loc!.source,
+                    // will also remove this one because we're throwing away comment-only file when
+                    // parsing a project. Documenting that behavior in this test case, but it's
+                    // probably fine either way
+                    {
+                        name: 'empty.graphqls',
+                        body: "# a file that's already comment-only",
+                    },
+                ],
+                modelOptions: { withModuleDefinitions: true },
+            });
+            expectToBeValid(project);
+
+            const result = project.withModuleSelection(['module1', 'module2'], {
+                removeModuleDeclarations: true,
+            });
+            expectToBeValid(result);
+            expect(result.sources.map((s) => s.body)).to.deep.equal([
+                `
+                        # a comment in the keeper file
+                        type Keeper @rootEntity  {
+                            key: String @key
+                        }
+                    `,
+            ]);
+        });
+
         it('removes the modules part in an object file with modules and something else', () => {
             const project = new Project({
                 sources: [
