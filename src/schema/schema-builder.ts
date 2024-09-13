@@ -3,8 +3,10 @@ import {
     getLocation,
     GraphQLError,
     GraphQLSchema,
-    parse,
     Kind as GraphQLKind,
+    Lexer,
+    parse,
+    TokenKind,
 } from 'graphql';
 import { parse as JSONparse } from 'json-source-map';
 import { compact } from 'lodash';
@@ -53,6 +55,7 @@ import {
 import { getLineEndPosition } from './schema-utils';
 import jsonLint = require('json-lint');
 import stripJsonComments = require('strip-json-comments');
+import { isCommentOnlySource } from '../graphql/is-comment-only-source';
 
 /**
  * Validates a project and thus determines whether createSchema() would succeed
@@ -311,7 +314,9 @@ function parseGraphQLsSource(
     options: ProjectOptions,
     validationContext: ValidationContext,
 ): ParsedGraphQLProjectSource | undefined {
-    if (projectSource.body.trim() === '') {
+    // parse() does not accept documents, and there is no option to make it accept them either
+    // it would be annoying if you could not have empty files
+    if (isCommentOnlySource(projectSource.body)) {
         return undefined;
     }
 
