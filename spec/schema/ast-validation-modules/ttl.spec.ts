@@ -2,8 +2,10 @@ import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
+    validate,
 } from './helpers';
 import gql from 'graphql-tag';
+import { expect } from 'chai';
 
 describe('timeToLive config', () => {
     it('accepts simple case', () => {
@@ -433,6 +435,30 @@ describe('timeToLive config', () => {
                 }
             `,
             'cascadeFields only support 1-to-n and 1-to-1 relations. You can change "Test.nested" to a 1-to-1 relation by changing the type of "Nested.tests" to "Test".',
+            {
+                timeToLive: [
+                    {
+                        typeName: 'Test',
+                        dateField: 'finishedAt',
+                        expireAfterDays: 3,
+                        cascadeFields: ['nested'],
+                    },
+                ],
+            },
+        );
+    });
+
+    it('does not throw if cascadeFields are referencing relations that are non-object types', () => {
+        // previously, we had a bug where this threw instead of reporting an error
+        // it can quickly happen if there is a syntax error in the file that defines the relation type
+        assertValidatorRejects(
+            gql`
+                type Test @rootEntity {
+                    finishedAt: DateTime
+                    nested: String @relation
+                }
+            `,
+            'Type "String" cannot be used with @relation because it is not a root entity type.',
             {
                 timeToLive: [
                     {

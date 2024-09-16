@@ -133,7 +133,9 @@ export class TimeToLiveType implements ModelComponent {
 
             // only allow cascade on forward relations. See Field#validateRelation() for details.
             if (!field.type.isObjectType) {
-                throw new Error(`Expected ${field.type.name} to be an object type`);
+                // isRelation = true if the type is not an object type is already an error, so we
+                // don't need to report an additional error
+                return;
             }
             const inverseField = field.type.fields.find((f) => f.inverseOf === field);
             if (!inverseField) {
