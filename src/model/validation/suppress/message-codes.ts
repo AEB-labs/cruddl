@@ -62,6 +62,8 @@ export const COMPATIBILITY_ISSUE_CODES = {
 
     // this is separate because it's more likely to be intentionally diverging
     FLEX_SEARCH_SEARCH: 'Missing includeInSearch in @flexSearch or @flexSearchFullText',
+
+    INDICES: 'Missing indices',
 } as const satisfies MessageCodes;
 
 export type CompatibilityIssueCode = keyof typeof COMPATIBILITY_ISSUE_CODES;
