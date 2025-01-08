@@ -1,5 +1,5 @@
 import { Database } from 'arangojs';
-import { Collection } from 'arangojs/collection';
+import { Collection } from 'arangojs/collections';
 import { existsSync, readFileSync } from 'fs';
 import { ExecutionResult, graphql, GraphQLSchema } from 'graphql';
 import stripJsonComments from 'strip-json-comments';
