@@ -13,7 +13,7 @@ import {
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { JSCompoundQuery, JSExecutableQuery } from './js';
-import { getJSQuery } from './js-generator';
+import { FlexSearchAggregationNotSupportedError, getJSQuery } from './js-generator';
 import { v4 as uuid } from 'uuid';
 import { DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
 import { isReadonlyArray } from '../../utils/utils';
@@ -238,11 +238,9 @@ export class InMemoryAdapter implements DatabaseAdapter {
                     if (!validator) {
                         throw new Error(`Used unknown validator: ${key}`);
                     }
-                    try {
-                        validator(query.resultValidator[key], result);
-                    } catch (error) {
-                        throw error;
-                    }
+
+                    // will throw a RuntimeValidationError if the validator detects an issue
+                    validator(query.resultValidator[key], result);
                 }
             }
         }

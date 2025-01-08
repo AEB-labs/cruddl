@@ -16,6 +16,8 @@ export interface QueryResultValidatorFunctionProvider {
      * rely on any libraries.
      *
      * The actual arguments for the function are the result of getValidatorData() and the value of the result variable.
+     *
+     * Should throw a RuntimeValidationError if the validation fails
      */
     getValidatorFunction(): (validationData: any, result: any) => void;
 }
@@ -45,6 +47,21 @@ export interface ValidatorParams {
 }
 
 /**
+ * An error that is thrown if a validator fails
+ */
+export class RuntimeValidationError extends Error {
+    readonly code: string | undefined;
+
+    readonly isCruddlRuntimeValidationError: true = true;
+
+    constructor(message: string, args: { readonly code?: string } = {}) {
+        super(message);
+        this.name = this.constructor.name;
+        this.code = args.code;
+    }
+}
+
+/**
  * A validator that verifies that a value is truthy
  */
 export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryResultValidator {
@@ -64,9 +81,8 @@ export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryR
     /* istanbul ignore next */
     static getValidatorFunction() {
         return function (validationData: any, result: any) {
-            /**
-             * An error that is thrown if a validator fails
-             */
+            // a copy of RuntimeValidationError as declared above, so it will be included in the function code
+            // it will get translated into an actual RuntimeValidationError by fixupRuntimeValidationError().
             class RuntimeValidationError extends Error {
                 readonly code: string | undefined;
 
@@ -128,9 +144,8 @@ export class NoImplicitlyTruncatedListValidator extends QueryNode implements Que
     /* istanbul ignore next */
     static getValidatorFunction() {
         return function (validationData: any, result: any) {
-            /**
-             * An error that is thrown if a validator fails
-             */
+            // a copy of RuntimeValidationError as declared above, so it will be included in the function code
+            // it will get translated into an actual RuntimeValidationError by fixupRuntimeValidationError().
             class RuntimeValidationError extends Error {
                 readonly code: string | undefined;
 
@@ -203,9 +218,8 @@ export class ErrorIfEmptyResultValidator extends QueryNode implements QueryResul
     /* istanbul ignore next */
     static getValidatorFunction() {
         return function (validationData: any, result: any) {
-            /**
-             * An error that is thrown if a validator fails
-             */
+            // a copy of RuntimeValidationError as declared above, so it will be included in the function code
+            // it will get translated into an actual RuntimeValidationError by fixupRuntimeValidationError().
             class RuntimeValidationError extends Error {
                 readonly code: string | undefined;
 
@@ -284,9 +298,8 @@ export class NoRestrictingObjectsOnDeleteValidator
             validationData: NoRestrictingObjectsOnDeleteValidatorData,
             result: ReadonlyArray<string>,
         ) {
-            /**
-             * An error that is thrown if a validator fails
-             */
+            // a copy of RuntimeValidationError as declared above, so it will be included in the function code
+            // it will get translated into an actual RuntimeValidationError by fixupRuntimeValidationError().
             class RuntimeValidationError extends Error {
                 readonly code: string | undefined;
 

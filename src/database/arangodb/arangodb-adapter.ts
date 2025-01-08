@@ -1,15 +1,18 @@
 import { Database } from 'arangojs';
+import { v4 as uuid } from 'uuid';
 import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
-import { DefaultClock, ExecutionOptions } from '../../execution/execution-options';
+import { ExecutionOptions } from '../../execution/execution-options';
 import {
-    ConflictRetriesExhaustedError,
-    TransactionCancelledError,
-    TransactionTimeoutError,
+    ConflictRetriesExhaustedError
 } from '../../execution/runtime-errors';
 import { Model } from '../../model';
-import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
+import {
+    ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS,
+    QueryNode,
+    RuntimeValidationError,
+} from '../../query-tree';
 import { FlexSearchTokenization } from '../../query-tree/flex-search';
 import { Mutable } from '../../utils/util-types';
 import { objectValues, sleep, sleepInterruptible } from '../../utils/utils';
@@ -37,14 +40,12 @@ import {
     initDatabase,
     RETRY_DELAY_RANDOM_FRACTION,
 } from './config';
-import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes';
+import { ERROR_ARANGO_CONFLICT } from './error-codes';
 import { hasRevisionAssertions } from './revision-helper';
 import { SchemaAnalyzer } from './schema-migration/analyzer';
 import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
-import { TransactionError } from '../../execution/transaction-error';
 import { ArangoDBVersion, ArangoDBVersionHelper } from './version-helper';
-import { v4 as uuid } from 'uuid';
 
 const requestInstrumentationBodyKey = 'cruddlRequestInstrumentation';
 
@@ -57,18 +58,23 @@ interface ArangoExecutionOptions {
     readonly transactionID: string;
 }
 
-interface ArangoError extends Error {
-    readonly errorNum?: number;
-    readonly errorMessage?: string;
+/**
+ * An error reported by ArangoDB
+ *
+ * For error codes, see https://docs.arangodb.com/stable/develop/error-codes-and-meanings/
+ */
+export class ArangoDBQueryError extends Error {
+    constructor(message: string);
 }
 
-function isArangoError(error: Error): error is ArangoError {
-    return 'errorNum' in error;
-}
+//
 
 interface ArangoTransactionResult {
     readonly data?: any;
-    readonly error?: ArangoError;
+    /**
+     * This is NOT an Error instance, as this interface is describing a plain JSON-deserialized object
+     */
+    readonly error?: unknown;
     readonly timings?: { readonly [key: string]: number };
     readonly plans?: ReadonlyArray<any>;
     readonly stats: TransactionStats;
@@ -78,6 +84,11 @@ interface TransactionResult {
     readonly data?: any;
     readonly timings?: Pick<DatabaseAdapterTimings, 'database' | 'dbConnection'>;
     readonly plans?: ReadonlyArray<any>;
+    /**
+     * An error that occurred in the database while executing the transaction
+     *
+     * This is a real Error instance, e.g. a RuntimeValidationError or an ArangoError (from arangojs/error)
+     */
     readonly databaseError?: Error;
     readonly stats: TransactionStats;
 
@@ -269,10 +280,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                         }
                     }
                 } catch (e: any) {
-                    rollbackWithError({
-                        message: e.message,
-                        code: e.code,
-                    });
+                    rollbackWithError(e);
                 }
             }
 
@@ -422,39 +430,6 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             plan,
             stats,
         };
-    }
-
-    private processDatabaseError(
-        error: Error,
-        {
-            hasTimedOut,
-            wasCancelled,
-            transactionTimeoutMs,
-        }: {
-            hasTimedOut: boolean;
-            wasCancelled: boolean;
-            transactionTimeoutMs: number | undefined;
-        },
-    ): Error {
-        // might be just something like a TypeError
-        if (!isArangoError(error)) {
-            return new TransactionError(error.message, error);
-        }
-
-        // some errors need to be translated because we only can differentiate with the context here
-        if (error.errorNum === ERROR_QUERY_KILLED) {
-            // only check these flags if a QUERY_KILLED error is thrown because we might have initiated a query
-            // kill due to timeout / cancellation, but it might have completed or errored for some other reason
-            // before the kill is executed
-            if (hasTimedOut) {
-                return new TransactionTimeoutError({ timeoutMs: transactionTimeoutMs });
-            } else if (wasCancelled) {
-                return new TransactionCancelledError();
-            }
-        }
-
-        // the arango errors are weird and have their message in "errorMessage"...
-        return new TransactionError(error.errorMessage || error.message, error);
     }
 
     private async executeTransactionWithRetries(
@@ -692,7 +667,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             timings: databaseReportedTimings,
             data,
             plans,
-            error: databaseError,
+            error: serializedError,
         } = transactionResult;
         isTransactionFinished = true;
 
@@ -733,6 +708,16 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     total: dbInternalTotal,
                 },
             };
+        }
+
+        let databaseError: Error | undefined;
+        if (serializedError) {
+            if (isSerializedRuntimeValidationError(serializedError)) {
+                // fixup the error so it behaves the same as if the validation code would have been executed in-process
+                databaseError = new RuntimeValidationError(serializedError.message, {
+                    code: serializedError.code,
+                });
+            } else if 
         }
 
         return {
