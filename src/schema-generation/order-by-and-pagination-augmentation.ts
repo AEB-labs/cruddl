@@ -16,6 +16,7 @@ import {
     OrderSpecification,
     PreExecQueryParms,
     QueryNode,
+    RuntimeError,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     VariableQueryNode,
@@ -120,7 +121,7 @@ export class OrderByAndPaginationAugmentation {
                     executionOptions.implicitLimitForRootEntityQueries &&
                     data.length > executionOptions.implicitLimitForRootEntityQueries
                 ) {
-                    throw new Error(
+                    throw new RuntimeError(
                         `Collection is truncated by default to ${executionOptions.implicitLimitForRootEntityQueries} elements but contains more elements than this limit. Specify a limit manually to retrieve all elements of the collection.`,
                     );
                 }
