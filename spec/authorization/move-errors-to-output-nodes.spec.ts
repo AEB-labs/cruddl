@@ -3,16 +3,15 @@ import { moveErrorsToOutputNodes } from '../../src/authorization/move-errors-to-
 import {
     ConditionalQueryNode,
     ConstBoolQueryNode,
+    FLEX_SEARCH_TOO_MANY_OBJECTS,
     ListQueryNode,
     ObjectQueryNode,
     PreExecQueryParms,
     PropertySpecification,
-    FLEX_SEARCH_TOO_MANY_OBJECTS,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     WithPreExecutionQueryNode,
 } from '../../src/query-tree';
-import { TOO_MANY_OBJECTS_ERROR } from '../../src/schema-generation/flex-search-generator';
 
 describe('move-errors-to-output-nodes', () => {
     it('moves errors in filter up', () => {
@@ -153,10 +152,10 @@ describe('move-errors-to-output-nodes', () => {
                 new WithPreExecutionQueryNode({
                     resultNode: new ConditionalQueryNode(
                         new ConstBoolQueryNode(true),
-                        new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR, {
+                        new RuntimeErrorQueryNode('Too many objects.', {
                             code: FLEX_SEARCH_TOO_MANY_OBJECTS,
                         }),
-                        new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR, {
+                        new RuntimeErrorQueryNode('Too many objects.', {
                             code: FLEX_SEARCH_TOO_MANY_OBJECTS,
                         }),
                     ),

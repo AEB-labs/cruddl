@@ -1,6 +1,6 @@
 import { RelationSide, RootEntityType } from '../model';
-import { TOO_MANY_OBJECTS_ERROR } from './../schema-generation/flex-search-generator';
 import { QueryNode } from './base';
+import { TOO_MANY_OBJECTS_ERROR } from './errors';
 
 export interface QueryResultValidatorFunctionProvider {
     /**

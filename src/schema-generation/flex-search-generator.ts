@@ -51,7 +51,6 @@ import { orderArgMatchesPrimarySort } from './utils/flex-search-utils';
 import { or } from './utils/input-types';
 
 export const DEFAULT_FLEXSEARCH_MAX_FILTERABLE_AMOUNT: number = 1000;
-export const TOO_MANY_OBJECTS_ERROR = 'Too many objects.';
 
 /**
  * Augments list fields with filter and pagination features
@@ -243,7 +242,7 @@ export class FlexSearchGenerator {
                         ],
                         resultNode: new ConditionalQueryNode(
                             assertionVariable,
-                            new RuntimeErrorQueryNode(TOO_MANY_OBJECTS_ERROR, {
+                            new RuntimeErrorQueryNode('Too many objects.', {
                                 code: FLEX_SEARCH_TOO_MANY_OBJECTS,
                             }),
                             sourceNode,
