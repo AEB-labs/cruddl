@@ -201,21 +201,28 @@ function parseYAMLSource(
 
     root.errors.forEach((error) => {
         const severity = error.isWarning ? Severity.WARNING : Severity.ERROR;
-        const endPos = getLineEndPosition(error.mark.line + 1, projectSource);
+
+        // Errors reported do not have an end, only a start. We just choose the line end as the end.
+        // While there is a toLineEnd boolean, we ignore this, because what else would we really do?
+        let location: MessageLocation;
+        if (error.mark.position < projectSource.body.length) {
+            location = new MessageLocation(
+                projectSource,
+                new SourcePosition(error.mark.position, error.mark.line + 1, error.mark.column + 1),
+                getLineEndPosition(error.mark.line + 1, projectSource),
+            );
+        } else {
+            // This is an exception: An error can be reported at the EOL. Calculating the EOL would not work
+            // -> just report the error at the last character
+            location = new MessageLocation(
+                projectSource,
+                projectSource.body.length - 1,
+                projectSource.body.length,
+            );
+        }
+
         validationContext.addMessage(
-            new ValidationMessage({
-                severity,
-                message: error.reason,
-                location: new MessageLocation(
-                    projectSource,
-                    new SourcePosition(
-                        error.mark.position,
-                        error.mark.line + 1,
-                        error.mark.column + 1,
-                    ),
-                    endPos,
-                ),
-            }),
+            new ValidationMessage({ severity, message: error.reason, location }),
         );
     });
 
