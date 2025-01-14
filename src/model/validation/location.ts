@@ -46,6 +46,13 @@ export class MessageLocation {
                 value: new ProjectSource(this.sourceName, ''),
             });
         }
+
+        if (typeof _start !== 'number' && !(_start instanceof SourcePosition)) {
+            throw new Error(`start must be either a number or a SourcePosition`);
+        }
+        if (typeof _end !== 'number' && !(_end instanceof SourcePosition)) {
+            throw new Error(`end must be either a number or a SourcePosition`);
+        }
     }
 
     static from(location: LocationLike | undefined): MessageLocation | undefined {

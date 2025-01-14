@@ -256,5 +256,5 @@ export function getLineEndPosition(targetLine: number, source: ProjectSource): S
         }
     }
 
-    return { line: targetLine, offset: curIndex - 1, column: column };
+    return new SourcePosition(curIndex - 1, targetLine, column);
 }
