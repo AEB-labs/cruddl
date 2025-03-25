@@ -1,11 +1,13 @@
 import { FlexSearchPrimarySortClause } from '../../model/implementation/flex-search';
 import { OrderDirection } from '../../model/implementation/order';
+import { RootEntityType } from '../../model';
+import { OrderByEnumType, OrderByEnumValue } from '../order-by-enum-generator';
 
 export function orderArgMatchesPrimarySort(
     clauses: ReadonlyArray<string> | undefined,
     primarySort: ReadonlyArray<FlexSearchPrimarySortClause>,
 ): boolean {
-    // TODO what about sort clauses that are added automatically because the user used cursor-based pagination?
+    // if no orderBy is given, we will always default to the primarySort order (OrderByAndPaginationAugmentation)
     if (!clauses || !clauses.length) {
         return true;
     }
@@ -13,6 +15,8 @@ export function orderArgMatchesPrimarySort(
     if (clauses.length > primarySort.length) {
         return false;
     }
+
+    // note that primary sort cannot be used backwards
 
     for (let index = 0; index < clauses.length; index++) {
         const arg = clauses[index];
@@ -36,4 +40,20 @@ export function orderArgMatchesPrimarySort(
     }
 
     return true;
+}
+
+/**
+ * Generates a list of orderBy enum values that exactly represent the primary search
+ */
+export function getSortClausesForPrimarySort(
+    objectType: RootEntityType,
+    orderByType: OrderByEnumType,
+): ReadonlyArray<OrderByEnumValue> {
+    // this would be cleaner if the primary sort was actually parsed into a ModelComponent (see e.g. the Index and IndexField classes)
+    return objectType.flexSearchPrimarySort.map((clause) =>
+        orderByType.getValueOrThrow(
+            clause.field.path.replace('.', '_') +
+                (clause.direction === OrderDirection.ASCENDING ? '_ASC' : '_DESC'),
+        ),
+    );
 }

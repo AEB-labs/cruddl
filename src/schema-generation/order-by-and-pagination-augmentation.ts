@@ -45,6 +45,10 @@ import { QueryNodeField } from './query-node-object-type';
 import { RootFieldHelper } from './root-field-helper';
 import { and, binaryOp, binaryOpWithAnaylzer } from './utils/input-types';
 import { getOrderByValues } from './utils/pagination';
+import {
+    getSortClausesForPrimarySort,
+    orderArgMatchesPrimarySort,
+} from './utils/flex-search-utils';
 
 export enum LimitTypeCheckType {
     RESULT_VALIDATOR = 'RESULT_VALIDATOR',
@@ -201,17 +205,40 @@ export class OrderByAndPaginationAugmentation {
                     // ok. If the sorting matches the primary sort, sorting is efficient, but you still need to specify
                     // it, otherwise, sometimes the order can be wrong (after inserting or updating documents).
 
-                    // this may generate a SORT clause that is not covered by the flexsearch index,
-                    // but the TooManyObject check of flex-search-generator already handles this case to throw
-                    // a TooManyObjects error if needed.
-                    orderByValues = getOrderByValues(args, orderByType, {
-                        isAbsoluteOrderRequired,
-                    });
+                    // flexsearch is mostly used in tables, where a consistent absolute sort order is important
+                    // At the same time, primary sort is relatively cheap to use (in a test with primed caches on
+                    // 10 million objects, slowdown was 9% (after warmup), and the whole operation was still sub-millisecond)
+                    // for this reason, we guarantee an absolute, well-defined sort ordering at all times in flexsearch
+                    // - if possible (does not contradict orderBy), we use the primarySort, which is very fast
+                    // - if not possible, sorting will happen in-memory anyway, so it does not hurt to make it absolute
+                    if (
+                        orderArgMatchesPrimarySort(
+                            args[ORDER_BY_ARG],
+                            listNode.rootEntityType.flexSearchPrimarySort,
+                        )
+                    ) {
+                        // note that the primary sort always has an absolute order
+                        // (there is special logic in RootEntityType to guarantee this)
+                        orderByValues = getSortClausesForPrimarySort(
+                            listNode.rootEntityType,
+                            orderByType,
+                        );
+                    } else {
+                        // this will generate a SORT clause that is not covered by the primary sort,
+                        // so sorting will happen purely in memory.
+                        // FlexSearchGenerator.augmentWithCondition will add a check to throw a
+                        // FLEX_SEARCH_TOO_MANY_OBJECTS error if there are too many objects to sort in memory
+                        // (it has the same orderArgMatchesPrimarySort-based logic)
+                        orderByValues = getOrderByValues(args, orderByType, {
+                            // Since we're already sorting in-memory, it does not hurt to make this ordering absolute
+                            isAbsoluteOrderRequired: true,
+                        });
+                    }
 
-                    // for now, cursor-based pagination is only allowed when we can use flexsearch filters for the
-                    // paginationFilter. This simplifies the implementation, but maybe we should support it in the
-                    // future for consistency. Then however we need to adjust the too-many-objects check
-                    // do this check also if cursor is just requested so we get this error on the first page
+                    // Cursor-based pagination is only allowed when we can use flexsearch filters for the
+                    // paginationFilter. Otherwise, we would need a postFilter for the "after" arg,
+                    // and that could lead to bad performance / TOO_MANY_OBJECTS error. Better be
+                    // consistent and outright disallow cursor-based pagination in this case
                     if (isCursorRequested || afterArg) {
                         const violatingClauses = orderByValues.filter((val) =>
                             val.path.some((field) => !field.isFlexSearchIndexed),

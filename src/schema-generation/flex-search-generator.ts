@@ -222,8 +222,10 @@ export class FlexSearchGenerator {
             ...schemaField,
             transform: (sourceNode, args, context) => {
                 const assertionVariable = new VariableQueryNode();
-                // If a filter or an order_by is specified, a pre-execution query node is added that throws a TOO_MANY_OBJECTS_ERROR if the amount of objects the filter or order_by is
-                // used on is to large
+                // If a filter or an order_by is specified, a pre-execution query node is added
+                // that throws a TOO_MANY_OBJECTS_ERROR if the amount of objects returned by the
+                // flexSearchFilter is too large. This prevents performance issues with
+                // in-memory filtering and sorting.
                 const filterArg = args[POST_FILTER_ARG] || args[FILTER_ARG];
                 if (
                     (filterArg && Object.keys(filterArg).length > 0) ||
