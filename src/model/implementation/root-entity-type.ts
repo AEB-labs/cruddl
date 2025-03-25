@@ -179,6 +179,8 @@ export class RootEntityType extends ObjectTypeBase {
     @memorize()
     get discriminatorField(): Field {
         // later, we can return @key here when it exists and is required
+        // however, consider: this is used everywhere in primarySort, so changing it would cause
+        // migrations to re-create all flexsearch views
         return this.getFieldOrThrow(ID_FIELD);
     }
 

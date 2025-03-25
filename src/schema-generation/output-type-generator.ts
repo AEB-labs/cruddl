@@ -36,7 +36,10 @@ import {
     QueryNodeOutputType,
 } from './query-node-object-type';
 import { RootFieldHelper } from './root-field-helper';
-import { orderArgMatchesPrimarySort } from './utils/flex-search-utils';
+import {
+    getSortClausesForPrimarySort,
+    orderArgMatchesPrimarySort,
+} from './utils/flex-search-utils';
 import { getOrderByValues } from './utils/pagination';
 
 export class OutputTypeGenerator {
@@ -159,13 +162,7 @@ export class OutputTypeGenerator {
                 objectType.flexSearchPrimarySort,
             )
         ) {
-            // this would be cleaner if the primary sort was actually parsed into a ModelComponent (see e.g. the Index and IndexField classes)
-            orderByValues = objectType.flexSearchPrimarySort.map((clause) =>
-                orderByType.getValueOrThrow(
-                    clause.field.path.replace('.', '_') +
-                        (clause.direction === OrderDirection.ASCENDING ? '_ASC' : '_DESC'),
-                ),
-            );
+            orderByValues = getSortClausesForPrimarySort(objectType, orderByType);
         } else {
             orderByValues = getOrderByValues(listFieldRequest.args, orderByType, {
                 isAbsoluteOrderRequired: true,
