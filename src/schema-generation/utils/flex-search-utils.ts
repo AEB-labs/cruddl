@@ -52,7 +52,7 @@ export function getSortClausesForPrimarySort(
     // this would be cleaner if the primary sort was actually parsed into a ModelComponent (see e.g. the Index and IndexField classes)
     return objectType.flexSearchPrimarySort.map((clause) =>
         orderByType.getValueOrThrow(
-            clause.field.path.replace('.', '_') +
+            clause.field.path.replaceAll('.', '_') +
                 (clause.direction === OrderDirection.ASCENDING ? '_ASC' : '_DESC'),
         ),
     );
