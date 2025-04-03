@@ -59,6 +59,12 @@ export interface ArangoSearchConfiguration {
      * Wait at least this many commits before removing unused files in the data directory
      */
     readonly cleanupIntervalStep?: number;
+
+    /**
+     * Specify options of the consolidation policy. If not specified, new views will use defaults
+     * and existing views will not be changed.
+     */
+    readonly consolidationPolicy?: TierConsolidationPolicy;
 }
 
 export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSearchDefinition> {
@@ -189,6 +195,8 @@ function getPropertiesFromDefinition(
         cleanupIntervalStep:
             performanceParams.cleanupIntervalStep ?? configuration?.cleanupIntervalStep ?? 2,
 
+        consolidationPolicy: configuration?.consolidationPolicy,
+
         primarySort: definition?.primarySort ? definition.primarySort.slice() : [],
     };
 
@@ -272,13 +280,16 @@ export function isEqualProperties(
 
     return (
         isEqual(definitionProperties.links, viewProperties.links) &&
-        isEqual(definitionProperties.primarySort, viewProperties.primarySort) &&
-        isEqual(definitionProperties.commitIntervalMsec, viewProperties.commitIntervalMsec) &&
-        isEqual(
-            definitionProperties.consolidationIntervalMsec,
-            viewProperties.consolidationIntervalMsec,
-        ) &&
-        isEqual(definitionProperties.cleanupIntervalStep, viewProperties.cleanupIntervalStep)
+            isEqual(definitionProperties.primarySort, viewProperties.primarySort) &&
+            isEqual(definitionProperties.commitIntervalMsec, viewProperties.commitIntervalMsec) &&
+            isEqual(
+                definitionProperties.consolidationIntervalMsec,
+                viewProperties.consolidationIntervalMsec,
+            ) &&
+            isEqual(definitionProperties.cleanupIntervalStep, viewProperties.cleanupIntervalStep),
+        // only compare consolidationPolicy if it's configured
+        !definitionProperties.consolidationPolicy ||
+            isEqual(definitionProperties.consolidationPolicy, viewProperties.consolidationPolicy)
     );
 }
 
