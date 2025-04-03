@@ -5,6 +5,7 @@ import {
     ArangoSearchViewLinkOptions,
     ArangoSearchViewPropertiesOptions,
     CreateArangoSearchViewOptions,
+    TierConsolidationPolicy,
     View,
     ViewProperties,
 } from 'arangojs/view';
@@ -65,6 +66,18 @@ export interface ArangoSearchConfiguration {
      * and existing views will not be changed.
      */
     readonly consolidationPolicy?: TierConsolidationPolicy;
+
+    /**
+     * In some cases, arangosearch cannot be updated but need to be recreated. By default, the view
+     * is deleted first, then recreated. If this is true, the view is first created using a
+     * temporary name, then the actual one is deleted, and the temporary is renamed to the actual
+     * one. This reduces the downtime during the migration.
+     *
+     * Cannot be used if ArangoDB is running as a cluster (renaming views is not supported in
+     * ArangoDB cluster deployments, see
+     * https://docs.arangodb.com/3.11/develop/http-api/views/arangosearch-views/#rename-a-view)
+     */
+    readonly useRenameStrategyToRecreate?: boolean;
 }
 
 export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSearchDefinition> {
