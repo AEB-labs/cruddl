@@ -43,7 +43,7 @@ export class MigrationPerformer {
             case 'updateArangoSearchView':
                 return this.updateArangoSearchView(migration);
             case 'dropArangoSearchView':
-                return this.dropArangoSearchView(migration);
+                return this.dropArangoSearchView(migration.viewName);
             case 'recreateArangoSearchView':
                 return this.recreateArangoSearchView(migration);
             case 'createArangoSearchAnalyzer':
@@ -113,16 +113,21 @@ export class MigrationPerformer {
         }
     }
 
-    private async createArangoSearchView(migration: CreateArangoSearchViewMigration) {
+    private async createArangoSearchView(
+        migration: CreateArangoSearchViewMigration | RecreateArangoSearchViewMigration,
+        { viewNameOverride }: { viewNameOverride?: string } = {},
+    ) {
         try {
             await this.db.createView(
-                migration.viewName,
+                viewNameOverride ?? migration.viewName,
                 configureForBackgroundCreation(migration.properties),
             );
         } catch (e: any) {
             // maybe the collection has been created in the meantime
             if (e.errorNum === ERROR_ARANGO_DUPLICATE_NAME) {
-                const existingProperties = await this.db.view(migration.viewName).properties();
+                const existingProperties = await this.db
+                    .view(viewNameOverride ?? migration.viewName)
+                    .properties();
                 // if the properties do not equal, we might need to recreate; rather fail and let someone retry
                 if (isEqualProperties(migration.properties, existingProperties)) {
                     return;
@@ -138,9 +143,9 @@ export class MigrationPerformer {
             .replaceProperties(configureForBackgroundCreation(migration.properties));
     }
 
-    private async dropArangoSearchView(migration: DropArangoSearchViewMigration) {
+    private async dropArangoSearchView(viewName: string) {
         try {
-            await this.db.view(migration.config.viewName).drop();
+            await this.db.view(viewName).drop();
         } catch (e: any) {
             // maybe the view has been dropped in the meantime
             if (e.errorNum === ERROR_ARANGO_DATA_SOURCE_NOT_FOUND) {
@@ -151,30 +156,14 @@ export class MigrationPerformer {
     }
 
     private async recreateArangoSearchView(migration: RecreateArangoSearchViewMigration) {
-        try {
-            await this.db.view(migration.viewName).drop();
-        } catch (e: any) {
-            // maybe the view has been dropped in the meantime
-            if (e.errorNum !== ERROR_ARANGO_DATA_SOURCE_NOT_FOUND) {
-                throw e;
-            }
-        }
-
-        try {
-            await this.db.createView(
-                migration.viewName,
-                configureForBackgroundCreation(migration.properties),
-            );
-        } catch (e: any) {
-            // maybe the collection has been created in the meantime
-            if (e.errorNum === ERROR_ARANGO_DUPLICATE_NAME) {
-                const existingProperties = await this.db.view(migration.viewName).properties();
-                // if the properties do not equal, we might need to recreate; rather fail and let someone retry
-                if (isEqualProperties(migration.properties, existingProperties)) {
-                    return;
-                }
-            }
-            throw e;
+        if (this.config.arangoSearchConfiguration?.useRenameStrategyToRecreate) {
+            const tempName = 'temp_' + migration.viewName;
+            await this.createArangoSearchView(migration, { viewNameOverride: tempName });
+            await this.dropArangoSearchView(migration.viewName);
+            await this.db.view(tempName).rename(migration.viewName);
+        } else {
+            await this.dropArangoSearchView(migration.viewName);
+            await this.createArangoSearchView(migration);
         }
     }
 
