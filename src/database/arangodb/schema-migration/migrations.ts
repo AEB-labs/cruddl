@@ -172,7 +172,7 @@ export class UpdateArangoSearchViewMigration {
     }
 
     get id() {
-        return `update ArangoSearch/${this.viewName}`;
+        return `updateArangoSearch/${this.viewName}`;
     }
 
     get isMandatory() {
