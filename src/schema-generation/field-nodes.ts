@@ -1,6 +1,6 @@
 import { AggregationOperator, RootEntityType } from '../model';
 import { Field } from '../model/implementation';
-import { getEffectiveCollectSegments } from '../model/implementation/collect-path';
+import { FieldSegment, getEffectiveCollectSegments } from '../model/implementation/collect-path';
 import {
     AggregationQueryNode,
     BasicType,
@@ -33,7 +33,7 @@ export function createFieldNode(
     sourceNode: QueryNode,
     options: {
         skipNullFallbackForEntityExtensions?: boolean;
-        captureRootEntitiesOnCollectFields?: boolean;
+        rootEntityVar?: VariableQueryNode;
     } = {},
 ): QueryNode {
     // make use of the fact that field access on non-objects is NULL, so that type checks for OBJECT are redundant
@@ -57,12 +57,20 @@ export function createFieldNode(
 
     if (field.collectPath) {
         const { relationSegments, fieldSegments } = getEffectiveCollectSegments(field.collectPath);
-        const traversalNode = new TraversalQueryNode({
+        const relationTraversalNode = new TraversalQueryNode({
             sourceEntityNode: sourceNode,
             relationSegments,
-            fieldSegments,
-            captureRootEntities: !!options.captureRootEntitiesOnCollectFields,
+            fieldSegments: [],
+            captureRootEntities: false,
         });
+
+        const fieldTraversalNode = fieldSegments.reduce(
+            (acc: QueryNode, fieldSegment: FieldSegment) => {
+                return createFieldNode(fieldSegment.field, acc, {
+                    rootEntityVar: options.rootEntityVar,
+                });
+            },
+        );
 
         if (!field.aggregationOperator) {
             return traversalNode;

@@ -82,7 +82,7 @@ export function transformTraversalQueryNode(
             sourceEntityNode: node.sourceEntityNode,
             relationSegments: filteredRelationSegments,
             fieldSegments: fieldSegments,
-            captureRootEntities: node.captureRootEntity,
+            rootEntityVar: node.captureRootEntity,
         });
     }
 

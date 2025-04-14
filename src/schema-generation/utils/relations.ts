@@ -393,7 +393,7 @@ function getPreEntityRemovalStatementsForRelationSide(
         sourceIsList: true,
         relationSegments: [segment],
         fieldSegments: [],
-        captureRootEntities: false,
+        rootEntityVar: false,
         alwaysProduceList: true,
     });
 
