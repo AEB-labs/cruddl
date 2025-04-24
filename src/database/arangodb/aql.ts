@@ -412,7 +412,7 @@ export namespace aql {
      * Caution: should only use in .identifier() and NOT .code() because it does not account for keywords
      */
     export function isSafeIdentifier(str: string) {
-        return typeof str == 'string' && str.match(/^[a-zA-Z0-9_]+$/);
+        return typeof str == 'string' && str.match(/^[a-zA-Z][a-zA-Z0-9_]*$/);
     }
 }
 
