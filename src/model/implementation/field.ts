@@ -55,7 +55,7 @@ import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
-import { WarningCode } from '../validation/suppress/message-codes';
+import { describeModuleSpecification } from '../compatibility-check/describe-module-specification';
 
 export interface SystemFieldConfig extends FieldConfig {
     readonly isSystemField?: boolean;
@@ -242,6 +242,10 @@ export class Field implements ModelComponent {
         );
     }
 
+    public get isKeyField(): boolean {
+        return this.declaringType.isRootEntityType && this.declaringType.keyField === this;
+    }
+
     public get inverseOf(): Field | undefined {
         if (this.input.inverseOfFieldName == undefined) {
             return undefined;
@@ -375,7 +379,6 @@ export class Field implements ModelComponent {
             return EffectiveModuleSpecification.EMPTY;
         }
 
-        // TODO also consider fields that are traversed
         return this.declaringType.effectiveModuleSpecification.andCombineWith(
             new EffectiveModuleSpecification({
                 orCombinedClauses: this.moduleSpecification.clauses,
@@ -399,7 +402,8 @@ export class Field implements ModelComponent {
         this.validateRootField(context);
         this.validateFlexSearch(context);
         this.validateAccessField(context);
-        this.validateModuleSpecification(context);
+        this.validateModulesDirective(context);
+        this.validateModuleConsistency(context);
     }
 
     private validateName(context: ValidationContext) {
@@ -1957,7 +1961,10 @@ export class Field implements ModelComponent {
         }
     }
 
-    private validateModuleSpecification(context: ValidationContext) {
+    /**
+     * Simple checks that the @modules directive is correct
+     */
+    private validateModulesDirective(context: ValidationContext) {
         if (this.isSystemField) {
             return;
         }
@@ -1991,6 +1998,99 @@ export class Field implements ModelComponent {
         }
 
         this.moduleSpecification.validate(context);
+    }
+
+    /**
+     * Checks that this field is only included in modules that also include all prerequisites (type, collect path...)
+     */
+    private validateModuleConsistency(context: ValidationContext) {
+        if (this.effectiveModuleSpecification.isEmpty()) {
+            return;
+        }
+
+        if (!this.type.isBuiltinType) {
+            const missingClauses = this.effectiveModuleSpecification.orCombinedClauses.filter(
+                (clause) =>
+                    !this.type.effectiveModuleSpecification.includedIn(clause.andCombinedModules),
+            );
+            if (missingClauses.length) {
+                const desc = describeModuleSpecification(
+                    new EffectiveModuleSpecification({ orCombinedClauses: missingClauses }),
+                    { preposition: 'in' },
+                );
+                context.addMessage(
+                    ValidationMessage.error(
+                        `Field "${this.name}" is included ${desc}, but its type "${this.type.name}" is not.`,
+                        this.input.typeNameAST || this.astNode,
+                    ),
+                );
+            }
+        }
+
+        if (this.collectPath) {
+            for (const segment of this.collectPath.segments) {
+                const missingClauses = this.effectiveModuleSpecification.orCombinedClauses.filter(
+                    (clause) =>
+                        !segment.field.effectiveModuleSpecification.includedIn(
+                            clause.andCombinedModules,
+                        ),
+                );
+                if (missingClauses.length) {
+                    const desc = describeModuleSpecification(
+                        new EffectiveModuleSpecification({ orCombinedClauses: missingClauses }),
+                        { preposition: 'in' },
+                    );
+                    context.addMessage(
+                        ValidationMessage.error(
+                            `Field "${this.name}" is included ${desc}, but the field "${segment.field.declaringType.name}.${segment.field.name}" used in the collect path is not.`,
+                            this.input.typeNameAST || this.astNode,
+                        ),
+                    );
+                    // dont't traverse further because if field "a" is not included, path "a.b" is likely not to be either
+                    break;
+                }
+            }
+        }
+
+        if (this.inverseOf) {
+            const inverseOf = this.inverseOf;
+            const missingClauses = this.effectiveModuleSpecification.orCombinedClauses.filter(
+                (clause) =>
+                    !inverseOf.effectiveModuleSpecification.includedIn(clause.andCombinedModules),
+            );
+            if (missingClauses.length) {
+                const desc = describeModuleSpecification(
+                    new EffectiveModuleSpecification({ orCombinedClauses: missingClauses }),
+                    { preposition: 'in' },
+                );
+                context.addMessage(
+                    ValidationMessage.error(
+                        `Field "${this.name}" is included ${desc}, but the inverse relation field "${inverseOf.declaringType.name}.${inverseOf.name}" is not.`,
+                        this.input.inverseOfASTNode ?? this.astNode,
+                    ),
+                );
+            }
+        }
+
+        if (this.referenceKeyField && this.referenceKeyField !== this) {
+            const keyField = this.referenceKeyField;
+            const missingClauses = this.effectiveModuleSpecification.orCombinedClauses.filter(
+                (clause) =>
+                    !keyField.effectiveModuleSpecification.includedIn(clause.andCombinedModules),
+            );
+            if (missingClauses.length) {
+                const desc = describeModuleSpecification(
+                    new EffectiveModuleSpecification({ orCombinedClauses: missingClauses }),
+                    { preposition: 'in' },
+                );
+                context.addMessage(
+                    ValidationMessage.error(
+                        `Field "${this.name}" is included ${desc}, but the reference key field "${keyField.name}" is not.`,
+                        this.input.inverseOfASTNode ?? this.astNode,
+                    ),
+                );
+            }
+        }
     }
 
     get isFlexSearchIndexed(): boolean {

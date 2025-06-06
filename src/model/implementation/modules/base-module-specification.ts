@@ -10,6 +10,7 @@ import { ValidationMessage, locationWithinStringArgument } from '../../validatio
 import memorize from 'memorize-decorator';
 
 export abstract class BaseModuleSpecification implements ModelComponent {
+    private readonly clausesIncludingInvalidOnes: ReadonlyArray<ModuleSpecificationClause> | null;
     readonly clauses: ReadonlyArray<ModuleSpecificationClause> | null;
     readonly astNode: ASTNode | undefined;
     readonly inAstNode: ASTNode | undefined;
@@ -18,18 +19,27 @@ export abstract class BaseModuleSpecification implements ModelComponent {
         config: BaseModuleSpecificationConfig,
         protected readonly model: Model,
     ) {
-        this.clauses = config.in
+        this.clausesIncludingInvalidOnes = config.in
             ? config.in.map((clauseConfig) => new ModuleSpecificationClause(clauseConfig, model))
+            : null;
+
+        // new ModuleSpecificationClause removes modules that do not exist in the model, so it can result in an empty array
+        // empty AND-combined clauses are not allowed (they would mean "in any module"), so filter them out to avoid errors
+        this.clauses = this.clausesIncludingInvalidOnes
+            ? this.clausesIncludingInvalidOnes.filter(
+                  (clause) => clause.andCombinedModules.length > 0,
+              )
             : null;
         this.astNode = config.astNode;
         this.inAstNode = config.inAstNode;
     }
 
     validate(context: ValidationContext): void {
-        if (this.clauses) {
-            for (const item of this.clauses) {
-                item.validate(context);
-            }
+        if (!this.clausesIncludingInvalidOnes) {
+            return;
+        }
+        for (const item of this.clausesIncludingInvalidOnes) {
+            item.validate(context);
         }
     }
 }
