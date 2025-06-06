@@ -303,6 +303,53 @@ describe('modules validator', () => {
         });
     });
 
+    describe('on key fields', () => {
+        it('accepts @modules(includeAllFields: true)', () => {
+            assertValidatorAcceptsAndDoesNotWarn(
+                `
+                    type Foo @rootEntity @modules(in: ["module1", "module2"], includeAllFields: true) {
+                        foo: String @key
+                    }
+                `,
+                { withModuleDefinitions: true },
+            );
+        });
+
+        it('accepts @modules(all: true)', () => {
+            assertValidatorAcceptsAndDoesNotWarn(
+                `
+                    type Foo @rootEntity @modules(in: ["module1", "module2"]) {
+                        foo: String @key @modules(all: true)
+                    }
+                `,
+                { withModuleDefinitions: true },
+            );
+        });
+
+        it('accepts explicitly listing exactly the modules from the type', () => {
+            assertValidatorAcceptsAndDoesNotWarn(
+                `
+                    type Foo @rootEntity @modules(in: ["module1", "module2 & module3"]) {
+                        foo: String @key @modules(in: ["module1", "module2 & module3"])
+                    }
+                `,
+                { withModuleDefinitions: true },
+            );
+        });
+
+        it('rejects if the key field is restricted more than the type', () => {
+            assertValidatorRejects(
+                `
+                    type Foo @rootEntity @modules(in: ["module1"]) {
+                        foo: String @key @modules(in: ["module2"])
+                    }
+                `,
+                'Key fields must always be included in all modules of their declaring type. Set @modules(all: true). (Type "Foo" is included in module "module1", but the key field is not.)',
+                { withModuleDefinitions: true },
+            );
+        });
+    });
+
     describe('expressions', () => {
         it('accepts a single module', () => {
             assertValidatorAcceptsAndDoesNotWarn(
