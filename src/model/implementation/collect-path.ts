@@ -4,7 +4,12 @@ import { QueryNode, VariableQueryNode } from '../../query-tree';
 import { flatMap } from '../../utils/utils';
 import { CollectFieldConfig } from '../config';
 import { Field } from './field';
-import { locationWithinStringArgument, ValidationContext, ValidationMessage } from '../validation';
+import {
+    locationWithinStringArgument,
+    MessageLocation,
+    ValidationContext,
+    ValidationMessage,
+} from '../validation';
 import { Multiplicity, RelationSide } from './relation';
 import { RootEntityType } from './root-entity-type';
 import { ObjectType, Type } from './type';
@@ -22,6 +27,8 @@ interface PathSegmentBase {
      * If true, the result can contain an entity multiple times. This e.g. happens when following a m-to-n relation.
      */
     readonly resultMayContainDuplicateEntities: boolean;
+
+    location?: MessageLocation;
 }
 
 export interface FieldSegment extends PathSegmentBase {
@@ -315,6 +322,7 @@ export class CollectPath {
                     field,
                     resultingType: field.collectPath.resultingType,
                     resultMayContainDuplicateEntities: currentResultMayContainDuplicateEntities,
+                    location: segmentLocation,
                 });
             } else if (field.type.isRootEntityType) {
                 const relationSide = field.relationSide;
@@ -398,6 +406,7 @@ export class CollectPath {
                     isNullableSegment: !field.isNonNull,
                     resultIsNullable: currentResultIsNullable,
                     resultMayContainDuplicateEntities: currentResultMayContainDuplicateEntities,
+                    location: segmentLocation,
                 });
             } else {
                 if (minDepth != undefined) {
@@ -419,6 +428,7 @@ export class CollectPath {
                     isNullableSegment: !field.isNonNull,
                     resultIsNullable: currentResultIsNullable,
                     resultMayContainDuplicateEntities: currentResultMayContainDuplicateEntities,
+                    location: segmentLocation,
                 });
             }
 

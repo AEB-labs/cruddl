@@ -2,7 +2,9 @@ import { Field, Type } from '../implementation';
 import { EffectiveModuleSpecification } from '../implementation/modules/effective-module-specification';
 
 export function getRequiredBySuffix(component: Type | Field) {
-    const desc = describeModuleSpecification(component.effectiveModuleSpecification);
+    const desc = describeModuleSpecification(component.effectiveModuleSpecification, {
+        preposition: 'by',
+    });
     if (!desc) {
         return '';
     }
@@ -11,6 +13,7 @@ export function getRequiredBySuffix(component: Type | Field) {
 
 export function describeModuleSpecification(
     moduleSpecification: EffectiveModuleSpecification,
+    { preposition }: { readonly preposition: string },
 ): string {
     let description = '';
 
@@ -26,7 +29,7 @@ export function describeModuleSpecification(
 
     if (simpleClauses.length) {
         // "by module a and b" seems more natural than "by modules a and b"
-        description = `by module ${describeModules(
+        description = `${preposition} module ${describeModuleList(
             simpleClauses.map((c) => c.andCombinedModules[0]),
         )}`;
     }
@@ -37,13 +40,21 @@ export function describeModuleSpecification(
             description += ', and ';
         }
 
-        description += `by the combination of module ${describeModules(clause.andCombinedModules)}`;
+        description += `${preposition} the combination of module ${describeModuleList(clause.andCombinedModules)}`;
     }
 
     return description;
 }
 
-function describeModules(modules: ReadonlyArray<string>) {
+/**
+ * Generates a human-readable description of the given module list.
+ *
+ * Examples:
+ * - "a"
+ * - "a" and "b"
+ * - "a", "b" and "c"
+ */
+function describeModuleList(modules: ReadonlyArray<string>) {
     if (!modules.length) {
         throw new Error(`Expected modules not to be empty`);
     }

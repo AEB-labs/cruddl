@@ -84,6 +84,13 @@ export class EffectiveModuleSpecification {
         return combined.simplify();
     }
 
+    /**
+     * Checks if this specification states that the object is not included in any module
+     */
+    isEmpty() {
+        return this.orCombinedClauses.length === 0;
+    }
+
     toString() {
         return this.orCombinedClauses.map((c) => c.toString()).join(', ');
     }
