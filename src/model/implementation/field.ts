@@ -403,6 +403,7 @@ export class Field implements ModelComponent {
         this.validateFlexSearch(context);
         this.validateAccessField(context);
         this.validateModulesDirective(context);
+        this.validateModulesOfKeyField(context);
         this.validateModuleConsistency(context);
     }
 
@@ -1998,6 +1999,35 @@ export class Field implements ModelComponent {
         }
 
         this.moduleSpecification.validate(context);
+    }
+
+    /**
+     * Checks the combination of @key and modules
+     */
+    private validateModulesOfKeyField(context: ValidationContext) {
+        if (!this.isKeyField || !this.moduleSpecification || this.moduleSpecification.all) {
+            return;
+        }
+
+        // we could just disallow specifying modules altogether, but that might be unexpected
+        // we make sure to suggest the sensible thing - setting all: true - in the message though.
+        const missingClauses =
+            this.declaringType.effectiveModuleSpecification.orCombinedClauses.filter(
+                (clause) =>
+                    !this.effectiveModuleSpecification.includedIn(clause.andCombinedModules),
+            );
+        if (missingClauses.length) {
+            const desc = describeModuleSpecification(
+                new EffectiveModuleSpecification({ orCombinedClauses: missingClauses }),
+                { preposition: 'in' },
+            );
+            context.addMessage(
+                ValidationMessage.error(
+                    `Key fields must always be included in all modules of their declaring type. Set @modules(all: true). (Type "${this.declaringType.name}" is included ${desc}, but the key field is not.)`,
+                    this.input.typeNameAST || this.astNode,
+                ),
+            );
+        }
     }
 
     /**
