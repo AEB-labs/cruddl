@@ -1,6 +1,6 @@
 {
   "name": "cruddl",
-  "version": "4.0.0",
+  "version": "4.1.0-0.validate-modules-on-used-types.0",
   "description": "",
   "license": "MIT",
   "main": "dist/index.js",
