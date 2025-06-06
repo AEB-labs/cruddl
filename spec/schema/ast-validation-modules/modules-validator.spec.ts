@@ -137,10 +137,6 @@ describe('modules validator', () => {
         it('rejects a missing @modules on a child entity type', () => {
             assertValidatorRejects(
                 `
-                    type Foo @rootEntity @modules(in: "module1") {
-                        bar: [Bar] @modules(all: true)
-                    }
-                        
                     type Bar @childEntity {
                         foo: String
                     }
@@ -153,10 +149,6 @@ describe('modules validator', () => {
         it('rejects a missing @modules on an entity extension type', () => {
             assertValidatorRejects(
                 `
-                    type Foo @rootEntity @modules(in: "module1") {
-                        bar: Bar @modules(all: true)
-                    }
-                        
                     type Bar @entityExtension {
                         foo: String
                     }
@@ -169,10 +161,6 @@ describe('modules validator', () => {
         it('rejects a missing @modules on a value object type', () => {
             assertValidatorRejects(
                 `
-                    type Foo @rootEntity @modules(in: "module1") {
-                        bar: Bar @modules(all: true)
-                    }
-                        
                     type Bar @valueObject {
                         foo: String
                     }

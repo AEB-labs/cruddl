@@ -19,13 +19,16 @@ import { prettyPrint } from '../../../src/graphql/pretty-print';
 
 export function assertValidatorRejects(
     source: string | DocumentNode,
-    msg: string,
+    msg: string | ReadonlyArray<string>,
     options?: ValidationOptions,
 ) {
+    const messages = Array.isArray(msg) ? msg : [msg];
     const validationResult = validate(source, options);
     expect(validationResult.hasErrors()).to.be.true;
-    expect(validationResult.getErrors().length, validationResult.toString()).to.equal(1);
-    expect(validationResult.getErrors()[0].message, validationResult.toString()).to.equal(msg);
+    expect(
+        validationResult.getErrors().map((e) => e.message),
+        validationResult.toString(),
+    ).to.deep.equal(messages);
 }
 
 export function assertValidatorWarns(

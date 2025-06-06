@@ -4,7 +4,9 @@ import { EffectiveModuleSpecification } from '../../../src/model/implementation/
 
 describe('describeModuleSpecification', () => {
     it('describes empty spec', () => {
-        const result = describeModuleSpecification(EffectiveModuleSpecification.EMPTY);
+        const result = describeModuleSpecification(EffectiveModuleSpecification.EMPTY, {
+            preposition: 'by',
+        });
         expect(result).to.equal('');
     });
 
@@ -17,6 +19,7 @@ describe('describeModuleSpecification', () => {
                     },
                 ],
             }),
+            { preposition: 'by' },
         );
         expect(result).to.equal('by module "module1"');
     });
@@ -33,6 +36,7 @@ describe('describeModuleSpecification', () => {
                     },
                 ],
             }),
+            { preposition: 'by' },
         );
         expect(result).to.equal('by module "module1" and "module2"');
     });
@@ -52,6 +56,7 @@ describe('describeModuleSpecification', () => {
                     },
                 ],
             }),
+            { preposition: 'by' },
         );
         expect(result).to.equal('by module "module1", "module2" and "module3"');
     });
@@ -65,6 +70,7 @@ describe('describeModuleSpecification', () => {
                     },
                 ],
             }),
+            { preposition: 'by' },
         );
         expect(result).to.equal('by the combination of module "module1" and "module2"');
     });
@@ -78,6 +84,7 @@ describe('describeModuleSpecification', () => {
                     },
                 ],
             }),
+            { preposition: 'by' },
         );
         expect(result).to.equal('by the combination of module "module1", "module2" and "module3"');
     });
@@ -100,6 +107,7 @@ describe('describeModuleSpecification', () => {
                     },
                 ],
             }),
+            { preposition: 'by' },
         );
         expect(result).to.equal(
             'by module "a", "b" and "c", and by the combination of module "module1" and "module2"',
@@ -124,6 +132,7 @@ describe('describeModuleSpecification', () => {
                     },
                 ],
             }),
+            { preposition: 'by' },
         );
         expect(result).to.equal(
             'by module "a", "b" and "c", and by the combination of module "module1", "module2" and "module3"',
@@ -151,6 +160,7 @@ describe('describeModuleSpecification', () => {
                     },
                 ],
             }),
+            { preposition: 'by' },
         );
         expect(result).to.equal(
             'by module "a", "b" and "c", and by the combination of module "module1" and "module2", and by the combination of module "module3", "module4" and "module5"',
@@ -169,6 +179,7 @@ describe('describeModuleSpecification', () => {
                     },
                 ],
             }),
+            { preposition: 'by' },
         );
         expect(result).to.equal(
             'by the combination of module "module1" and "module2", and by the combination of module "module3", "module4" and "module5"',
