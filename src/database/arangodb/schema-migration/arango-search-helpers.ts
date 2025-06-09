@@ -1,5 +1,5 @@
 import { Database } from 'arangojs';
-import { AnalyzerDescription, CreateAnalyzerOptions } from 'arangojs/analyzer';
+import { AnalyzerDescription, CreateAnalyzerOptions } from 'arangojs/analyzers';
 import {
     ArangoSearchViewLink,
     ArangoSearchViewLinkOptions,
@@ -8,7 +8,7 @@ import {
     TierConsolidationPolicy,
     View,
     ViewProperties,
-} from 'arangojs/view';
+} from 'arangojs/views';
 import deepEqual from 'deep-equal';
 import { isEqual } from 'lodash';
 import { Field, Model, RootEntityType } from '../../../model';
