@@ -139,9 +139,6 @@ cruddl currently supports the following versions of ArangoDB:
 -   3.11
 -   3.12
 
-ArangoDB 3.8 is still included in the CI tests, but no longer supported officially, and the CI tests
-will be removed in a future minor or patch release.
-
 Starting with ArangoDB 3.12, the default locale for new databases has been changed from `en_US` to
 `en_US_POSIX`. cruddl does not support `en_US_POSIX` at the moment. If you don't have a locale
 configured on your operating system (`LANG` is not set), you need to change the locale to `en_US`.
