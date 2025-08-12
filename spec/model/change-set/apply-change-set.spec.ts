@@ -37,6 +37,46 @@ describe('applyChangeSet', () => {
         ]);
     });
 
+    it('applies a change set with two inserts at the same position', () => {
+        const source = new ProjectSource('file1.txt', `This is a test.`);
+        const project = new Project([source]);
+        const changeSet = new ChangeSet([
+            new TextChange(
+                new MessageLocation(source, 'This is a '.length, 'This is a '.length),
+                'very good ',
+            ),
+            new TextChange(
+                new MessageLocation(source, 'This is a '.length, 'This is a '.length),
+                'more complicated ',
+            ),
+        ]);
+        const newProject = applyChangeSet(project, changeSet);
+        expect(newProject.sources.map((s) => s.name)).to.deep.equal(['file1.txt']);
+        expect(newProject.sources.map((s) => s.body)).to.deep.equal([
+            'This is a very good more complicated test.',
+        ]);
+    });
+
+    it('applies a change set with two inserts at the same position, with inversed order', () => {
+        const source = new ProjectSource('file1.txt', `This is a test.`);
+        const project = new Project([source]);
+        const changeSet = new ChangeSet([
+            new TextChange(
+                new MessageLocation(source, 'This is a '.length, 'This is a '.length),
+                'more complicated ',
+            ),
+            new TextChange(
+                new MessageLocation(source, 'This is a '.length, 'This is a '.length),
+                'very good ',
+            ),
+        ]);
+        const newProject = applyChangeSet(project, changeSet);
+        expect(newProject.sources.map((s) => s.name)).to.deep.equal(['file1.txt']);
+        expect(newProject.sources.map((s) => s.body)).to.deep.equal([
+            'This is a more complicated very good test.',
+        ]);
+    });
+
     it('applies a change set with unordered changes', () => {
         const source = new ProjectSource('file1.txt', `This is a test.`);
         const project = new Project([source]);
