@@ -28,6 +28,8 @@ export class ModelI18n implements ModelComponent {
         ModelLocalizationProvider
     >;
 
+    public readonly configs: ReadonlyArray<LocalizationConfig>;
+
     constructor(
         input: ReadonlyArray<LocalizationConfig>,
         private readonly model: Model,
@@ -41,12 +43,83 @@ export class ModelI18n implements ModelComponent {
             localizationsByLanguage,
             (localizations) => new ModelLocalizationProvider(localizations),
         );
+        this.configs = input;
     }
 
     public validate(context: ValidationContext): void {
         for (const localizationProvider of this.languageLocalizationProvidersByLanguage.values()) {
             localizationProvider.validate(context, this.model);
         }
+    }
+
+    /**
+     * Finds the first config (per language) that declares at least one global field localization
+     */
+    public getFirstMatchingGlobalFieldConfigs(): Record<string, LocalizationConfig | null> {
+        const result: Record<string, LocalizationConfig> = {};
+        for (const config of this.configs) {
+            const hasGlobalFields = config.fields && Object.keys(config.fields).length;
+            if (hasGlobalFields && !result[config.language]) {
+                result[config.language] = config;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the raw localization configs for the given type, if existing.
+     */
+    public getTypeLocalizationConfigs(
+        typeName: string,
+    ): Record<string, TypeLocalizationConfig | null> {
+        const result: Record<string, TypeLocalizationConfig | null> = {};
+        for (const config of this.configs) {
+            const matchingType = config?.types?.[typeName];
+            if (matchingType) {
+                result[config.language] = matchingType;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the raw localization configs for the field under the given type, if existing.
+     *
+     * This function can be used when non-merged (i.e. not containing global localization) localizations are needed.
+     */
+    public getFieldLocalizationConfigs(
+        typeName: string,
+        fieldName: string,
+    ): Record<string, LocalizationBaseConfig | null> {
+        const result: Record<string, LocalizationBaseConfig> = {};
+        for (const config of this.configs) {
+            const matchingType = config?.types?.[typeName];
+            if (matchingType) {
+                const matchingField = matchingType.fields?.[fieldName];
+                if (matchingField) {
+                    result[config.language] = matchingField;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the raw global localization configs for a given field name, if existing.
+     *
+     * This function can be used when non-merged (i.e. not containing type dependent localizations are needed.
+     */
+    public getGlobalFieldLocalizationConfigs(
+        fieldName: string,
+    ): Record<string, LocalizationBaseConfig | null> {
+        const result: Record<string, LocalizationBaseConfig> = {};
+        for (const config of this.configs) {
+            const matchingGlobalField = config.fields?.[fieldName];
+            if (matchingGlobalField) {
+                result[config.language] = matchingGlobalField;
+            }
+        }
+        return result;
     }
 
     public getTypeLocalization(
@@ -291,6 +364,7 @@ class ModelLocalizationProvider implements LocalizationProvider {
             label: mapFirstDefined(matchingTypeLocalizations, (t) => t.label),
             labelPlural: mapFirstDefined(matchingTypeLocalizations, (t) => t.labelPlural),
             hint: mapFirstDefined(matchingTypeLocalizations, (t) => t.hint),
+            loc: mapFirstDefined(matchingTypeLocalizations, (t) => t.loc),
         };
     }
 
@@ -299,6 +373,7 @@ class ModelLocalizationProvider implements LocalizationProvider {
 
         let label: string | undefined;
         let hint: string | undefined;
+        let loc: MessageLocation | undefined;
 
         // first, try to find a localization declared on the type
         for (const namespace of matchingNamespaces) {
@@ -309,6 +384,7 @@ class ModelLocalizationProvider implements LocalizationProvider {
             if (typeField) {
                 label = label ? label : typeField.label;
                 hint = hint ? hint : typeField.hint;
+                loc = typeField.loc;
 
                 if (label && hint) {
                     break;
@@ -321,12 +397,13 @@ class ModelLocalizationProvider implements LocalizationProvider {
             if (typeField) {
                 label = label ? label : typeField.label;
                 hint = hint ? hint : typeField.hint;
+                loc = loc ? loc : typeField.loc;
             }
             if (label && hint) {
                 break;
             }
         }
-        return { label: label, hint: hint };
+        return { label: label, hint: hint, loc };
     }
 
     localizeEnumValue(enumValue: EnumValue): EnumValueLocalization {
@@ -336,6 +413,7 @@ class ModelLocalizationProvider implements LocalizationProvider {
 
         let label: string | undefined;
         let hint: string | undefined;
+        let loc: MessageLocation | undefined;
 
         for (const namespace of matchingNamespaces) {
             const localization = namespace.getEnumValueLocalization({
@@ -345,13 +423,14 @@ class ModelLocalizationProvider implements LocalizationProvider {
             if (localization) {
                 label = label ? label : localization.label;
                 hint = hint ? hint : localization.hint;
+                loc = localization.loc;
 
                 if (label && hint) {
                     break;
                 }
             }
         }
-        return { label: label, hint: hint };
+        return { label: label, hint: hint, loc };
     }
 }
 

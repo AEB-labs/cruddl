@@ -4,9 +4,7 @@ import {
     GraphQLError,
     GraphQLSchema,
     Kind as GraphQLKind,
-    Lexer,
     parse,
-    TokenKind,
 } from 'graphql';
 import { parse as JSONparse } from 'json-source-map';
 import { compact } from 'lodash';
@@ -53,9 +51,9 @@ import {
     SchemaTransformationContext,
 } from './preparation/transformation-pipeline';
 import { getLineEndPosition } from './schema-utils';
+import { isCommentOnlySource } from '../graphql/is-comment-only-source';
 import jsonLint = require('json-lint');
 import stripJsonComments = require('strip-json-comments');
-import { isCommentOnlySource } from '../graphql/is-comment-only-source';
 
 /**
  * Validates a project and thus determines whether createSchema() would succeed
