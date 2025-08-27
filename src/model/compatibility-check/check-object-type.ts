@@ -1,12 +1,18 @@
-import { FieldDefinitionNode, print } from 'graphql';
+import { FieldDefinitionNode } from 'graphql';
 import { MODULES_DIRECTIVE } from '../../schema/constants';
-import { ChangeSet, TextChange } from '../change-set/change-set';
-import { ObjectType } from '../implementation';
+import { Change, ChangeSet, TextChange, YamlAddInMapChange } from '../change-set/change-set';
+import { Field, ObjectType, Type } from '../implementation';
 import { MessageLocation, QuickFix, ValidationContext, ValidationMessage } from '../validation';
 import { checkField } from './check-field';
 import { checkRootEntityType } from './check-root-entity-type';
 import { getRequiredBySuffix } from './describe-module-specification';
 import { prettyPrint } from '../../graphql/pretty-print';
+import { parseDocument } from 'yaml';
+import {
+    getYamlMapAtPath,
+    getYamlNodePairAtPathOrThrow,
+    patchBeforeCommentFromParentMap,
+} from './utils';
 
 export function checkObjectType(
     typeToCheck: ObjectType,
@@ -34,16 +40,26 @@ export function checkObjectType(
                     offset,
                 );
 
+                const fieldChanges: Change[] = [
+                    new TextChange(quickFixLocation, '    ' + prettyPrint(cleanedAstNode) + '\n'),
+                ];
+                const i18nChanges = generateYamlAddInMapChangesForFieldI18n(
+                    baselineField,
+                    typeToCheck,
+                );
+
+                quickFixes.push(
+                    new QuickFix({
+                        description: `Add field "${baselineField.name} with i18n"`,
+                        isPreferred: true,
+                        changeSet: new ChangeSet([...fieldChanges, ...i18nChanges]),
+                    }),
+                );
                 quickFixes.push(
                     new QuickFix({
                         description: `Add field "${baselineField.name}"`,
-                        isPreferred: true,
-                        changeSet: new ChangeSet([
-                            new TextChange(
-                                quickFixLocation,
-                                '    ' + prettyPrint(cleanedAstNode) + '\n',
-                            ),
-                        ]),
+                        isPreferred: false,
+                        changeSet: new ChangeSet(fieldChanges),
                     }),
                 );
             }
@@ -68,4 +84,59 @@ export function checkObjectType(
     if (baselineType.isRootEntityType && typeToCheck.isRootEntityType) {
         checkRootEntityType(typeToCheck, baselineType, context);
     }
+}
+
+export function generateYamlAddInMapChangesForFieldI18n(
+    baselineField: Field,
+    typeToCheck: Type,
+): ReadonlyArray<YamlAddInMapChange> {
+    const baselineFieldLocalizations = baselineField.model.i18n.getFieldI18n(baselineField);
+    const typeToCheckLocalizations = typeToCheck.model.i18n.getTypeI18n(typeToCheck);
+    const result: YamlAddInMapChange[] = [];
+    for (const [languageIsoCode, baselineFieldLocalization] of Object.entries(
+        baselineFieldLocalizations,
+    )) {
+        const typeToCheckLocalization = typeToCheckLocalizations[languageIsoCode];
+        // if existing type localization is found, use the file. Otherwise, get the first localization
+        // where the type is (partially) localized and add the translation there. Otherwise, use the source
+        // name from the baseline
+        const sourceName =
+            typeToCheckLocalization?.loc?.sourceName ??
+            Object.values(typeToCheckLocalizations)[0]?.loc?.sourceName ??
+            baselineFieldLocalization.loc!.sourceName;
+        const targetFieldPath = [
+            'i18n',
+            languageIsoCode,
+            'types',
+            typeToCheck.name,
+            'fields',
+            baselineField.name,
+        ];
+        const baselineLocalizationYamlDoc = parseDocument(
+            baselineFieldLocalization.loc!.source.body,
+        );
+
+        // copy the yaml pair because we might modify its comments and pass it to the YamlAddInMapChange
+        const fieldLocalizationYamlPairCopy = getYamlNodePairAtPathOrThrow(
+            baselineLocalizationYamlDoc,
+            targetFieldPath,
+        ).clone();
+
+        // small workaround - the commentBefore above the first pair of a map is attributed to the map
+        // and not the scalar key.
+        patchBeforeCommentFromParentMap(
+            baselineLocalizationYamlDoc,
+            fieldLocalizationYamlPairCopy,
+            targetFieldPath,
+        );
+
+        result.push(
+            new YamlAddInMapChange({
+                sourceName,
+                path: targetFieldPath.slice(0, -1),
+                value: fieldLocalizationYamlPairCopy,
+            }),
+        );
+    }
+    return result;
 }
