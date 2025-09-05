@@ -43,7 +43,7 @@ import {
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
 import { RootFieldHelper } from './root-field-helper';
-import { and, binaryOp, binaryOpWithAnaylzer } from './utils/input-types';
+import { and, binaryOp, binaryOpWithAnalyzer } from './utils/input-types';
 import { getOrderByValues } from './utils/pagination';
 import {
     getSortClausesForPrimarySort,
@@ -560,7 +560,7 @@ export class OrderByAndPaginationAugmentation {
             ) {
                 if (isFlexSearch) {
                     const op = clause.lastSegment.isFlexSearchStringBased
-                        ? binaryOpWithAnaylzer(stringOperator)
+                        ? binaryOpWithAnalyzer(stringOperator)
                         : binaryOp(operator);
                     const pseudoFilterField = new FlexSearchScalarOrEnumFilterField(
                         op,

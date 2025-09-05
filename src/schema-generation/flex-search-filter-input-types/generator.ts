@@ -34,7 +34,7 @@ import {
 } from '../filter-input-types/constants';
 import {
     binaryNotOpWithAnalyzer,
-    binaryOpWithAnaylzer,
+    binaryOpWithAnalyzer,
     noAnalyzerWasSuppliedError,
     not,
 } from '../utils/input-types';
@@ -191,7 +191,7 @@ export class FlexSearchFilterTypeGenerator {
     ) => QueryNode {
         switch (name) {
             case INPUT_FIELD_CONTAINS_ANY_WORD:
-                return binaryOpWithAnaylzer(
+                return binaryOpWithAnalyzer(
                     BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD,
                 );
             case INPUT_FIELD_NOT_CONTAINS_ANY_WORD:
@@ -283,7 +283,7 @@ export class FlexSearchFilterTypeGenerator {
                     );
                 };
             case INPUT_FIELD_CONTAINS_PHRASE:
-                return binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE);
+                return binaryOpWithAnalyzer(BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE);
             case INPUT_FIELD_NOT_CONTAINS_PHRASE:
                 return binaryNotOpWithAnalyzer(
                     BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PHRASE,

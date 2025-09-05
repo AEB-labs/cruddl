@@ -94,6 +94,7 @@
       {
         "@id": "1",
         "deliveryNumber": "1000173",
+        "processingFinished": true,
         "consignee": {
           "street": "675 Kurtis Route",
           "city": "Port Neldahaven",
@@ -155,6 +156,7 @@
       {
         "@id": "2",
         "deliveryNumber": "1000521",
+        "processingFinished": false,
         "consignee": {
           "street": "1 North Bridge Road",
           "city": "Singapore",

@@ -30,7 +30,7 @@ export function binaryNotOp(op: BinaryOperator) {
     return (lhs: QueryNode, rhs: QueryNode) => not(new BinaryOperationQueryNode(lhs, op, rhs));
 }
 
-export function binaryOpWithAnaylzer(op: BinaryOperatorWithAnalyzer) {
+export function binaryOpWithAnalyzer(op: BinaryOperatorWithAnalyzer) {
     return (lhs: QueryNode, rhs: QueryNode, analyzer?: string) => {
         if (!analyzer) {
             return new RuntimeErrorQueryNode(noAnalyzerWasSuppliedError);

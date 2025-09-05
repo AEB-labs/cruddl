@@ -1783,6 +1783,7 @@
               "description": null,
               "deprecationReason": null
             },
+            { "name": "processingFinished", "description": null, "deprecationReason": null },
             {
               "name": "deprecatedField",
               "description": null,
@@ -3760,6 +3761,16 @@
             {
               "name": "recursion",
               "description": "Checks if `recursion` is not null, and allows to filter based on its fields.",
+              "deprecationReason": null
+            },
+            {
+              "name": "processingFinished",
+              "description": "Checks if `processingFinished` equals a specified value.\n\nIf an index exists on `processingFinished`, it can be used.",
+              "deprecationReason": null
+            },
+            {
+              "name": "processingFinished_not",
+              "description": "Checks if `processingFinished` does not equal a specified value",
               "deprecationReason": null
             },
             {
@@ -5820,6 +5831,16 @@
             {
               "name": "recursion",
               "description": "Checks if `recursion` is not null, and allows to filter based on its fields.",
+              "deprecationReason": null
+            },
+            {
+              "name": "processingFinished",
+              "description": "Checks if `processingFinished` equals a specified value.",
+              "deprecationReason": null
+            },
+            {
+              "name": "processingFinished_not",
+              "description": "Checks if `processingFinished` does not equal a specified value",
               "deprecationReason": null
             },
             {
@@ -7931,6 +7952,11 @@
               "deprecationReason": null
             },
             {
+              "name": "processingFinished",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
               "name": "deprecatedField",
               "description": null,
               "deprecationReason": null
@@ -8339,6 +8365,11 @@
               "deprecationReason": null
             },
             {
+              "name": "processingFinished",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
               "name": "deprecatedField",
               "description": null,
               "deprecationReason": null
@@ -8635,6 +8666,11 @@
             },
             {
               "name": "recursion",
+              "description": null,
+              "deprecationReason": null
+            },
+            {
+              "name": "processingFinished",
               "description": null,
               "deprecationReason": null
             },
