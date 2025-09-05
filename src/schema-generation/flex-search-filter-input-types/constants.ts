@@ -33,7 +33,7 @@ import {
     binaryNotOp,
     binaryNotOpWithAnalyzer,
     binaryOp,
-    binaryOpWithAnaylzer,
+    binaryOpWithAnalyzer,
     notStartsWithOp,
     startsWithOp,
 } from '../utils/input-types';
@@ -57,17 +57,17 @@ export const FLEX_SEARCH_FILTER_OPERATORS: {
 export const STRING_FLEX_SEARCH_FILTER_OPERATORS: {
     [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode, analyzer?: string) => QueryNode;
 } = {
-    [INPUT_FIELD_EQUAL]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.EQUAL),
+    [INPUT_FIELD_EQUAL]: binaryOpWithAnalyzer(BinaryOperatorWithAnalyzer.EQUAL),
     [INPUT_FIELD_NOT]: binaryNotOpWithAnalyzer(BinaryOperatorWithAnalyzer.UNEQUAL),
-    [INPUT_FIELD_LT]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN),
-    [INPUT_FIELD_LTE]: binaryOpWithAnaylzer(
+    [INPUT_FIELD_LT]: binaryOpWithAnalyzer(BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN),
+    [INPUT_FIELD_LTE]: binaryOpWithAnalyzer(
         BinaryOperatorWithAnalyzer.FLEX_STRING_LESS_THAN_OR_EQUAL,
     ),
-    [INPUT_FIELD_GT]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN),
-    [INPUT_FIELD_GTE]: binaryOpWithAnaylzer(
+    [INPUT_FIELD_GT]: binaryOpWithAnalyzer(BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN),
+    [INPUT_FIELD_GTE]: binaryOpWithAnalyzer(
         BinaryOperatorWithAnalyzer.FLEX_STRING_GREATER_THAN_OR_EQUAL,
     ),
-    [INPUT_FIELD_IN]: binaryOpWithAnaylzer(BinaryOperatorWithAnalyzer.IN),
+    [INPUT_FIELD_IN]: binaryOpWithAnalyzer(BinaryOperatorWithAnalyzer.IN),
     [INPUT_FIELD_NOT_IN]: binaryNotOpWithAnalyzer(BinaryOperatorWithAnalyzer.IN),
     [INPUT_FIELD_STARTS_WITH]: startsWithOp(),
     [INPUT_FIELD_NOT_STARTS_WITH]: notStartsWithOp(),
