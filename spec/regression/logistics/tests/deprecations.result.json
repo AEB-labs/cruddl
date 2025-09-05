@@ -348,6 +348,12 @@
           }
         },
         {
+          "name": "processingFinished",
+          "isDeprecated": false,
+          "deprecationReason": null,
+          "type": { "enumValues": null }
+        },
+        {
           "name": "deprecatedField",
           "isDeprecated": true,
           "deprecationReason": "do not use",
@@ -1098,6 +1104,16 @@
         },
         {
           "name": "recursion_name_DESC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "processingFinished_ASC",
+          "isDeprecated": false,
+          "deprecationReason": null
+        },
+        {
+          "name": "processingFinished_DESC",
           "isDeprecated": false,
           "deprecationReason": null
         },

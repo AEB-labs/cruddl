@@ -1,0 +1,40 @@
+query a {
+    flexSearchDeliveries(flexSearchFilter: { deliveryNumber_not: "1000173" }) {
+        deliveryNumber
+    }
+}
+query b {
+    flexSearchDeliveries(flexSearchFilter: { deliveryNumber_not: "D1" }) {
+        deliveryNumber
+    }
+}
+query c {
+    flexSearchDeliveries(flexSearchFilter: { deliveryNumber: "1000173" }) {
+        deliveryNumber
+    }
+}
+query d {
+    flexSearchDeliveries(flexSearchFilter: { deliveryNumber: "D1" }) {
+        deliveryNumber
+    }
+}
+query e {
+    flexSearchDeliveries(flexSearchFilter: { processingFinished: true }) {
+        deliveryNumber
+    }
+}
+query f {
+    flexSearchDeliveries(flexSearchFilter: { processingFinished: false }) {
+        deliveryNumber
+    }
+}
+query g {
+    flexSearchDeliveries(flexSearchFilter: { processingFinished_not: true }) {
+        deliveryNumber
+    }
+}
+query h {
+    flexSearchDeliveries(flexSearchFilter: { processingFinished_not: false }) {
+        deliveryNumber
+    }
+}

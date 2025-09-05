@@ -52,6 +52,7 @@ type Delivery
     aText: String @flexSearch #sometimes null in testdata
     aNumber: Int @flexSearch
     recursion: Recursion @flexSearch
+    processingFinished: Boolean @flexSearch
 
     deprecatedField: String @deprecated(reason: "do not use")
     enumWithDeprecation: EnumWithDeprecation
