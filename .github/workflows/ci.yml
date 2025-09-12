@@ -7,6 +7,10 @@ jobs:
       matrix:
         arango-image: ['arangodb:3.11', 'arangodb:3.12']
         node-version: [18.x, 20.x, 22.x]
+        language-option: ['--icu-language=en_US', '--default-language=en_US']
+        exclude:
+          - arango-image: arangodb:3.11
+            language-option: --icu-language=en_US
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
@@ -15,7 +19,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run:
           docker run --name arangodb -p 127.0.0.1:8529:8529 -d -e ARANGO_NO_AUTH=1 -e LANG=en_US ${{
-          matrix.arango-image }}
+          matrix.arango-image }} ${{matrix.language-option}}
       - run: timeout 10 docker logs --follow arangodb || true # wait until arangodb is started
       - run: curl -L http://localhost:8529/_api/version
       - run: npm ci
