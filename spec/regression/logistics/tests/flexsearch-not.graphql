@@ -38,3 +38,21 @@ query h {
         deliveryNumber
     }
 }
+
+query i {
+    flexSearchDeliveries(flexSearchFilter: { deliveryNumber_not_in: ["1000173", "D1"] }) {
+        deliveryNumber
+    }
+}
+
+query j {
+    flexSearchDeliveries(flexSearchFilter: { deliveryNumber_not_in: ["1000173"] }) {
+        deliveryNumber
+    }
+}
+
+query k {
+    flexSearchDeliveries(flexSearchFilter: { deliveryNumber_not_in: ["D1"] }) {
+        deliveryNumber
+    }
+}
