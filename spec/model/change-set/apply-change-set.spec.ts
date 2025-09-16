@@ -1,10 +1,15 @@
 import { expect } from 'chai';
+import { Pair, parseDocument } from 'yaml';
 import { MessageLocation } from '../../../src/model';
 import {
     applyChangeSet,
     InvalidChangeSetError,
 } from '../../../src/model/change-set/apply-change-set';
-import { ChangeSet, TextChange } from '../../../src/model/change-set/change-set';
+import {
+    ChangeSet,
+    TextChange,
+    YamlAddInMapChange,
+} from '../../../src/model/change-set/change-set';
 import { Project } from '../../../src/project/project';
 import { ProjectSource } from '../../../src/project/source';
 
@@ -133,5 +138,96 @@ describe('applyChangeSet', () => {
             'This is the first test.',
             'This is the modified second file.',
         ]);
+    });
+
+    it('applies a YamlAddInMap change when possible', () => {
+        const source = new ProjectSource(
+            'file1.yaml',
+            `root:
+    level1:
+        Field A:
+        Field B:
+    level2:
+        Field C`,
+        );
+        const project = new Project([source]);
+        const changeSet = new ChangeSet([
+            new YamlAddInMapChange({
+                sourceName: 'file1.yaml',
+                path: ['root', 'level1'],
+                value: new Pair('Field D', 'Test'),
+            }),
+        ]);
+        const newProject = applyChangeSet(project, changeSet);
+        expect(newProject.sources.length).to.equal(1);
+        expect(newProject.sources[0].name).to.equal('file1.yaml');
+        const expectedDoc = parseDocument(
+            `root:
+    level1:
+        Field A:
+        Field B:
+        Field D: Test
+    level2:
+        Field C`,
+            {},
+        );
+        expect(newProject.sources[0].body).to.equal(expectedDoc.toString());
+    });
+
+    it('does not apply a YamlAddInMap change when the key already exist in the map', () => {
+        const source = new ProjectSource(
+            'file1.yaml',
+            `root:
+    level1:
+        Field A:
+        Field B:
+        Field D: Original value
+    level2:
+        Field C`,
+        );
+        const project = new Project([source]);
+        const changeSet = new ChangeSet([
+            new YamlAddInMapChange({
+                sourceName: 'file1.yaml',
+                path: ['root', 'level1'],
+                value: new Pair('Field D', 'Test'),
+            }),
+        ]);
+        const newProject = applyChangeSet(project, changeSet);
+        expect(newProject.sources.length).to.equal(1);
+        expect(newProject.sources[0].name).to.equal('file1.yaml');
+        const expectedDoc = parseDocument(
+            `root:
+    level1:
+        Field A:
+        Field B:
+        Field D: Original value
+    level2:
+        Field C`,
+            {},
+        );
+        expect(newProject.sources[0].body).to.equal(expectedDoc.toString());
+    });
+
+    it('does nothing and especially does not throw when operating on invalid YAML', () => {
+        const source = new ProjectSource(
+            'file1.yaml',
+            `root:
+    level1:
+        Field A: This does not work
+            FieldB:`,
+        );
+        const project = new Project([source]);
+        const changeSet = new ChangeSet([
+            new YamlAddInMapChange({
+                sourceName: 'file1.yaml',
+                path: ['root', 'level1'],
+                value: new Pair('Field D', 'Test'),
+            }),
+        ]);
+        const newProject = applyChangeSet(project, changeSet);
+        expect(newProject.sources.length).to.equal(1);
+        expect(newProject.sources[0].name).to.equal('file1.yaml');
+        expect(newProject.sources[0].body).to.equal(project.sources[0].body);
     });
 });
