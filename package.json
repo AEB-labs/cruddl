@@ -47,7 +47,7 @@
     "@types/deep-equal-in-any-order": "^1.0.1",
     "@types/lodash": "^4.14.184",
     "@types/mocha": "10.0.6",
-    "@types/node": "^18.19.42", 
+    "@types/node": "^18.19.42",
     "@types/pluralize": "0.0.29",
     "@types/uuid": "^8.3.4",
     "ajv-cli": "^5.0.0",
@@ -89,6 +89,7 @@
     "strip-json-comments": "^3.0.1",
     "tslib": "^2.4.0",
     "uuid": "^8.3.2",
+    "yaml": "^2.8.1",
     "yaml-ast-parser": "0.0.43"
   },
   "peerDependencies": {

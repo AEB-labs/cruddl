@@ -1,8 +1,9 @@
 import { Location } from 'graphql';
 import { ProjectSource } from '../../project/source';
 import { MessageLocation } from '../validation/location';
+import { Pair } from 'yaml';
 
-export type Change = TextChange | AppendChange;
+export type Change = TextChange | AppendChange | YamlAddInMapChange;
 
 /**
  * A set of changes to one or multiple project sources
@@ -10,10 +11,12 @@ export type Change = TextChange | AppendChange;
 export class ChangeSet {
     readonly textChanges: ReadonlyArray<TextChange>;
     readonly appendChanges: ReadonlyArray<AppendChange>;
+    readonly yamlAddInMapChanges: ReadonlyArray<YamlAddInMapChange>;
 
     constructor(readonly changes: ReadonlyArray<Change>) {
         this.textChanges = changes.filter((c) => c instanceof TextChange);
         this.appendChanges = changes.filter((c) => c instanceof AppendChange);
+        this.yamlAddInMapChanges = changes.filter((c) => c instanceof YamlAddInMapChange);
     }
 
     static EMPTY = new ChangeSet([]);
@@ -66,5 +69,22 @@ export class AppendChange {
          * The text for the new source
          */
         readonly text: string,
+    ) {}
+}
+
+/**
+ * A change that adds the given `value` in source `sourceName` under path `path`.
+ *
+ * **Note**:
+ * - `path` must point to a YAMLMap, otherwise nothing is added
+ * - when the `key` of `value` does already exist in the target map nothing will be added
+ */
+export class YamlAddInMapChange {
+    constructor(
+        readonly args: {
+            readonly sourceName: string;
+            readonly path: unknown[];
+            readonly value: Pair;
+        },
     ) {}
 }

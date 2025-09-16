@@ -1,9 +1,11 @@
+import { isDocumentNode } from '@graphql-tools/utils';
 import { DocumentNode } from 'graphql';
+import { prettyPrint } from '../../../src/graphql/pretty-print';
 import { ValidationResult } from '../../../src/model/validation/result';
 import { Project } from '../../../src/project/project';
 import { ProjectSource } from '../../../src/project/source';
+import { isReadonlyArray } from '../../../src/utils/utils';
 import { expectNoErrors, expectToBeValid } from '../implementation/validation-utils';
-import { prettyPrint } from '../../../src/graphql/pretty-print';
 
 interface RunOptions {
     allowWarningsAndInfosInProjectToCheck?: boolean;
@@ -11,7 +13,7 @@ interface RunOptions {
 }
 
 export function runCheck(
-    baselineDoc: DocumentNode,
+    baselineSources: DocumentNode | ProjectSource | ReadonlyArray<DocumentNode | ProjectSource>,
     docToCheck: DocumentNode | Project,
     options: RunOptions = {},
 ): ValidationResult {
@@ -28,9 +30,18 @@ export function runCheck(
         expectToBeValid(projectToCheck);
     }
 
+    const baselineProjectSources = isReadonlyArray(baselineSources)
+        ? baselineSources.map((baselineSource, index) =>
+              isDocumentNode(baselineSource)
+                  ? new ProjectSource(`baseline_${index}.graphql`, prettyPrint(baselineSource))
+                  : baselineSource,
+          )
+        : isDocumentNode(baselineSources)
+          ? [new ProjectSource(`baseline.graphql`, prettyPrint(baselineSources))]
+          : [baselineSources];
     const projectWithModules = new Project({
         sources: [
-            new ProjectSource('baseline.graphql', prettyPrint(baselineDoc)),
+            ...baselineProjectSources,
             new ProjectSource(
                 'modules.json',
                 JSON.stringify({ modules: ['module1', 'module2', 'module3', 'extra1', 'extra2'] }),

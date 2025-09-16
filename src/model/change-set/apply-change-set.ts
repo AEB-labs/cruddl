@@ -1,6 +1,7 @@
 import { Project } from '../../project/project';
 import { ProjectSource } from '../../project/source';
-import { ChangeSet, TextChange } from './change-set';
+import { getYamlMapAtPath, safeParseDocument } from '../compatibility-check/utils';
+import { ChangeSet, TextChange, YamlAddInMapChange } from './change-set';
 
 export class InvalidChangeSetError extends Error {
     constructor(message: string) {
@@ -13,9 +14,15 @@ export function applyChangeSet(project: Project, changeSet: ChangeSet): Project 
     const changedSources = project.sources.map((source) => {
         const textChanges = changeSet.textChanges.filter((c) => c.source.name === source.name);
         const appendChanges = changeSet.appendChanges.filter((c) => c.sourceName === source.name);
-        let newText = applyChanges(source, textChanges);
-        for (const change of appendChanges) {
-            newText += (newText.length ? '\n\n' : '') + change.text;
+        const yamlAddInMapChanges = changeSet.yamlAddInMapChanges.filter(
+            (c) => c.args.sourceName === source.name,
+        );
+        let newText = applyTextChanges(source, textChanges);
+        for (const appendChange of appendChanges) {
+            newText += (newText.length ? '\n\n' : '') + appendChange.text;
+        }
+        for (const yamlAddChange of yamlAddInMapChanges) {
+            newText = applyYamlAddInMapChanges(newText, yamlAddChange);
         }
         if (newText === source.body) {
             return source;
@@ -25,12 +32,21 @@ export function applyChangeSet(project: Project, changeSet: ChangeSet): Project 
     });
     const existingSourceNames = new Set(project.sources.map((s) => s.name));
     const appendSourceNames = new Set(changeSet.appendChanges.map((c) => c.sourceName));
-    const newSourceNames = [...appendSourceNames].filter((name) => !existingSourceNames.has(name));
+    const yamlAddSourceNames = new Set(changeSet.yamlAddInMapChanges.map((c) => c.args.sourceName));
+    const newSourceNames = [...appendSourceNames, ...yamlAddSourceNames].filter(
+        (name) => !existingSourceNames.has(name),
+    );
     const newSources = [...newSourceNames].map((sourceName) => {
         const appendChanges = changeSet.appendChanges.filter((c) => c.sourceName === sourceName);
+        const yamlAddInMapChanges = changeSet.yamlAddInMapChanges.filter(
+            (c) => c.args.sourceName === sourceName,
+        );
         let newText = '';
-        for (const change of appendChanges) {
-            newText += (newText.length ? '\n\n' : '') + change.text;
+        for (const appendChange of appendChanges) {
+            newText += (newText.length ? '\n\n' : '') + appendChange.text;
+        }
+        for (const yamlAddChange of yamlAddInMapChanges) {
+            newText = applyYamlAddInMapChanges(newText, yamlAddChange);
         }
         return new ProjectSource(sourceName, newText);
     });
@@ -41,7 +57,7 @@ export function applyChangeSet(project: Project, changeSet: ChangeSet): Project 
     });
 }
 
-function applyChanges(source: ProjectSource, changes: ReadonlyArray<TextChange>): string {
+function applyTextChanges(source: ProjectSource, changes: ReadonlyArray<TextChange>): string {
     if (!changes.length) {
         return source.body;
     }
@@ -80,4 +96,26 @@ function formatChangeLocation(change: TextChange | undefined): string {
         return '<source bounds>';
     }
     return `${change.location.start.line}:${change.location.start.column} - ${change.location.end.line}:${change.location.end.column}`;
+}
+
+function applyYamlAddInMapChanges(source: string, change: YamlAddInMapChange): string {
+    const doc = safeParseDocument(source);
+
+    if (!doc) {
+        return source;
+    }
+
+    const { path, value } = change.args;
+    // no value exist at this path, set the value
+    if (!doc.hasIn(path)) {
+        doc.setIn(path, value);
+    } else {
+        // otherwise check if the map contains the key before adding, the yaml library throws an error
+        // when duplicate keys are encountered
+        const parentMap = getYamlMapAtPath(doc, path);
+        if (!parentMap || !parentMap?.get(value.key)) {
+            doc.addIn(path, value);
+        }
+    }
+    return doc.toString();
 }
