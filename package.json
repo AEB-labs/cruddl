@@ -1,6 +1,6 @@
 {
   "name": "cruddl",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "",
   "license": "MIT",
   "main": "dist/index.js",
@@ -47,7 +47,7 @@
     "@types/deep-equal-in-any-order": "^1.0.1",
     "@types/lodash": "^4.14.184",
     "@types/mocha": "10.0.6",
-    "@types/node": "^18.19.42", 
+    "@types/node": "^18.19.42",
     "@types/pluralize": "0.0.29",
     "@types/uuid": "^8.3.4",
     "ajv-cli": "^5.0.0",
