@@ -141,7 +141,7 @@ export class DropArangoSearchViewMigration {
     }
 
     get id() {
-        return `dropArangoSearch/${this.viewName}`;
+        return `dropArangoSearchView/${this.viewName}`;
     }
 
     get viewName() {
@@ -172,7 +172,7 @@ export class UpdateArangoSearchViewMigration {
     }
 
     get id() {
-        return `updateArangoSearch/${this.viewName}`;
+        return `updateArangoSearchView/${this.viewName}`;
     }
 
     get isMandatory() {
@@ -199,7 +199,7 @@ export class CreateArangoSearchViewMigration {
     }
 
     get id() {
-        return `createArangoSearch/${this.viewName}`;
+        return `createArangoSearchView/${this.viewName}`;
     }
 
     get isMandatory() {
@@ -226,7 +226,7 @@ export class RecreateArangoSearchViewMigration {
     }
 
     get id() {
-        return `recreateArangoSearch/${this.viewName}`;
+        return `recreateArangoSearchView/${this.viewName}`;
     }
 
     get isMandatory() {
