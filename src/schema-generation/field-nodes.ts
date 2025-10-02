@@ -27,13 +27,20 @@ import { GraphQLOffsetDateTime } from '../schema/scalars/offset-date-time';
 import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
 import { and } from './utils/input-types';
 
+export interface CreateFieldNodeOptions {
+    readonly skipNullFallbackForEntityExtensions?: boolean;
+    readonly rootEntityVar?: VariableQueryNode;
+
+    /**
+     * Call this on collect fields that traverse root entities to store a reference to the root entity in the stack
+     */
+    readonly registerRootNode?: (rootNode: QueryNode) => void;
+}
+
 export function createFieldNode(
     field: Field,
     sourceNode: QueryNode,
-    options: {
-        skipNullFallbackForEntityExtensions?: boolean;
-        rootEntityVar?: VariableQueryNode;
-    } = {},
+    options: CreateFieldNodeOptions = {},
 ): QueryNode {
     // make use of the fact that field access on non-objects is NULL, so that type checks for OBJECT are redundant
     // this e.g. reverses the effect of the isEntityExtensionType check below

@@ -18,7 +18,7 @@ const databaseURL = 'http://root:@localhost:8529';
 // const databaseURL = 'http://root:@localhost:7050';
 
 export async function start() {
-    const loggerProvider = new Log4jsLoggerProvider('error');
+    const loggerProvider = new Log4jsLoggerProvider('trace');
 
     let db;
     if (process.argv.includes('--db=in-memory')) {

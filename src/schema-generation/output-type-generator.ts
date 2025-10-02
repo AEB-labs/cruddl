@@ -256,6 +256,7 @@ export class OutputTypeGenerator {
 
         return createFieldNode(field, sourceNode, {
             skipNullFallbackForEntityExtensions: true,
+            registerRootNode: (rootNode) => rootHelperResult.registerRootNode(rootNode),
         });
     }
 

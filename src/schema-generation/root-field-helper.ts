@@ -14,13 +14,20 @@ export interface ProcessFieldResult {
      * If the RootFieldHelper can already resolve this fields, this will be populated with the value.
      */
     readonly resultNode: QueryNode | undefined;
+
+    /**
+     * Call this on collect fields that traverse root entities to store a reference to the root entity in the stack
+     */
+    registerRootNode(rootNode: QueryNode): void;
 }
 
 interface HierarchyStackFrame {
     readonly currentEntityNode?: QueryNode;
     readonly parentEntityFrame?: HierarchyStackFrame;
+
     // keep root explicitly because sometimes, we might have the root entity, but not the parent entity
-    readonly rootEntityNode?: QueryNode;
+    // set by registerRootNode()
+    rootEntityNode?: QueryNode;
 }
 
 export class RootFieldHelper {
@@ -124,6 +131,14 @@ export class RootFieldHelper {
 
         return {
             resultNode: this.tryResolveField(field, hierarchyFrame),
+            registerRootNode(rootNode: QueryNode) {
+                if (hierarchyFrame.rootEntityNode) {
+                    throw new Error(
+                        `Root query node already registered for field "${field.declaringType.name}.${field.name}"`,
+                    );
+                }
+                hierarchyFrame.rootEntityNode = rootNode;
+            },
         };
     }
 

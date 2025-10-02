@@ -71,6 +71,7 @@ type Movie @rootEntity {
 type Director @rootEntity {
     name: String
     movies: [Movie] @relation(inverseOf: "director")
+    allMissions: [Mission] @collect(path: "movies.heroes.missions", aggregate: DISTINCT)
 }
 
 "A description of a hero suit"
