@@ -14,7 +14,6 @@ import {
     FollowEdgeQueryNode,
     NullQueryNode,
     ObjectQueryNode,
-    PropertyAccessQueryNode,
     QueryNode,
     RootEntityIDQueryNode,
     SafeListQueryNode,
@@ -24,7 +23,7 @@ import {
     VariableQueryNode,
 } from '../query-tree';
 import { ID_FIELD } from '../schema/constants';
-import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../schema/scalars/offset-date-time';
+import { GraphQLOffsetDateTime } from '../schema/scalars/offset-date-time';
 import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
 import { and } from './utils/input-types';
 
@@ -33,7 +32,7 @@ export function createFieldNode(
     sourceNode: QueryNode,
     options: {
         skipNullFallbackForEntityExtensions?: boolean;
-        captureRootEntitiesOnCollectFields?: boolean;
+        rootEntityVar?: VariableQueryNode;
     } = {},
 ): QueryNode {
     // make use of the fact that field access on non-objects is NULL, so that type checks for OBJECT are redundant
@@ -61,7 +60,6 @@ export function createFieldNode(
             sourceEntityNode: sourceNode,
             relationSegments,
             fieldSegments,
-            captureRootEntities: !!options.captureRootEntitiesOnCollectFields,
         });
 
         if (!field.aggregationOperator) {

@@ -10,8 +10,8 @@ import {
     ConstBoolQueryNode,
     INVALID_CURSOR_ERROR,
     LiteralQueryNode,
-    NOT_SUPPORTED_ERROR,
     NoImplicitlyTruncatedListValidator,
+    NOT_SUPPORTED_ERROR,
     OrderDirection,
     OrderSpecification,
     PreExecQueryParms,
@@ -134,7 +134,6 @@ export class OrderByAndPaginationAugmentation {
             resolve: (sourceNode, args, info) => {
                 let listNode = schemaField.resolve(sourceNode, args, info);
                 let itemVariable = new VariableQueryNode(decapitalize(type.name));
-                let objectNode = this.rootFieldHelper.getRealItemNode(itemVariable, info);
 
                 let maxCount: number | undefined = args[FIRST_ARG];
 
@@ -190,7 +189,6 @@ export class OrderByAndPaginationAugmentation {
                         ? undefined
                         : listNode.filterNode;
                     itemVariable = listNode.itemVariable;
-                    objectNode = this.rootFieldHelper.getRealItemNode(itemVariable, info);
                     listNode = listNode.listNode;
                 }
 
@@ -259,7 +257,7 @@ export class OrderByAndPaginationAugmentation {
                         afterArg,
                         // pagination acts on the listNode (which is a FlexSearchQueryNode) and not on the resulting
                         // TransformListQueryNode, so we need to use listNode.itemVariable in the pagination filter
-                        itemNode: this.rootFieldHelper.getRealItemNode(listNode.itemVariable, info),
+                        itemNode: listNode.itemVariable,
                         orderByValues,
                         isFlexSearch: true,
                     });
@@ -280,7 +278,7 @@ export class OrderByAndPaginationAugmentation {
                         : getOrderByValues(args, orderByType, { isAbsoluteOrderRequired });
                     paginationFilter = this.createPaginationFilterNode({
                         afterArg,
-                        itemNode: objectNode,
+                        itemNode: itemVariable,
                         orderByValues,
                         isFlexSearch: false,
                     });
@@ -290,7 +288,7 @@ export class OrderByAndPaginationAugmentation {
                 const orderBy = !orderByType
                     ? OrderSpecification.UNORDERED
                     : new OrderSpecification(
-                          orderByValues.map((value) => value.getClause(objectNode)),
+                          orderByValues.map((value) => value.getClause(itemVariable)),
                       );
 
                 if (
@@ -336,7 +334,6 @@ export class OrderByAndPaginationAugmentation {
                     const optimizedQueryNode = this.getPaginatedNodeUsingMultiIndexOptimization({
                         orderBy,
                         itemVariable,
-                        objectNode,
                         orderByType,
                         listNode,
                         args,
@@ -406,7 +403,6 @@ export class OrderByAndPaginationAugmentation {
         args,
         orderByType,
         itemVariable,
-        objectNode,
         listNode,
         orderBy,
         maxCount,
@@ -415,7 +411,6 @@ export class OrderByAndPaginationAugmentation {
         args: { [name: string]: any };
         orderByType: OrderByEnumType;
         itemVariable: VariableQueryNode;
-        objectNode: QueryNode;
         listNode: QueryNode;
         orderBy: OrderSpecification;
         maxCount: number | undefined;
@@ -454,7 +449,7 @@ export class OrderByAndPaginationAugmentation {
                 );
             }
             const cursorValue = cursorObj[cursorProperty];
-            const valueNode = clause.getValueNode(objectNode);
+            const valueNode = clause.getValueNode(itemVariable);
 
             const operator =
                 clause.direction == OrderDirection.ASCENDING

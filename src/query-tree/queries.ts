@@ -163,7 +163,6 @@ interface TraversalQueryNodeParams {
     readonly alwaysProduceList?: boolean;
     readonly relationSegments: ReadonlyArray<RelationSegment>;
     readonly fieldSegments: ReadonlyArray<FieldSegment>;
-    readonly captureRootEntities: boolean;
 }
 
 /**
@@ -174,7 +173,6 @@ export class TraversalQueryNode extends QueryNode {
     readonly sourceEntityNode: QueryNode;
     readonly relationSegments: ReadonlyArray<RelationSegment>;
     readonly fieldSegments: ReadonlyArray<FieldSegment>;
-    readonly captureRootEntity: boolean;
 
     /**
      * Specifies if sourceEntityNode resolves to a list of entities instead of a single entity
@@ -189,12 +187,6 @@ export class TraversalQueryNode extends QueryNode {
     constructor(params: TraversalQueryNodeParams) {
         super();
 
-        if (params.captureRootEntities && (!params.relationSegments || !params.fieldSegments)) {
-            throw new Error(
-                `A TraversalQueryNode with captureRootEntity=true requires both relationSegments and fieldSegments`,
-            );
-        }
-
         if (params.sourceIsList && !params.relationSegments) {
             // only need this, so keep it simpler
             throw new Error(
@@ -205,7 +197,6 @@ export class TraversalQueryNode extends QueryNode {
         this.sourceEntityNode = params.sourceEntityNode;
         this.relationSegments = params.relationSegments;
         this.fieldSegments = params.fieldSegments;
-        this.captureRootEntity = params.captureRootEntities;
         this.sourceIsList = params.sourceIsList ?? false;
         this.alwaysProduceList = params.alwaysProduceList ?? false;
         this.entitiesIdentifierKind =
@@ -216,9 +207,7 @@ export class TraversalQueryNode extends QueryNode {
         const segments = [...this.relationSegments, ...this.fieldSegments];
         return (
             `traverse ${segments.map((s) => this.describeSegment(s)).join('.')}` +
-            `from ${this.sourceEntityNode.describe()}${this.sourceIsList ? ' (as list)' : ''}${
-                this.captureRootEntity ? ` into { obj, root }` : ''
-            }${this.alwaysProduceList ? ` as list` : ''}`
+            `from ${this.sourceEntityNode.describe()}${this.sourceIsList ? ' (as list)' : ''}${this.alwaysProduceList ? ` as list` : ''}`
         );
     }
 
