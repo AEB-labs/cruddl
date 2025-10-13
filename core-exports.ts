@@ -35,8 +35,8 @@ export {
     ValidationMessage,
     ValidationResult,
 } from './src/model';
-export { applyChangeSet } from './src/model/change-set/apply-change-set';
-export { ChangeSet, TextChange } from './src/model/change-set/change-set';
+export { applyChangeSet, applyYamlAddInMapChange } from './src/model/change-set/apply-change-set';
+export { ChangeSet, TextChange, YamlAddInMapChange } from './src/model/change-set/change-set';
 export { TypeKind } from './src/model/config';
 export * from './src/model/implementation';
 export { InvalidProjectError } from './src/project/invalid-project-error';

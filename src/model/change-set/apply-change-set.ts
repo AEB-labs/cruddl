@@ -22,7 +22,7 @@ export function applyChangeSet(project: Project, changeSet: ChangeSet): Project 
             newText += (newText.length ? '\n\n' : '') + appendChange.text;
         }
         for (const yamlAddChange of yamlAddInMapChanges) {
-            newText = applyYamlAddInMapChanges(newText, yamlAddChange);
+            newText = applyYamlAddInMapChange(newText, yamlAddChange);
         }
         if (newText === source.body) {
             return source;
@@ -46,7 +46,7 @@ export function applyChangeSet(project: Project, changeSet: ChangeSet): Project 
             newText += (newText.length ? '\n\n' : '') + appendChange.text;
         }
         for (const yamlAddChange of yamlAddInMapChanges) {
-            newText = applyYamlAddInMapChanges(newText, yamlAddChange);
+            newText = applyYamlAddInMapChange(newText, yamlAddChange);
         }
         return new ProjectSource(sourceName, newText);
     });
@@ -98,7 +98,7 @@ function formatChangeLocation(change: TextChange | undefined): string {
     return `${change.location.start.line}:${change.location.start.column} - ${change.location.end.line}:${change.location.end.column}`;
 }
 
-function applyYamlAddInMapChanges(source: string, change: YamlAddInMapChange): string {
+export function applyYamlAddInMapChange(source: string, change: YamlAddInMapChange): string {
     const doc = safeParseDocument(source);
 
     if (!doc) {
