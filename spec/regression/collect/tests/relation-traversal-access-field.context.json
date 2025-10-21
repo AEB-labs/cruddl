@@ -1,0 +1,14 @@
+{
+  "authRoles": ["byAccessField"],
+  "claims": {
+    "cus_locationIdentCode": ["licD1", "licH1", "licH3", "licH4"]
+  },
+  "operations": {
+    "createEdges": {
+      "authRoles": ["users"]
+    },
+    "queryAll": {
+      "authRoles": ["users"]
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "createEdges": {
+    "data": {
+      "d1": {
+        "deliveryNumber": "D1"
+      },
+      "h1": {
+        "handlingUnitNumber": "H1"
+      },
+      "h2": {
+        "handlingUnitNumber": "H2"
+      },
+      "h3": {
+        "handlingUnitNumber": "H3"
+      }
+    }
+  },
+  "queryAll": {
+    "data": {
+      "Delivery": {
+        "allHandlingUnits": [
+          {
+            "handlingUnitNumber": "H1"
+          },
+          {
+            "handlingUnitNumber": "H2"
+          },
+          {
+            "handlingUnitNumber": "H3"
+          },
+          {
+            "handlingUnitNumber": "H4"
+          }
+        ]
+      }
+    }
+  },
+  "queryRestricted": {
+    "data": {
+      "Delivery": {
+        "allHandlingUnits": [
+          {
+            "handlingUnitNumber": "H1"
+          },
+          {
+            "handlingUnitNumber": "H4"
+          }
+        ]
+      }
+    }
+  }
+}

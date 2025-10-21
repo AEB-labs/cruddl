@@ -1559,15 +1559,14 @@ function getRelationTraversalFragment({
             // however, PRUNE only seems to be a performance feature and is not reliably evaluated
             // (e.g. it's not when using COLLECT with distinct for some reason), so we need to add a path filter
             if (segment.maxDepth > 1) {
-                if (
-                    !(
-                        segment.vertexFilter instanceof BinaryOperationQueryNode &&
-                        segment.vertexFilter.lhs instanceof FieldQueryNode &&
-                        segment.vertexFilter.lhs.objectNode === segment.vertexFilterVariable
-                    )
-                ) {
+                if (!(segment.vertexFilter instanceof BinaryOperationQueryNode)) {
+                    // Note: We used to also verify that segment.vertexFilter.lhs is a FieldQueryNode with objectNode
+                    // being equal to the vertexFilterVariable. However, this is not the case for multi-field path access
+                    // (e.g. caused by a restriction with a nested @accessField)
+                    // There also shouldn't really be any harm in allowing more complex expressions here
                     throw new Error(`Unsupported filter pattern for graph traversal`);
                 }
+
                 const vertexInPathFrag = aql`${pathVar}.vertices[*]`;
                 const pathFilterContext = context.introduceVariableAlias(
                     segment.vertexFilterVariable,

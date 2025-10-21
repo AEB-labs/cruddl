@@ -6,6 +6,9 @@
         "@id": "1",
         "deliveryNumber": "D1",
         "accessGroup": "D1",
+        "location": {
+          "identCode": "licD1"
+        },
         "dispatchedAt": "2020-01-30T10:00:00+01:00",
         "priority": 1,
         "deliveryContents": [
@@ -43,6 +46,9 @@
         "@id": "2",
         "deliveryNumber": "D2",
         "accessGroup": "D2",
+        "location": {
+          "identCode": "licD2"
+        },
         "dispatchedAt": "2020-01-30T11:00:00+03:00",
         "priority": 3,
         "deliveryContents": [
@@ -78,6 +84,9 @@
         "@id": "3",
         "deliveryNumber": "D3",
         "accessGroup": "D3",
+        "location": {
+          "identCode": "licD3"
+        },
         "priority": 2,
         "deliveryContents": [
           {
@@ -109,6 +118,9 @@
         "@id": "4",
         "deliveryNumber": "D4",
         "accessGroup": "D4",
+        "location": {
+          "identCode": "licD4"
+        },
         "deliveryContents": [
           {
             "deliveryContentNumber": "DC4.1",
@@ -138,6 +150,9 @@
         "@id": "5",
         "deliveryNumber": "D5",
         "accessGroup": "D5",
+        "location": {
+          "identCode": "licD5"
+        },
         "deliveryContents": [
           {
             "deliveryContentNumber": "DC5.1"
@@ -157,22 +172,34 @@
       {
         "@id": "1",
         "shipmentNumber": "S1",
-        "accessGroup": "S1"
+        "accessGroup": "S1",
+        "location": {
+          "identCode": "licS1"
+        }
       },
       {
         "@id": "2",
         "shipmentNumber": "S2",
-        "accessGroup": "S2"
+        "accessGroup": "S2",
+        "location": {
+          "identCode": "licS2"
+        }
       },
       {
         "@id": "3",
         "shipmentNumber": "S3",
-        "accessGroup": "S3"
+        "accessGroup": "S3",
+        "location": {
+          "identCode": "licS3"
+        }
       },
       {
         "@id": "4",
         "shipmentNumber": "S4",
-        "accessGroup": "S4"
+        "accessGroup": "S4",
+        "location": {
+          "identCode": "licS4"
+        }
       }
     ],
     "HandlingUnit": [
@@ -180,6 +207,9 @@
         "@id": "1",
         "handlingUnitNumber": "H1",
         "accessGroup": "H1",
+        "location": {
+          "identCode": "licH1"
+        },
         "warehouseSlot": {
           "warehouse": "South",
           "level": 0
@@ -189,6 +219,9 @@
         "@id": "2",
         "handlingUnitNumber": "H2",
         "accessGroup": "H2",
+        "location": {
+          "identCode": "licH2"
+        },
         "warehouseSlot": {
           "warehouse": "South",
           "level": 1
@@ -198,6 +231,9 @@
         "@id": "3",
         "handlingUnitNumber": "H3",
         "accessGroup": "H3",
+        "location": {
+          "identCode": "licH3"
+        },
         "warehouseSlot": {
           "warehouse": "South",
           "level": 0
@@ -207,6 +243,9 @@
         "@id": "4",
         "handlingUnitNumber": "H4",
         "accessGroup": "H4",
+        "location": {
+          "identCode": "licH4"
+        },
         "warehouseSlot": {
           "warehouse": "North",
           "level": 0
@@ -218,22 +257,34 @@
         "@id": "1",
         "orderNumber": "O1",
         "accessGroup": "O1",
+        "location": {
+          "identCode": "licO1"
+        },
         "payedAt": "2019-06-21T18:10:00Z"
       },
       {
         "@id": "2",
         "orderNumber": "O2",
-        "accessGroup": "O2"
+        "accessGroup": "O2",
+        "location": {
+          "identCode": "licO2"
+        }
       },
       {
         "@id": "3",
         "orderNumber": "O3",
-        "accessGroup": "O3"
+        "accessGroup": "O3",
+        "location": {
+          "identCode": "licO3"
+        }
       },
       {
         "@id": "4",
         "orderNumber": "O4",
-        "accessGroup": "O4"
+        "accessGroup": "O4",
+        "location": {
+          "identCode": "licO4"
+        }
       }
     ]
   }
