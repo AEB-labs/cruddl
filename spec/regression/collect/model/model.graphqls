@@ -1,6 +1,7 @@
 type Shipment @rootEntity {
     shipmentNumber: String @key
     accessGroup: String
+    location: Location @accessField
 
     deliveries: [Delivery] @relation
 
@@ -29,6 +30,7 @@ type Shipment @rootEntity {
 type Delivery @rootEntity {
     deliveryNumber: String @key
     accessGroup: String
+    location: Location @accessField
     dispatchedAt: OffsetDateTime
     priority: Int
     deliveryContents: [DeliveryContent]
@@ -86,6 +88,7 @@ type HandlingUnit @rootEntity {
     handlingUnitNumber: String @key
     accessGroup: String
     warehouseSlot: WarehouseSlot
+    location: Location @accessField
 
     deliveries: [Delivery] @relation(inverseOf: "handlingUnits")
     childHandlingUnits: [HandlingUnit] @relation
@@ -97,6 +100,7 @@ type HandlingUnit @rootEntity {
 type Order @rootEntity {
     orderNumber: String @key
     accessGroup: String
+    location: Location @accessField
     payedAt: DateTime
 
     delivery: Delivery @relation(inverseOf: "order")
@@ -120,4 +124,8 @@ type DeliveryItem @childEntity {
 type WarehouseSlot @valueObject {
     warehouse: String
     level: Int
+}
+
+type Location @valueObject {
+    identCode: String @accessField
 }

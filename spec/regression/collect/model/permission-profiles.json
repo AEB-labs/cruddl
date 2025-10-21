@@ -20,6 +20,16 @@
           "roles": ["h1h2"],
           "access": "readWrite",
           "restrictToAccessGroups": ["D1", "S1", "H1", "H2"]
+        },
+        {
+          "roles": ["byAccessField"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "location.identCode",
+              "claim": "cus_locationIdentCode"
+            }
+          ]
         }
       ]
     }

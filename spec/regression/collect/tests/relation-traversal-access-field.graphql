@@ -1,0 +1,42 @@
+mutation createEdges {
+    d1: updateDelivery(
+        input: {
+            id: "@{ids/Delivery/1}"
+            addHandlingUnits: ["@{ids/HandlingUnit/1}", "@{ids/HandlingUnit/4}"]
+            order: "@{ids/Order/1}"
+        }
+    ) {
+        deliveryNumber
+    }
+    h1: updateHandlingUnit(
+        input: { id: "@{ids/HandlingUnit/1}", addChildHandlingUnits: ["@{ids/HandlingUnit/2}"] }
+    ) {
+        handlingUnitNumber
+    }
+    h2: updateHandlingUnit(
+        input: { id: "@{ids/HandlingUnit/2}", addChildHandlingUnits: ["@{ids/HandlingUnit/3}"] }
+    ) {
+        handlingUnitNumber
+    }
+    h3: updateHandlingUnit(
+        input: { id: "@{ids/HandlingUnit/3}", addChildHandlingUnits: ["@{ids/HandlingUnit/4}"] }
+    ) {
+        handlingUnitNumber
+    }
+}
+
+query queryAll {
+    Delivery(deliveryNumber: "D1") {
+        allHandlingUnits(orderBy: handlingUnitNumber_ASC) {
+            handlingUnitNumber
+        }
+    }
+}
+
+query queryRestricted {
+    Delivery(deliveryNumber: "D1") {
+        allHandlingUnits(orderBy: handlingUnitNumber_ASC) {
+            handlingUnitNumber
+        }
+    }
+}
