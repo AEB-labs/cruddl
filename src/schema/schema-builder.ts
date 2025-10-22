@@ -120,7 +120,13 @@ export function createSchema(project: Project, databaseAdapter: DatabaseAdapter)
     try {
         const { validationResult, model } = validateAndPrepareSchema(project);
         if (validationResult.hasErrors()) {
-            throw new Error('Project has errors:\n' + validationResult.toString());
+            throw new Error(
+                'Project has errors:\n' +
+                    validationResult
+                        .getErrors()
+                        .map((e) => e.toString())
+                        .join('\n'),
+            );
         }
 
         const schemaContext: SchemaTransformationContext = {
