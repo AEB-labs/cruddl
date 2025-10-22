@@ -142,6 +142,20 @@ export class IndexField implements ModelComponent {
             return undefined;
         }
 
+        // https://docs.arangodb.com/3.12/index-and-search/indexing/basics/#indexing-array-values
+        // https://github.com/arangodb/arangodb/blob/0005e46aa971fce177833747c3f66bb182bb1c3c/lib/Basics/AttributeNameParser.cpp#L136
+        const listFields = fieldsInPath.filter((f) => f.isList);
+        if (listFields.length > 1) {
+            const desc = listFields.map((f) => `"${f.declaringType.name}.${f.name}"`).join(', ');
+            addMessage(
+                ValidationMessage.error(
+                    `Index paths with more than one list field are not supported by ArangoDB (list fields: ${desc}).`,
+                    this.astNode,
+                ),
+            );
+            return undefined;
+        }
+
         return { field, fieldsInPath };
     }
 }
