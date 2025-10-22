@@ -1,6 +1,6 @@
 {
   "name": "cruddl",
-  "version": "4.2.1",
+  "version": "4.2.1-0.nested-access-field-restriction.0",
   "description": "",
   "license": "MIT",
   "main": "dist/index.js",
