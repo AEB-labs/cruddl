@@ -6,6 +6,7 @@ import { Type } from './type';
 import { locationWithinStringArgument, ValidationMessage } from '../validation';
 import { DirectiveNode, ObjectValueNode, StringValueNode } from 'graphql';
 import { SCALAR_JSON } from '../../schema/constants';
+import memorize from 'memorize-decorator';
 
 export class IndexField implements ModelComponent {
     readonly path: ReadonlyArray<string>;
@@ -21,11 +22,13 @@ export class IndexField implements ModelComponent {
     /**
      * Gets the innermost field
      */
+    @memorize()
     get field(): Field | undefined {
         const res = this.traversePath(() => undefined);
         return res ? res.field : undefined;
     }
 
+    @memorize()
     get fieldsInPath(): ReadonlyArray<Field> | undefined {
         const res = this.traversePath(() => undefined);
         return res ? res.fieldsInPath : undefined;
