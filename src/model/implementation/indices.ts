@@ -106,7 +106,7 @@ export class IndexField implements ModelComponent {
             if (nextField.type.kind === TypeKind.ROOT_ENTITY) {
                 addMessage(
                     ValidationMessage.error(
-                        `Field "${type.name}.${nextField.name}" resolves to a root entity, but indices can not cross root entity boundaries.`,
+                        `Field "${type.name}.${nextField.name}" resolves to a root entity, but indices cannot cross root entity boundaries.`,
                         this.astNode,
                     ),
                 );
