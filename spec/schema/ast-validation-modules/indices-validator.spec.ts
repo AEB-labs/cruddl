@@ -89,7 +89,7 @@ describe('indices validator', () => {
             type Foo @rootEntity(indices:[{ fields: ["bar.baz"]}]) { bar: Bar @relation }
             type Bar @rootEntity { baz: String }
         `,
-            'Field "Foo.bar" resolves to a root entity, but indices can not cross root entity boundaries.',
+            'Field "Foo.bar" resolves to a root entity, but indices cannot cross root entity boundaries.',
         );
     });
 
