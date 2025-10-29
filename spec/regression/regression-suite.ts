@@ -47,6 +47,9 @@ interface MetaOptions {
     };
 }
 
+const QUERY_MEMORY_LIMIT_FOR_TESTS = 1_000_000;
+const QUERY_MEMORY_LIMIT_FOR_INITIALIZATION = 1_000_000_000;
+
 export class RegressionSuite {
     private schema: GraphQLSchema | undefined;
     private testDataEnvironment: TestDataEnvironment | undefined;
@@ -112,22 +115,20 @@ export class RegressionSuite {
         };
 
         // use a schema that logs less for initTestData and for schema migrations
-        const silentProject = await loadProjectFromDir(
-            resolve(this.path, 'model'),
-            warnLevelOptions,
-        );
-        const silentAdapter = await this.createAdapter(warnLevelOptions);
-        const silentSchema = silentProject.createSchema(silentAdapter);
+        // the init db adapter also has a higher query memory limit
+        const initProject = await loadProjectFromDir(resolve(this.path, 'model'), warnLevelOptions);
+        const initAdapter = await this.createAdapter(warnLevelOptions, { isInitSchema: true });
+        const initSchema = initProject.createSchema(initAdapter);
 
         const project = await loadProjectFromDir(resolve(this.path, 'model'), debugLevelOptions);
         const adapter = await this.createAdapter(debugLevelOptions);
         this.schema = project.createSchema(adapter);
 
-        await silentAdapter.updateSchema(silentProject.getModel());
+        await initAdapter.updateSchema(initProject.getModel());
 
         const testDataJsonPath = resolve(this.path, 'test-data.json');
         const testDataTsPath = resolve(this.path, 'test-data.ts');
-        const initTestDataContext = new InitTestDataContext(silentSchema);
+        const initTestDataContext = new InitTestDataContext(initSchema);
         if (existsSync(testDataJsonPath)) {
             this.testDataEnvironment = await initTestData(
                 resolve(this.path, 'test-data.json'),
@@ -169,13 +170,26 @@ export class RegressionSuite {
         this._isSetUpClean = true;
     }
 
-    private async createAdapter(context: ProjectOptions): Promise<DatabaseAdapter> {
+    private async createAdapter(
+        context: ProjectOptions,
+        { isInitSchema = false } = {},
+    ): Promise<DatabaseAdapter> {
         switch (this.databaseSpecifier) {
             case 'in-memory':
                 return new InMemoryAdapter({ db: this.inMemoryDB }, context);
             case 'arangodb':
-                const dbConfig = await createTempDatabase();
-                return new ArangoDBAdapter(dbConfig, context);
+                const dbConnectionConfig = await createTempDatabase();
+                return new ArangoDBAdapter(
+                    {
+                        ...dbConnectionConfig,
+                        // intentionally set low so we catch issues in tests
+                        // but silent schema uses higher limit because it's used in the setup
+                        queryMemoryLimit: isInitSchema
+                            ? QUERY_MEMORY_LIMIT_FOR_INITIALIZATION
+                            : QUERY_MEMORY_LIMIT_FOR_TESTS,
+                    },
+                    context,
+                );
             default:
                 throw new Error(`Unknown database specifier: ${this.databaseSpecifier}`);
         }
