@@ -10,6 +10,8 @@ import { ProjectOptions } from '../../src/project/project';
 import { loadProjectFromDir } from '../../src/project/project-from-fs';
 import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider';
 import { createTempDatabase, initTestData, TestDataEnvironment } from './initialization';
+import { ErrorWithCause } from '../../src/utils/error-with-cause';
+import { InitTestDataContext } from './init-test-data-context';
 import deepEqual = require('deep-equal');
 
 interface TestResult {
@@ -122,10 +124,40 @@ export class RegressionSuite {
         this.schema = project.createSchema(adapter);
 
         await silentAdapter.updateSchema(silentProject.getModel());
-        this.testDataEnvironment = await initTestData(
-            resolve(this.path, 'test-data.json'),
-            silentSchema,
-        );
+
+        const testDataJsonPath = resolve(this.path, 'test-data.json');
+        const testDataTsPath = resolve(this.path, 'test-data.ts');
+        const initTestDataContext = new InitTestDataContext(silentSchema);
+        if (existsSync(testDataJsonPath)) {
+            this.testDataEnvironment = await initTestData(
+                resolve(this.path, 'test-data.json'),
+                initTestDataContext,
+            );
+        } else if (existsSync(testDataTsPath)) {
+            let testDataTsModule;
+            try {
+                testDataTsModule = await import(testDataTsPath);
+            } catch (e) {
+                throw new ErrorWithCause(`Error importing ${testDataTsPath}`, e);
+            }
+            if (!testDataTsModule.default || typeof testDataTsModule.default !== 'function') {
+                throw new Error(`${testDataTsPath} does not export a default function`);
+            }
+            try {
+                await testDataTsModule.default(initTestDataContext);
+            } catch (e) {
+                throw new ErrorWithCause(
+                    `Error executing default function from ${testDataTsPath}`,
+                    e,
+                );
+            }
+
+            // identity function here -> test queries can't use @{ids/TypeName/localID}
+            // (if we want to support that, we could let the test data function return a mapping)
+            this.testDataEnvironment = { fillTemplateStrings: (s) => s };
+        } else {
+            this.testDataEnvironment = { fillTemplateStrings: (s) => s };
+        }
 
         if (this.databaseSpecifier === 'arangodb') {
             const version = await (adapter as ArangoDBAdapter).getArangoDBVersion();
