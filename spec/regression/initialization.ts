@@ -4,6 +4,7 @@ import { ExecutionResult } from 'graphql';
 import stripJsonComments from 'strip-json-comments';
 import { ArangoDBConfig } from '../../src/database/arangodb';
 import { InitTestDataContext } from './init-test-data-context';
+import { generateRandomString } from '../helpers/generate-random-string';
 
 const DATABASE_NAME = 'cruddl-test-temp';
 // arangodb only listens on ipv4, but localhost may resolve to ::1, so explicitly state 127.0.0.1
@@ -83,12 +84,7 @@ export async function initTestData(
             for (const expr of randomStringExprs) {
                 result = result.replace(expr, (_, lengthStr) => {
                     const length = parseInt(lengthStr, 10);
-                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-                    let randomStr = '';
-                    for (let i = 0; i < length; i++) {
-                        randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
-                    }
-                    return randomStr;
+                    return generateRandomString(length);
                 });
             }
 
