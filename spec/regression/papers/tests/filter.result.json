@@ -1,254 +1,332 @@
 {
-  "data": {
-    "eq": [
-      {
-        "key": "OOM"
-      }
-    ],
-    "neq": [
-      {
-        "key": "NoSQL"
-      },
-      {
-        "key": "Part"
-      },
-      {
-        "key": "Scal"
-      },
-      {
-        "key": "UML"
-      }
-    ],
-    "gt": [
-      {
-        "key": "Part"
-      },
-      {
-        "key": "Scal"
-      },
-      {
-        "key": "UML"
-      }
-    ],
-    "gte": [
-      {
-        "key": "OOM"
-      },
-      {
-        "key": "Part"
-      },
-      {
-        "key": "Scal"
-      },
-      {
-        "key": "UML"
-      }
-    ],
-    "lt": [
-      {
-        "key": "NoSQL"
-      }
-    ],
-    "lte": [
-      {
-        "key": "NoSQL"
-      },
-      {
-        "key": "OOM"
-      }
-    ],
-    "in": [
-      {
-        "key": "OOM"
-      },
-      {
-        "key": "Part"
-      }
-    ],
-    "not_in": [
-      {
-        "key": "NoSQL"
-      },
-      {
-        "key": "Scal"
-      },
-      {
-        "key": "UML"
-      }
-    ],
-    "contains": [
-      {
-        "key": "Part"
-      },
-      {
-        "key": "Scal"
-      }
-    ],
-    "contains_empty_string": [
-      {
-        "key": "NoSQL"
-      },
-      {
-        "key": "OOM"
-      },
-      {
-        "key": "Part"
-      },
-      {
-        "key": "Scal"
-      },
-      {
-        "key": "UML"
-      }
-    ],
-    "not_contains": [
-      {
-        "key": "NoSQL"
-      },
-      {
-        "key": "OOM"
-      },
-      {
-        "key": "UML"
-      }
-    ],
-    "not_contains_empty_string": [],
-    "starts_with": [
-      {
-        "key": "OOM"
-      }
-    ],
-    "not_starts_with": [
-      {
-        "key": "NoSQL"
-      },
-      {
-        "key": "Part"
-      },
-      {
-        "key": "Scal"
-      },
-      {
-        "key": "UML"
-      }
-    ],
-    "ends_with": [
-      {
-        "key": "OOM"
-      }
-    ],
-    "not_ends_with": [
-      {
-        "key": "NoSQL"
-      },
-      {
-        "key": "Part"
-      },
-      {
-        "key": "Scal"
-      },
-      {
-        "key": "UML"
-      }
-    ],
-    "like_prefix": [
-      {
-        "key": "OOM"
-      }
-    ],
-    "like_underscore": [
-      {
-        "key": "OOM"
-      }
-    ],
-    "like_not_matching": [],
-    "like_upper_matching_lower_prefix": [
-      {
-        "key": "Part"
-      }
-    ],
-    "like_lower_matching_upper_prefix": [
-      {
-        "key": "Part"
-      }
-    ],
-    "like_upper_matching_lower_exact": [
-      {
-        "key": "Part"
-      }
-    ],
-    "like_lower_matching_upper_exact": [
-      {
-        "key": "Part"
-      }
-    ],
-    "like_upper_matching_lower_pattern": [
-      {
-        "key": "Part"
-      }
-    ],
-    "like_lower_matching_upper_pattern": [
-      {
-        "key": "Part"
-      }
-    ],
-    "not_like": [
-      {
-        "key": "NoSQL"
-      },
-      {
-        "key": "Part"
-      },
-      {
-        "key": "Scal"
-      },
-      {
-        "key": "UML"
-      }
-    ],
-    "or": [
-      {
-        "title": "Scalable SQL and NoSQL data stores"
-      },
-      {
-        "title": "Unified modeling language reference manual, the"
-      }
-    ],
-    "enum_in": [
-      {
-        "lastName": "Doe"
-      },
-      {
-        "lastName": "Lynch"
-      }
-    ],
-    "enum_not_in": [
-      {
-        "lastName": "Gilbert"
-      },
-      {
-        "lastName": "Mustermann"
-      }
-    ],
-    "enum_equal": [
-      {
-        "lastName": "Lynch",
-        "category": "Telecommunications"
-      }
-    ],
-    "enum_not_equal": [
-      {
-        "lastName": "Doe",
-        "category": "Programming"
-      },
-      {
-        "lastName": "Gilbert",
-        "category": null
-      },
-      {
-        "lastName": "Mustermann",
-        "category": null
-      }
-    ]
+  "eq": {
+    "data": {
+      "eq": [
+        {
+          "key": "OOM"
+        }
+      ]
+    }
+  },
+  "neq": {
+    "data": {
+      "neq": [
+        {
+          "key": "NoSQL"
+        },
+        {
+          "key": "Part"
+        },
+        {
+          "key": "Scal"
+        },
+        {
+          "key": "UML"
+        }
+      ]
+    }
+  },
+  "gt": {
+    "data": {
+      "gt": [
+        {
+          "key": "Part"
+        },
+        {
+          "key": "Scal"
+        },
+        {
+          "key": "UML"
+        }
+      ]
+    }
+  },
+  "gte": {
+    "data": {
+      "gte": [
+        {
+          "key": "OOM"
+        },
+        {
+          "key": "Part"
+        },
+        {
+          "key": "Scal"
+        },
+        {
+          "key": "UML"
+        }
+      ]
+    }
+  },
+  "lt": {
+    "data": {
+      "lt": [
+        {
+          "key": "NoSQL"
+        }
+      ]
+    }
+  },
+  "lte": {
+    "data": {
+      "lte": [
+        {
+          "key": "NoSQL"
+        },
+        {
+          "key": "OOM"
+        }
+      ]
+    }
+  },
+  "in": {
+    "data": {
+      "in": [
+        {
+          "key": "OOM"
+        },
+        {
+          "key": "Part"
+        }
+      ]
+    }
+  },
+  "not_in": {
+    "data": {
+      "not_in": [
+        {
+          "key": "NoSQL"
+        },
+        {
+          "key": "Scal"
+        },
+        {
+          "key": "UML"
+        }
+      ]
+    }
+  },
+  "contains": {
+    "data": {
+      "contains": [
+        {
+          "key": "Part"
+        },
+        {
+          "key": "Scal"
+        }
+      ]
+    }
+  },
+  "contains_empty_string": {
+    "data": {
+      "contains_empty_string": [
+        {
+          "key": "NoSQL"
+        },
+        {
+          "key": "OOM"
+        },
+        {
+          "key": "Part"
+        },
+        {
+          "key": "Scal"
+        },
+        {
+          "key": "UML"
+        }
+      ]
+    }
+  },
+  "not_contains": {
+    "data": {
+      "not_contains": [
+        {
+          "key": "NoSQL"
+        },
+        {
+          "key": "OOM"
+        },
+        {
+          "key": "UML"
+        }
+      ]
+    }
+  },
+  "not_contains_empty_string": {
+    "data": {
+      "not_contains_empty_string": []
+    }
+  },
+  "starts_with": {
+    "data": {
+      "starts_with": [
+        {
+          "key": "OOM"
+        }
+      ]
+    }
+  },
+  "not_starts_with": {
+    "data": {
+      "not_starts_with": [
+        {
+          "key": "NoSQL"
+        },
+        {
+          "key": "Part"
+        },
+        {
+          "key": "Scal"
+        },
+        {
+          "key": "UML"
+        }
+      ]
+    }
+  },
+  "ends_with": {
+    "data": {
+      "ends_with": [
+        {
+          "key": "OOM"
+        }
+      ]
+    }
+  },
+  "not_ends_with": {
+    "data": {
+      "not_ends_with": [
+        {
+          "key": "NoSQL"
+        },
+        {
+          "key": "Part"
+        },
+        {
+          "key": "Scal"
+        },
+        {
+          "key": "UML"
+        }
+      ]
+    }
+  },
+  "like": {
+    "data": {
+      "like_prefix": [
+        {
+          "key": "OOM"
+        }
+      ],
+      "like_underscore": [
+        {
+          "key": "OOM"
+        }
+      ],
+      "like_not_matching": [],
+      "like_upper_matching_lower_prefix": [
+        {
+          "key": "Part"
+        }
+      ],
+      "like_lower_matching_upper_prefix": [
+        {
+          "key": "Part"
+        }
+      ],
+      "like_upper_matching_lower_exact": [
+        {
+          "key": "Part"
+        }
+      ],
+      "like_lower_matching_upper_exact": [
+        {
+          "key": "Part"
+        }
+      ],
+      "like_upper_matching_lower_pattern": [
+        {
+          "key": "Part"
+        }
+      ],
+      "like_lower_matching_upper_pattern": [
+        {
+          "key": "Part"
+        }
+      ]
+    }
+  },
+  "not_like": {
+    "data": {
+      "not_like": [
+        {
+          "key": "NoSQL"
+        },
+        {
+          "key": "Part"
+        },
+        {
+          "key": "Scal"
+        },
+        {
+          "key": "UML"
+        }
+      ]
+    }
+  },
+  "or": {
+    "data": {
+      "or": [
+        {
+          "title": "Scalable SQL and NoSQL data stores"
+        },
+        {
+          "title": "Unified modeling language reference manual, the"
+        }
+      ]
+    }
+  },
+  "enums": {
+    "data": {
+      "enum_in": [
+        {
+          "lastName": "Doe"
+        },
+        {
+          "lastName": "Lynch"
+        }
+      ],
+      "enum_not_in": [
+        {
+          "lastName": "Gilbert"
+        },
+        {
+          "lastName": "Mustermann"
+        }
+      ],
+      "enum_equal": [
+        {
+          "lastName": "Lynch",
+          "category": "Telecommunications"
+        }
+      ],
+      "enum_not_equal": [
+        {
+          "lastName": "Doe",
+          "category": "Programming"
+        },
+        {
+          "lastName": "Gilbert",
+          "category": null
+        },
+        {
+          "lastName": "Mustermann",
+          "category": null
+        }
+      ]
+    }
   }
 }
