@@ -44,6 +44,13 @@ export function getTempDatabase(): Database {
     });
 }
 
+export function getTempDatabaseConfig(): ArangoDBConfig {
+    return {
+        url: DATABASE_URL,
+        databaseName: DATABASE_NAME,
+    };
+}
+
 export interface TestDataEnvironment {
     fillTemplateStrings: (data: any) => any;
 }
