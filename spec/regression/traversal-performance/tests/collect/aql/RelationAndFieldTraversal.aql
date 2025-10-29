@@ -1,0 +1,23 @@
+WITH @@roots
+LET v_super1 = FIRST((
+  FOR v_super2
+  IN @@supers
+  FILTER (v_super2.`key` == @var1)
+  LIMIT @var2
+  RETURN v_super2
+))
+RETURN {
+  "Super": (IS_NULL(v_super1) ? null : {
+    "rootChildren": (
+      FOR v_child1
+      IN (
+        FOR v_node1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_super1 @@supers_roots
+        FILTER v_node1 != null
+        RETURN v_node1.`children`[*]
+      )[**]
+      RETURN {
+        "key": v_child1.`key`
+      }
+    )
+  })
+}
