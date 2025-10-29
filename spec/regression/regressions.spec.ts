@@ -41,7 +41,11 @@ describe('regression tests', async () => {
                 };
                 const suite = new RegressionSuite(suitePath, options);
                 describe(suiteName, async () => {
-                    for (const testName of suite.getTestNames().filter(testNameFilter)) {
+                    const testNames = suite
+                        .getTestNames()
+                        .filter((testName) => testNameFilter(`${suiteName}/${testName}`));
+
+                    for (const testName of testNames) {
                         it(testName, async function () {
                             if (await suite.shouldIgnoreTest(testName)) {
                                 this.skip();
