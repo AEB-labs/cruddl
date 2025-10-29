@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import express from 'express';
 import { resolve } from 'path';
-import { ArangoDBAdapter, Project } from '../..';
+import { ArangoDBAdapter, ExecutionOptions, Project } from '../..';
 import { globalContext } from '../../src/config/global';
 import { InMemoryAdapter } from '../../src/database/inmemory';
 import { getMetaSchema } from '../../src/meta-schema/meta-schema';
@@ -18,7 +18,7 @@ const databaseURL = 'http://root:@localhost:8529';
 // const databaseURL = 'http://root:@localhost:7050';
 
 export async function start() {
-    const loggerProvider = new Log4jsLoggerProvider('error');
+    const loggerProvider = new Log4jsLoggerProvider();
 
     let db;
     if (process.argv.includes('--db=in-memory')) {
@@ -44,7 +44,7 @@ export async function start() {
             );
         },
         getOperationIdentifier: ({ context }) => context as object, // each operation is executed with an unique context object
-        getExecutionOptions: ({ context }: { context: any }) => {
+        getExecutionOptions: ({ context }: { context: any }): ExecutionOptions => {
             return {
                 authContext: { authRoles: ['allusers'] },
                 recordTimings: true,
