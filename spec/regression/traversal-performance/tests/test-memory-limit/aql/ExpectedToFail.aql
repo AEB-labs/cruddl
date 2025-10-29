@@ -1,0 +1,13 @@
+LET v_root1 = FIRST((
+  FOR v_root2
+  IN @@roots
+  FILTER (v_root2.`key` == @var1)
+  LIMIT @var2
+  RETURN v_root2
+))
+RETURN {
+  "Root": (IS_NULL(v_root1) ? null : {
+    "payload": v_root1.`payload`,
+    "key": v_root1.`key`
+  })
+}

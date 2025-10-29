@@ -1,0 +1,9 @@
+{
+  "databases": {
+    // performance is only relevant for arangodb
+    // in-memory has other ordering behavior so we would need to use orderBy, which affects performance tests
+    "in-memory": {
+      "ignore": true
+    }
+  }
+}

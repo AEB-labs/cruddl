@@ -1,0 +1,36 @@
+{
+  "RelationAndFieldTraversal": {
+    "errors": [
+      {
+        "message": "AQL: query would use more memory than allowed [node #17: TraversalNode] [node #18: CalculationNode] [node #19: FilterNode] [node #20: CalculationNode] [node #34: SubqueryEndNode] [node #31: SubqueryStartNode] [node #13: FilterNode] [node #23: CalculationNode] [node #24: EnumerateListNode] [node #25: CalculationNode] [node #32: SubqueryEndNode] [node #28: CalculationNode] [node #29: ReturnNode] (while executing)",
+        "locations": [
+          {
+            "line": 2,
+            "column": 5
+          }
+        ],
+        "path": ["Super"]
+      }
+    ],
+    "data": {
+      "Super": null
+    }
+  },
+  "RelationAndFieldTraversalWithParent": {
+    "errors": [
+      {
+        "message": "AQL: query would use more memory than allowed [node #17: TraversalNode] [node #18: CalculationNode] [node #19: FilterNode] [node #43: SubqueryStartNode] [node #22: FilterNode] [node #23: CalculationNode] [node #24: EnumerateListNode] [node #25: CalculationNode] [node #44: SubqueryEndNode] [node #42: SubqueryEndNode] [node #39: SubqueryStartNode] [node #13: FilterNode] [node #30: CalculationNode] [node #31: EnumerateListNode] [node #33: CalculationNode] [node #40: SubqueryEndNode] [node #36: CalculationNode] [node #37: ReturnNode] (while executing)",
+        "locations": [
+          {
+            "line": 10,
+            "column": 5
+          }
+        ],
+        "path": ["Super"]
+      }
+    ],
+    "data": {
+      "Super": null
+    }
+  }
+}

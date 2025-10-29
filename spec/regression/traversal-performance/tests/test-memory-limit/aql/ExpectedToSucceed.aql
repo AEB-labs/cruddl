@@ -1,0 +1,14 @@
+LET v_super1 = FIRST((
+  FOR v_super2
+  IN @@supers
+  FILTER (v_super2.`key` == @var1)
+  LIMIT @var2
+  RETURN v_super2
+))
+RETURN {
+  "Super": (IS_NULL(v_super1) ? null : {
+    "key": v_super1.`key`
+  })
+}
+
+// Peak memory usage: 0 bytes
