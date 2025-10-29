@@ -1,9 +1,9 @@
 import { Database } from 'arangojs';
-import { Collection } from 'arangojs/collection';
 import { existsSync, readFileSync } from 'fs';
-import { ExecutionResult, graphql, GraphQLSchema } from 'graphql';
+import { ExecutionResult } from 'graphql';
 import stripJsonComments from 'strip-json-comments';
 import { ArangoDBConfig } from '../../src/database/arangodb';
+import { InitTestDataContext } from './init-test-data-context';
 
 const DATABASE_NAME = 'cruddl-test-temp';
 // arangodb only listens on ipv4, but localhost may resolve to ::1, so explicitly state 127.0.0.1
@@ -50,7 +50,7 @@ export interface TestDataEnvironment {
 
 export async function initTestData(
     path: string,
-    schema: GraphQLSchema,
+    context: InitTestDataContext,
 ): Promise<TestDataEnvironment> {
     if (!existsSync(path)) {
         return {
@@ -90,9 +90,6 @@ export async function initTestData(
         return data;
     }
 
-    const context = {
-        authRoles: testData.roles || [],
-    };
     for (const rootEntityName in testData.rootEntities) {
         const namespace = rootEntityName.split('.');
         const rootEntityLocalName = namespace.pop();
@@ -101,25 +98,17 @@ export async function initTestData(
             dataSet = fillTemplateStrings(dataSet);
             const dataID = dataSet['@id'];
             delete dataSet['@id'];
+
             const query = `mutation($input: Create${rootEntityLocalName}Input!) { ${wrapNamespaceForQuery(
                 `res: create${rootEntityLocalName}(input: $input) { id }`,
                 namespace,
             )} }`;
-            const variables = { input: dataSet };
-            const result = await graphql({
-                schema,
-                source: query,
-                rootValue: {},
-                contextValue: context,
-                variableValues: variables,
+
+            const result = await context.executeGraphql(query, {
+                variables: { input: dataSet },
+                authRoles: testData.roles,
             });
-            if (result.errors) {
-                throw new Error(
-                    `GraphQL error while inserting ${rootEntityName}: ${JSON.stringify(
-                        result.errors,
-                    )}`,
-                );
-            }
+
             const id = retrieveIdFromResult(result, namespace);
             if (!id) {
                 throw new Error(
