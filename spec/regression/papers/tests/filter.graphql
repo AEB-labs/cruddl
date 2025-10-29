@@ -1,52 +1,100 @@
-query {
+query eq {
     eq: allPapers(filter: { key: "OOM" }, orderBy: key_ASC) {
         key
     }
+}
+
+query neq {
     neq: allPapers(filter: { key_not: "OOM" }, orderBy: key_ASC) {
         key
     }
+}
+
+query gt {
     gt: allPapers(filter: { key_gt: "OOM" }, orderBy: key_ASC) {
         key
     }
+}
+
+query gte {
     gte: allPapers(filter: { key_gte: "OOM" }, orderBy: key_ASC) {
         key
     }
+}
+
+query lt {
     lt: allPapers(filter: { key_lt: "OOM" }, orderBy: key_ASC) {
         key
     }
+}
+
+query lte {
     lte: allPapers(filter: { key_lte: "OOM" }, orderBy: key_ASC) {
         key
     }
+}
+
+query in {
     in: allPapers(filter: { key_in: ["OOM", "Part"] }, orderBy: key_ASC) {
         key
     }
+}
+
+query not_in {
     not_in: allPapers(filter: { key_not_in: ["OOM", "Part"] }, orderBy: key_ASC) {
         key
     }
+}
+
+query contains {
     contains: allPapers(filter: { key_contains: "a" }, orderBy: key_ASC) {
         key
     }
+}
+
+query contains_empty_string {
     contains_empty_string: allPapers(filter: { key_contains: "" }, orderBy: key_ASC) {
         key
     }
+}
+
+query not_contains {
     not_contains: allPapers(filter: { key_not_contains: "a" }, orderBy: key_ASC) {
         key
     }
+}
+
+query not_contains_empty_string {
     not_contains_empty_string: allPapers(filter: { key_not_contains: "" }, orderBy: key_ASC) {
         key
     }
+}
+
+query starts_with {
     starts_with: allPapers(filter: { key_starts_with: "O" }, orderBy: key_ASC) {
         key
     }
+}
+
+query not_starts_with {
     not_starts_with: allPapers(filter: { key_not_starts_with: "O" }, orderBy: key_ASC) {
         key
     }
+}
+
+query ends_with {
     ends_with: allPapers(filter: { key_ends_with: "M" }, orderBy: key_ASC) {
         key
     }
+}
+
+query not_ends_with {
     not_ends_with: allPapers(filter: { key_not_ends_with: "M" }, orderBy: key_ASC) {
         key
     }
+}
+
+query like {
     like_prefix: allPapers(filter: { key_like: "o%" }, orderBy: key_ASC) {
         key
     }
@@ -74,9 +122,15 @@ query {
     like_lower_matching_upper_pattern: allPapers(filter: { key_like: "%part" }, orderBy: key_ASC) {
         key
     }
+}
+
+query not_like {
     not_like: allPapers(filter: { key_not_like: "O%" }, orderBy: key_ASC) {
         key
     }
+}
+
+query or {
     or: allPapers(
         filter: {
             OR: [
@@ -88,7 +142,9 @@ query {
     ) {
         title
     }
+}
 
+query enums {
     enum_in: allUsers(
         filter: { category_in: [Telecommunications, Programming] }
         orderBy: lastName_ASC
