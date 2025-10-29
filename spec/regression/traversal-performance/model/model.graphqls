@@ -1,0 +1,40 @@
+type Super @rootEntity {
+    key: String @key
+    roots: [Root] @relation
+    rootChildren: [Child] @collect(path: "roots.children")
+    rootGrandchildren: [Grandchild] @collect(path: "roots.children.children")
+    rootExtensionGrandchildren: [ExtensionGrandchild]
+        @collect(path: "roots.children.extension.children")
+}
+
+type Root @rootEntity {
+    key: String @key
+    children: [Child]
+    grandchildren: [Grandchild] @collect(path: "children.children")
+    extensionGrandchildren: [ExtensionGrandchild] @collect(path: "children.extension.children")
+    payload: String
+}
+
+type Child @childEntity {
+    key: String
+    children: [Grandchild]
+    extension: Extension
+    parent: Root @parent
+    root: Root @root
+}
+
+type Extension @entityExtension {
+    children: [ExtensionGrandchild]
+}
+
+type Grandchild @childEntity {
+    key: String
+    parent: Child @parent
+    root: Root @root
+}
+
+type ExtensionGrandchild @childEntity {
+    key: String
+    root: Root @root
+    parent: Child @parent
+}
