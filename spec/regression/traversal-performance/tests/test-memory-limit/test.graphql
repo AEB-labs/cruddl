@@ -1,0 +1,12 @@
+query ExpectedToSucceed {
+    Super(key: "super1") {
+        key
+    }
+}
+
+query ExpectedToFail {
+    Root(key: "root1") {
+        payload
+        key
+    }
+}
