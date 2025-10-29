@@ -9,6 +9,11 @@ const DATABASE_NAME = 'cruddl-test-temp';
 // arangodb only listens on ipv4, but localhost may resolve to ::1, so explicitly state 127.0.0.1
 const DATABASE_URL = 'http://root:@127.0.0.1:8529';
 
+export const TEMP_DATABASE_CONFIG: ArangoDBConfig = {
+    url: DATABASE_URL,
+    databaseName: DATABASE_NAME,
+};
+
 export async function createTempDatabase(): Promise<ArangoDBConfig> {
     const systemDatabase = new Database({
         url: DATABASE_URL,
@@ -21,10 +26,7 @@ export async function createTempDatabase(): Promise<ArangoDBConfig> {
     } else {
         await systemDatabase.createDatabase(DATABASE_NAME);
     }
-    return {
-        url: DATABASE_URL,
-        databaseName: DATABASE_NAME,
-    };
+    return TEMP_DATABASE_CONFIG;
 }
 
 export async function dropTempDatabase(): Promise<void> {
@@ -38,10 +40,7 @@ export async function dropTempDatabase(): Promise<void> {
 }
 
 export function getTempDatabase(): Database {
-    return new Database({
-        url: DATABASE_URL,
-        databaseName: DATABASE_NAME,
-    });
+    return new Database(TEMP_DATABASE_CONFIG);
 }
 
 export interface TestDataEnvironment {
