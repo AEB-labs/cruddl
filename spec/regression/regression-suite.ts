@@ -13,6 +13,8 @@ import { createTempDatabase, initTestData, TestDataEnvironment } from './initial
 import { ErrorWithCause } from '../../src/utils/error-with-cause';
 import { InitTestDataContext } from './init-test-data-context';
 import deepEqual = require('deep-equal');
+import { WarnAndErrorLoggerProvider } from '../helpers/warn-and-error-logger-provider';
+import { getLogger } from 'log4js';
 
 interface TestResult {
     readonly actualResult: any;
@@ -23,7 +25,6 @@ type DatabaseSpecifier = 'arangodb' | 'in-memory';
 
 export interface RegressionSuiteOptions {
     readonly saveActualAsExpected?: boolean;
-    readonly trace?: boolean;
     readonly database?: DatabaseSpecifier;
 }
 
@@ -105,13 +106,11 @@ export class RegressionSuite {
         };
         const warnLevelOptions = {
             ...generalOptions,
-            loggerProvider: new Log4jsLoggerProvider('warn'),
+            loggerProvider: new WarnAndErrorLoggerProvider(),
         };
         const debugLevelOptions = {
             ...generalOptions,
-            loggerProvider: new Log4jsLoggerProvider(this.options.trace ? 'trace' : 'warn', {
-                'schema-builder': 'warn',
-            }),
+            loggerProvider: new Log4jsLoggerProvider(),
         };
 
         // use a schema that logs less for initTestData and for schema migrations
@@ -119,6 +118,7 @@ export class RegressionSuite {
         const initProject = await loadProjectFromDir(resolve(this.path, 'model'), warnLevelOptions);
         const initAdapter = await this.createAdapter(warnLevelOptions, { isInitSchema: true });
         const initSchema = initProject.createSchema(initAdapter);
+        const initTestDataContext = new InitTestDataContext(initSchema);
 
         const project = await loadProjectFromDir(resolve(this.path, 'model'), debugLevelOptions);
         const adapter = await this.createAdapter(debugLevelOptions);
@@ -128,7 +128,6 @@ export class RegressionSuite {
 
         const testDataJsonPath = resolve(this.path, 'test-data.json');
         const testDataTsPath = resolve(this.path, 'test-data.ts');
-        const initTestDataContext = new InitTestDataContext(initSchema);
         if (existsSync(testDataJsonPath)) {
             this.testDataEnvironment = await initTestData(
                 resolve(this.path, 'test-data.json'),
@@ -161,7 +160,7 @@ export class RegressionSuite {
         }
 
         if (this.databaseSpecifier === 'arangodb') {
-            const version = await (adapter as ArangoDBAdapter).getArangoDBVersion();
+            const version = await (initAdapter as ArangoDBAdapter).getArangoDBVersion();
             if (version) {
                 this.databaseVersion = `${version.major}.${version.minor}`;
             }

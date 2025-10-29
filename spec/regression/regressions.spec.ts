@@ -3,6 +3,7 @@ import { readdirSync, statSync } from 'fs';
 import { resolve } from 'path';
 import { likePatternToRegExp } from '../../src/database/like-helpers';
 import { RegressionSuite, RegressionSuiteOptions } from './regression-suite';
+import { getLogger } from 'log4js';
 
 const regressionRootDir = __dirname;
 
@@ -28,6 +29,26 @@ describe('regression tests', async () => {
         testNameFilter = (name) => !!name.match(regex);
     }
 
+    // log levels can only bet set globally in log4js, so we're doing it here
+    const trace = process.argv.includes('--log-trace');
+    const traceLogNames = ['ArangoDBAdapter', 'InMemoryAdapter', 'query-resolvers'];
+    const traceLoggers = traceLogNames.map((name) => getLogger(name));
+    const previousLevels = traceLoggers.map((logger) => logger.level);
+    beforeEach(async () => {
+        if (trace) {
+            for (const logger of traceLoggers) {
+                logger.level = 'trace';
+            }
+        }
+    });
+    afterEach(async () => {
+        if (trace) {
+            for (let i = 0; i < traceLoggers.length; i++) {
+                traceLoggers[i].level = previousLevels[i];
+            }
+        }
+    });
+
     for (const database of databases) {
         describe(`for ${database}`, async () => {
             for (const suiteName of dirs) {
@@ -36,7 +57,6 @@ describe('regression tests', async () => {
                 // (first npm test run still marked as failure, subsequent runs will pass)
                 const options: RegressionSuiteOptions = {
                     saveActualAsExpected: process.argv.includes('--save-actual-as-expected'),
-                    trace: process.argv.includes('--log-trace'),
                     database,
                 };
                 const suite = new RegressionSuite(suitePath, options);
