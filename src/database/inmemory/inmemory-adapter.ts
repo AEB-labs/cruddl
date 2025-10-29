@@ -1,6 +1,6 @@
 import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
-import { Logger } from '../../config/logging';
+import { DEFAULT_LOGGER_PROVIDER, Logger } from '../../config/logging';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { FlexSearchTokenization } from '../../query-tree/flex-search';
@@ -33,12 +33,8 @@ export class InMemoryAdapter implements DatabaseAdapter {
         if (options.db) {
             this.db = options.db;
         }
-        globalContext.registerContext(schemaContext);
-        try {
-            this.logger = globalContext.loggerProvider.getLogger('InMemoryAdapter');
-        } finally {
-            globalContext.unregisterContext();
-        }
+        const loggerProvider = schemaContext?.loggerProvider ?? DEFAULT_LOGGER_PROVIDER;
+        this.logger = loggerProvider.getLogger('InMemoryAdapter');
     }
 
     /**
