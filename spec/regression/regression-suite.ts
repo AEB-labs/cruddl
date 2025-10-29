@@ -191,7 +191,10 @@ export class RegressionSuite {
         if (!this._isSetUpClean) {
             await this.setUp();
         }
-        const metaPath = resolve(this.testsPath, name + '.meta.json');
+        let metaPath = resolve(this.testsPath, name + '.meta.json');
+        if (!existsSync(metaPath)) {
+            metaPath = resolve(this.path, 'meta.json');
+        }
         const meta: MetaOptions | undefined = existsSync(metaPath)
             ? JSON.parse(stripJsonComments(readFileSync(metaPath, 'utf-8')))
             : undefined;
