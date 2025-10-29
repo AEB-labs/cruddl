@@ -9,12 +9,11 @@ import { IDGenerationInfo, IDGenerator } from '../../src/execution/execution-opt
 import { ProjectOptions } from '../../src/project/project';
 import { loadProjectFromDir } from '../../src/project/project-from-fs';
 import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider';
-import { createTempDatabase, initTestData, TestDataEnvironment } from './initialization';
+import { createTempDatabase, initTestData, TEMP_DATABASE_CONFIG, TestDataEnvironment, } from './initialization';
 import { ErrorWithCause } from '../../src/utils/error-with-cause';
 import { InitTestDataContext } from './init-test-data-context';
-import deepEqual = require('deep-equal');
 import { WarnAndErrorLoggerProvider } from '../helpers/warn-and-error-logger-provider';
-import { getLogger } from 'log4js';
+import deepEqual = require('deep-equal');
 
 interface TestResult {
     readonly actualResult: any;
@@ -55,8 +54,6 @@ export class RegressionSuite {
     private schema: GraphQLSchema | undefined;
     private testDataEnvironment: TestDataEnvironment | undefined;
     private _isSetUpClean = false;
-    // TODO: this is ugly but provides a quick fix for things broken with the silentAdapter
-    // TODO: implement better regression test architecture for different db types
     private inMemoryDB: InMemoryDB = new InMemoryDB();
     private databaseSpecifier: DatabaseSpecifier;
     private readonly idGenerator = new PredictableIDGenerator();
@@ -81,7 +78,6 @@ export class RegressionSuite {
             ? JSON.parse(stripJsonComments(readFileSync(optionsPath, 'utf-8')))
             : {};
 
-        this.inMemoryDB = new InMemoryDB();
         this.idGenerator.resetToPhase('init');
         const generalOptions: ProjectOptions = {
             processError: (e) => {
@@ -124,6 +120,7 @@ export class RegressionSuite {
         const adapter = await this.createAdapter(debugLevelOptions);
         this.schema = project.createSchema(adapter);
 
+        await this.clearDatabase();
         await initAdapter.updateSchema(initProject.getModel());
 
         const testDataJsonPath = resolve(this.path, 'test-data.json');
@@ -169,6 +166,19 @@ export class RegressionSuite {
         this._isSetUpClean = true;
     }
 
+    private async clearDatabase() {
+        switch (this.databaseSpecifier) {
+            case 'in-memory':
+                this.inMemoryDB = new InMemoryDB();
+                break;
+            case 'arangodb':
+                await createTempDatabase();
+                break;
+            default:
+                throw new Error(`Unknown database specifier: ${this.databaseSpecifier}`);
+        }
+    }
+
     private async createAdapter(
         context: ProjectOptions,
         { isInitSchema = false } = {},
@@ -177,10 +187,9 @@ export class RegressionSuite {
             case 'in-memory':
                 return new InMemoryAdapter({ db: this.inMemoryDB }, context);
             case 'arangodb':
-                const dbConnectionConfig = await createTempDatabase();
                 return new ArangoDBAdapter(
                     {
-                        ...dbConnectionConfig,
+                        ...TEMP_DATABASE_CONFIG,
                         // intentionally set low so we catch issues in tests
                         // but silent schema uses higher limit because it's used in the setup
                         queryMemoryLimit: isInitSchema
