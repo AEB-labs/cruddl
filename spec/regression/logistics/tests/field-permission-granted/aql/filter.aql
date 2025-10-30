@@ -32,7 +32,7 @@ RETURN {
     FILTER ((v_handlingUnit1._key == @var10) && (FIRST((
       FOR v_node1
       IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
-      FILTER v_node1 != null
+      FILTER v_node1._key != null
       RETURN v_node1
     )).`totalValue` == @var11))
     RETURN {
@@ -45,7 +45,7 @@ RETURN {
     FILTER ((v_delivery3._key == @var12) && (FIRST((
       FOR v_node2
       IN OUTBOUND v_delivery3 @@deliveries_forwarder
-      FILTER v_node2 != null
+      FILTER v_node2._key != null
       RETURN v_node2
     )).`name` == @var13))
     RETURN {
@@ -54,4 +54,4 @@ RETURN {
   )
 }
 
-// Peak memory usage: 229376 bytes
+// Peak memory usage: 196608 bytes
