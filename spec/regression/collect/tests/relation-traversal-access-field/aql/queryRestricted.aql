@@ -21,7 +21,7 @@ RETURN {
         FOR v_node2, v_edge2, v_path2 IN @var7..@var8 OUTBOUND v_node1 @@handlingUnits_childHandlingUnits
         PRUNE !((v_node2.`location`.`identCode` IN @var9))
         FILTER v_path2.vertices[*].`location`.`identCode` ALL IN @var10
-        FILTER v_node2 != null
+        FILTER v_node2._key != null
         RETURN v_node2
       )
       SORT (v_handlingUnit1.`handlingUnitNumber`)

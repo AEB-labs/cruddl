@@ -20,7 +20,7 @@ RETURN {
           FOR v_item3
           IN OUTBOUND v_shipment1 @@shipments_deliveries
           FILTER (v_item3.`accessGroup` IN @var5)
-          FILTER v_item3 != null
+          FILTER v_item3._key != null
           RETURN v_item3
         )
         COLLECT WITH COUNT INTO v_count1
@@ -32,7 +32,7 @@ RETURN {
       IN (
         FOR v_node1, v_edge1, v_path1 IN @var6..@var7 OUTBOUND v_shipment1 @@shipments_deliveries
         FILTER (v_node1.`accessGroup` IN @var8)
-        FILTER v_node1 != null
+        FILTER v_node1._key != null
         RETURN v_node1
       )
       COLLECT WITH COUNT INTO v_count2

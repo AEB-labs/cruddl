@@ -6,13 +6,13 @@ RETURN {
     SORT (FIRST((
       FOR v_node1
       IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
-      FILTER v_node1 != null
+      FILTER v_node1._key != null
       RETURN v_node1
     )).`deliveryNumber`)
     LET v_delivery1 = FIRST((
       FOR v_node2
       IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
-      FILTER v_node2 != null
+      FILTER v_node2._key != null
       RETURN v_node2
     ))
     RETURN {

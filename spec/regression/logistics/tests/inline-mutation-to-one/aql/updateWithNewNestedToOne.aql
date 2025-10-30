@@ -37,7 +37,7 @@ LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
 LET v_forwarder1 = FIRST((
   FOR v_node1
   IN OUTBOUND v_delivery1 @@deliveries_forwarder
-  FILTER v_node1 != null
+  FILTER v_node1._key != null
   RETURN v_node1
 ))
 RETURN (IS_NULL(v_delivery1) ? null : {
