@@ -1,0 +1,42 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (v_delivery1._key == @var1)
+    LIMIT @var2
+    RETURN v_delivery1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "originCountry": @var3,
+    "updatedAt": @var4
+  }
+  IN @@deliveries
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
+LET v_country1 = (IS_NULL(v_delivery1.`originCountry`) ? null : FIRST((
+  FOR v_originCountry1
+  IN @@countries
+  FILTER ((v_originCountry1.`isoCode` > NULL) && (v_originCountry1.`isoCode` == v_delivery1.`originCountry`))
+  LIMIT @var2
+  RETURN v_originCountry1
+)))
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "originCountry": (IS_NULL(v_country1) ? null : {
+    "isoCode": v_country1.`isoCode`
+  })
+})
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN {
+  "updateDelivery": @v_updateDelivery1
+}

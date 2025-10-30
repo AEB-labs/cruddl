@@ -1,0 +1,72 @@
+RETURN FIRST(
+  INSERT @var1 IN @@deliveries
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+RETURN FIRST(
+  INSERT @var1 IN @@forwarders
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+RETURN (
+  UPSERT {_from: CONCAT(@var1, @v_newEntityId1)}
+  INSERT {_from: CONCAT(@var2, @v_newEntityId1), _to: CONCAT(@var3, @v_newEntityId2)}
+  UPDATE {_from: CONCAT(@var4, @v_newEntityId1), _to: CONCAT(@var5, @v_newEntityId2)}
+  IN @@deliveries_forwarder
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_entity1 = DOCUMENT(@@deliveries, @v_newEntityId1)
+RETURN (
+  UPSERT {
+              key: @var1,
+              type: @var2
+          }
+  INSERT {
+
+          key: @var3,
+          type: @var4,
+          category: null,
+          quantity: null,
+          isExported: false,
+          createdAt: @var5,
+          updatedAt: @var6,
+              isConfirmedForExport: false
+           }
+  UPDATE (OLD.isConfirmedForExport ? {} : {
+              updatedAt: @var7,
+              category: null,
+              quantity: null
+          })
+  IN @@billingEntities
+  RETURN @var8
+)
+
+// --------------------------------
+
+WITH @@deliveries, @@forwarders
+LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
+LET v_forwarder1 = FIRST((
+  FOR v_node1
+  IN OUTBOUND v_delivery1 @@deliveries_forwarder
+  FILTER v_node1 != null
+  RETURN v_node1
+))
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "forwarder": (IS_NULL(v_forwarder1) ? null : {
+    "name": v_forwarder1.`name`
+  })
+})
+
+// --------------------------------
+
+WITH @@deliveries, @@forwarders
+RETURN {
+  "createDelivery": @v_createDelivery1
+}

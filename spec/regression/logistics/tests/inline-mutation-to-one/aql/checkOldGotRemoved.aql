@@ -1,0 +1,35 @@
+WITH @@deliveries
+RETURN {
+  "old": (
+    FOR v_forwarder1
+    IN @@forwarders
+    FILTER (v_forwarder1.`name` == @var1)
+    RETURN {
+      "name": v_forwarder1.`name`,
+      "deliveries": (
+        FOR v_delivery1
+        IN INBOUND v_forwarder1 @@deliveries_forwarder
+        FILTER v_delivery1 != null
+        RETURN {
+          "deliveryNumber": v_delivery1.`deliveryNumber`
+        }
+      )
+    }
+  ),
+  "new": (
+    FOR v_forwarder2
+    IN @@forwarders
+    FILTER (v_forwarder2.`name` == @var2)
+    RETURN {
+      "name": v_forwarder2.`name`,
+      "deliveries": (
+        FOR v_delivery2
+        IN INBOUND v_forwarder2 @@deliveries_forwarder
+        FILTER v_delivery2 != null
+        RETURN {
+          "deliveryNumber": v_delivery2.`deliveryNumber`
+        }
+      )
+    }
+  )
+}

@@ -1,0 +1,69 @@
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_paper1
+    IN @@flex_view_papers
+    SEARCH (v_paper1.`isPublished` == @var1)
+    RETURN v_paper1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) > @var2)
+
+// --------------------------------
+
+WITH @@users
+RETURN {
+  "flexSearchPapers": (@tmp1 ? { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 } : (
+    FOR v_paper1
+    IN (
+      FOR v_paper2
+      IN @@flex_view_papers
+      SEARCH (v_paper2.`isPublished` == @var3)
+      RETURN v_paper2
+    )
+    SORT (v_paper1.`key`) , (v_paper1._key)
+    LIMIT @var4
+    LET v_title1 = v_paper1.`title`
+    RETURN {
+      "key": v_paper1.`key`,
+      @var5: JSON_STRINGIFY({
+        "id": v_paper1._key,
+        "key": v_paper1.`key`
+      }),
+      "title2": v_title1,
+      "title": v_title1,
+      "readers": (
+        FOR v_user1
+        IN INBOUND v_paper1 @@users_papers
+        FILTER v_user1 != null
+        LIMIT @var6
+        RETURN {
+          "lastName": v_user1.`lastName`
+        }
+      ),
+      "b": (
+        FOR v_user2
+        IN INBOUND v_paper1 @@users_papers
+        FILTER v_user2 != null
+        SORT (v_user2._key)
+        LIMIT @var7
+        RETURN {
+          "lastName": v_user2.`lastName`,
+          @var8: JSON_STRINGIFY({
+            "id": v_user2._key
+          })
+        }
+      ),
+      "empty": (
+        FOR v_user3
+        IN INBOUND v_paper1 @@users_papers
+        FILTER (v_user3._key == @var9)
+        FILTER v_user3 != null
+        RETURN {
+          "id": v_user3._key
+        }
+      )
+    }
+  ))
+}

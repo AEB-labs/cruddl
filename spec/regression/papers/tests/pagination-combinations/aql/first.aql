@@ -1,0 +1,11 @@
+RETURN {
+  "allPapers": (
+    FOR v_paper1
+    IN @@papers
+    SORT (v_paper1.`title`)
+    LIMIT @var1
+    RETURN {
+      "title": v_paper1.`title`
+    }
+  )
+}

@@ -1,0 +1,26 @@
+RETURN {
+  "allMains": (
+    FOR v_main1
+    IN @@mains
+    SORT (v_main1.`key`)
+    RETURN {
+      "key": v_main1.`key`
+    }
+  ),
+  "allDependents": (
+    FOR v_dependent1
+    IN @@dependents
+    SORT (v_dependent1.`key`)
+    RETURN {
+      "key": v_dependent1.`key`
+    }
+  ),
+  "allBlockers": (
+    FOR v_blocker1
+    IN @@blockers
+    SORT (v_blocker1.`key`)
+    RETURN {
+      "key": v_blocker1.`key`
+    }
+  )
+}

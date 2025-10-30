@@ -1,0 +1,68 @@
+WITH @@deliveries
+RETURN (
+  FOR v_item1
+  IN [
+    DOCUMENT(@@deliveries, @var1),
+    DOCUMENT(@@deliveries, @var2),
+    DOCUMENT(@@deliveries, @var3)
+  ]
+  FILTER (v_item1 > NULL)
+  RETURN v_item1._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN (
+  FOR v_from1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@deliveries_handlingUnits
+  FILTER v_edge1._from == v_from1
+  REMOVE v_edge1 IN @@deliveries_handlingUnits
+)
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN (
+  FOR v_from1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@deliveries_forwarder
+  FILTER v_edge1._from == v_from1
+  REMOVE v_edge1 IN @@deliveries_forwarder
+)
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN (
+  FOR v_to1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@onlyRelations_deliveries
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@onlyRelations_deliveries
+)
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN (
+  FOR v_Delivery1
+  IN (
+    FOR v_delivery1
+    IN @v_ids1
+    REMOVE v_delivery1
+    IN @@deliveries
+    RETURN OLD
+  )
+  RETURN {
+    "deliveryNumber": v_Delivery1.`deliveryNumber`,
+    "consignee": (IS_NULL(v_Delivery1.`consignee`) ? null : {
+      "city": v_Delivery1.`consignee`.`city`
+    })
+  }
+)
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN {
+  "deleteDeliveries": @v_deleteDeliveries1
+}

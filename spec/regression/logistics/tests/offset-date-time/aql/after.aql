@@ -1,0 +1,38 @@
+RETURN {
+  "asc": (
+    FOR v_delivery1
+    IN @@deliveries
+    SORT (v_delivery1.`dispatchDate`.`timestamp`) , (v_delivery1.`deliveryNumber`)
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`,
+      "dispatchDate": v_delivery1.`dispatchDate`
+    }
+  ),
+  "desc": (
+    FOR v_delivery2
+    IN @@deliveries
+    SORT (v_delivery2.`dispatchDate`.`timestamp`)  DESC, (v_delivery2.`deliveryNumber`)  DESC
+    RETURN {
+      "deliveryNumber": v_delivery2.`deliveryNumber`,
+      "dispatchDate": v_delivery2.`dispatchDate`
+    }
+  ),
+  "eq1": (
+    FOR v_delivery3
+    IN @@deliveries
+    FILTER (v_delivery3.`dispatchDate`.`timestamp` == @var1)
+    RETURN {
+      "deliveryNumber": v_delivery3.`deliveryNumber`,
+      "dispatchDate": v_delivery3.`dispatchDate`
+    }
+  ),
+  "eq2": (
+    FOR v_delivery4
+    IN @@deliveries
+    FILTER (v_delivery4.`dispatchDate`.`timestamp` == @var2)
+    RETURN {
+      "deliveryNumber": v_delivery4.`deliveryNumber`,
+      "dispatchDate": v_delivery4.`dispatchDate`
+    }
+  )
+}

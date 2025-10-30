@@ -1,0 +1,60 @@
+WITH @@deliveries
+LET v_delivery1 = FIRST((
+  FOR v_delivery2
+  IN @@deliveries
+  FILTER (v_delivery2._key == @var1)
+  LIMIT @var2
+  RETURN v_delivery2
+))
+LET v_handlingUnit1 = FIRST((
+  FOR v_handlingUnit2
+  IN @@handlingUnits
+  FILTER (v_handlingUnit2._key == @var3)
+  LIMIT @var4
+  RETURN v_handlingUnit2
+))
+LET v_delivery3 = FIRST((
+  FOR v_node1
+  IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
+  FILTER v_node1 != null
+  RETURN v_node1
+))
+LET v_country1 = FIRST((
+  FOR v_country2
+  IN @@countries
+  FILTER (v_country2.`isoCode` == @var5)
+  LIMIT @var6
+  RETURN v_country2
+))
+RETURN {
+  "logistics": {
+    "delivery": {
+      "Delivery": (IS_NULL(v_delivery1) ? null : {
+        "deliveryNumber": v_delivery1.`deliveryNumber`,
+        "totalValue": { __cruddl_runtime_error_code: @var7, __cruddl_runtime_error: @var8 },
+        "forwarder": { __cruddl_runtime_error_code: @var9, __cruddl_runtime_error: @var10 }
+      }),
+      "allDeliveries": (
+        FOR v_delivery4
+        IN @@deliveries
+        FILTER (v_delivery4._key == @var11)
+        RETURN {
+          "deliveryNumber": v_delivery4.`deliveryNumber`,
+          "totalValue": { __cruddl_runtime_error_code: @var12, __cruddl_runtime_error: @var13 }
+        }
+      ),
+      "HandlingUnit": (IS_NULL(v_handlingUnit1) ? null : {
+        "delivery": (IS_NULL(v_delivery3) ? null : {
+          "deliveryNumber": v_delivery3.`deliveryNumber`,
+          "totalValue": { __cruddl_runtime_error_code: @var14, __cruddl_runtime_error: @var15 }
+        })
+      })
+    }
+  },
+  "foundation": {
+    "Country": (IS_NULL(v_country1) ? null : {
+      "isoCode": v_country1.`isoCode`,
+      "totalInvestment": { __cruddl_runtime_error_code: @var16, __cruddl_runtime_error: @var17 }
+    })
+  }
+}

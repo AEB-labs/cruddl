@@ -1,0 +1,17 @@
+WITH @@deliveries
+RETURN {
+  "allHandlingUnits": (
+    FOR v_handlingUnit1
+    IN @@handlingUnits
+    FILTER (FIRST((
+      FOR v_node1
+      IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
+      FILTER v_node1 != null
+      RETURN v_node1
+    )) == null)
+    SORT (v_handlingUnit1.`huNumber`)
+    RETURN {
+      "id": v_handlingUnit1._key
+    }
+  )
+}

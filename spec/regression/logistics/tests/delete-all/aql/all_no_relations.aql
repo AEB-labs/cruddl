@@ -1,0 +1,20 @@
+RETURN (
+  FOR v_Country1
+  IN (
+    FOR v_country1
+    IN @@countries
+    FILTER (v_country1.`isoCode` == @var1)
+    REMOVE v_country1
+    IN @@countries
+    RETURN OLD
+  )
+  RETURN {
+    "isoCode": v_Country1.`isoCode`
+  }
+)
+
+// --------------------------------
+
+RETURN {
+  "deleteAllCountries": @v_deleteAllCountries1
+}

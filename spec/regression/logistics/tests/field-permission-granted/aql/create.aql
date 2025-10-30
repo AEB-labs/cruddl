@@ -1,0 +1,36 @@
+RETURN FIRST(
+  INSERT @var1 IN @@deliveries
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "deliveryNumber": v_delivery1.`deliveryNumber`
+})
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN FIRST(
+  INSERT @var1 IN @@forwarders
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries, @@forwarders
+LET v_forwarder1 = DOCUMENT(@@forwarders, @v_newEntityId1)
+RETURN (IS_NULL(v_forwarder1) ? null : {
+  "name": v_forwarder1.`name`
+})
+
+// --------------------------------
+
+WITH @@deliveries, @@forwarders
+RETURN {
+  "createDelivery": @v_createDelivery1,
+  "createForwarder": @v_createForwarder1
+}

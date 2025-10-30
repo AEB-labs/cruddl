@@ -1,0 +1,5 @@
+RETURN {
+  "logistics": {
+    "deleteForwarder": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 }
+  }
+}

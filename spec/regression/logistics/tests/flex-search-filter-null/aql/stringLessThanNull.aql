@@ -1,0 +1,16 @@
+RETURN {
+  "flexSearchCountries": (
+    FOR v_country1
+    IN (
+      FOR v_country2
+      IN @@flex_view_countries
+      SEARCH false
+      RETURN v_country2
+    )
+    SORT (v_country1.`isoCode`) , (v_country1.`createdAt`)  DESC, (v_country1._key)  DESC
+    RETURN {
+      "isoCode": v_country1.`isoCode`,
+      "someKey": v_country1.`someKey`
+    }
+  )
+}

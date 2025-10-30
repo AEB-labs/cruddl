@@ -1,0 +1,47 @@
+WITH @@deliveries
+RETURN (
+  FOR v_handlingUnit1
+  IN @@handlingUnits
+  FILTER (FIRST((
+    FOR v_node1
+    IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
+    FILTER v_node1 != null
+    RETURN v_node1
+  ))._key == @var1)
+  SORT (v_handlingUnit1.`huNumber`)
+  RETURN v_handlingUnit1._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN (
+  FOR v_to1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@deliveries_handlingUnits
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@deliveries_handlingUnits
+)
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN (
+  FOR v_HandlingUnit1
+  IN (
+    FOR v_handlingUnit1
+    IN @v_ids1
+    REMOVE v_handlingUnit1
+    IN @@handlingUnits
+    RETURN OLD
+  )
+  RETURN {
+    "huNumber": v_HandlingUnit1.`huNumber`
+  }
+)
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN {
+  "deleteAllHandlingUnits": @v_deleteAllHandlingUnits1
+}

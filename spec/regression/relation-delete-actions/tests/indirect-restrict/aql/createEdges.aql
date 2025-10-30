@@ -1,0 +1,169 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_main1
+    IN @@mains
+    FILTER (v_main1._key == @var1)
+    LIMIT @var2
+    RETURN v_main1
+  )
+  UPDATE v_currentEntity1
+  WITH {}
+  IN @@mains
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@dependents
+RETURN DOCUMENT(@@dependents, @var1)
+
+// --------------------------------
+
+WITH @@dependents
+RETURN (
+  FOR v_to1 IN @var1
+  FOR v_edge1 IN @@mains_dependents
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@mains_dependents
+)
+
+// --------------------------------
+
+WITH @@dependents
+RETURN (
+  FOR v_edge1
+  IN [ {_from: CONCAT(@var1, FIRST(@v_updatedIds1)), _to: @var2} ]
+  UPSERT { _from: v_edge1._from, _to: v_edge1._to }
+  INSERT v_edge1
+  UPDATE {}
+  IN @@mains_dependents
+)
+
+// --------------------------------
+
+WITH @@dependents
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_main1
+    IN @@mains
+    FILTER (v_main1._key == @var1)
+    LIMIT @var2
+    RETURN v_main1
+  )
+  UPDATE v_currentEntity1
+  WITH {}
+  IN @@mains
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@dependents
+RETURN DOCUMENT(@@dependents, @var1)
+
+// --------------------------------
+
+WITH @@dependents
+RETURN (
+  FOR v_to1 IN @var1
+  FOR v_edge1 IN @@mains_dependents
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@mains_dependents
+)
+
+// --------------------------------
+
+WITH @@dependents
+RETURN (
+  FOR v_edge1
+  IN [ {_from: CONCAT(@var1, FIRST(@v_updatedIds1)), _to: @var2} ]
+  UPSERT { _from: v_edge1._from, _to: v_edge1._to }
+  INSERT v_edge1
+  UPDATE {}
+  IN @@mains_dependents
+)
+
+// --------------------------------
+
+WITH @@dependents, @@mains
+RETURN (
+  FOR v_Main1
+  IN [
+    DOCUMENT(@@mains, @var1),
+    DOCUMENT(@@mains, @var2)
+  ]
+  RETURN {
+    "key": v_Main1.`key`
+  }
+)
+
+// --------------------------------
+
+WITH @@dependents, @@mains
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_dependent1
+    IN @@dependents
+    FILTER (v_dependent1._key == @var1)
+    LIMIT @var2
+    RETURN v_dependent1
+  )
+  UPDATE v_currentEntity1
+  WITH {}
+  IN @@dependents
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@dependents, @@mains, @@blockers
+RETURN DOCUMENT(@@blockers, @var1)
+
+// --------------------------------
+
+WITH @@dependents, @@mains, @@blockers
+RETURN (
+  FOR v_to1 IN @var1
+  FOR v_edge1 IN @@dependents_blockers
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@dependents_blockers
+)
+
+// --------------------------------
+
+WITH @@dependents, @@mains, @@blockers
+RETURN (
+  FOR v_edge1
+  IN [ {_from: CONCAT(@var1, FIRST(@v_updatedIds1)), _to: @var2} ]
+  UPSERT { _from: v_edge1._from, _to: v_edge1._to }
+  INSERT v_edge1
+  UPDATE {}
+  IN @@dependents_blockers
+)
+
+// --------------------------------
+
+WITH @@dependents, @@mains, @@blockers
+RETURN (
+  FOR v_Dependent1
+  IN [
+    DOCUMENT(@@dependents, @var1)
+  ]
+  RETURN {
+    "key": v_Dependent1.`key`
+  }
+)
+
+// --------------------------------
+
+WITH @@dependents, @@mains, @@blockers
+RETURN {
+  "updateMains": @v_updateMains1,
+  "updateDependents": @v_updateDependents1
+}

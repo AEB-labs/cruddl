@@ -1,0 +1,51 @@
+WITH @@users
+RETURN {
+  "allPapers": (
+    FOR v_paper1
+    IN @@papers
+    FILTER (v_paper1.`isPublished` == @var1)
+    SORT (v_paper1.`key`) , (v_paper1._key)
+    LIMIT @var2
+    LET v_title1 = v_paper1.`title`
+    RETURN {
+      "key": v_paper1.`key`,
+      @var3: JSON_STRINGIFY({
+        "id": v_paper1._key,
+        "key": v_paper1.`key`
+      }),
+      "title2": v_title1,
+      "title": v_title1,
+      "readers": (
+        FOR v_user1
+        IN INBOUND v_paper1 @@users_papers
+        FILTER v_user1 != null
+        LIMIT @var4
+        RETURN {
+          "lastName": v_user1.`lastName`
+        }
+      ),
+      "b": (
+        FOR v_user2
+        IN INBOUND v_paper1 @@users_papers
+        FILTER v_user2 != null
+        SORT (v_user2._key)
+        LIMIT @var5
+        RETURN {
+          "lastName": v_user2.`lastName`,
+          @var6: JSON_STRINGIFY({
+            "id": v_user2._key
+          })
+        }
+      ),
+      "empty": (
+        FOR v_user3
+        IN INBOUND v_paper1 @@users_papers
+        FILTER (v_user3._key == @var7)
+        FILTER v_user3 != null
+        RETURN {
+          "id": v_user3._key
+        }
+      )
+    }
+  )
+}

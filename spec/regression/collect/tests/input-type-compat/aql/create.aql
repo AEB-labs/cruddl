@@ -1,0 +1,31 @@
+RETURN FIRST(
+  INSERT @var1 IN @@deliveries
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "itemCount": FIRST(
+    FOR v_item1
+    IN v_delivery1.`deliveryContents`[*].`items`[*][**]
+    COLLECT WITH COUNT INTO v_count1
+    RETURN v_count1
+  ),
+  "allItems": (
+    FOR v_deliveryItem1
+    IN v_delivery1.`deliveryContents`[*].`items`[*][**]
+    RETURN {
+      "itemNumber": v_deliveryItem1.`itemNumber`
+    }
+  )
+})
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN {
+  "createDelivery": @v_createDelivery1
+}

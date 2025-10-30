@@ -1,0 +1,96 @@
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_file1
+    IN (
+      FOR v_file2
+      IN (
+        FOR v_item2
+        IN @@files
+        FILTER (v_item2.`accessGroup` IN @var1)
+        RETURN v_item2
+      )
+      FILTER (v_file2._key == @var2)
+      RETURN v_file2
+    )
+    FILTER !((v_file1.`accessGroup` IN @var3))
+    RETURN v_file1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) == 0)
+
+// --------------------------------
+
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_currentEntity1
+    IN (
+      FOR v_file1
+      IN (
+        FOR v_item2
+        IN @@files
+        FILTER (v_item2.`accessGroup` IN @var1)
+        RETURN v_item2
+      )
+      FILTER (v_file1._key == @var2)
+      RETURN v_file1
+    )
+    FILTER !((MERGE(v_currentEntity1, {
+      "name": @var3,
+      "updatedAt": @var4
+    }).`accessGroup` IN @var5))
+    RETURN v_currentEntity1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) == 0)
+
+// --------------------------------
+
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_file1
+    IN (
+      FOR v_item1
+      IN @@files
+      FILTER (v_item1.`accessGroup` IN @var1)
+      RETURN v_item1
+    )
+    FILTER (v_file1._key == @var2)
+    RETURN v_file1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "name": @var3,
+    "updatedAt": @var4
+  }
+  IN @@files
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@files
+RETURN (
+  FOR v_File1
+  IN (
+    FOR v_id1
+    IN @v_updatedIds1
+    LET v_entity1 = DOCUMENT(@@files, v_id1)
+    RETURN ((v_entity1.`accessGroup` IN @var1) ? v_entity1 : null)
+  )
+  RETURN {
+    "name": v_File1.`name`
+  }
+)
+
+// --------------------------------
+
+WITH @@files
+RETURN {
+  "updateAllFiles": @v_updateAllFiles1
+}

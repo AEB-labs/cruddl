@@ -1,0 +1,12 @@
+RETURN {
+  "allPapers": (
+    FOR v_paper1
+    IN @@papers
+    FILTER (v_paper1.`categories` ANY IN @var1)
+    SORT (v_paper1.`key`)
+    RETURN {
+      "key": v_paper1.`key`,
+      "categories": (IS_LIST(v_paper1.`categories`) ? v_paper1.`categories` : [])
+    }
+  )
+}

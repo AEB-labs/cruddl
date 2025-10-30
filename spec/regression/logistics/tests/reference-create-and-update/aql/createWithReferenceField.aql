@@ -1,0 +1,19 @@
+RETURN FIRST(
+  INSERT @var1 IN @@deliveries
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "destinationCountryISOCode": v_delivery1.`destinationCountryISOCode`
+})
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN {
+  "createDelivery": @v_createDelivery1
+}

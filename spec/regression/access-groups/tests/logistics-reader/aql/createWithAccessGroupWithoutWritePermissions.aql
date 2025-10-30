@@ -1,0 +1,26 @@
+RETURN (@var1.`accessGroup` IN @var2)
+
+// --------------------------------
+
+RETURN FIRST(
+  INSERT @var1 IN @@files
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@files
+LET v_file1 = FIRST(
+  LET v_entity1 = DOCUMENT(@@files, @v_newEntityId1)
+  RETURN ((v_entity1.`accessGroup` IN @var1) ? v_entity1 : null)
+)
+RETURN (IS_NULL(v_file1) ? null : {
+  "name": v_file1.`name`
+})
+
+// --------------------------------
+
+WITH @@files
+RETURN {
+  "createFile": @v_createFile1
+}

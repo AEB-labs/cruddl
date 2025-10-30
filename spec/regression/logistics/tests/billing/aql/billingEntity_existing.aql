@@ -1,0 +1,15 @@
+RETURN {
+  "allBillingEntities": (
+    FOR v_billingEntity1
+    IN @@billingEntities
+    FILTER ((v_billingEntity1.`key` == @var1) && (v_billingEntity1.`type` == @var2))
+    RETURN {
+      "key": v_billingEntity1.`key`,
+      "type": v_billingEntity1.`type`,
+      "isConfirmedForExport": v_billingEntity1.`isConfirmedForExport`,
+      "isExported": v_billingEntity1.`isExported`,
+      "confirmedForExportAt": v_billingEntity1.`confirmedForExportAt`,
+      "exportedAt": v_billingEntity1.`exportedAt`
+    }
+  )
+}

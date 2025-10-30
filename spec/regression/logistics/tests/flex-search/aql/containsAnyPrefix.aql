@@ -1,0 +1,16 @@
+RETURN {
+  "flexSearchDeliveries": (
+    FOR v_delivery1
+    IN (
+      FOR v_delivery2
+      IN @@flex_view_deliveries
+      SEARCH ((LENGTH(TOKENS(@var1,@var2)) ? ANALYZER( STARTS_WITH( v_delivery2.`description`, TOKENS(@var3,@var4)[0]), @var5) : false) || (LENGTH(TOKENS(@var6,@var7)) ? ANALYZER( STARTS_WITH( v_delivery2.`description`, TOKENS(@var8,@var9)[0]), @var10) : false))
+      OPTIONS { conditionOptimization: 'none' }
+      RETURN v_delivery2
+    )
+    SORT (v_delivery1.`deliveryNumber`) , (v_delivery1.`createdAt`)  DESC, (v_delivery1._key)  DESC
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`
+    }
+  )
+}

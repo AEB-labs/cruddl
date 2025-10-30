@@ -1,0 +1,25 @@
+WITH @@handlingUnits
+LET v_delivery1 = FIRST((
+  FOR v_delivery2
+  IN @@deliveries
+  FILTER (v_delivery2.`deliveryNumber` == @var1)
+  LIMIT @var2
+  RETURN v_delivery2
+))
+RETURN {
+  "Delivery": (IS_NULL(v_delivery1) ? null : {
+    "allHandlingUnits0to1": (
+      FOR v_handlingUnit1
+      IN (
+        FOR v_node1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_delivery1 @@deliveries_handlingUnits
+        FOR v_node2, v_edge2, v_path2 IN @var5..@var6 OUTBOUND v_node1 @@handlingUnits_childHandlingUnits
+        FILTER v_node2 != null
+        RETURN v_node2
+      )
+      SORT (v_handlingUnit1.`handlingUnitNumber`)
+      RETURN {
+        "handlingUnitNumber": v_handlingUnit1.`handlingUnitNumber`
+      }
+    )
+  })
+}

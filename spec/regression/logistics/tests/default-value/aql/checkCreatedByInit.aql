@@ -1,0 +1,32 @@
+RETURN {
+  "allDeliveries": (
+    FOR v_delivery1
+    IN @@deliveries
+    SORT (v_delivery1.`deliveryNumber`)
+    LET v_country1 = (IS_NULL(v_delivery1.`destination`.`country`) ? null : FIRST((
+      FOR v_country2
+      IN @@countries
+      FILTER ((v_country2.`isoCode` > NULL) && (v_country2.`isoCode` == v_delivery1.`destination`.`country`))
+      LIMIT @var1
+      RETURN v_country2
+    )))
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`,
+      "destination": (IS_NULL(v_delivery1.`destination`) ? null : {
+        "street": v_delivery1.`destination`.`street`,
+        "city": v_delivery1.`destination`.`city`,
+        "zipCode": v_delivery1.`destination`.`zipCode`,
+        "country": (IS_NULL(v_country1) ? null : {
+          "isoCode": v_country1.`isoCode`
+        })
+      }),
+      "defaultValueString": v_delivery1.`defaultValueString`,
+      "defaultValueString2": v_delivery1.`defaultValueString2`,
+      "defaultValueInt": v_delivery1.`defaultValueInt`,
+      "defaultValueTrue": v_delivery1.`defaultValueTrue`,
+      "defaultValueFalse": v_delivery1.`defaultValueFalse`,
+      "defaultValueFloat": v_delivery1.`defaultValueFloat`,
+      "defaultValueEnum": v_delivery1.`defaultValueEnum`
+    }
+  )
+}

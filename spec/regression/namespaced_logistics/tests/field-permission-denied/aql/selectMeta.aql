@@ -1,0 +1,8 @@
+RETURN {
+  "logistics": {
+    "allForwarders": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 },
+    @var3: {
+      "count": { __cruddl_runtime_error_code: @var4, __cruddl_runtime_error: @var5 }
+    }
+  }
+}

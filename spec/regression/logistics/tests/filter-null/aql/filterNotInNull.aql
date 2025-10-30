@@ -1,0 +1,11 @@
+RETURN {
+  "allCountries": (
+    FOR v_country1
+    IN @@countries
+    FILTER !((v_country1.`someKey` IN @var1))
+    SORT (v_country1.`isoCode`)
+    RETURN {
+      "isoCode": v_country1.`isoCode`
+    }
+  )
+}

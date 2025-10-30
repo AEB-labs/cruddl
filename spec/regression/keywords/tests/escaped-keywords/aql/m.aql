@@ -1,0 +1,27 @@
+RETURN (
+  FOR v_entity1 IN @var1
+  INSERT v_entity1 IN @@values
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@values
+RETURN (
+  FOR v_Value1
+  IN (
+    FOR v_id1
+    IN @v_newEntityIds1
+    RETURN DOCUMENT(@@values, v_id1)
+  )
+  RETURN {
+    "limit": v_Value1.`limit`
+  }
+)
+
+// --------------------------------
+
+WITH @@values
+RETURN {
+  "createValues": @v_createValues1
+}

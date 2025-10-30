@@ -1,0 +1,70 @@
+RETURN FIRST(
+  INSERT @var1 IN @@deliveries
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_entity1 = DOCUMENT(@@deliveries, @v_newEntityId1)
+RETURN (
+  UPSERT {
+              key: @var1,
+              type: @var2
+          }
+  INSERT {
+
+          key: @var3,
+          type: @var4,
+          category: null,
+          quantity: null,
+          isExported: false,
+          createdAt: @var5,
+          updatedAt: @var6,
+              isConfirmedForExport: false
+           }
+  UPDATE (OLD.isConfirmedForExport ? {} : {
+              updatedAt: @var7,
+              category: null,
+              quantity: null
+          })
+  IN @@billingEntities
+  RETURN @var8
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
+LET v_country1 = (IS_NULL(v_delivery1.`destination`.`country`) ? null : FIRST((
+  FOR v_country2
+  IN @@countries
+  FILTER ((v_country2.`isoCode` > NULL) && (v_country2.`isoCode` == v_delivery1.`destination`.`country`))
+  LIMIT @var1
+  RETURN v_country2
+)))
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "deliveryNumber": v_delivery1.`deliveryNumber`,
+  "destination": (IS_NULL(v_delivery1.`destination`) ? null : {
+    "street": v_delivery1.`destination`.`street`,
+    "city": v_delivery1.`destination`.`city`,
+    "zipCode": v_delivery1.`destination`.`zipCode`,
+    "country": (IS_NULL(v_country1) ? null : {
+      "isoCode": v_country1.`isoCode`
+    })
+  }),
+  "defaultValueString": v_delivery1.`defaultValueString`,
+  "defaultValueString2": v_delivery1.`defaultValueString2`,
+  "defaultValueInt": v_delivery1.`defaultValueInt`,
+  "defaultValueTrue": v_delivery1.`defaultValueTrue`,
+  "defaultValueFalse": v_delivery1.`defaultValueFalse`,
+  "defaultValueFloat": v_delivery1.`defaultValueFloat`,
+  "defaultValueEnum": v_delivery1.`defaultValueEnum`
+})
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN {
+  "createDelivery": @v_createDelivery1
+}

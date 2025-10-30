@@ -1,0 +1,7 @@
+RETURN {
+  "direct": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 },
+  "simple": { __cruddl_runtime_error_code: @var3, __cruddl_runtime_error: @var4 },
+  "startsWith": { __cruddl_runtime_error_code: @var5, __cruddl_runtime_error: @var6 },
+  "throughRelation": { __cruddl_runtime_error_code: @var7, __cruddl_runtime_error: @var8 },
+  "toUnaccessibleEntity": { __cruddl_runtime_error_code: @var9, __cruddl_runtime_error: @var10 }
+}

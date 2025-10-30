@@ -1,0 +1,62 @@
+WITH @@forwarders, @@deliveries
+LET v_delivery1 = FIRST((
+  FOR v_delivery2
+  IN @@deliveries
+  FILTER (v_delivery2._key == @var1)
+  LIMIT @var2
+  RETURN v_delivery2
+))
+LET v_forwarder1 = FIRST((
+  FOR v_node1
+  IN OUTBOUND v_delivery1 @@deliveries_forwarder
+  FILTER v_node1 != null
+  RETURN v_node1
+))
+LET v_handlingUnit1 = FIRST((
+  FOR v_handlingUnit2
+  IN @@handlingUnits
+  FILTER (v_handlingUnit2._key == @var3)
+  LIMIT @var4
+  RETURN v_handlingUnit2
+))
+LET v_delivery3 = FIRST((
+  FOR v_node2
+  IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
+  FILTER v_node2 != null
+  RETURN v_node2
+))
+LET v_country1 = FIRST((
+  FOR v_country2
+  IN @@countries
+  FILTER (v_country2.`isoCode` == @var5)
+  LIMIT @var6
+  RETURN v_country2
+))
+RETURN {
+  "Delivery": (IS_NULL(v_delivery1) ? null : {
+    "deliveryNumber": v_delivery1.`deliveryNumber`,
+    "totalValue": v_delivery1.`totalValue`,
+    "forwarder": (IS_NULL(v_forwarder1) ? null : {
+      "name": v_forwarder1.`name`
+    })
+  }),
+  "allDeliveries": (
+    FOR v_delivery4
+    IN @@deliveries
+    FILTER (v_delivery4._key == @var7)
+    RETURN {
+      "deliveryNumber": v_delivery4.`deliveryNumber`,
+      "totalValue": v_delivery4.`totalValue`
+    }
+  ),
+  "HandlingUnit": (IS_NULL(v_handlingUnit1) ? null : {
+    "delivery": (IS_NULL(v_delivery3) ? null : {
+      "deliveryNumber": v_delivery3.`deliveryNumber`,
+      "totalValue": v_delivery3.`totalValue`
+    })
+  }),
+  "Country": (IS_NULL(v_country1) ? null : {
+    "isoCode": v_country1.`isoCode`,
+    "totalInvestment": v_country1.`totalInvestment`
+  })
+}

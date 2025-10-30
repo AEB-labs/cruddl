@@ -1,0 +1,11 @@
+RETURN {
+  "starts_with": (
+    FOR v_paper1
+    IN @@papers
+    FILTER (v_paper1.`key` >= UPPER(@var1) && v_paper1.`key` < LOWER(@var2)) && (LEFT(v_paper1.`key`, LENGTH(@var3)) == @var4)
+    SORT (v_paper1.`key`)
+    RETURN {
+      "key": v_paper1.`key`
+    }
+  )
+}

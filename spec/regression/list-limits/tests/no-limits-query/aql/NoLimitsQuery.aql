@@ -1,0 +1,9 @@
+RETURN {
+  "allHeroes": (
+    FOR v_hero1
+    IN @@heroes
+    RETURN {
+      "name": v_hero1.`name`
+    }
+  )
+}
