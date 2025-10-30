@@ -1,0 +1,131 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_handlingUnit1
+    IN @@handlingUnits
+    FILTER (v_handlingUnit1._key == @var1)
+    LIMIT @var2
+    RETURN v_handlingUnit1
+  )
+  UPDATE v_currentEntity1
+  WITH {}
+  IN @@handlingUnits
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN DOCUMENT(@@deliveries, @var1)
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN (
+  UPSERT {_to: CONCAT(@var1, FIRST(@v_updatedIds1))}
+  INSERT {_from: @var2, _to: CONCAT(@var3, FIRST(@v_updatedIds1))}
+  UPDATE {_from: @var4, _to: CONCAT(@var5, FIRST(@v_updatedIds1))}
+  IN @@deliveries_handlingUnits
+)
+
+// --------------------------------
+
+WITH @@deliveries, @@handlingUnits
+LET v_handlingUnit1 = DOCUMENT(@@handlingUnits, @var1)
+RETURN (IS_NULL(v_handlingUnit1) ? null : {
+  "huNumber": v_handlingUnit1.`huNumber`
+})
+
+// --------------------------------
+
+WITH @@deliveries, @@handlingUnits
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_handlingUnit1
+    IN @@handlingUnits
+    FILTER (v_handlingUnit1._key == @var1)
+    LIMIT @var2
+    RETURN v_handlingUnit1
+  )
+  UPDATE v_currentEntity1
+  WITH {}
+  IN @@handlingUnits
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries, @@handlingUnits
+RETURN DOCUMENT(@@deliveries, @var1)
+
+// --------------------------------
+
+WITH @@deliveries, @@handlingUnits
+RETURN (
+  UPSERT {_to: CONCAT(@var1, FIRST(@v_updatedIds1))}
+  INSERT {_from: @var2, _to: CONCAT(@var3, FIRST(@v_updatedIds1))}
+  UPDATE {_from: @var4, _to: CONCAT(@var5, FIRST(@v_updatedIds1))}
+  IN @@deliveries_handlingUnits
+)
+
+// --------------------------------
+
+WITH @@deliveries, @@handlingUnits
+LET v_handlingUnit1 = DOCUMENT(@@handlingUnits, @var1)
+RETURN (IS_NULL(v_handlingUnit1) ? null : {
+  "huNumber": v_handlingUnit1.`huNumber`
+})
+
+// --------------------------------
+
+WITH @@deliveries, @@handlingUnits
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_handlingUnit1
+    IN @@handlingUnits
+    FILTER (v_handlingUnit1._key == @var1)
+    LIMIT @var2
+    RETURN v_handlingUnit1
+  )
+  UPDATE v_currentEntity1
+  WITH {}
+  IN @@handlingUnits
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries, @@handlingUnits
+RETURN DOCUMENT(@@deliveries, @var1)
+
+// --------------------------------
+
+WITH @@deliveries, @@handlingUnits
+RETURN (
+  UPSERT {_to: CONCAT(@var1, FIRST(@v_updatedIds1))}
+  INSERT {_from: @var2, _to: CONCAT(@var3, FIRST(@v_updatedIds1))}
+  UPDATE {_from: @var4, _to: CONCAT(@var5, FIRST(@v_updatedIds1))}
+  IN @@deliveries_handlingUnits
+)
+
+// --------------------------------
+
+WITH @@deliveries, @@handlingUnits
+LET v_handlingUnit1 = DOCUMENT(@@handlingUnits, @var1)
+RETURN (IS_NULL(v_handlingUnit1) ? null : {
+  "huNumber": v_handlingUnit1.`huNumber`
+})
+
+// --------------------------------
+
+WITH @@deliveries, @@handlingUnits
+RETURN {
+  "hu1": @v_updateHandlingUnit1,
+  "hu2": @v_updateHandlingUnit2,
+  "hu3": @v_updateHandlingUnit3
+}

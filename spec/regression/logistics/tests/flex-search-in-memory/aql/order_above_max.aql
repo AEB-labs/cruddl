@@ -1,0 +1,29 @@
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_delivery1
+    IN @@flex_view_deliveries
+    SEARCH true
+    RETURN v_delivery1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) > @var1)
+
+// --------------------------------
+
+RETURN {
+  "flexSearchDeliveries": (@tmp1 ? { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 } : (
+    FOR v_delivery1
+    IN (
+      FOR v_delivery2
+      IN @@flex_view_deliveries
+      SEARCH true
+      RETURN v_delivery2
+    )
+    SORT (v_delivery1.`deliveryNumber`)  DESC, (v_delivery1._key)  DESC
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`
+    }
+  ))
+}

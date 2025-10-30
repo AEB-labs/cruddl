@@ -1,0 +1,30 @@
+WITH @@deliveries, @@handlingUnits
+LET v_delivery1 = FIRST((
+  FOR v_delivery2
+  IN @@deliveries
+  FILTER (v_delivery2._key == @var1)
+  LIMIT @var2
+  RETURN v_delivery2
+))
+RETURN {
+  "Delivery": (IS_NULL(v_delivery1) ? null : {
+    "deliveryNumber": v_delivery1.`deliveryNumber`,
+    "handlingUnits": (
+      FOR v_handlingUnit1
+      IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
+      FILTER v_handlingUnit1 != null
+      LET v_delivery3 = FIRST((
+        FOR v_node1
+        IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
+        FILTER v_node1 != null
+        RETURN v_node1
+      ))
+      RETURN {
+        "huNumber": v_handlingUnit1.`huNumber`,
+        "delivery": (IS_NULL(v_delivery3) ? null : {
+          "deliveryNumber": v_delivery3.`deliveryNumber`
+        })
+      }
+    )
+  })
+}

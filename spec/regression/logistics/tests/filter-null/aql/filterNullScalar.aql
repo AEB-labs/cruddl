@@ -1,0 +1,11 @@
+RETURN {
+  "allDeliveries": (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (v_delivery1.`destinationCountryISOCode` == @var1)
+    SORT (v_delivery1.`deliveryNumber`)
+    RETURN {
+      "id": v_delivery1._key
+    }
+  )
+}
