@@ -3,6 +3,7 @@ import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
 import {
     BasicType,
     ConditionalQueryNode,
+    EntitiesIdentifierKind,
     FieldQueryNode,
     LiteralQueryNode,
     NullQueryNode,
@@ -12,6 +13,8 @@ import {
     QueryNode,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
+    TraversalQueryNode,
+    TraversalQueryNodeParams,
     TypeCheckQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
@@ -23,6 +26,8 @@ import { FieldContext, SelectionToken } from './context';
 import { QueryNodeField, QueryNodeObjectType } from './definition';
 import { extractQueryTreeObjectType, isListTypeIgnoringNonNull } from './utils';
 import { DefaultClock, UUIDGenerator } from '../../execution/execution-options';
+import { FieldSegment, RelationSegment } from '../../model/implementation/collect-path';
+import { RequireAllProperties } from '../../utils/util-types';
 
 export function createRootFieldContext(
     options: Partial<
@@ -267,6 +272,35 @@ function buildTransformListQueryNode(
             orderBy: listNode.orderBy,
             skip: listNode.skip,
         });
+    }
+
+    // same applies to TraversalQueryNode which is used for collect fields
+    // this is actually functionally required because otherwise we would not have access to the rootEntityNode
+    // (needed for @root fields)
+    if (listNode instanceof TraversalQueryNode) {
+        const itemVariable = listNode.itemVariable ?? new VariableQueryNode(`collectItem`);
+        const rootEntityVariable =
+            listNode.rootEntityVariable ?? new VariableQueryNode(`collectRoot`);
+        const oldInnerNode = listNode.innerNode ?? itemVariable;
+        const innerNode = buildObjectQueryNode(oldInnerNode, itemType, selectionSet, context);
+
+        return new TraversalQueryNode({
+            entitiesIdentifierKind: listNode.entitiesIdentifierKind,
+            sourceEntityNode: listNode.sourceEntityNode,
+            relationSegments: listNode.relationSegments,
+            fieldSegments: listNode.fieldSegments,
+            sourceIsList: listNode.sourceIsList,
+            alwaysProduceList: listNode.alwaysProduceList,
+            preserveNullValues: listNode.preserveNullValues,
+            filterNode: listNode.filterNode,
+            orderBy: listNode.orderBy,
+            skip: listNode.skip,
+            maxCount: listNode.maxCount,
+
+            innerNode,
+            itemVariable,
+            rootEntityVariable,
+        } satisfies RequireAllProperties<TraversalQueryNodeParams>);
     }
 
     const itemVariable = new VariableQueryNode(decapitalize(itemType.name));

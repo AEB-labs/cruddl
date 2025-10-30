@@ -257,9 +257,9 @@ export class OutputTypeGenerator {
             return rootHelperResult.resultNode;
         }
 
-        return createFieldNode(field, rootHelperResult.sourceNode, {
+        return createFieldNode(field, sourceNode, {
             skipNullFallbackForEntityExtensions: true,
-            captureRootEntitiesOnCollectFields: rootHelperResult.captureRootEntitiesOnCollectFields,
+            registerRootNode: (rootNode) => rootHelperResult.registerRootNode(rootNode),
         });
     }
 

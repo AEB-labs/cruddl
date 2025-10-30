@@ -9,21 +9,15 @@ LET v_super1 = FIRST((
 RETURN {
   "Super": (IS_NULL(v_super1) ? null : {
     "rootChildren": (
-      FOR v_child1
-      IN (
-        FOR v_node1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_super1 @@supers_roots
-        FILTER v_node1._key != null
-        RETURN (
-          FOR v_entity1 IN v_node1.`children`[*]
-          RETURN { obj: v_entity1, root: v_node1 }
-        )
-      )[**]
-      RETURN {
-        "key": v_child1.`obj`.`key`,
+      FOR v_root1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_super1 @@supers_roots
+      FILTER v_root1._key != null
+      FOR v_item1 IN v_root1.`children`[* RETURN {
+        "key": CURRENT.`key`,
         "parent": {
-          "key": v_child1.`root`.`key`
+          "key": v_root1.`key`
         }
-      }
+      }]
+      RETURN v_item1
     )
   })
 }

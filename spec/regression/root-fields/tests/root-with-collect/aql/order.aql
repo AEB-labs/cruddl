@@ -12,44 +12,44 @@ RETURN {
         SORT (v_root1.`name`)
         RETURN {
           "grandchildren": (
-            FOR v_grandchild1
+            FOR v_item1
             IN v_root1.`children`[*].`children`[*][**]
-            SORT (v_grandchild1.`name`)
+            SORT (v_item1.`name`)
             RETURN {
-              "name": v_grandchild1.`name`,
+              "name": v_item1.`name`,
               "root": {
                 "name": v_root1.`name`
               }
             }
           ),
           "grandchildrenReverse": (
-            FOR v_grandchild2
+            FOR v_item2
             IN v_root1.`children`[*].`children`[*][**]
-            SORT (v_grandchild2.`name`)  DESC
+            SORT (v_item2.`name`)  DESC
             RETURN {
-              "name": v_grandchild2.`name`,
+              "name": v_item2.`name`,
               "root": {
                 "name": v_root1.`name`
               }
             }
           ),
           "extensionGrandchildren": (
-            FOR v_extensionGrandchild1
+            FOR v_item3
             IN v_root1.`children`[*].`extension`.`children`[*][**]
-            SORT (v_extensionGrandchild1.`name`)
+            SORT (v_item3.`name`)
             RETURN {
-              "name": v_extensionGrandchild1.`name`,
+              "name": v_item3.`name`,
               "root": {
                 "name": v_root1.`name`
               }
             }
           ),
           "extensionGrandchildrenReverse": (
-            FOR v_extensionGrandchild2
+            FOR v_item4
             IN v_root1.`children`[*].`extension`.`children`[*][**]
-            SORT (v_extensionGrandchild2.`name`)  DESC
+            SORT (v_item4.`name`)  DESC
             RETURN {
-              "name": v_extensionGrandchild2.`name`,
+              "name": v_item4.`name`,
               "root": {
                 "name": v_root1.`name`
               }
@@ -58,76 +58,72 @@ RETURN {
         }
       ),
       "rootGrandchildren": (
-        FOR v_grandchild3
-        IN (
-          FOR v_node1, v_edge1, v_path1 IN @var1..@var2 OUTBOUND v_root21 @@root2s_roots
-          FILTER v_node1._key != null
-          RETURN (
-            FOR v_entity1 IN v_node1.`children`[*].`children`[*][**]
-            RETURN { obj: v_entity1, root: v_node1 }
-          )
-        )[**]
-        SORT (v_grandchild3.`obj`.`name`)
-        RETURN {
-          "name": v_grandchild3.`obj`.`name`,
-          "root": {
-            "name": v_grandchild3.`root`.`name`
-          }
-        }
+        FOR v_root2, v_edge1, v_path1 IN @var1..@var2 OUTBOUND v_root21 @@root2s_roots
+        FILTER v_root2._key != null
+        FOR v_item5 IN v_root2.`children`[*].`children`[*][** RETURN {
+          value: {
+            "name": CURRENT.`name`,
+            "root": {
+              "name": v_root2.`name`
+            }
+          },
+          sortValues: [
+            CURRENT.`name`
+          ]
+        }]
+        SORT v_item5.sortValues[0]
+        RETURN v_item5.value
       ),
       "rootGrandchildrenReverse": (
-        FOR v_grandchild4
-        IN (
-          FOR v_node2, v_edge2, v_path2 IN @var3..@var4 OUTBOUND v_root21 @@root2s_roots
-          FILTER v_node2._key != null
-          RETURN (
-            FOR v_entity2 IN v_node2.`children`[*].`children`[*][**]
-            RETURN { obj: v_entity2, root: v_node2 }
-          )
-        )[**]
-        SORT (v_grandchild4.`obj`.`name`)  DESC
-        RETURN {
-          "name": v_grandchild4.`obj`.`name`,
-          "root": {
-            "name": v_grandchild4.`root`.`name`
-          }
-        }
+        FOR v_root3, v_edge2, v_path2 IN @var3..@var4 OUTBOUND v_root21 @@root2s_roots
+        FILTER v_root3._key != null
+        FOR v_item6 IN v_root3.`children`[*].`children`[*][** RETURN {
+          value: {
+            "name": CURRENT.`name`,
+            "root": {
+              "name": v_root3.`name`
+            }
+          },
+          sortValues: [
+            CURRENT.`name`
+          ]
+        }]
+        SORT v_item6.sortValues[0] DESC
+        RETURN v_item6.value
       ),
       "rootExtensionGrandchildren": (
-        FOR v_extensionGrandchild3
-        IN (
-          FOR v_node3, v_edge3, v_path3 IN @var5..@var6 OUTBOUND v_root21 @@root2s_roots
-          FILTER v_node3._key != null
-          RETURN (
-            FOR v_entity3 IN v_node3.`children`[*].`extension`.`children`[*][**]
-            RETURN { obj: v_entity3, root: v_node3 }
-          )
-        )[**]
-        SORT (v_extensionGrandchild3.`obj`.`name`)
-        RETURN {
-          "name": v_extensionGrandchild3.`obj`.`name`,
-          "root": {
-            "name": v_extensionGrandchild3.`root`.`name`
-          }
-        }
+        FOR v_root4, v_edge3, v_path3 IN @var5..@var6 OUTBOUND v_root21 @@root2s_roots
+        FILTER v_root4._key != null
+        FOR v_item7 IN v_root4.`children`[*].`extension`.`children`[*][** RETURN {
+          value: {
+            "name": CURRENT.`name`,
+            "root": {
+              "name": v_root4.`name`
+            }
+          },
+          sortValues: [
+            CURRENT.`name`
+          ]
+        }]
+        SORT v_item7.sortValues[0]
+        RETURN v_item7.value
       ),
       "rootExtensionGrandchildrenReverse": (
-        FOR v_extensionGrandchild4
-        IN (
-          FOR v_node4, v_edge4, v_path4 IN @var7..@var8 OUTBOUND v_root21 @@root2s_roots
-          FILTER v_node4._key != null
-          RETURN (
-            FOR v_entity4 IN v_node4.`children`[*].`extension`.`children`[*][**]
-            RETURN { obj: v_entity4, root: v_node4 }
-          )
-        )[**]
-        SORT (v_extensionGrandchild4.`obj`.`name`)  DESC
-        RETURN {
-          "name": v_extensionGrandchild4.`obj`.`name`,
-          "root": {
-            "name": v_extensionGrandchild4.`root`.`name`
-          }
-        }
+        FOR v_root5, v_edge4, v_path4 IN @var7..@var8 OUTBOUND v_root21 @@root2s_roots
+        FILTER v_root5._key != null
+        FOR v_item8 IN v_root5.`children`[*].`extension`.`children`[*][** RETURN {
+          value: {
+            "name": CURRENT.`name`,
+            "root": {
+              "name": v_root5.`name`
+            }
+          },
+          sortValues: [
+            CURRENT.`name`
+          ]
+        }]
+        SORT v_item8.sortValues[0] DESC
+        RETURN v_item8.value
       )
     }
   )

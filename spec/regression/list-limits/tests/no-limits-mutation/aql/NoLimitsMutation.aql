@@ -1,10 +1,6 @@
 RETURN (
   FOR v_currentEntity1
-  IN (
-    FOR v_hero1
-    IN @@heroes
-    RETURN v_hero1
-  )
+  IN @@heroes
   UPDATE v_currentEntity1
   WITH {
     "name": @var1,

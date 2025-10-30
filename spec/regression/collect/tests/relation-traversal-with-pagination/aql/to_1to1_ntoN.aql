@@ -9,17 +9,13 @@ LET v_order1 = FIRST((
 RETURN {
   "Order": (IS_NULL(v_order1) ? null : {
     "allOuterHandlingUnits": (
-      FOR v_handlingUnit1
-      IN (
-        LET v_nullableNode1 = FIRST(FOR v_node1, v_edge1, v_path1 IN @var3..@var4 INBOUND v_order1 @@deliveries_order FILTER v_node1 != null RETURN v_node1)
-        FOR v_node2, v_edge2, v_path2 IN @var5..@var6 OUTBOUND v_nullableNode1 @@deliveries_handlingUnits
-        FILTER v_node2._key != null
-        RETURN v_node2
-      )
-      SORT (v_handlingUnit1.`handlingUnitNumber`)
+      FOR v_node1, v_edge1, v_path1 IN @var3..@var4 INBOUND v_order1 @@deliveries_order
+      FOR v_node2, v_edge2, v_path2 IN @var5..@var6 OUTBOUND v_node1 @@deliveries_handlingUnits
+      FILTER v_node2._key != null
+      SORT (v_node2.`handlingUnitNumber`)
       LIMIT @var7, @var8
       RETURN {
-        "number": v_handlingUnit1.`handlingUnitNumber`
+        "number": v_node2.`handlingUnitNumber`
       }
     )
   })

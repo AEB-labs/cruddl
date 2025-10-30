@@ -7,35 +7,35 @@ RETURN {
       "deliveryNumber": v_delivery1.`deliveryNumber`,
       "totalWeightInKg": FIRST(
         FOR v_item1
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`weightInKg`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`weightInKg`
         FILTER v_item1 != null
         COLLECT AGGREGATE v_sum1 = SUM(v_item1)
         RETURN v_sum1 != null ? v_sum1 : 0
       ),
       "averageWeightInKg": FIRST(
         FOR v_item2
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`weightInKg`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`weightInKg`
         FILTER v_item2 != null
         COLLECT AGGREGATE v_average1 = AVERAGE(v_item2)
         RETURN v_average1
       ),
       "minWeightInKg": FIRST(
         FOR v_item3
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`weightInKg`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`weightInKg`
         FILTER v_item3 != null
         COLLECT AGGREGATE v_min1 = MIN(v_item3)
         RETURN v_min1
       ),
       "maxWeightInKg": FIRST(
         FOR v_item4
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`weightInKg`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`weightInKg`
         FILTER v_item4 != null
         COLLECT AGGREGATE v_max1 = MAX(v_item4)
         RETURN v_max1
       ),
       "allItemNumbers": (
         FOR v_item5
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`itemNumber`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`itemNumber`
         FILTER v_item5 != null
         SORT v_item5
         COLLECT v_distinct1 = v_item5
@@ -61,76 +61,76 @@ RETURN {
       ),
       "hasDangerousGoods": FIRST(
         FOR v_item9
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`isDangerousGoods`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`isDangerousGoods`
         COLLECT AGGREGATE v_some_true1 = MAX(v_item9)
         RETURN v_some_true1 >= true
       ),
       "hasNonDangerousGoods": FIRST(
         FOR v_item10
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`isDangerousGoods`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`isDangerousGoods`
         COLLECT AGGREGATE v_some_not_true1 = MAX(!v_item10)
         RETURN v_some_not_true1 >= true
       ),
       "hasOnlyDangerousGoods": FIRST(
         FOR v_item11
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`isDangerousGoods`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`isDangerousGoods`
         COLLECT AGGREGATE v_every_true1 = MAX(!v_item11)
         RETURN v_every_true1 < true
       ),
       "hasNoDangerousGoods": FIRST(
         FOR v_item12
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`isDangerousGoods`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`isDangerousGoods`
         COLLECT AGGREGATE v_none_true1 = MAX(v_item12)
         RETURN v_none_true1 < true
       ),
       "dangerousItemCount": FIRST(
         FOR v_item13
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`isDangerousGoods`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`isDangerousGoods`
         FILTER v_item13 >= true
         COLLECT AGGREGATE v_count_true1 = COUNT(v_item13)
         RETURN v_count_true1
       ),
       "nonDangerousItemCount": FIRST(
         FOR v_item14
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`isDangerousGoods`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`isDangerousGoods`
         FILTER v_item14 < true
         COLLECT AGGREGATE v_count_not_true1 = COUNT(v_item14)
         RETURN v_count_not_true1
       ),
       "hasMissingDangerousGoodsFlag": FIRST(
         FOR v_item15
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`isDangerousGoods`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`isDangerousGoods`
         COLLECT AGGREGATE v_some_null1 = MAX(v_item15 == null)
         RETURN v_some_null1 >= true
       ),
       "hasSomeDangerousGoodsFlag": FIRST(
         FOR v_item16
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`isDangerousGoods`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`isDangerousGoods`
         COLLECT AGGREGATE v_some_not_null1 = MAX(v_item16 != null)
         RETURN v_some_not_null1 >= true
       ),
       "hasAllDangerousGoodsFlags": FIRST(
         FOR v_item17
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`isDangerousGoods`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`isDangerousGoods`
         COLLECT AGGREGATE v_none_null1 = MAX(v_item17 == null)
         RETURN v_none_null1 < true
       ),
       "hasNoDangerousGoodsFlag": FIRST(
         FOR v_item18
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`isDangerousGoods`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`isDangerousGoods`
         COLLECT AGGREGATE v_every_null1 = MAX(v_item18 != null)
         RETURN v_every_null1 < true
       ),
       "missingDangerousGoodsFlagCount": FIRST(
         FOR v_item19
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`isDangerousGoods`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`isDangerousGoods`
         FILTER v_item19 == null
         COLLECT AGGREGATE v_count_null1 = COUNT(v_item19)
         RETURN v_count_null1
       ),
       "setDangerousGoodsFlagCount": FIRST(
         FOR v_item20
-        IN v_delivery1.`deliveryContents`[*].`items`[*].`isDangerousGoods`[**]
+        IN v_delivery1.`deliveryContents`[*].`items`[*][**].`isDangerousGoods`
         FILTER v_item20 != null
         COLLECT AGGREGATE v_count_not_null1 = COUNT(v_item20)
         RETURN v_count_not_null1

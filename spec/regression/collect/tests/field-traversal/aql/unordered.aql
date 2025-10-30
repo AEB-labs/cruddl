@@ -7,12 +7,8 @@ LET v_delivery1 = FIRST((
 ))
 RETURN {
   "Delivery": (IS_NULL(v_delivery1) ? null : {
-    "allItems": (
-      FOR v_deliveryItem1
-      IN v_delivery1.`deliveryContents`[*].`items`[*][**]
-      RETURN {
-        "itemNumber": v_deliveryItem1.`itemNumber`
-      }
-    )
+    "allItems": v_delivery1.`deliveryContents`[*].`items`[*][** RETURN {
+      "itemNumber": CURRENT.`itemNumber`
+    }]
   })
 }

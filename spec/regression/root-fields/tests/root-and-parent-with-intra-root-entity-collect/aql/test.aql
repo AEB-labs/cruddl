@@ -5,28 +5,20 @@ RETURN {
     SORT (v_root1.`name`)
     RETURN {
       "name": v_root1.`name`,
-      "grandchildren": (
-        FOR v_grandchild1
-        IN v_root1.`children`[*].`children`[*][**]
-        RETURN {
-          "name": v_grandchild1.`name`,
-          "parent": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 },
-          "root": {
-            "name": v_root1.`name`
-          }
+      "grandchildren": v_root1.`children`[*].`children`[*][** RETURN {
+        "name": CURRENT.`name`,
+        "parent": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 },
+        "root": {
+          "name": v_root1.`name`
         }
-      ),
-      "extensionGrandchildren": (
-        FOR v_extensionGrandchild1
-        IN v_root1.`children`[*].`extension`.`children`[*][**]
-        RETURN {
-          "name": v_extensionGrandchild1.`name`,
-          "parent": { __cruddl_runtime_error_code: @var3, __cruddl_runtime_error: @var4 },
-          "root": {
-            "name": v_root1.`name`
-          }
+      }],
+      "extensionGrandchildren": v_root1.`children`[*].`extension`.`children`[*][** RETURN {
+        "name": CURRENT.`name`,
+        "parent": { __cruddl_runtime_error_code: @var3, __cruddl_runtime_error: @var4 },
+        "root": {
+          "name": v_root1.`name`
         }
-      )
+      }]
     }
   )
 }

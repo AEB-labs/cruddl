@@ -10,8 +10,8 @@ import {
     ConstBoolQueryNode,
     INVALID_CURSOR_ERROR,
     LiteralQueryNode,
-    NOT_SUPPORTED_ERROR,
     NoImplicitlyTruncatedListValidator,
+    NOT_SUPPORTED_ERROR,
     OrderDirection,
     OrderSpecification,
     PreExecQueryParms,
@@ -19,6 +19,8 @@ import {
     RuntimeError,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
+    TraversalQueryNode,
+    TraversalQueryNodeParams,
     VariableQueryNode,
     WithPreExecutionQueryNode,
 } from '../query-tree';
@@ -49,6 +51,7 @@ import {
     getSortClausesForPrimarySort,
     orderArgMatchesPrimarySort,
 } from './utils/flex-search-utils';
+import { RequireAllProperties } from '../utils/util-types';
 
 export enum LimitTypeCheckType {
     RESULT_VALIDATOR = 'RESULT_VALIDATOR',
@@ -134,7 +137,6 @@ export class OrderByAndPaginationAugmentation {
             resolve: (sourceNode, args, info) => {
                 let listNode = schemaField.resolve(sourceNode, args, info);
                 let itemVariable = new VariableQueryNode(decapitalize(type.name));
-                let objectNode = this.rootFieldHelper.getRealItemNode(itemVariable, info);
 
                 let maxCount: number | undefined = args[FIRST_ARG];
 
@@ -181,17 +183,28 @@ export class OrderByAndPaginationAugmentation {
                 const originalListNode = listNode;
                 if (
                     listNode instanceof TransformListQueryNode &&
-                    listNode.skip === 0 &&
+                    // TODO NXT-7991-later we could theoretically append this to the new sort order if it's not absolute
+                    // but the more sane thing is probably just to throw
                     listNode.orderBy.isUnordered() &&
+                    // TODO NXT-7991-later it's probably better to throw instead of checking because two LIMITs in a row is probably bad
+                    listNode.skip === 0 &&
                     listNode.maxCount == undefined &&
+                    // TODO NXT-7991-later why is this condition necessary?
                     listNode.innerNode === listNode.itemVariable
                 ) {
                     filterNode = listNode.filterNode.equals(ConstBoolQueryNode.TRUE)
                         ? undefined
                         : listNode.filterNode;
                     itemVariable = listNode.itemVariable;
-                    objectNode = this.rootFieldHelper.getRealItemNode(itemVariable, info);
                     listNode = listNode.listNode;
+                } else if (listNode instanceof TraversalQueryNode) {
+                    // a bit down, we check again whether it's a TraversalQueryNode and then merge the sort and pagination into it
+                    itemVariable = listNode.itemVariable;
+                    if (listNode.skip !== 0 || listNode.maxCount !== undefined) {
+                        throw new Error(
+                            `Pagination augmentation does not expect existing skip/maxCount on TraversalQueryNode`,
+                        );
+                    }
                 }
 
                 // flexsearch?
@@ -259,7 +272,7 @@ export class OrderByAndPaginationAugmentation {
                         afterArg,
                         // pagination acts on the listNode (which is a FlexSearchQueryNode) and not on the resulting
                         // TransformListQueryNode, so we need to use listNode.itemVariable in the pagination filter
-                        itemNode: this.rootFieldHelper.getRealItemNode(listNode.itemVariable, info),
+                        itemNode: listNode.itemVariable,
                         orderByValues,
                         isFlexSearch: true,
                     });
@@ -280,7 +293,7 @@ export class OrderByAndPaginationAugmentation {
                         : getOrderByValues(args, orderByType, { isAbsoluteOrderRequired });
                     paginationFilter = this.createPaginationFilterNode({
                         afterArg,
-                        itemNode: objectNode,
+                        itemNode: itemVariable,
                         orderByValues,
                         isFlexSearch: false,
                     });
@@ -290,13 +303,13 @@ export class OrderByAndPaginationAugmentation {
                 const orderBy = !orderByType
                     ? OrderSpecification.UNORDERED
                     : new OrderSpecification(
-                          orderByValues.map((value) => value.getClause(objectNode)),
+                          orderByValues.map((value) => value.getClause(itemVariable)),
                       );
 
                 if (
                     orderBy.isUnordered() &&
                     maxCount == undefined &&
-                    paginationFilter === ConstBoolQueryNode.TRUE
+                    (!paginationFilter || paginationFilter === ConstBoolQueryNode.TRUE)
                 ) {
                     return originalListNode;
                 }
@@ -321,6 +334,7 @@ export class OrderByAndPaginationAugmentation {
 
                 if (
                     !(listNode instanceof FlexSearchQueryNode) &&
+                    !(listNode instanceof TraversalQueryNode) && // does not make use of indices for sorting
                     !skip &&
                     maxCount != undefined &&
                     orderBy.clauses.length > 1 &&
@@ -336,7 +350,6 @@ export class OrderByAndPaginationAugmentation {
                     const optimizedQueryNode = this.getPaginatedNodeUsingMultiIndexOptimization({
                         orderBy,
                         itemVariable,
-                        objectNode,
                         orderByType,
                         listNode,
                         args,
@@ -357,6 +370,31 @@ export class OrderByAndPaginationAugmentation {
                     }
 
                     return optimizedQueryNode;
+                }
+
+                if (listNode instanceof TraversalQueryNode) {
+                    if (wrapQueryNodeInResultValidator && options.operation) {
+                        // traversals are always limited in nature, so we don't check item count
+                        throw new Error(`result validator not supported on TraversalQueryNode`);
+                    }
+
+                    return new TraversalQueryNode({
+                        entitiesIdentifierKind: listNode.entitiesIdentifierKind,
+                        sourceEntityNode: listNode.sourceEntityNode,
+                        relationSegments: listNode.relationSegments,
+                        fieldSegments: listNode.fieldSegments,
+                        sourceIsList: listNode.sourceIsList,
+                        alwaysProduceList: listNode.alwaysProduceList,
+                        preserveNullValues: listNode.preserveNullValues,
+                        filterNode: listNode.filterNode,
+                        innerNode: listNode.innerNode,
+                        rootEntityVariable: listNode.rootEntityVariable,
+                        skip,
+                        maxCount,
+
+                        itemVariable,
+                        orderBy,
+                    } satisfies RequireAllProperties<TraversalQueryNodeParams>);
                 }
 
                 const transformListNode = new TransformListQueryNode({
@@ -406,7 +444,6 @@ export class OrderByAndPaginationAugmentation {
         args,
         orderByType,
         itemVariable,
-        objectNode,
         listNode,
         orderBy,
         maxCount,
@@ -415,7 +452,6 @@ export class OrderByAndPaginationAugmentation {
         args: { [name: string]: any };
         orderByType: OrderByEnumType;
         itemVariable: VariableQueryNode;
-        objectNode: QueryNode;
         listNode: QueryNode;
         orderBy: OrderSpecification;
         maxCount: number | undefined;
@@ -454,7 +490,7 @@ export class OrderByAndPaginationAugmentation {
                 );
             }
             const cursorValue = cursorObj[cursorProperty];
-            const valueNode = clause.getValueNode(objectNode);
+            const valueNode = clause.getValueNode(itemVariable);
 
             const operator =
                 clause.direction == OrderDirection.ASCENDING

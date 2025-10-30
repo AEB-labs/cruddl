@@ -857,12 +857,6 @@ register(TraversalQueryNode, (node, context) => {
     const relationTraversalReturnsList = isList;
     let rootVar: JSVariable | undefined;
     let relationFrag: JSFragment | undefined;
-    if (node.captureRootEntity) {
-        relationFrag = currentFrag;
-        rootVar = js.variable('root');
-        currentFrag = rootVar;
-        isList = false; // we're going to be within the mapper, so not in a list
-    }
 
     for (const segment of node.fieldSegments) {
         if (isList) {
@@ -894,37 +888,6 @@ register(TraversalQueryNode, (node, context) => {
 
         if (segment.isListSegment) {
             isList = true;
-        }
-    }
-
-    if (relationFrag && rootVar && node.captureRootEntity) {
-        if (relationTraversalReturnsList) {
-            if (node.fieldSegments.some((f) => f.isListSegment)) {
-                const accVar = js.variable('acc');
-                const objVar = js.variable('obj');
-                const mapper = js`${objVar} => ({ obj: ${objVar}, root: ${rootVar} })`;
-                const reducer = js`(${accVar}, ${rootVar}) => ${accVar}.concat((${currentFrag}).map(${mapper}))`;
-                currentFrag = js`${relationFrag}.reduce(${reducer}, [])`;
-            } else {
-                const mapper = js`${rootVar} => ({ obj: ${currentFrag}, root: ${rootVar} })`;
-                currentFrag = js`${relationFrag}.map(${mapper})`;
-            }
-        } else {
-            if (node.fieldSegments.some((f) => f.isListSegment)) {
-                const objVar = js.variable('obj');
-                const mapper = js`${objVar} => ({ obj: ${objVar}, root: ${rootVar} })`;
-                currentFrag = jsExt.evaluatingLambda(
-                    rootVar,
-                    js`(${currentFrag}).map(${mapper})`,
-                    relationFrag,
-                );
-            } else {
-                currentFrag = jsExt.evaluatingLambda(
-                    rootVar,
-                    js`({ obj: ${currentFrag}, root: ${rootVar} })`,
-                    relationFrag,
-                );
-            }
         }
     }
 
