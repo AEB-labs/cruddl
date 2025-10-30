@@ -1,61 +1,83 @@
 {
-  "data": {
-    "allPapers": [
-      {
-        "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services",
-        "literatureReferences": [
-          {
-            "paper": null,
-            "authors": [
-              "Hagit Attiya",
-              "Amotz Bar-Noy",
-              "Danny Dolev",
-              "Daphne Koller",
-              "David Peleg",
-              "and Rüdiger Reischuk"
-            ],
-            "pages": {
-              "startPage": 337,
-              "endPage": 346
+  "references": {
+    "data": {
+      "allPapers": [
+        {
+          "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services",
+          "literatureReferences": [
+            {
+              "paper": null,
+              "authors": [
+                "Hagit Attiya",
+                "Amotz Bar-Noy",
+                "Danny Dolev",
+                "Daphne Koller",
+                "David Peleg",
+                "and Rüdiger Reischuk"
+              ],
+              "pages": {
+                "startPage": 337,
+                "endPage": 346
+              }
             }
-          }
-        ],
-        "tags": ["cap-theorem", "databases"]
-      },
-      {
-        "title": "Object-oriented modeling and design",
-        "literatureReferences": [],
-        "tags": ["object-oriented", "modeling", "design"]
-      },
-      {
-        "title": "Scalable SQL and NoSQL data stores",
-        "literatureReferences": [
-          {
-            "paper": {
-              "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services",
-              "publishDate": "2017-04-05",
-              "isPublished": true,
-              "tags": ["cap-theorem", "databases"]
-            },
-            "authors": ["Seth Gilbert", "Nancy Lynch"],
-            "pages": {
-              "startPage": 51,
-              "endPage": 59
+          ],
+          "tags": [
+            "cap-theorem",
+            "databases"
+          ]
+        },
+        {
+          "title": "Object-oriented modeling and design",
+          "literatureReferences": [],
+          "tags": [
+            "object-oriented",
+            "modeling",
+            "design"
+          ]
+        },
+        {
+          "title": "Scalable SQL and NoSQL data stores",
+          "literatureReferences": [
+            {
+              "paper": {
+                "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services",
+                "publishDate": "2017-04-05",
+                "isPublished": true,
+                "tags": [
+                  "cap-theorem",
+                  "databases"
+                ]
+              },
+              "authors": [
+                "Seth Gilbert",
+                "Nancy Lynch"
+              ],
+              "pages": {
+                "startPage": 51,
+                "endPage": 59
+              }
             }
-          }
-        ],
-        "tags": ["nosql"]
-      },
-      {
-        "title": "Unified modeling language reference manual, the",
-        "literatureReferences": [],
-        "tags": ["uml", "specification"]
-      },
-      {
-        "title": "Will NoSQL databases live up to their promise?",
-        "literatureReferences": [],
-        "tags": ["nosql"]
-      }
-    ]
+          ],
+          "tags": [
+            "nosql"
+          ]
+        },
+        {
+          "title": "Unified modeling language reference manual, the",
+          "literatureReferences": [],
+          "tags": [
+            "uml",
+            "specification"
+          ]
+        },
+        {
+          "title": "Will NoSQL databases live up to their promise?",
+          "literatureReferences": [],
+          "tags": [
+            "nosql"
+          ]
+        }
+      ]
+    }
   }
 }

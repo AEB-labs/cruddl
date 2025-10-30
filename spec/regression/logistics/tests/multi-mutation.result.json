@@ -1,10 +1,12 @@
 {
-  "data": {
-    "update1": {
-      "deliveryNumber": "123"
-    },
-    "update2": {
-      "deliveryNumber": "456"
+  "multiMutation": {
+    "data": {
+      "update1": {
+        "deliveryNumber": "123"
+      },
+      "update2": {
+        "deliveryNumber": "456"
+      }
     }
   }
 }

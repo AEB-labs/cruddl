@@ -1,7 +1,9 @@
 {
-  "data": {
-    "_allPapersMeta": {
-      "count": 2
+  "countWithFirst": {
+    "data": {
+      "_allPapersMeta": {
+        "count": 2
+      }
     }
   }
 }

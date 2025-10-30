@@ -1,4 +1,4 @@
-{
+query descriptions {
     __schema {
         types {
             name

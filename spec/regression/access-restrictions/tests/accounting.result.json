@@ -1,12 +1,14 @@
 {
-  "data": {
-    "allFiles": [
-      {
-        "name": "accounting"
-      },
-      {
-        "name": "public"
-      }
-    ]
+  "allFiles": {
+    "data": {
+      "allFiles": [
+        {
+          "name": "accounting"
+        },
+        {
+          "name": "public"
+        }
+      ]
+    }
   }
 }

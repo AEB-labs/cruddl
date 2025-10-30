@@ -1,9 +1,11 @@
-mutation {
-    a: updatePaper(input: { id: "@{ids/Paper/1}", title: "Test 1" }) {
+mutation a {
+    updatePaper(input: { id: "@{ids/Paper/1}", title: "Test 1" }) {
         title
     }
+}
 
-    b: updatePaper(input: { id: "@{ids/Paper/2}", title: "Test 2" }) {
+mutation b {
+    updatePaper(input: { id: "@{ids/Paper/2}", title: "Test 2" }) {
         title
     }
 }

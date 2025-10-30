@@ -1,11 +1,14 @@
-query {
+query string {
     allPapers(orderBy: title_ASC) {
         title
         readers(orderBy: firstName_DESC) {
             firstName
         }
     }
-    other: allPapers(orderBy: isPublished_DESC) {
+}
+
+query boolean {
+    allPapers(orderBy: isPublished_DESC) {
         isPublished
     }
 }

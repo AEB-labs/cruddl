@@ -1,4 +1,4 @@
-{
+query sort {
     allPapers(orderBy: title_ASC) {
         title
     }

@@ -1,4 +1,4 @@
-query {
+query test {
     allRoots(orderBy: name_ASC) {
         name
         children {

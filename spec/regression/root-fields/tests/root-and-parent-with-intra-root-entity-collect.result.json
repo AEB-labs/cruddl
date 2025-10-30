@@ -1,237 +1,293 @@
 {
-  "errors": [
-    {
-      "message": "Parent entity is not available here",
-      "locations": [
-        {
-          "line": 6,
-          "column": 13
-        },
-        {
-          "line": 24,
-          "column": 13
-        }
-      ],
-      "path": ["allRoots", 0, "grandchildren", 0, "parent"],
-      "extensions": {
-        "code": "NOT_SUPPORTED"
-      }
-    },
-    {
-      "message": "Parent entity is not available here",
-      "locations": [
-        {
-          "line": 6,
-          "column": 13
-        },
-        {
-          "line": 24,
-          "column": 13
-        }
-      ],
-      "path": ["allRoots", 1, "grandchildren", 0, "parent"],
-      "extensions": {
-        "code": "NOT_SUPPORTED"
-      }
-    },
-    {
-      "message": "Parent entity is not available here",
-      "locations": [
-        {
-          "line": 6,
-          "column": 13
-        },
-        {
-          "line": 24,
-          "column": 13
-        }
-      ],
-      "path": ["allRoots", 1, "grandchildren", 1, "parent"],
-      "extensions": {
-        "code": "NOT_SUPPORTED"
-      }
-    },
-    {
-      "message": "Parent entity is not available here",
-      "locations": [
-        {
-          "line": 6,
-          "column": 13
-        },
-        {
-          "line": 24,
-          "column": 13
-        }
-      ],
-      "path": ["allRoots", 1, "grandchildren", 2, "parent"],
-      "extensions": {
-        "code": "NOT_SUPPORTED"
-      }
-    },
-    {
-      "message": "Parent entity is not available here",
-      "locations": [
-        {
-          "line": 6,
-          "column": 13
-        },
-        {
-          "line": 24,
-          "column": 13
-        }
-      ],
-      "path": ["allRoots", 1, "grandchildren", 3, "parent"],
-      "extensions": {
-        "code": "NOT_SUPPORTED"
-      }
-    },
-    {
-      "message": "Parent entity is not available here",
-      "locations": [
-        {
-          "line": 30,
-          "column": 13
-        },
-        {
-          "line": 48,
-          "column": 13
-        }
-      ],
-      "path": ["allRoots", 1, "extensionGrandchildren", 0, "parent"],
-      "extensions": {
-        "code": "NOT_SUPPORTED"
-      }
-    },
-    {
-      "message": "Parent entity is not available here",
-      "locations": [
-        {
-          "line": 30,
-          "column": 13
-        },
-        {
-          "line": 48,
-          "column": 13
-        }
-      ],
-      "path": ["allRoots", 1, "extensionGrandchildren", 1, "parent"],
-      "extensions": {
-        "code": "NOT_SUPPORTED"
-      }
-    },
-    {
-      "message": "Parent entity is not available here",
-      "locations": [
-        {
-          "line": 30,
-          "column": 13
-        },
-        {
-          "line": 48,
-          "column": 13
-        }
-      ],
-      "path": ["allRoots", 1, "extensionGrandchildren", 2, "parent"],
-      "extensions": {
-        "code": "NOT_SUPPORTED"
-      }
-    },
-    {
-      "message": "Parent entity is not available here",
-      "locations": [
-        {
-          "line": 30,
-          "column": 13
-        },
-        {
-          "line": 48,
-          "column": 13
-        }
-      ],
-      "path": ["allRoots", 1, "extensionGrandchildren", 3, "parent"],
-      "extensions": {
-        "code": "NOT_SUPPORTED"
-      }
-    }
-  ],
-  "data": {
-    "allRoots": [
+  "test": {
+    "errors": [
       {
-        "name": "r1",
-        "grandchildren": [
+        "message": "Parent entity is not available here",
+        "locations": [
           {
-            "name": "r1c1g1",
-            "parent": null,
-            "root": {
-              "name": "r1"
-            }
+            "line": 6,
+            "column": 13
+          },
+          {
+            "line": 24,
+            "column": 13
           }
         ],
-        "extensionGrandchildren": []
+        "path": [
+          "allRoots",
+          0,
+          "grandchildren",
+          0,
+          "parent"
+        ],
+        "extensions": {
+          "code": "NOT_SUPPORTED"
+        }
       },
       {
-        "name": "r2",
-        "grandchildren": [
+        "message": "Parent entity is not available here",
+        "locations": [
           {
-            "name": "r2c1g1",
-            "parent": null,
-            "root": {
-              "name": "r2"
-            }
+            "line": 6,
+            "column": 13
           },
           {
-            "name": "r2c1g2",
-            "parent": null,
-            "root": {
-              "name": "r2"
-            }
-          },
-          {
-            "name": "r2c2g1",
-            "parent": null,
-            "root": {
-              "name": "r2"
-            }
-          },
-          {
-            "name": "r2c2g2",
-            "parent": null,
-            "root": {
-              "name": "r2"
-            }
+            "line": 24,
+            "column": 13
           }
         ],
-        "extensionGrandchildren": [
+        "path": [
+          "allRoots",
+          1,
+          "grandchildren",
+          0,
+          "parent"
+        ],
+        "extensions": {
+          "code": "NOT_SUPPORTED"
+        }
+      },
+      {
+        "message": "Parent entity is not available here",
+        "locations": [
           {
-            "name": "r2c1eg1",
-            "parent": null,
-            "root": {
-              "name": "r2"
-            }
+            "line": 6,
+            "column": 13
           },
           {
-            "name": "r2c1eg2",
-            "parent": null,
-            "root": {
-              "name": "r2"
-            }
-          },
-          {
-            "name": "r2c2eg1",
-            "parent": null,
-            "root": {
-              "name": "r2"
-            }
-          },
-          {
-            "name": "r2c2ge2",
-            "parent": null,
-            "root": {
-              "name": "r2"
-            }
+            "line": 24,
+            "column": 13
           }
-        ]
+        ],
+        "path": [
+          "allRoots",
+          1,
+          "grandchildren",
+          1,
+          "parent"
+        ],
+        "extensions": {
+          "code": "NOT_SUPPORTED"
+        }
+      },
+      {
+        "message": "Parent entity is not available here",
+        "locations": [
+          {
+            "line": 6,
+            "column": 13
+          },
+          {
+            "line": 24,
+            "column": 13
+          }
+        ],
+        "path": [
+          "allRoots",
+          1,
+          "grandchildren",
+          2,
+          "parent"
+        ],
+        "extensions": {
+          "code": "NOT_SUPPORTED"
+        }
+      },
+      {
+        "message": "Parent entity is not available here",
+        "locations": [
+          {
+            "line": 6,
+            "column": 13
+          },
+          {
+            "line": 24,
+            "column": 13
+          }
+        ],
+        "path": [
+          "allRoots",
+          1,
+          "grandchildren",
+          3,
+          "parent"
+        ],
+        "extensions": {
+          "code": "NOT_SUPPORTED"
+        }
+      },
+      {
+        "message": "Parent entity is not available here",
+        "locations": [
+          {
+            "line": 30,
+            "column": 13
+          },
+          {
+            "line": 48,
+            "column": 13
+          }
+        ],
+        "path": [
+          "allRoots",
+          1,
+          "extensionGrandchildren",
+          0,
+          "parent"
+        ],
+        "extensions": {
+          "code": "NOT_SUPPORTED"
+        }
+      },
+      {
+        "message": "Parent entity is not available here",
+        "locations": [
+          {
+            "line": 30,
+            "column": 13
+          },
+          {
+            "line": 48,
+            "column": 13
+          }
+        ],
+        "path": [
+          "allRoots",
+          1,
+          "extensionGrandchildren",
+          1,
+          "parent"
+        ],
+        "extensions": {
+          "code": "NOT_SUPPORTED"
+        }
+      },
+      {
+        "message": "Parent entity is not available here",
+        "locations": [
+          {
+            "line": 30,
+            "column": 13
+          },
+          {
+            "line": 48,
+            "column": 13
+          }
+        ],
+        "path": [
+          "allRoots",
+          1,
+          "extensionGrandchildren",
+          2,
+          "parent"
+        ],
+        "extensions": {
+          "code": "NOT_SUPPORTED"
+        }
+      },
+      {
+        "message": "Parent entity is not available here",
+        "locations": [
+          {
+            "line": 30,
+            "column": 13
+          },
+          {
+            "line": 48,
+            "column": 13
+          }
+        ],
+        "path": [
+          "allRoots",
+          1,
+          "extensionGrandchildren",
+          3,
+          "parent"
+        ],
+        "extensions": {
+          "code": "NOT_SUPPORTED"
+        }
       }
-    ]
+    ],
+    "data": {
+      "allRoots": [
+        {
+          "name": "r1",
+          "grandchildren": [
+            {
+              "name": "r1c1g1",
+              "parent": null,
+              "root": {
+                "name": "r1"
+              }
+            }
+          ],
+          "extensionGrandchildren": []
+        },
+        {
+          "name": "r2",
+          "grandchildren": [
+            {
+              "name": "r2c1g1",
+              "parent": null,
+              "root": {
+                "name": "r2"
+              }
+            },
+            {
+              "name": "r2c1g2",
+              "parent": null,
+              "root": {
+                "name": "r2"
+              }
+            },
+            {
+              "name": "r2c2g1",
+              "parent": null,
+              "root": {
+                "name": "r2"
+              }
+            },
+            {
+              "name": "r2c2g2",
+              "parent": null,
+              "root": {
+                "name": "r2"
+              }
+            }
+          ],
+          "extensionGrandchildren": [
+            {
+              "name": "r2c1eg1",
+              "parent": null,
+              "root": {
+                "name": "r2"
+              }
+            },
+            {
+              "name": "r2c1eg2",
+              "parent": null,
+              "root": {
+                "name": "r2"
+              }
+            },
+            {
+              "name": "r2c2eg1",
+              "parent": null,
+              "root": {
+                "name": "r2"
+              }
+            },
+            {
+              "name": "r2c2ge2",
+              "parent": null,
+              "root": {
+                "name": "r2"
+              }
+            }
+          ]
+        }
+      ]
+    }
   }
 }

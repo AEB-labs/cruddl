@@ -1,74 +1,104 @@
 {
-  "data": {
-    "all": [
-      {
-        "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services"
-      },
-      {
-        "title": "Object-oriented modeling and design"
-      },
-      {
-        "title": "Scalable SQL and NoSQL data stores"
-      },
-      {
-        "title": "Unified modeling language reference manual, the"
-      },
-      {
-        "title": "Will NoSQL databases live up to their promise?"
-      }
-    ],
-    "skip": [
-      {
-        "title": "Object-oriented modeling and design"
-      },
-      {
-        "title": "Scalable SQL and NoSQL data stores"
-      },
-      {
-        "title": "Unified modeling language reference manual, the"
-      },
-      {
-        "title": "Will NoSQL databases live up to their promise?"
-      }
-    ],
-    "skipAndFirst": [
-      {
-        "title": "Object-oriented modeling and design"
-      }
-    ],
-    "first": [
-      {
-        "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services"
-      }
-    ],
-    "after": [
-      {
-        "title": "Scalable SQL and NoSQL data stores"
-      },
-      {
-        "title": "Unified modeling language reference manual, the"
-      },
-      {
-        "title": "Will NoSQL databases live up to their promise?"
-      }
-    ],
-    "afterAndSkip": [
-      {
-        "title": "Unified modeling language reference manual, the"
-      },
-      {
-        "title": "Will NoSQL databases live up to their promise?"
-      }
-    ],
-    "afterAndFirst": [
-      {
-        "title": "Scalable SQL and NoSQL data stores"
-      }
-    ],
-    "afterAndSkipAndFirst": [
-      {
-        "title": "Unified modeling language reference manual, the"
-      }
-    ]
+  "all": {
+    "data": {
+      "allPapers": [
+        {
+          "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services"
+        },
+        {
+          "title": "Object-oriented modeling and design"
+        },
+        {
+          "title": "Scalable SQL and NoSQL data stores"
+        },
+        {
+          "title": "Unified modeling language reference manual, the"
+        },
+        {
+          "title": "Will NoSQL databases live up to their promise?"
+        }
+      ]
+    }
+  },
+  "skip": {
+    "data": {
+      "allPapers": [
+        {
+          "title": "Object-oriented modeling and design"
+        },
+        {
+          "title": "Scalable SQL and NoSQL data stores"
+        },
+        {
+          "title": "Unified modeling language reference manual, the"
+        },
+        {
+          "title": "Will NoSQL databases live up to their promise?"
+        }
+      ]
+    }
+  },
+  "skipAndFirst": {
+    "data": {
+      "allPapers": [
+        {
+          "title": "Object-oriented modeling and design"
+        }
+      ]
+    }
+  },
+  "first": {
+    "data": {
+      "allPapers": [
+        {
+          "title": "Brewer's conjecture and the feasibility of consistent, available, partition-tolerant web services"
+        }
+      ]
+    }
+  },
+  "after": {
+    "data": {
+      "allPapers": [
+        {
+          "title": "Scalable SQL and NoSQL data stores"
+        },
+        {
+          "title": "Unified modeling language reference manual, the"
+        },
+        {
+          "title": "Will NoSQL databases live up to their promise?"
+        }
+      ]
+    }
+  },
+  "afterAndSkip": {
+    "data": {
+      "allPapers": [
+        {
+          "title": "Unified modeling language reference manual, the"
+        },
+        {
+          "title": "Will NoSQL databases live up to their promise?"
+        }
+      ]
+    }
+  },
+  "afterAndFirst": {
+    "data": {
+      "allPapers": [
+        {
+          "title": "Scalable SQL and NoSQL data stores"
+        }
+      ]
+    }
+  },
+  "afterAndSkipAndFirst": {
+    "data": {
+      "allPapers": [
+        {
+          "title": "Unified modeling language reference manual, the"
+        }
+      ]
+    }
   }
 }

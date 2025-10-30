@@ -1,4 +1,4 @@
-{
+query count {
     _allPapersMeta {
         count
     }

@@ -1,4 +1,4 @@
-mutation {
+mutation updateNotFound {
     updateDelivery(input: { id: "not-found", deliveryNumber: "123" }) {
         deliveryNumber
     }
