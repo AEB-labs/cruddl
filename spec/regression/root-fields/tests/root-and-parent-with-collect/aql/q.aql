@@ -16,9 +16,9 @@ RETURN {
             IN v_root1.`children`[*].`children`[*][**]
             RETURN {
               "parent": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 },
-              "root": (IS_NULL(v_root1) ? null : {
+              "root": {
                 "name": v_root1.`name`
-              })
+              }
             }
           ),
           "extensionGrandchildren": (
@@ -26,9 +26,9 @@ RETURN {
             IN v_root1.`children`[*].`extension`.`children`[*][**]
             RETURN {
               "parent": { __cruddl_runtime_error_code: @var3, __cruddl_runtime_error: @var4 },
-              "root": (IS_NULL(v_root1) ? null : {
+              "root": {
                 "name": v_root1.`name`
-              })
+              }
             }
           )
         }
@@ -44,13 +44,12 @@ RETURN {
           )
         )[**]
         SORT (v_grandchild2.`obj`.`name`)
-        LET v_root2 = v_grandchild2.`root`
         RETURN {
           "name": v_grandchild2.`obj`.`name`,
           "parent": { __cruddl_runtime_error_code: @var7, __cruddl_runtime_error: @var8 },
-          "root": (IS_NULL(v_root2) ? null : {
-            "name": v_root2.`name`
-          })
+          "root": {
+            "name": v_grandchild2.`root`.`name`
+          }
         }
       ),
       "rootExtensionGrandchildren": (
@@ -64,13 +63,12 @@ RETURN {
           )
         )[**]
         SORT (v_extensionGrandchild2.`obj`.`name`)
-        LET v_root3 = v_extensionGrandchild2.`root`
         RETURN {
           "name": v_extensionGrandchild2.`obj`.`name`,
           "parent": { __cruddl_runtime_error_code: @var11, __cruddl_runtime_error: @var12 },
-          "root": (IS_NULL(v_root3) ? null : {
-            "name": v_root3.`name`
-          })
+          "root": {
+            "name": v_extensionGrandchild2.`root`.`name`
+          }
         }
       )
     }

@@ -227,7 +227,10 @@ export class OutputTypeGenerator {
             // a check that they return null if the source node is null.
             // if we skip both, entity extensions will be passed as null, but they will only ever be used to look up
             // fields in them, and a FieldQueryNode returns null if the source is null.
-            skipNullCheck: field.type.isEntityExtensionType,
+            // parent fields and root fields can never be null (either they exist, or querying them throws an error)
+            // it's important to skip the null check because ArangoDB would otherwise no longer use the reduce-extraction-to-projection  optimiztion
+            skipNullCheck:
+                field.type.isEntityExtensionType || field.isParentField || field.isRootField,
             isPure: true,
             resolve: (sourceNode, args, info) => this.resolveField(field, sourceNode, info),
         };

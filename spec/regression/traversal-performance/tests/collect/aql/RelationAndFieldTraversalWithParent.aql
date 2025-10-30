@@ -18,12 +18,11 @@ RETURN {
           RETURN { obj: v_entity1, root: v_node1 }
         )
       )[**]
-      LET v_root1 = v_child1.`root`
       RETURN {
         "key": v_child1.`obj`.`key`,
-        "parent": (IS_NULL(v_root1) ? null : {
-          "key": v_root1.`key`
-        })
+        "parent": {
+          "key": v_child1.`root`.`key`
+        }
       }
     )
   })
