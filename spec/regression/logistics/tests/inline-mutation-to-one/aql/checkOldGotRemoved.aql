@@ -9,7 +9,7 @@ RETURN {
       "deliveries": (
         FOR v_delivery1
         IN INBOUND v_forwarder1 @@deliveries_forwarder
-        FILTER v_delivery1 != null
+        FILTER v_delivery1._key != null
         RETURN {
           "deliveryNumber": v_delivery1.`deliveryNumber`
         }
@@ -25,7 +25,7 @@ RETURN {
       "deliveries": (
         FOR v_delivery2
         IN INBOUND v_forwarder2 @@deliveries_forwarder
-        FILTER v_delivery2 != null
+        FILTER v_delivery2._key != null
         RETURN {
           "deliveryNumber": v_delivery2.`deliveryNumber`
         }

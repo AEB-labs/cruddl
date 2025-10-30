@@ -6,14 +6,14 @@ RETURN {
     SORT (FIRST((
       FOR v_node1
       IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
-      FILTER v_node1 != null
+      FILTER v_node1._key != null
       RETURN v_node1
     )).`deliveryNumber`) , (v_handlingUnit1._key)
     LIMIT @var1
     LET v_delivery1 = FIRST((
       FOR v_node2
       IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
-      FILTER v_node2 != null
+      FILTER v_node2._key != null
       RETURN v_node2
     ))
     RETURN {
@@ -25,7 +25,7 @@ RETURN {
         "delivery_deliveryNumber": FIRST((
           FOR v_node3
           IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
-          FILTER v_node3 != null
+          FILTER v_node3._key != null
           RETURN v_node3
         )).`deliveryNumber`,
         "id": v_handlingUnit1._key

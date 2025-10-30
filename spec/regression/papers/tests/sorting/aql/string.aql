@@ -9,7 +9,7 @@ RETURN {
       "readers": (
         FOR v_user1
         IN INBOUND v_paper1 @@users_papers
-        FILTER v_user1 != null
+        FILTER v_user1._key != null
         SORT (v_user1.`firstName`)  DESC
         RETURN {
           "firstName": v_user1.`firstName`

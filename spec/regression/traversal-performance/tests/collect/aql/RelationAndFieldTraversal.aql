@@ -12,7 +12,7 @@ RETURN {
       FOR v_child1
       IN (
         FOR v_node1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_super1 @@supers_roots
-        FILTER v_node1 != null
+        FILTER v_node1._key != null
         RETURN v_node1.`children`[*]
       )[**]
       RETURN {

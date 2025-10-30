@@ -11,7 +11,7 @@ RETURN {
     "roots": (
       FOR v_root1
       IN OUTBOUND v_super1 @@supers_roots
-      FILTER v_root1 != null
+      FILTER v_root1._key != null
       RETURN {
         "key": v_root1.`key`
       }

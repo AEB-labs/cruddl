@@ -14,12 +14,12 @@ RETURN {
         "handlingUnits": (
           FOR v_handlingUnit1
           IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
-          FILTER v_handlingUnit1 != null
+          FILTER v_handlingUnit1._key != null
           SORT (v_handlingUnit1.`huNumber`)
           LET v_delivery3 = FIRST((
             FOR v_node1
             IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
-            FILTER v_node1 != null
+            FILTER v_node1._key != null
             RETURN v_node1
           ))
           RETURN {

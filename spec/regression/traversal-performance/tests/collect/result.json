@@ -1,19 +1,310 @@
 {
   "RelationAndFieldTraversal": {
-    "errors": [
-      {
-        "message": "AQL: query would use more memory than allowed [node #17: TraversalNode] [node #18: CalculationNode] [node #19: FilterNode] [node #20: CalculationNode] [node #34: SubqueryEndNode] [node #31: SubqueryStartNode] [node #13: FilterNode] [node #23: CalculationNode] [node #24: EnumerateListNode] [node #25: CalculationNode] [node #32: SubqueryEndNode] [node #28: CalculationNode] [node #29: ReturnNode] (while executing)",
-        "locations": [
-          {
-            "line": 2,
-            "column": 5
-          }
-        ],
-        "path": ["Super"]
-      }
-    ],
     "data": {
-      "Super": null
+      "Super": {
+        "rootChildren": [
+          {
+            "key": "child9_0"
+          },
+          {
+            "key": "child9_1"
+          },
+          {
+            "key": "child9_2"
+          },
+          {
+            "key": "child9_3"
+          },
+          {
+            "key": "child9_4"
+          },
+          {
+            "key": "child9_5"
+          },
+          {
+            "key": "child9_6"
+          },
+          {
+            "key": "child9_7"
+          },
+          {
+            "key": "child9_8"
+          },
+          {
+            "key": "child9_9"
+          },
+          {
+            "key": "child8_0"
+          },
+          {
+            "key": "child8_1"
+          },
+          {
+            "key": "child8_2"
+          },
+          {
+            "key": "child8_3"
+          },
+          {
+            "key": "child8_4"
+          },
+          {
+            "key": "child8_5"
+          },
+          {
+            "key": "child8_6"
+          },
+          {
+            "key": "child8_7"
+          },
+          {
+            "key": "child8_8"
+          },
+          {
+            "key": "child8_9"
+          },
+          {
+            "key": "child7_0"
+          },
+          {
+            "key": "child7_1"
+          },
+          {
+            "key": "child7_2"
+          },
+          {
+            "key": "child7_3"
+          },
+          {
+            "key": "child7_4"
+          },
+          {
+            "key": "child7_5"
+          },
+          {
+            "key": "child7_6"
+          },
+          {
+            "key": "child7_7"
+          },
+          {
+            "key": "child7_8"
+          },
+          {
+            "key": "child7_9"
+          },
+          {
+            "key": "child6_0"
+          },
+          {
+            "key": "child6_1"
+          },
+          {
+            "key": "child6_2"
+          },
+          {
+            "key": "child6_3"
+          },
+          {
+            "key": "child6_4"
+          },
+          {
+            "key": "child6_5"
+          },
+          {
+            "key": "child6_6"
+          },
+          {
+            "key": "child6_7"
+          },
+          {
+            "key": "child6_8"
+          },
+          {
+            "key": "child6_9"
+          },
+          {
+            "key": "child5_0"
+          },
+          {
+            "key": "child5_1"
+          },
+          {
+            "key": "child5_2"
+          },
+          {
+            "key": "child5_3"
+          },
+          {
+            "key": "child5_4"
+          },
+          {
+            "key": "child5_5"
+          },
+          {
+            "key": "child5_6"
+          },
+          {
+            "key": "child5_7"
+          },
+          {
+            "key": "child5_8"
+          },
+          {
+            "key": "child5_9"
+          },
+          {
+            "key": "child4_0"
+          },
+          {
+            "key": "child4_1"
+          },
+          {
+            "key": "child4_2"
+          },
+          {
+            "key": "child4_3"
+          },
+          {
+            "key": "child4_4"
+          },
+          {
+            "key": "child4_5"
+          },
+          {
+            "key": "child4_6"
+          },
+          {
+            "key": "child4_7"
+          },
+          {
+            "key": "child4_8"
+          },
+          {
+            "key": "child4_9"
+          },
+          {
+            "key": "child3_0"
+          },
+          {
+            "key": "child3_1"
+          },
+          {
+            "key": "child3_2"
+          },
+          {
+            "key": "child3_3"
+          },
+          {
+            "key": "child3_4"
+          },
+          {
+            "key": "child3_5"
+          },
+          {
+            "key": "child3_6"
+          },
+          {
+            "key": "child3_7"
+          },
+          {
+            "key": "child3_8"
+          },
+          {
+            "key": "child3_9"
+          },
+          {
+            "key": "child2_0"
+          },
+          {
+            "key": "child2_1"
+          },
+          {
+            "key": "child2_2"
+          },
+          {
+            "key": "child2_3"
+          },
+          {
+            "key": "child2_4"
+          },
+          {
+            "key": "child2_5"
+          },
+          {
+            "key": "child2_6"
+          },
+          {
+            "key": "child2_7"
+          },
+          {
+            "key": "child2_8"
+          },
+          {
+            "key": "child2_9"
+          },
+          {
+            "key": "child1_0"
+          },
+          {
+            "key": "child1_1"
+          },
+          {
+            "key": "child1_2"
+          },
+          {
+            "key": "child1_3"
+          },
+          {
+            "key": "child1_4"
+          },
+          {
+            "key": "child1_5"
+          },
+          {
+            "key": "child1_6"
+          },
+          {
+            "key": "child1_7"
+          },
+          {
+            "key": "child1_8"
+          },
+          {
+            "key": "child1_9"
+          },
+          {
+            "key": "child0_0"
+          },
+          {
+            "key": "child0_1"
+          },
+          {
+            "key": "child0_2"
+          },
+          {
+            "key": "child0_3"
+          },
+          {
+            "key": "child0_4"
+          },
+          {
+            "key": "child0_5"
+          },
+          {
+            "key": "child0_6"
+          },
+          {
+            "key": "child0_7"
+          },
+          {
+            "key": "child0_8"
+          },
+          {
+            "key": "child0_9"
+          }
+        ]
+      }
     }
   },
   "RelationAndFieldTraversalWithParent": {
