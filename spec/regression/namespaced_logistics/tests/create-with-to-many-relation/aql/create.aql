@@ -1,0 +1,50 @@
+RETURN FIRST(
+  INSERT @var1 IN @@deliveries
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@handlingUnits
+RETURN DOCUMENT(@@handlingUnits, @var1)
+
+// --------------------------------
+
+WITH @@handlingUnits
+RETURN (
+  FOR v_to1 IN @var1
+  FOR v_edge1 IN @@deliveries_handlingUnits
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@deliveries_handlingUnits
+)
+
+// --------------------------------
+
+WITH @@handlingUnits
+RETURN (
+  FOR v_edge1
+  IN [ {_from: CONCAT(@var1, @v_newEntityId1), _to: @var2} ]
+  UPSERT { _from: v_edge1._from, _to: v_edge1._to }
+  INSERT v_edge1
+  UPDATE {}
+  IN @@deliveries_handlingUnits
+)
+
+// --------------------------------
+
+WITH @@handlingUnits, @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "deliveryNumber": v_delivery1.`deliveryNumber`
+})
+
+// --------------------------------
+
+WITH @@handlingUnits, @@deliveries
+RETURN {
+  "logistics": {
+    "delivery": {
+      "createDelivery": @v_createDelivery1
+    }
+  }
+}

@@ -1,0 +1,15 @@
+RETURN {
+  @var1: {
+    "count": FIRST(
+      FOR v_item1
+      IN (
+        FOR v_item2
+        IN @@papers
+        LIMIT @var2
+        RETURN v_item2
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    )
+  }
+}

@@ -1,0 +1,365 @@
+WITH @@mains
+RETURN (
+  FOR v_item1
+  IN [
+    DOCUMENT(@@mains, @var1),
+    DOCUMENT(@@mains, @var2),
+    DOCUMENT(@@mains, @var3)
+  ]
+  FILTER (v_item1 > NULL)
+  RETURN v_item1._key
+)
+
+// --------------------------------
+
+WITH @@mains
+RETURN MINUS((
+  FOR v_item1
+  IN (
+    FOR v_sourceEntity1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
+    FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@mains_blockingMains
+    FILTER v_node1 != null
+    RETURN v_node1
+  )
+  RETURN v_item1._key
+), @v_ids1)
+
+// --------------------------------
+
+WITH @@mains
+RETURN (
+  FOR v_from1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@mains_blockingMains
+  FILTER v_edge1._from == v_from1
+  REMOVE v_edge1 IN @@mains_blockingMains
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers
+RETURN (
+  FOR v_item1
+  IN (
+    FOR v_sourceEntity1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
+    FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@mains_blockers
+    FILTER v_node1 != null
+    RETURN v_node1
+  )
+  RETURN v_item1._key
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers
+RETURN (
+  FOR v_from1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@mains_blockers
+  FILTER v_edge1._from == v_from1
+  REMOVE v_edge1 IN @@mains_blockers
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents
+RETURN (
+  FOR v_item1
+  IN (
+    FOR v_sourceEntity1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
+    FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@mains_alternativeDependents
+    FILTER v_node1 != null
+    RETURN v_node1
+  )
+  RETURN v_item1._key
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents
+RETURN (
+  FOR v_to1 IN (FOR v_id1 IN @v_alternativeDependentsIDs1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@mains_alternativeDependents
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@mains_alternativeDependents
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents
+RETURN (
+  FOR v_to1 IN (FOR v_id1 IN @v_alternativeDependentsIDs1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@dependents_alternativeDependents
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@dependents_alternativeDependents
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents
+RETURN (
+  FOR v_alternativeDependent1
+  IN @v_alternativeDependentsIDs1
+  REMOVE v_alternativeDependent1
+  IN @@alternativeDependents
+  RETURN OLD
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_item1
+  IN (
+    FOR v_sourceEntity1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
+    FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@mains_additionalDependent
+    RETURN v_node1
+  )
+  RETURN v_item1._key
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_item1
+  IN (
+    FOR v_sourceEntity1 IN (FOR v_id1 IN @v_additionalDependentIDs1 RETURN CONCAT(@var1, v_id1))
+    FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@dependents_blockers
+    FILTER v_node1 != null
+    RETURN v_node1
+  )
+  RETURN v_item1._key
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_from1 IN (FOR v_id1 IN @v_additionalDependentIDs1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@dependents_blockers
+  FILTER v_edge1._from == v_from1
+  REMOVE v_edge1 IN @@dependents_blockers
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_item1
+  IN (
+    FOR v_sourceEntity1 IN (FOR v_id1 IN @v_additionalDependentIDs1 RETURN CONCAT(@var1, v_id1))
+    FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@dependents_alternativeDependents
+    FILTER v_node1 != null
+    RETURN v_node1
+  )
+  RETURN v_item1._key
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_to1 IN (FOR v_id1 IN @v_alternativeDependentsIDs1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@mains_alternativeDependents
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@mains_alternativeDependents
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_to1 IN (FOR v_id1 IN @v_alternativeDependentsIDs1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@dependents_alternativeDependents
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@dependents_alternativeDependents
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_alternativeDependent1
+  IN @v_alternativeDependentsIDs1
+  REMOVE v_alternativeDependent1
+  IN @@alternativeDependents
+  RETURN OLD
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_to1 IN (FOR v_id1 IN @v_additionalDependentIDs1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@mains_dependents
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@mains_dependents
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_to1 IN (FOR v_id1 IN @v_additionalDependentIDs1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@mains_additionalDependent
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@mains_additionalDependent
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_dependent1
+  IN @v_additionalDependentIDs1
+  REMOVE v_dependent1
+  IN @@dependents
+  RETURN OLD
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_item1
+  IN (
+    FOR v_sourceEntity1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
+    FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@mains_dependents
+    FILTER v_node1 != null
+    RETURN v_node1
+  )
+  RETURN v_item1._key
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_item1
+  IN (
+    FOR v_sourceEntity1 IN (FOR v_id1 IN @v_dependentsIDs1 RETURN CONCAT(@var1, v_id1))
+    FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@dependents_blockers
+    FILTER v_node1 != null
+    RETURN v_node1
+  )
+  RETURN v_item1._key
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_from1 IN (FOR v_id1 IN @v_dependentsIDs1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@dependents_blockers
+  FILTER v_edge1._from == v_from1
+  REMOVE v_edge1 IN @@dependents_blockers
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_item1
+  IN (
+    FOR v_sourceEntity1 IN (FOR v_id1 IN @v_dependentsIDs1 RETURN CONCAT(@var1, v_id1))
+    FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@dependents_alternativeDependents
+    FILTER v_node1 != null
+    RETURN v_node1
+  )
+  RETURN v_item1._key
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_to1 IN (FOR v_id1 IN @v_alternativeDependentsIDs1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@mains_alternativeDependents
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@mains_alternativeDependents
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_to1 IN (FOR v_id1 IN @v_alternativeDependentsIDs1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@dependents_alternativeDependents
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@dependents_alternativeDependents
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_alternativeDependent1
+  IN @v_alternativeDependentsIDs1
+  REMOVE v_alternativeDependent1
+  IN @@alternativeDependents
+  RETURN OLD
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_to1 IN (FOR v_id1 IN @v_dependentsIDs1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@mains_dependents
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@mains_dependents
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_to1 IN (FOR v_id1 IN @v_dependentsIDs1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@mains_additionalDependent
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@mains_additionalDependent
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_dependent1
+  IN @v_dependentsIDs1
+  REMOVE v_dependent1
+  IN @@dependents
+  RETURN OLD
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_to1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@mains_blockingMains
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@mains_blockingMains
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN (
+  FOR v_Main1
+  IN (
+    FOR v_main1
+    IN @v_ids1
+    REMOVE v_main1
+    IN @@mains
+    RETURN OLD
+  )
+  RETURN {
+    "key": v_Main1.`key`
+  }
+)
+
+// --------------------------------
+
+WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
+RETURN {
+  "deleteMains": @v_deleteMains1
+}

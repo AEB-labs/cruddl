@@ -1,0 +1,69 @@
+WITH @@deliveries
+RETURN {
+  "allHandlingUnits": (
+    FOR v_handlingUnit1
+    IN UNION((
+      FOR v_handlingUnit2
+      IN @@handlingUnits
+      FILTER (FIRST((
+        FOR v_node1
+        IN INBOUND v_handlingUnit2 @@deliveries_handlingUnits
+        FILTER v_node1 != null
+        RETURN v_node1
+      )).`deliveryNumber` > @var1)
+      SORT (FIRST((
+        FOR v_node2
+        IN INBOUND v_handlingUnit2 @@deliveries_handlingUnits
+        FILTER v_node2 != null
+        RETURN v_node2
+      )).`deliveryNumber`) , (v_handlingUnit2._key)
+      LIMIT @var2
+      RETURN v_handlingUnit2
+    ), (
+      FOR v_handlingUnit3
+      IN @@handlingUnits
+      FILTER ((FIRST((
+        FOR v_node3
+        IN INBOUND v_handlingUnit3 @@deliveries_handlingUnits
+        FILTER v_node3 != null
+        RETURN v_node3
+      )).`deliveryNumber` == @var3) && (v_handlingUnit3._key > @var4))
+      SORT (FIRST((
+        FOR v_node4
+        IN INBOUND v_handlingUnit3 @@deliveries_handlingUnits
+        FILTER v_node4 != null
+        RETURN v_node4
+      )).`deliveryNumber`) , (v_handlingUnit3._key)
+      LIMIT @var5
+      RETURN v_handlingUnit3
+    ))
+    SORT (FIRST((
+      FOR v_node5
+      IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
+      FILTER v_node5 != null
+      RETURN v_node5
+    )).`deliveryNumber`) , (v_handlingUnit1._key)
+    LIMIT @var6
+    LET v_delivery1 = FIRST((
+      FOR v_node6
+      IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
+      FILTER v_node6 != null
+      RETURN v_node6
+    ))
+    RETURN {
+      "huNumber": v_handlingUnit1.`huNumber`,
+      "delivery": (IS_NULL(v_delivery1) ? null : {
+        "deliveryNumber": v_delivery1.`deliveryNumber`
+      }),
+      @var7: JSON_STRINGIFY({
+        "delivery_deliveryNumber": FIRST((
+          FOR v_node7
+          IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
+          FILTER v_node7 != null
+          RETURN v_node7
+        )).`deliveryNumber`,
+        "id": v_handlingUnit1._key
+      })
+    }
+  )
+}

@@ -1,0 +1,25 @@
+RETURN {
+  "allPapers": (
+    FOR v_paper1
+    IN UNION((
+      FOR v_paper2
+      IN @@papers
+      FILTER ((v_paper2.`isPublished` == @var1) && (v_paper2.`key` > @var2))
+      SORT (v_paper2.`key`) , (v_paper2._key)
+      LIMIT @var3
+      RETURN v_paper2
+    ), (
+      FOR v_paper3
+      IN @@papers
+      FILTER (((v_paper3.`isPublished` == @var4) && (v_paper3.`key` == @var5)) && (v_paper3._key > @var6))
+      SORT (v_paper3.`key`) , (v_paper3._key)
+      LIMIT @var7
+      RETURN v_paper3
+    ))
+    SORT (v_paper1.`key`) , (v_paper1._key)
+    LIMIT @var8
+    RETURN {
+      "key": v_paper1.`key`
+    }
+  )
+}

@@ -1,0 +1,101 @@
+RETURN FIRST(
+  INSERT @var1 IN @@deliveries
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_entity1 = DOCUMENT(@@deliveries, @v_newEntityId1)
+RETURN (
+  UPSERT {
+              key: @var1,
+              type: @var2
+          }
+  INSERT {
+
+          key: @var3,
+          type: @var4,
+          category: null,
+          quantity: null,
+          isExported: false,
+          createdAt: @var5,
+          updatedAt: @var6,
+              isConfirmedForExport: false
+           }
+  UPDATE (OLD.isConfirmedForExport ? {} : {
+              updatedAt: @var7,
+              category: null,
+              quantity: null
+          })
+  IN @@billingEntities
+  RETURN @var8
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
+LET v_country1 = (IS_NULL(v_delivery1.`consignee`.`country`) ? null : FIRST((
+  FOR v_country2
+  IN @@countries
+  FILTER ((v_country2.`isoCode` > NULL) && (v_country2.`isoCode` == v_delivery1.`consignee`.`country`))
+  LIMIT @var1
+  RETURN v_country2
+)))
+LET v_country3 = (IS_NULL(v_delivery1.`destinationCountryISOCode`) ? null : FIRST((
+  FOR v_destinationCountry1
+  IN @@countries
+  FILTER ((v_destinationCountry1.`isoCode` > NULL) && (v_destinationCountry1.`isoCode` == v_delivery1.`destinationCountryISOCode`))
+  LIMIT @var2
+  RETURN v_destinationCountry1
+)))
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "deliveryNumber": v_delivery1.`deliveryNumber`,
+  "consignee": (IS_NULL(v_delivery1.`consignee`) ? null : {
+    "city": v_delivery1.`consignee`.`city`,
+    "country": (IS_NULL(v_country1) ? null : {
+      "isoCode": v_country1.`isoCode`,
+      "description": (
+        FOR v_translation1
+        IN (IS_LIST(v_country1.`description`) ? v_country1.`description` : [])
+        RETURN {
+          "languageIsoCode": v_translation1.`languageIsoCode`,
+          "translation": v_translation1.`translation`
+        }
+      )
+    }),
+    "street": v_delivery1.`consignee`.`street`
+  }),
+  "contentInfo": (
+    FOR v_translation2
+    IN (IS_LIST(v_delivery1.`contentInfo`) ? v_delivery1.`contentInfo` : [])
+    RETURN {
+      "translation": v_translation2.`translation`,
+      "languageIsoCode": v_translation2.`languageIsoCode`
+    }
+  ),
+  "destinationCountry": (IS_NULL(v_country3) ? null : {
+    "isoCode": v_country3.`isoCode`
+  }),
+  "dgInfo": {
+    "flashpoint": v_delivery1.`dgInfo`.`flashpoint`,
+    "unNumber": v_delivery1.`dgInfo`.`unNumber`,
+    "notices": (IS_LIST(v_delivery1.`dgInfo`.`notices`) ? v_delivery1.`dgInfo`.`notices` : [])
+  },
+  "serialNumbers": (IS_LIST(v_delivery1.`serialNumbers`) ? v_delivery1.`serialNumbers` : []),
+  "items": (
+    FOR v_deliveryItem1
+    IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
+    RETURN {
+      "itemNumber": v_deliveryItem1.`itemNumber`
+    }
+  )
+})
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN {
+  "createDelivery": @v_createDelivery1
+}

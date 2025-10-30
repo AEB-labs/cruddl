@@ -1,0 +1,44 @@
+RETURN {
+  "empty": (
+    FOR v_delivery1
+    IN (
+      FOR v_delivery2
+      IN @@flex_view_deliveries
+      SEARCH !(EXISTS(v_delivery2.`items`))
+      RETURN v_delivery2
+    )
+    SORT (v_delivery1.`deliveryNumber`) , (v_delivery1.`createdAt`)  DESC, (v_delivery1._key)  DESC
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`,
+      @var1: {
+        "count": FIRST(
+          FOR v_item1
+          IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
+          COLLECT WITH COUNT INTO v_count1
+          RETURN v_count1
+        )
+      }
+    }
+  ),
+  "not_empty": (
+    FOR v_delivery3
+    IN (
+      FOR v_delivery4
+      IN @@flex_view_deliveries
+      SEARCH EXISTS(v_delivery4.`items`)
+      RETURN v_delivery4
+    )
+    SORT (v_delivery3.`deliveryNumber`) , (v_delivery3.`createdAt`)  DESC, (v_delivery3._key)  DESC
+    RETURN {
+      "deliveryNumber": v_delivery3.`deliveryNumber`,
+      @var2: {
+        "count": FIRST(
+          FOR v_item2
+          IN (IS_LIST(v_delivery3.`items`) ? v_delivery3.`items` : [])
+          COLLECT WITH COUNT INTO v_count2
+          RETURN v_count2
+        )
+      }
+    }
+  )
+}

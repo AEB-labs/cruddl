@@ -1,0 +1,11 @@
+RETURN {
+  "allHeroes": (
+    FOR v_hero1
+    IN @@heroes
+    SORT (v_hero1._key)
+    LIMIT @var1
+    RETURN {
+      "name": v_hero1.`name`
+    }
+  )
+}

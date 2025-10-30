@@ -1,0 +1,57 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_main1
+    IN @@mains
+    FILTER (v_main1._key == @var1)
+    LIMIT @var2
+    RETURN v_main1
+  )
+  UPDATE v_currentEntity1
+  WITH {}
+  IN @@mains
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@blockers
+RETURN DOCUMENT(@@blockers, @var1)
+
+// --------------------------------
+
+WITH @@blockers
+RETURN (
+  FOR v_to1 IN @var1
+  FOR v_edge1 IN @@mains_blockers
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@mains_blockers
+)
+
+// --------------------------------
+
+WITH @@blockers
+RETURN (
+  FOR v_edge1
+  IN [ {_from: CONCAT(@var1, FIRST(@v_updatedIds1)), _to: @var2} ]
+  UPSERT { _from: v_edge1._from, _to: v_edge1._to }
+  INSERT v_edge1
+  UPDATE {}
+  IN @@mains_blockers
+)
+
+// --------------------------------
+
+WITH @@blockers, @@mains
+LET v_main1 = DOCUMENT(@@mains, @var1)
+RETURN (IS_NULL(v_main1) ? null : {
+  "key": v_main1.`key`
+})
+
+// --------------------------------
+
+WITH @@blockers, @@mains
+RETURN {
+  "updateMain": @v_updateMain1
+}

@@ -1,0 +1,42 @@
+WITH @@deliveries
+LET v_shipment1 = FIRST((
+  FOR v_shipment2
+  IN (
+    FOR v_item1
+    IN @@shipments
+    FILTER (v_item1.`accessGroup` IN @var1)
+    RETURN v_item1
+  )
+  FILTER (v_shipment2.`shipmentNumber` == @var2)
+  LIMIT @var3
+  RETURN v_shipment2
+))
+RETURN {
+  "Shipment": (IS_NULL(v_shipment1) ? null : {
+    @var4: {
+      "count": FIRST(
+        FOR v_item2
+        IN (
+          FOR v_item3
+          IN OUTBOUND v_shipment1 @@shipments_deliveries
+          FILTER (v_item3.`accessGroup` IN @var5)
+          FILTER v_item3 != null
+          RETURN v_item3
+        )
+        COLLECT WITH COUNT INTO v_count1
+        RETURN v_count1
+      )
+    },
+    "deliveryCount": FIRST(
+      FOR v_item4
+      IN (
+        FOR v_node1, v_edge1, v_path1 IN @var6..@var7 OUTBOUND v_shipment1 @@shipments_deliveries
+        FILTER (v_node1.`accessGroup` IN @var8)
+        FILTER v_node1 != null
+        RETURN v_node1
+      )
+      COLLECT WITH COUNT INTO v_count2
+      RETURN v_count2
+    )
+  })
+}

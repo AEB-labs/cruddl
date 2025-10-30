@@ -1,0 +1,15 @@
+RETURN {
+  "flexSearchHandlingUnits": (
+    FOR v_handlingUnit1
+    IN (
+      FOR v_handlingUnit2
+      IN @@flex_view_handlingUnits
+      SEARCH true
+      RETURN v_handlingUnit2
+    )
+    SORT (v_handlingUnit1.`huNumber`)  DESC, (v_handlingUnit1.`createdAt`)  DESC, (v_handlingUnit1._key)  DESC
+    RETURN {
+      "huNumber": v_handlingUnit1.`huNumber`
+    }
+  )
+}

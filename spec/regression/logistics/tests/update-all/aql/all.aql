@@ -1,0 +1,43 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER ((v_delivery1.`deliveryNumber` == @var1) || (v_delivery1.`deliveryNumber` == @var2))
+    SORT (v_delivery1.`deliveryNumber`)
+    RETURN v_delivery1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "consignee": @var3,
+    "updatedAt": @var4
+  }
+  IN @@deliveries
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN (
+  FOR v_Delivery1
+  IN (
+    FOR v_id1
+    IN @v_updatedIds1
+    RETURN DOCUMENT(@@deliveries, v_id1)
+  )
+  RETURN {
+    "deliveryNumber": v_Delivery1.`deliveryNumber`,
+    "consignee": (IS_NULL(v_Delivery1.`consignee`) ? null : {
+      "city": v_Delivery1.`consignee`.`city`
+    })
+  }
+)
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN {
+  "updateAllDeliveries": @v_updateAllDeliveries1
+}

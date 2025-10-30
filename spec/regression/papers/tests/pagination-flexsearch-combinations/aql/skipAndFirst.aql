@@ -1,0 +1,30 @@
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_paper1
+    IN @@flex_view_papers
+    SEARCH true
+    RETURN v_paper1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) > @var1)
+
+// --------------------------------
+
+RETURN {
+  "flexSearchPapers": (@tmp1 ? { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 } : (
+    FOR v_paper1
+    IN (
+      FOR v_paper2
+      IN @@flex_view_papers
+      SEARCH true
+      RETURN v_paper2
+    )
+    SORT (v_paper1.`title`) , (v_paper1._key)
+    LIMIT @var3, @var4
+    RETURN {
+      "title": v_paper1.`title`
+    }
+  ))
+}
