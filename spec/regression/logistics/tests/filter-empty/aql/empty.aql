@@ -1,0 +1,18 @@
+RETURN {
+  "allDeliveries": (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (LENGTH(v_delivery1.`items`) == @var1)
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`,
+      @var2: {
+        "count": FIRST(
+          FOR v_item1
+          IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
+          COLLECT WITH COUNT INTO v_count1
+          RETURN v_count1
+        )
+      }
+    }
+  )
+}

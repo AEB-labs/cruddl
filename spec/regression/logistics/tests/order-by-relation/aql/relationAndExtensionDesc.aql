@@ -1,0 +1,27 @@
+WITH @@deliveries
+RETURN {
+  "allHandlingUnits": (
+    FOR v_handlingUnit1
+    IN @@handlingUnits
+    SORT (FIRST((
+      FOR v_node1
+      IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
+      FILTER v_node1 != null
+      RETURN v_node1
+    )).`consignee`.`street`)  DESC
+    LET v_delivery1 = FIRST((
+      FOR v_node2
+      IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
+      FILTER v_node2 != null
+      RETURN v_node2
+    ))
+    RETURN {
+      "huNumber": v_handlingUnit1.`huNumber`,
+      "delivery": (IS_NULL(v_delivery1) ? null : {
+        "consignee": (IS_NULL(v_delivery1.`consignee`) ? null : {
+          "street": v_delivery1.`consignee`.`street`
+        })
+      })
+    }
+  )
+}

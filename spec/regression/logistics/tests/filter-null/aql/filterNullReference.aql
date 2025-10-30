@@ -1,0 +1,17 @@
+RETURN {
+  "allDeliveries": (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER ((IS_NULL(v_delivery1.`destinationCountryISOCode`) ? null : FIRST((
+      FOR v_destinationCountry1
+      IN @@countries
+      FILTER ((v_destinationCountry1.`isoCode` > NULL) && (v_destinationCountry1.`isoCode` == v_delivery1.`destinationCountryISOCode`))
+      LIMIT @var1
+      RETURN v_destinationCountry1
+    ))) == null)
+    SORT (v_delivery1.`deliveryNumber`)
+    RETURN {
+      "id": v_delivery1._key
+    }
+  )
+}

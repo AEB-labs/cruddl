@@ -1,0 +1,15 @@
+RETURN {
+  "allFiles": (
+    FOR v_file1
+    IN (
+      FOR v_item1
+      IN @@files
+      FILTER ((v_item1.`accessGroup` == @var1) || (v_item1.`accessGroup` == @var2))
+      RETURN v_item1
+    )
+    SORT (v_file1.`name`)
+    RETURN {
+      "name": v_file1.`name`
+    }
+  )
+}

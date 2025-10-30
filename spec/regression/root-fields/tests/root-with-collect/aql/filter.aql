@@ -1,0 +1,139 @@
+WITH @@roots
+RETURN {
+  "allRoot2s": (
+    FOR v_root21
+    IN @@root2s
+    RETURN {
+      "name": v_root21.`name`,
+      "roots": (
+        FOR v_root1
+        IN OUTBOUND v_root21 @@root2s_roots
+        FILTER v_root1 != null
+        SORT (v_root1.`name`)
+        RETURN {
+          "grandchildren": (
+            FOR v_grandchild1
+            IN v_root1.`children`[*].`children`[*][**]
+            FILTER (RIGHT(v_grandchild1.`name`, LENGTH(@var1)) == @var2)
+            RETURN {
+              "name": v_grandchild1.`name`,
+              "root": (IS_NULL(v_root1) ? null : {
+                "name": v_root1.`name`
+              })
+            }
+          ),
+          @var3: {
+            "count": FIRST(
+              FOR v_item1
+              IN (
+                FOR v_grandchild2
+                IN v_root1.`children`[*].`children`[*][**]
+                FILTER (RIGHT(v_grandchild2.`name`, LENGTH(@var4)) == @var5)
+                RETURN v_grandchild2
+              )
+              COLLECT WITH COUNT INTO v_count1
+              RETURN v_count1
+            )
+          },
+          "extensionGrandchildren": (
+            FOR v_extensionGrandchild1
+            IN v_root1.`children`[*].`extension`.`children`[*][**]
+            FILTER (RIGHT(v_extensionGrandchild1.`name`, LENGTH(@var6)) == @var7)
+            RETURN {
+              "root": (IS_NULL(v_root1) ? null : {
+                "name": v_root1.`name`
+              })
+            }
+          ),
+          @var8: {
+            "count": FIRST(
+              FOR v_item2
+              IN (
+                FOR v_extensionGrandchild2
+                IN v_root1.`children`[*].`extension`.`children`[*][**]
+                FILTER (RIGHT(v_extensionGrandchild2.`name`, LENGTH(@var9)) == @var10)
+                RETURN v_extensionGrandchild2
+              )
+              COLLECT WITH COUNT INTO v_count2
+              RETURN v_count2
+            )
+          }
+        }
+      ),
+      "rootGrandchildren": (
+        FOR v_grandchild3
+        IN (
+          FOR v_node1, v_edge1, v_path1 IN @var11..@var12 OUTBOUND v_root21 @@root2s_roots
+          FILTER v_node1 != null
+          RETURN (
+            FOR v_entity1 IN v_node1.`children`[*].`children`[*][**]
+            RETURN { obj: v_entity1, root: v_node1 }
+          )
+        )[**]
+        FILTER (RIGHT(v_grandchild3.`obj`.`name`, LENGTH(@var13)) == @var14)
+        SORT (v_grandchild3.`obj`.`name`)
+        LET v_root2 = v_grandchild3.`root`
+        RETURN {
+          "name": v_grandchild3.`obj`.`name`,
+          "root": (IS_NULL(v_root2) ? null : {
+            "name": v_root2.`name`
+          })
+        }
+      ),
+      @var15: {
+        "count": FIRST(
+          FOR v_item3
+          IN (
+            FOR v_grandchild4
+            IN FLATTEN((
+              FOR v_node2, v_edge2, v_path2 IN @var16..@var17 OUTBOUND v_root21 @@root2s_roots
+              FILTER v_node2 != null
+              RETURN v_node2.`children`[*].`children`[*]
+            ), 2)
+            FILTER (RIGHT(v_grandchild4.`name`, LENGTH(@var18)) == @var19)
+            RETURN v_grandchild4
+          )
+          COLLECT WITH COUNT INTO v_count3
+          RETURN v_count3
+        )
+      },
+      "rootExtensionGrandchildren": (
+        FOR v_extensionGrandchild3
+        IN (
+          FOR v_node3, v_edge3, v_path3 IN @var20..@var21 OUTBOUND v_root21 @@root2s_roots
+          FILTER v_node3 != null
+          RETURN (
+            FOR v_entity2 IN v_node3.`children`[*].`extension`.`children`[*][**]
+            RETURN { obj: v_entity2, root: v_node3 }
+          )
+        )[**]
+        FILTER (RIGHT(v_extensionGrandchild3.`obj`.`name`, LENGTH(@var22)) == @var23)
+        SORT (v_extensionGrandchild3.`obj`.`name`)
+        LET v_root3 = v_extensionGrandchild3.`root`
+        RETURN {
+          "name": v_extensionGrandchild3.`obj`.`name`,
+          "root": (IS_NULL(v_root3) ? null : {
+            "name": v_root3.`name`
+          })
+        }
+      ),
+      @var24: {
+        "count": FIRST(
+          FOR v_item4
+          IN (
+            FOR v_extensionGrandchild4
+            IN FLATTEN((
+              FOR v_node4, v_edge4, v_path4 IN @var25..@var26 OUTBOUND v_root21 @@root2s_roots
+              FILTER v_node4 != null
+              RETURN v_node4.`children`[*].`extension`.`children`[*]
+            ), 2)
+            FILTER (RIGHT(v_extensionGrandchild4.`name`, LENGTH(@var27)) == @var28)
+            RETURN v_extensionGrandchild4
+          )
+          COLLECT WITH COUNT INTO v_count4
+          RETURN v_count4
+        )
+      }
+    }
+  )
+}

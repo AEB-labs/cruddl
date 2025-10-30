@@ -1,0 +1,15 @@
+RETURN {
+  "flexSearchDeliveries": (
+    FOR v_delivery1
+    IN (
+      FOR v_delivery2
+      IN @@flex_view_deliveries
+      SEARCH (ANALYZER(STARTS_WITH(v_delivery2.`deliveryNumber`, TOKENS(@var1,@var2)[0]), @var3) || ((LENGTH(TOKENS(@var4,@var5)) ? ANALYZER( STARTS_WITH( v_delivery2.`description`, TOKENS(@var6,@var7)[0]), @var8) : false) && (LENGTH(TOKENS(@var9,@var10)) ? ANALYZER( STARTS_WITH( v_delivery2.`description`, TOKENS(@var11,@var12)[0]), @var13) : false)))
+      RETURN v_delivery2
+    )
+    SORT (v_delivery1.`deliveryNumber`) , (v_delivery1.`createdAt`)  DESC, (v_delivery1._key)  DESC
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`
+    }
+  )
+}

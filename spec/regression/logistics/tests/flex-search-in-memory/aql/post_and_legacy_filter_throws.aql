@@ -1,0 +1,17 @@
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_delivery1
+    IN @@flex_view_deliveries
+    SEARCH ANALYZER( v_delivery1.`deliveryNumber` IN ( FOR v_token1 IN TOKENS(@var1 , @var2) RETURN v_token1[0] ), @var3 )
+    RETURN v_delivery1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) > @var4)
+
+// --------------------------------
+
+RETURN {
+  "flexSearchDeliveries": (@tmp1 ? { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 } : { __cruddl_runtime_error: @var3 })
+}

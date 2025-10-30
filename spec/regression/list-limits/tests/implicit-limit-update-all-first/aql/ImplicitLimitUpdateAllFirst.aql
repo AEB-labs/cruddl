@@ -1,0 +1,40 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_hero1
+    IN @@heroes
+    SORT (v_hero1._key)
+    LIMIT @var1
+    RETURN v_hero1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "name": @var2,
+    "updatedAt": @var3
+  }
+  IN @@heroes
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@heroes
+RETURN (
+  FOR v_Hero1
+  IN (
+    FOR v_id1
+    IN @v_updatedIds1
+    RETURN DOCUMENT(@@heroes, v_id1)
+  )
+  RETURN {
+    "name": v_Hero1.`name`
+  }
+)
+
+// --------------------------------
+
+WITH @@heroes
+RETURN {
+  "updateAllHeroes": @v_updateAllHeroes1
+}

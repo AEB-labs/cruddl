@@ -1,0 +1,37 @@
+LET v_delivery1 = FIRST((
+  FOR v_delivery2
+  IN @@deliveries
+  FILTER (v_delivery2._key == @var1)
+  LIMIT @var2
+  RETURN v_delivery2
+))
+LET v_delivery3 = FIRST((
+  FOR v_delivery4
+  IN @@deliveries
+  FILTER (v_delivery4._key == @var3)
+  LIMIT @var4
+  RETURN v_delivery4
+))
+RETURN {
+  "aDelivery": (IS_NULL(v_delivery1) ? null : {
+    "nr": v_delivery1.`deliveryNumber`,
+    "oneItem": (
+      FOR v_deliveryItem1
+      IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
+      FILTER (v_deliveryItem1.`itemNumber` == @var5)
+      RETURN {
+        "itemNumber": v_deliveryItem1.`itemNumber`
+      }
+    ),
+    "items": (
+      FOR v_deliveryItem2
+      IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
+      RETURN {
+        "itemNumber": v_deliveryItem2.`itemNumber`
+      }
+    )
+  }),
+  "anotherDelivery": (IS_NULL(v_delivery3) ? null : {
+    "nr": v_delivery3.`deliveryNumber`
+  })
+}

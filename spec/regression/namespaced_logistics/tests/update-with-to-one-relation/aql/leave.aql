@@ -1,0 +1,34 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_handlingUnit1
+    IN @@handlingUnits
+    FILTER (v_handlingUnit1._key == @var1)
+    LIMIT @var2
+    RETURN v_handlingUnit1
+  )
+  UPDATE v_currentEntity1
+  WITH {}
+  IN @@handlingUnits
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@handlingUnits
+LET v_handlingUnit1 = DOCUMENT(@@handlingUnits, @var1)
+RETURN (IS_NULL(v_handlingUnit1) ? null : {
+  "huNumber": v_handlingUnit1.`huNumber`
+})
+
+// --------------------------------
+
+WITH @@handlingUnits
+RETURN {
+  "logistics": {
+    "delivery": {
+      "updateHandlingUnit": @v_updateHandlingUnit1
+    }
+  }
+}

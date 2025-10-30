@@ -1,0 +1,19 @@
+RETURN {
+  "allCountries": (
+    FOR v_country1
+    IN @@countries
+    SORT (v_country1.`isoCode`)
+    RETURN {
+      "id": v_country1._key,
+      "isoCode": v_country1.`isoCode`,
+      "description": (
+        FOR v_translation1
+        IN (IS_LIST(v_country1.`description`) ? v_country1.`description` : [])
+        RETURN {
+          "languageIsoCode": v_translation1.`languageIsoCode`,
+          "translation": v_translation1.`translation`
+        }
+      )
+    }
+  )
+}

@@ -1,0 +1,47 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_paper1
+    IN @@papers
+    FILTER (v_paper1._key == @var1)
+    LIMIT @var2
+    RETURN v_paper1
+  )
+  UPDATE v_currentEntity1
+  WITH {}
+  IN @@papers
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@papers
+LET v_paper1 = DOCUMENT(@@papers, @var1)
+RETURN (IS_NULL(v_paper1) ? null : {
+  "key": v_paper1.`key`
+})
+
+// --------------------------------
+
+WITH @@papers
+RETURN FIRST(
+  INSERT @var1 IN @@papers
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@papers
+LET v_paper1 = DOCUMENT(@@papers, @v_newEntityId1)
+RETURN (IS_NULL(v_paper1) ? null : {
+  "key": v_paper1.`key`
+})
+
+// --------------------------------
+
+WITH @@papers
+RETURN {
+  "updatePaper": @v_updatePaper1,
+  "createPaper": @v_createPaper1
+}

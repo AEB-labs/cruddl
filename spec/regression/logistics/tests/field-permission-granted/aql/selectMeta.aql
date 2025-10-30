@@ -1,0 +1,12 @@
+RETURN {
+  "allForwarders": (
+    FOR v_forwarder1
+    IN @@forwarders
+    RETURN {
+      "name": v_forwarder1.`name`
+    }
+  ),
+  @var1: {
+    "count": LENGTH(@@forwarders)
+  }
+}

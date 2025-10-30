@@ -1,0 +1,21 @@
+RETURN FIRST(
+  INSERT @var1 IN @@countries
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@countries
+LET v_country1 = DOCUMENT(@@countries, @v_newEntityId1)
+RETURN (IS_NULL(v_country1) ? null : {
+  "isoCode": v_country1.`isoCode`
+})
+
+// --------------------------------
+
+WITH @@countries
+RETURN {
+  "foundation": {
+    "createCountry": @v_createCountry1
+  }
+}

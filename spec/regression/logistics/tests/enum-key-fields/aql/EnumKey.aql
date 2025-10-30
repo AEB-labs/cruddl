@@ -1,0 +1,12 @@
+LET v_numberRange1 = FIRST((
+  FOR v_numberRange2
+  IN @@numberRanges
+  FILTER (v_numberRange2.`name` == @var1)
+  LIMIT @var2
+  RETURN v_numberRange2
+))
+RETURN {
+  "NumberRange": (IS_NULL(v_numberRange1) ? null : {
+    "name": v_numberRange1.`name`
+  })
+}

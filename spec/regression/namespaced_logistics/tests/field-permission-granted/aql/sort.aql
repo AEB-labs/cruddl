@@ -1,0 +1,30 @@
+WITH @@deliveries
+RETURN {
+  "logistics": {
+    "delivery": {
+      "direct": (
+        FOR v_delivery1
+        IN @@deliveries
+        FILTER (v_delivery1._key == @var1)
+        SORT (v_delivery1.`totalValue`)
+        RETURN {
+          "deliveryNumber": v_delivery1.`deliveryNumber`
+        }
+      ),
+      "throughRelation": (
+        FOR v_handlingUnit1
+        IN @@handlingUnits
+        FILTER (v_handlingUnit1._key == @var2)
+        SORT (FIRST((
+          FOR v_node1
+          IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
+          FILTER v_node1 != null
+          RETURN v_node1
+        )).`totalValue`)  DESC
+        RETURN {
+          "huNumber": v_handlingUnit1.`huNumber`
+        }
+      )
+    }
+  }
+}
