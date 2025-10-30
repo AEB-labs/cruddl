@@ -1,0 +1,11 @@
+RETURN {
+  "allValues": (
+    FOR v_value1
+    IN @@values
+    FILTER (v_value1.`limit` == @var1)
+    SORT (v_value1.`limit`)
+    RETURN {
+      "limit": v_value1.`limit`
+    }
+  )
+}

@@ -1,0 +1,3 @@
+RETURN {
+  "flexSearchDeliveries": { __cruddl_runtime_error: @var1 }
+}

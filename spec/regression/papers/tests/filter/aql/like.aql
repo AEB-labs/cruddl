@@ -1,0 +1,83 @@
+RETURN {
+  "like_prefix": (
+    FOR v_paper1
+    IN @@papers
+    FILTER (v_paper1.`key` >= UPPER(@var1) && v_paper1.`key` < LOWER(@var2))
+    SORT (v_paper1.`key`)
+    RETURN {
+      "key": v_paper1.`key`
+    }
+  ),
+  "like_underscore": (
+    FOR v_paper2
+    IN @@papers
+    FILTER ((v_paper2.`key` >= UPPER(@var3) && v_paper2.`key` < LOWER(@var4)) && LIKE(v_paper2.`key`, @var5, true))
+    SORT (v_paper2.`key`)
+    RETURN {
+      "key": v_paper2.`key`
+    }
+  ),
+  "like_not_matching": (
+    FOR v_paper3
+    IN @@papers
+    FILTER ((v_paper3.`key` >= UPPER(@var6) && v_paper3.`key` < LOWER(@var7)) && LIKE(v_paper3.`key`, @var8, true))
+    SORT (v_paper3.`key`)
+    RETURN {
+      "key": v_paper3.`key`
+    }
+  ),
+  "like_upper_matching_lower_prefix": (
+    FOR v_paper4
+    IN @@papers
+    FILTER (v_paper4.`key` >= UPPER(@var9) && v_paper4.`key` < LOWER(@var10))
+    SORT (v_paper4.`key`)
+    RETURN {
+      "key": v_paper4.`key`
+    }
+  ),
+  "like_lower_matching_upper_prefix": (
+    FOR v_paper5
+    IN @@papers
+    FILTER (v_paper5.`key` >= UPPER(@var11) && v_paper5.`key` < LOWER(@var12))
+    SORT (v_paper5.`key`)
+    RETURN {
+      "key": v_paper5.`key`
+    }
+  ),
+  "like_upper_matching_lower_exact": (
+    FOR v_paper6
+    IN @@papers
+    FILTER (v_paper6.`key` >= UPPER(@var13) && v_paper6.`key` <= LOWER(@var14))
+    SORT (v_paper6.`key`)
+    RETURN {
+      "key": v_paper6.`key`
+    }
+  ),
+  "like_lower_matching_upper_exact": (
+    FOR v_paper7
+    IN @@papers
+    FILTER (v_paper7.`key` >= UPPER(@var15) && v_paper7.`key` <= LOWER(@var16))
+    SORT (v_paper7.`key`)
+    RETURN {
+      "key": v_paper7.`key`
+    }
+  ),
+  "like_upper_matching_lower_pattern": (
+    FOR v_paper8
+    IN @@papers
+    FILTER (IS_STRING(v_paper8.`key`) && LIKE(v_paper8.`key`, @var17, true))
+    SORT (v_paper8.`key`)
+    RETURN {
+      "key": v_paper8.`key`
+    }
+  ),
+  "like_lower_matching_upper_pattern": (
+    FOR v_paper9
+    IN @@papers
+    FILTER (IS_STRING(v_paper9.`key`) && LIKE(v_paper9.`key`, @var18, true))
+    SORT (v_paper9.`key`)
+    RETURN {
+      "key": v_paper9.`key`
+    }
+  )
+}

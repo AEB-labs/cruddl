@@ -1,0 +1,52 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_root21
+    IN @@root2s
+    FILTER (v_root21._key == @var1)
+    LIMIT @var2
+    RETURN v_root21
+  )
+  UPDATE v_currentEntity1
+  WITH {}
+  IN @@root2s
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@roots
+RETURN DOCUMENT(@@roots, @var1)
+
+// --------------------------------
+
+WITH @@roots
+RETURN DOCUMENT(@@roots, @var1)
+
+// --------------------------------
+
+WITH @@roots
+RETURN (
+  FOR v_edge1
+  IN [ {_from: CONCAT(@var1, FIRST(@v_updatedIds1)), _to: @var2}, {_from: CONCAT(@var3, FIRST(@v_updatedIds1)), _to: @var4} ]
+  UPSERT { _from: v_edge1._from, _to: v_edge1._to }
+  INSERT v_edge1
+  UPDATE {}
+  IN @@root2s_roots
+)
+
+// --------------------------------
+
+WITH @@roots, @@root2s
+LET v_root21 = DOCUMENT(@@root2s, @var1)
+RETURN (IS_NULL(v_root21) ? null : {
+  "name": v_root21.`name`
+})
+
+// --------------------------------
+
+WITH @@roots, @@root2s
+RETURN {
+  "updateRoot2": @v_updateRoot21
+}

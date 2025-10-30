@@ -1,0 +1,28 @@
+RETURN (
+  FOR v_hero1
+  IN @@heroes
+  LIMIT @var1
+  RETURN v_hero1
+)
+
+// --------------------------------
+
+RETURN (
+  FOR v_Hero1
+  IN (
+    FOR v_hero1
+    IN @tmp1
+    REMOVE v_hero1
+    IN @@heroes
+    RETURN OLD
+  )
+  RETURN {
+    "name": v_Hero1.`name`
+  }
+)
+
+// --------------------------------
+
+RETURN {
+  "deleteAllHeroes": @v_deleteAllHeroes1
+}

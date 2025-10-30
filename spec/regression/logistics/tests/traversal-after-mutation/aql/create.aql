@@ -1,0 +1,83 @@
+RETURN FIRST(
+  INSERT @var1 IN @@deliveries
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@handlingUnits
+RETURN DOCUMENT(@@handlingUnits, @var1)
+
+// --------------------------------
+
+WITH @@handlingUnits
+RETURN (
+  FOR v_to1 IN @var1
+  FOR v_edge1 IN @@deliveries_handlingUnits
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@deliveries_handlingUnits
+)
+
+// --------------------------------
+
+WITH @@handlingUnits
+RETURN (
+  FOR v_edge1
+  IN [ {_from: CONCAT(@var1, @v_newEntityId1), _to: @var2} ]
+  UPSERT { _from: v_edge1._from, _to: v_edge1._to }
+  INSERT v_edge1
+  UPDATE {}
+  IN @@deliveries_handlingUnits
+)
+
+// --------------------------------
+
+WITH @@handlingUnits, @@deliveries
+LET v_entity1 = DOCUMENT(@@deliveries, @v_newEntityId1)
+RETURN (
+  UPSERT {
+              key: @var1,
+              type: @var2
+          }
+  INSERT {
+
+          key: @var3,
+          type: @var4,
+          category: null,
+          quantity: null,
+          isExported: false,
+          createdAt: @var5,
+          updatedAt: @var6,
+              isConfirmedForExport: false
+           }
+  UPDATE (OLD.isConfirmedForExport ? {} : {
+              updatedAt: @var7,
+              category: null,
+              quantity: null
+          })
+  IN @@billingEntities
+  RETURN @var8
+)
+
+// --------------------------------
+
+WITH @@handlingUnits, @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "deliveryNumber": v_delivery1.`deliveryNumber`,
+  "handlingUnits": (
+    FOR v_handlingUnit1
+    IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
+    FILTER v_handlingUnit1 != null
+    RETURN {
+      "huNumber": v_handlingUnit1.`huNumber`
+    }
+  )
+})
+
+// --------------------------------
+
+WITH @@handlingUnits, @@deliveries
+RETURN {
+  "createDelivery": @v_createDelivery1
+}

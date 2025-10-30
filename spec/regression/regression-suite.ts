@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs';
 import { graphql, GraphQLSchema, OperationDefinitionNode, OperationTypeNode, parse } from 'graphql';
 import { resolve } from 'path';
 import stripJsonComments from 'strip-json-comments';
@@ -20,6 +20,8 @@ import { InitTestDataContext } from './init-test-data-context';
 import deepEqual = require('deep-equal');
 import { WarnAndErrorLoggerProvider } from '../helpers/warn-and-error-logger-provider';
 import { getLogger } from 'log4js';
+import { RequestProfile } from '../../src/config/interfaces';
+import { unlinkSync } from 'node:fs';
 
 interface TestResult {
     readonly actualResult: any;
@@ -53,6 +55,18 @@ interface MetaOptions {
     };
 }
 
+export interface AqlResult {
+    readonly operationName: string;
+    readonly expected: string | null;
+    readonly actual: string | null;
+}
+
+export interface RunTestResult {
+    readonly actualResult: unknown;
+    readonly expectedResult: unknown;
+    readonly aql: ReadonlyArray<AqlResult>;
+}
+
 const QUERY_MEMORY_LIMIT_FOR_TESTS = 1_000_000;
 const QUERY_MEMORY_LIMIT_FOR_INITIALIZATION = 1_000_000_000;
 
@@ -65,6 +79,7 @@ export class RegressionSuite {
     private readonly idGenerator = new PredictableIDGenerator();
     private databaseVersion: string | undefined;
     private nodeVersion: string;
+    private lastProfile: RequestProfile | undefined;
 
     constructor(
         private readonly path: string,
@@ -99,10 +114,12 @@ export class RegressionSuite {
                 idGenerator: this.idGenerator,
                 implicitLimitForRootEntityQueries: context.implicitLimitForRootEntityQueries,
                 maxLimitForRootEntityQueries: context.maxLimitForRootEntityQueries,
+                recordPlan: true,
             }),
             modelOptions: {
                 forbiddenRootEntityNames: [],
             },
+            profileConsumer: (profile) => (this.lastProfile = profile),
             ...options,
             getOperationIdentifier: ({ info }) => info.operation,
         };
@@ -242,7 +259,7 @@ export class RegressionSuite {
         return false;
     }
 
-    async runTest(name: string) {
+    async runTest(name: string): Promise<RunTestResult> {
         if (!this._isSetUpClean) {
             await this.setUp();
         }
@@ -286,6 +303,20 @@ export class RegressionSuite {
 
         let actualResult: Record<string, unknown> = {};
         let arangoSearchPending = true;
+        const aqlResults: AqlResult[] = [];
+        const aqlDir = resolve(this.testsPath, name, 'aql');
+        let superfluousAqlFiles: Set<string> = new Set();
+
+        if (this.databaseSpecifier === 'arangodb') {
+            if (existsSync(aqlDir)) {
+                superfluousAqlFiles = new Set(
+                    readdirSync(aqlDir)
+                        .filter((f) => f.endsWith('.aql'))
+                        .map((f) => f.substring(0, f.length - '.aql'.length)),
+                );
+            }
+        }
+
         for (const operation of operations) {
             const operationName = operation.name?.value;
             if (!operationName) {
@@ -307,6 +338,7 @@ export class RegressionSuite {
             if (context && context.operations && context.operations[operationName]) {
                 operationContext = context.operations[operationName];
             }
+            this.lastProfile = undefined;
             let operationResult = await graphql({
                 schema: this.schema,
                 source: gqlSource,
@@ -318,9 +350,58 @@ export class RegressionSuite {
             operationResult = JSON.parse(JSON.stringify(operationResult)); // serialize e.g. errors as they would be in a GraphQL server
             actualResult[operationName] = operationResult;
 
+            if (this.databaseSpecifier === 'arangodb') {
+                // typescript incorrectly narrows down this.lastProfile to undefined
+                const profile = this.lastProfile as RequestProfile | undefined;
+                const queries = (profile?.plan?.transactionSteps ?? []).map((s) => s.query);
+                const actualAql = queries.length
+                    ? formatWhitespaceInFile(
+                          queries.join('\n\n// --------------------------------\n\n'),
+                      )
+                    : null;
+
+                const aqlFilePath = resolve(aqlDir, `${operationName}.aql`);
+
+                const expectedAql = existsSync(aqlFilePath)
+                    ? readFileSync(aqlFilePath, 'utf-8')
+                    : null;
+
+                if (this.options.saveActualAsExpected && actualAql !== expectedAql) {
+                    if (actualAql !== null) {
+                        mkdirSync(aqlDir, { recursive: true });
+                        writeFileSync(aqlFilePath, actualAql, 'utf-8');
+                    } else {
+                        unlinkSync(aqlFilePath);
+                    }
+                }
+
+                if (expectedAql !== null) {
+                    superfluousAqlFiles.delete(operationName);
+                }
+
+                aqlResults.push({
+                    operationName,
+                    expected: expectedAql,
+                    actual: actualAql,
+                });
+            }
+
             if (operation.operation === OperationTypeNode.MUTATION) {
                 // we need to wait for arangosearch again if we performed a mutation
                 arangoSearchPending = true;
+            }
+        }
+
+        for (const superfluousAqlFile of superfluousAqlFiles) {
+            const aqlFilePath = resolve(aqlDir, `${superfluousAqlFile}.aql`);
+            aqlResults.push({
+                operationName: superfluousAqlFile,
+                expected: readFileSync(aqlFilePath, 'utf8'),
+                actual: null,
+            });
+
+            if (this.options.saveActualAsExpected) {
+                unlinkSync(aqlFilePath);
             }
         }
 
@@ -331,6 +412,7 @@ export class RegressionSuite {
         return {
             actualResult,
             expectedResult,
+            aql: aqlResults,
         };
     }
 
@@ -352,4 +434,18 @@ class PredictableIDGenerator implements IDGenerator {
         this.phase = phase;
         this.nextNumberPerTarget = new Map();
     }
+}
+
+function formatWhitespaceInFile(s: string) {
+    if (!s.endsWith('\n')) {
+        s += '\n';
+    }
+
+    // remove trailing whitespace in lines
+    // (editors remove that, so it's hard to keep it in expected files)
+    s = s
+        .split('\n')
+        .map((line) => line.replace(/\s+$/g, ''))
+        .join('\n');
+    return s;
 }

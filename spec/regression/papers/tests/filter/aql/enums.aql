@@ -1,0 +1,40 @@
+RETURN {
+  "enum_in": (
+    FOR v_user1
+    IN @@users
+    FILTER (v_user1.`category` IN @var1)
+    SORT (v_user1.`lastName`)
+    RETURN {
+      "lastName": v_user1.`lastName`
+    }
+  ),
+  "enum_not_in": (
+    FOR v_user2
+    IN @@users
+    FILTER !((v_user2.`category` IN @var2))
+    SORT (v_user2.`lastName`)
+    RETURN {
+      "lastName": v_user2.`lastName`
+    }
+  ),
+  "enum_equal": (
+    FOR v_user3
+    IN @@users
+    FILTER (v_user3.`category` == @var3)
+    SORT (v_user3.`lastName`)
+    RETURN {
+      "lastName": v_user3.`lastName`,
+      "category": v_user3.`category`
+    }
+  ),
+  "enum_not_equal": (
+    FOR v_user4
+    IN @@users
+    FILTER (v_user4.`category` != @var4)
+    SORT (v_user4.`lastName`)
+    RETURN {
+      "lastName": v_user4.`lastName`,
+      "category": v_user4.`category`
+    }
+  )
+}

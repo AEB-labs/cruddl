@@ -1,0 +1,34 @@
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_delivery1
+    IN @@flex_view_deliveries
+    SEARCH true
+    RETURN v_delivery1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) > @var1)
+
+// --------------------------------
+
+RETURN {
+  @var1: (@tmp1 ? { __cruddl_runtime_error_code: @var2, __cruddl_runtime_error: @var3 } : {
+    "count": FIRST(
+      FOR v_item1
+      IN (
+        FOR v_delivery1
+        IN (
+          FOR v_delivery2
+          IN @@flex_view_deliveries
+          SEARCH true
+          RETURN v_delivery2
+        )
+        FILTER (v_delivery1.`description` >= UPPER(@var4) && v_delivery1.`description` < LOWER(@var5)) && (LEFT(v_delivery1.`description`, LENGTH(@var6)) == @var7)
+        RETURN v_delivery1
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    )
+  })
+}

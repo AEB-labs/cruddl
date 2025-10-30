@@ -1,0 +1,62 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (v_delivery1._key == @var1)
+    LIMIT @var2
+    RETURN v_delivery1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "deliveryNumber": @var3,
+    "updatedAt": @var4
+  }
+  IN @@deliveries
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_entity1 = DOCUMENT(@@deliveries, FIRST(@v_updatedIds1))
+RETURN (
+  UPSERT {
+              key: @var1,
+              type: @var2
+          }
+  INSERT {
+
+          key: @var3,
+          type: @var4,
+          category: null,
+          quantity: null,
+          isExported: false,
+          createdAt: @var5,
+          updatedAt: @var6,
+              isConfirmedForExport: false
+           }
+  UPDATE (OLD.isConfirmedForExport ? {} : {
+              updatedAt: @var7,
+              category: null,
+              quantity: null
+          })
+  IN @@billingEntities
+  RETURN @var8
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "deliveryNumber": v_delivery1.`deliveryNumber`
+})
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN {
+  "updateDelivery": @v_updateDelivery1
+}

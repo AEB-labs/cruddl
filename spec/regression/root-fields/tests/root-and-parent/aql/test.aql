@@ -1,0 +1,52 @@
+RETURN {
+  "allRoots": (
+    FOR v_root1
+    IN @@roots
+    SORT (v_root1.`name`)
+    RETURN {
+      "name": v_root1.`name`,
+      "children": (
+        FOR v_child1
+        IN (IS_LIST(v_root1.`children`) ? v_root1.`children` : [])
+        RETURN {
+          "name": v_child1.`name`,
+          "children": (
+            FOR v_grandchild1
+            IN (IS_LIST(v_child1.`children`) ? v_child1.`children` : [])
+            RETURN {
+              "name": v_grandchild1.`name`,
+              "parent": (IS_NULL(v_child1) ? null : {
+                "name": v_child1.`name`,
+                "parent": (IS_NULL(v_root1) ? null : {
+                  "name": v_root1.`name`
+                }),
+                "children": (
+                  FOR v_grandchild2
+                  IN (IS_LIST(v_child1.`children`) ? v_child1.`children` : [])
+                  RETURN {
+                    "name": v_grandchild2.`name`,
+                    "parent": (IS_NULL(v_child1) ? null : {
+                      "name": v_child1.`name`,
+                      "parent": (IS_NULL(v_root1) ? null : {
+                        "name": v_root1.`name`
+                      })
+                    })
+                  }
+                )
+              }),
+              "root": (IS_NULL(v_root1) ? null : {
+                "name": v_root1.`name`
+              })
+            }
+          ),
+          "parent": (IS_NULL(v_root1) ? null : {
+            "name": v_root1.`name`
+          }),
+          "root": (IS_NULL(v_root1) ? null : {
+            "name": v_root1.`name`
+          })
+        }
+      )
+    }
+  )
+}
