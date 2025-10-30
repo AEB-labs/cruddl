@@ -10,6 +10,7 @@ import {
     PreExecQueryParms,
     PropertySpecification,
     QueryNode,
+    RuntimeErrorQueryNode,
     TransformListQueryNode,
     TypeCheckQueryNode,
     VariableAssignmentQueryNode,
@@ -194,6 +195,16 @@ function buildFieldQueryNode0(
 
     // object
     if (field.skipNullCheck) {
+        // if there is no null check, this output node does not access fieldQueryNode at all, so
+        // moveErrorsToOutputNodes() won't move errors here. Without this logic here, runtime errors
+        // would only be moved to the fields that use fieldQueryNode, and the main object would
+        // still exist (without error)
+        // Limitation: if fieldQueryNode is a complex expression that can sometimes result in a
+        // RuntimeErrorQueryNode, we still have the problem. Currently, we don't generate such a pattern.
+        if (fieldQueryNode instanceof RuntimeErrorQueryNode) {
+            return fieldQueryNode;
+        }
+
         return buildObjectQueryNode(
             fieldQueryNode,
             queryTreeObjectType,
