@@ -1,12 +1,14 @@
 {
-  "data": {
-    "Paper": {
-      "_literatureReferencesMeta": {
-        "count": 1
+  "count": {
+    "data": {
+      "_allPapersMeta": {
+        "count": 5
+      },
+      "Paper": {
+        "_literatureReferencesMeta": {
+          "count": 1
+        }
       }
-    },
-    "_allPapersMeta": {
-      "count": 5
     }
   }
 }

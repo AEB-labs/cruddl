@@ -1,32 +1,38 @@
 {
-  "data": {
-    "onlyCursor": [
-      {
-        "_cursor": "{\"id\":\"@{ids/Paper/3}\",\"key\":\"NoSQL\"}"
-      },
-      {
-        "_cursor": "{\"id\":\"@{ids/Paper/1}\",\"key\":\"OOM\"}"
-      },
-      {
-        "_cursor": "{\"id\":\"@{ids/Paper/4}\",\"key\":\"Part\"}"
-      }
-    ],
-    "onlyCursorNoLimit": [
-      {
-        "_cursor": "{\"id\":\"@{ids/Paper/3}\",\"key\":\"NoSQL\"}"
-      },
-      {
-        "_cursor": "{\"id\":\"@{ids/Paper/1}\",\"key\":\"OOM\"}"
-      },
-      {
-        "_cursor": "{\"id\":\"@{ids/Paper/4}\",\"key\":\"Part\"}"
-      },
-      {
-        "_cursor": "{\"id\":\"@{ids/Paper/5}\",\"key\":\"Scal\"}"
-      },
-      {
-        "_cursor": "{\"id\":\"@{ids/Paper/2}\",\"key\":\"UML\"}"
-      }
-    ]
+  "onlyCursor": {
+    "data": {
+      "allPapers": [
+        {
+          "_cursor": "{\"id\":\"@{ids/Paper/3}\",\"key\":\"NoSQL\"}"
+        },
+        {
+          "_cursor": "{\"id\":\"@{ids/Paper/1}\",\"key\":\"OOM\"}"
+        },
+        {
+          "_cursor": "{\"id\":\"@{ids/Paper/4}\",\"key\":\"Part\"}"
+        }
+      ]
+    }
+  },
+  "onlyCursorNoLimit": {
+    "data": {
+      "allPapers": [
+        {
+          "_cursor": "{\"id\":\"@{ids/Paper/3}\",\"key\":\"NoSQL\"}"
+        },
+        {
+          "_cursor": "{\"id\":\"@{ids/Paper/1}\",\"key\":\"OOM\"}"
+        },
+        {
+          "_cursor": "{\"id\":\"@{ids/Paper/4}\",\"key\":\"Part\"}"
+        },
+        {
+          "_cursor": "{\"id\":\"@{ids/Paper/5}\",\"key\":\"Scal\"}"
+        },
+        {
+          "_cursor": "{\"id\":\"@{ids/Paper/2}\",\"key\":\"UML\"}"
+        }
+      ]
+    }
   }
 }

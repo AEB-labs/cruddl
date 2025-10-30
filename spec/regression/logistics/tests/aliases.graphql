@@ -1,4 +1,4 @@
-{
+query aliases {
     aDelivery: Delivery(id: "@{ids/Delivery/1}") {
         nr: deliveryNumber
         oneItem: items(filter: { itemNumber: "1001" }) {

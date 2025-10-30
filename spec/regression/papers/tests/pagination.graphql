@@ -1,4 +1,4 @@
-query {
+query pagination {
     allPapers(first: 3, filter: { isPublished: true }, orderBy: key_ASC) {
         key
         _cursor
@@ -15,8 +15,10 @@ query {
             id
         }
     }
+}
 
-    noPagesLeft: allPapers(
+query noPagesLeft {
+    allPapers(
         first: 2
         after: "{\"id\":\"@{ids/Paper/5}\",\"key\":\"Scal\"}"
         filter: { isPublished: true }
@@ -24,8 +26,10 @@ query {
     ) {
         key
     }
+}
 
-    noPaginationButCursor: allPapers(filter: { id: "@{ids/Paper/1}" }) {
+query noPaginationButCursor {
+    allPapers(filter: { id: "@{ids/Paper/1}" }) {
         _cursor
     }
 }
