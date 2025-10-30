@@ -1,23 +1,25 @@
 {
-  "data": {
-    "aDelivery": {
-      "nr": "1000173",
-      "oneItem": [
-        {
-          "itemNumber": "1001"
-        }
-      ],
-      "items": [
-        {
-          "itemNumber": "1001"
-        },
-        {
-          "itemNumber": "1002"
-        }
-      ]
-    },
-    "anotherDelivery": {
-      "nr": "1000521"
+  "aliases": {
+    "data": {
+      "aDelivery": {
+        "nr": "1000173",
+        "oneItem": [
+          {
+            "itemNumber": "1001"
+          }
+        ],
+        "items": [
+          {
+            "itemNumber": "1001"
+          },
+          {
+            "itemNumber": "1002"
+          }
+        ]
+      },
+      "anotherDelivery": {
+        "nr": "1000521"
+      }
     }
   }
 }

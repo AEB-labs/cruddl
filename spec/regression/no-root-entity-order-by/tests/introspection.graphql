@@ -1,15 +1,17 @@
-{
-    # should not exist
+query typeDoesNotExist {
     shipmentDataOrderByType: __type(name: "ShipmentDataOrderBy") {
         name
     }
+}
 
-    # should exist
+query typeExists {
     shipmentOrderByType: __type(name: "ShipmentOrderBy") {
         name
     }
+}
 
-    # should not include orderBy for shipmentDatas, but for shipments
+# should not include orderBy for shipmentDatas, but for shipments
+query fields {
     deliveryType: __type(name: "Delivery") {
         fields {
             name
