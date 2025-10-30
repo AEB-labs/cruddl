@@ -19,7 +19,7 @@
   "RelationAndFieldTraversalWithParent": {
     "errors": [
       {
-        "message": "AQL: query would use more memory than allowed [node #17: TraversalNode] [node #18: CalculationNode] [node #19: FilterNode] [node #43: SubqueryStartNode] [node #22: FilterNode] [node #23: CalculationNode] [node #24: EnumerateListNode] [node #25: CalculationNode] [node #44: SubqueryEndNode] [node #42: SubqueryEndNode] [node #39: SubqueryStartNode] [node #13: FilterNode] [node #30: CalculationNode] [node #31: EnumerateListNode] [node #33: CalculationNode] [node #40: SubqueryEndNode] [node #36: CalculationNode] [node #37: ReturnNode] (while executing)",
+        "message": "AQL: query would use more memory than allowed [node #17: TraversalNode] [node #18: CalculationNode] [node #19: FilterNode] [node #42: SubqueryStartNode] [node #22: FilterNode] [node #23: CalculationNode] [node #24: EnumerateListNode] [node #25: CalculationNode] [node #43: SubqueryEndNode] [node #41: SubqueryEndNode] [node #38: SubqueryStartNode] [node #13: FilterNode] [node #30: CalculationNode] [node #31: EnumerateListNode] [node #32: CalculationNode] [node #39: SubqueryEndNode] [node #35: CalculationNode] [node #36: ReturnNode] (while executing)",
         "locations": [
           {
             "line": 10,

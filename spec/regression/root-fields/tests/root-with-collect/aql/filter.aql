@@ -17,9 +17,9 @@ RETURN {
             FILTER (RIGHT(v_grandchild1.`name`, LENGTH(@var1)) == @var2)
             RETURN {
               "name": v_grandchild1.`name`,
-              "root": (IS_NULL(v_root1) ? null : {
+              "root": {
                 "name": v_root1.`name`
-              })
+              }
             }
           ),
           @var3: {
@@ -40,9 +40,9 @@ RETURN {
             IN v_root1.`children`[*].`extension`.`children`[*][**]
             FILTER (RIGHT(v_extensionGrandchild1.`name`, LENGTH(@var6)) == @var7)
             RETURN {
-              "root": (IS_NULL(v_root1) ? null : {
+              "root": {
                 "name": v_root1.`name`
-              })
+              }
             }
           ),
           @var8: {
@@ -72,12 +72,11 @@ RETURN {
         )[**]
         FILTER (RIGHT(v_grandchild3.`obj`.`name`, LENGTH(@var13)) == @var14)
         SORT (v_grandchild3.`obj`.`name`)
-        LET v_root2 = v_grandchild3.`root`
         RETURN {
           "name": v_grandchild3.`obj`.`name`,
-          "root": (IS_NULL(v_root2) ? null : {
-            "name": v_root2.`name`
-          })
+          "root": {
+            "name": v_grandchild3.`root`.`name`
+          }
         }
       ),
       @var15: {
@@ -109,12 +108,11 @@ RETURN {
         )[**]
         FILTER (RIGHT(v_extensionGrandchild3.`obj`.`name`, LENGTH(@var22)) == @var23)
         SORT (v_extensionGrandchild3.`obj`.`name`)
-        LET v_root3 = v_extensionGrandchild3.`root`
         RETURN {
           "name": v_extensionGrandchild3.`obj`.`name`,
-          "root": (IS_NULL(v_root3) ? null : {
-            "name": v_root3.`name`
-          })
+          "root": {
+            "name": v_extensionGrandchild3.`root`.`name`
+          }
         }
       ),
       @var24: {

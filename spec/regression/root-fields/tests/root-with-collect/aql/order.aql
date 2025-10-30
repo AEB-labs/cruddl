@@ -17,9 +17,9 @@ RETURN {
             SORT (v_grandchild1.`name`)
             RETURN {
               "name": v_grandchild1.`name`,
-              "root": (IS_NULL(v_root1) ? null : {
+              "root": {
                 "name": v_root1.`name`
-              })
+              }
             }
           ),
           "grandchildrenReverse": (
@@ -28,9 +28,9 @@ RETURN {
             SORT (v_grandchild2.`name`)  DESC
             RETURN {
               "name": v_grandchild2.`name`,
-              "root": (IS_NULL(v_root1) ? null : {
+              "root": {
                 "name": v_root1.`name`
-              })
+              }
             }
           ),
           "extensionGrandchildren": (
@@ -39,9 +39,9 @@ RETURN {
             SORT (v_extensionGrandchild1.`name`)
             RETURN {
               "name": v_extensionGrandchild1.`name`,
-              "root": (IS_NULL(v_root1) ? null : {
+              "root": {
                 "name": v_root1.`name`
-              })
+              }
             }
           ),
           "extensionGrandchildrenReverse": (
@@ -50,9 +50,9 @@ RETURN {
             SORT (v_extensionGrandchild2.`name`)  DESC
             RETURN {
               "name": v_extensionGrandchild2.`name`,
-              "root": (IS_NULL(v_root1) ? null : {
+              "root": {
                 "name": v_root1.`name`
-              })
+              }
             }
           )
         }
@@ -68,12 +68,11 @@ RETURN {
           )
         )[**]
         SORT (v_grandchild3.`obj`.`name`)
-        LET v_root2 = v_grandchild3.`root`
         RETURN {
           "name": v_grandchild3.`obj`.`name`,
-          "root": (IS_NULL(v_root2) ? null : {
-            "name": v_root2.`name`
-          })
+          "root": {
+            "name": v_grandchild3.`root`.`name`
+          }
         }
       ),
       "rootGrandchildrenReverse": (
@@ -87,12 +86,11 @@ RETURN {
           )
         )[**]
         SORT (v_grandchild4.`obj`.`name`)  DESC
-        LET v_root3 = v_grandchild4.`root`
         RETURN {
           "name": v_grandchild4.`obj`.`name`,
-          "root": (IS_NULL(v_root3) ? null : {
-            "name": v_root3.`name`
-          })
+          "root": {
+            "name": v_grandchild4.`root`.`name`
+          }
         }
       ),
       "rootExtensionGrandchildren": (
@@ -106,12 +104,11 @@ RETURN {
           )
         )[**]
         SORT (v_extensionGrandchild3.`obj`.`name`)
-        LET v_root4 = v_extensionGrandchild3.`root`
         RETURN {
           "name": v_extensionGrandchild3.`obj`.`name`,
-          "root": (IS_NULL(v_root4) ? null : {
-            "name": v_root4.`name`
-          })
+          "root": {
+            "name": v_extensionGrandchild3.`root`.`name`
+          }
         }
       ),
       "rootExtensionGrandchildrenReverse": (
@@ -125,12 +122,11 @@ RETURN {
           )
         )[**]
         SORT (v_extensionGrandchild4.`obj`.`name`)  DESC
-        LET v_root5 = v_extensionGrandchild4.`root`
         RETURN {
           "name": v_extensionGrandchild4.`obj`.`name`,
-          "root": (IS_NULL(v_root5) ? null : {
-            "name": v_root5.`name`
-          })
+          "root": {
+            "name": v_extensionGrandchild4.`root`.`name`
+          }
         }
       )
     }

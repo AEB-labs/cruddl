@@ -11,9 +11,9 @@ RETURN {
         RETURN {
           "name": v_grandchild1.`name`,
           "parent": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 },
-          "root": (IS_NULL(v_root1) ? null : {
+          "root": {
             "name": v_root1.`name`
-          })
+          }
         }
       ),
       "extensionGrandchildren": (
@@ -22,13 +22,13 @@ RETURN {
         RETURN {
           "name": v_extensionGrandchild1.`name`,
           "parent": { __cruddl_runtime_error_code: @var3, __cruddl_runtime_error: @var4 },
-          "root": (IS_NULL(v_root1) ? null : {
+          "root": {
             "name": v_root1.`name`
-          })
+          }
         }
       )
     }
   )
 }
 
-// Peak memory usage: 655360 bytes
+// Peak memory usage: 458752 bytes
