@@ -16,7 +16,7 @@ RETURN MINUS((
   IN (
     FOR v_sourceEntity1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
     FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@mains_blockingMains
-    FILTER v_node1 != null
+    FILTER v_node1._key != null
     RETURN v_node1
   )
   RETURN v_item1._key
@@ -44,7 +44,7 @@ RETURN (
   IN (
     FOR v_sourceEntity1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
     FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@mains_blockers
-    FILTER v_node1 != null
+    FILTER v_node1._key != null
     RETURN v_node1
   )
   RETURN v_item1._key
@@ -72,7 +72,7 @@ RETURN (
   IN (
     FOR v_sourceEntity1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
     FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@mains_alternativeDependents
-    FILTER v_node1 != null
+    FILTER v_node1._key != null
     RETURN v_node1
   )
   RETURN v_item1._key
@@ -140,7 +140,7 @@ RETURN (
   IN (
     FOR v_sourceEntity1 IN (FOR v_id1 IN @v_additionalDependentIDs1 RETURN CONCAT(@var1, v_id1))
     FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@dependents_blockers
-    FILTER v_node1 != null
+    FILTER v_node1._key != null
     RETURN v_node1
   )
   RETURN v_item1._key
@@ -168,7 +168,7 @@ RETURN (
   IN (
     FOR v_sourceEntity1 IN (FOR v_id1 IN @v_additionalDependentIDs1 RETURN CONCAT(@var1, v_id1))
     FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@dependents_alternativeDependents
-    FILTER v_node1 != null
+    FILTER v_node1._key != null
     RETURN v_node1
   )
   RETURN v_item1._key
@@ -258,7 +258,7 @@ RETURN (
   IN (
     FOR v_sourceEntity1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
     FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@mains_dependents
-    FILTER v_node1 != null
+    FILTER v_node1._key != null
     RETURN v_node1
   )
   RETURN v_item1._key
@@ -274,7 +274,7 @@ RETURN (
   IN (
     FOR v_sourceEntity1 IN (FOR v_id1 IN @v_dependentsIDs1 RETURN CONCAT(@var1, v_id1))
     FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@dependents_blockers
-    FILTER v_node1 != null
+    FILTER v_node1._key != null
     RETURN v_node1
   )
   RETURN v_item1._key
@@ -300,7 +300,7 @@ RETURN (
   IN (
     FOR v_sourceEntity1 IN (FOR v_id1 IN @v_dependentsIDs1 RETURN CONCAT(@var1, v_id1))
     FOR v_node1, v_edge1, v_path1 IN @var2..@var3 OUTBOUND v_sourceEntity1 @@dependents_alternativeDependents
-    FILTER v_node1 != null
+    FILTER v_node1._key != null
     RETURN v_node1
   )
   RETURN v_item1._key

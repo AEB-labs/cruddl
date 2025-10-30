@@ -578,6 +578,11 @@ register(TransformListQueryNode, (node, context) => {
         );
     }
 
+    // TODO aql-perf: set maxProjects to a value > 5?
+    // The reduce-extraction-to-projection optimization is crucial to reduce memory usage of queries
+    // over large root entities if only some of the fields are queried. The default is to only apply
+    // it if 5 or less fields are selected. We probably want to increase this limit
+    // (also applies to FollowEdgeQueryNode and TraversalQueryNode)
     return aqlExt.parenthesizeList(
         aql`FOR ${itemVar}`,
         generateInClauseWithFilterAndOrderAndLimit({ node, context, itemContext, itemVar }),
@@ -604,7 +609,9 @@ function generateInClauseWithFilterAndOrderAndLimit({
     let filterDanglingEdges = aql``;
     if (node.listNode instanceof FollowEdgeQueryNode) {
         list = getSimpleFollowEdgeFragment(node.listNode, context);
-        filterDanglingEdges = aql`FILTER ${itemVar} != null`;
+        // using $var._key != null instead of $var != null because the latter prevents ArangodB
+        // from applying the reduce-extraction-to-projection optimization
+        filterDanglingEdges = aql`FILTER ${itemVar}._key != null`;
     } else {
         list = processNode(node.listNode, context);
     }
@@ -1385,11 +1392,13 @@ register(EntitiesQueryNode, (node, context) => {
 
 register(FollowEdgeQueryNode, (node, context) => {
     const tmpVar = aql.variable('node');
-    // need to wrap this in a subquery because ANY is not possible as first token of an expression node in AQL
     return aqlExt.parenthesizeList(
         aql`FOR ${tmpVar}`,
         aql`IN ${getSimpleFollowEdgeFragment(node, context)}`,
-        aql`FILTER ${tmpVar} != null`,
+        // filter out dangling edges (edges that point to non-existing entities)
+        // using $var._key != null instead of $var != null because the latter prevents ArangodB
+        // from applying the reduce-extraction-to-projection optimization
+        aql`FILTER ${tmpVar}._key != null`,
         aql`RETURN ${tmpVar}`,
     );
 });
@@ -1621,9 +1630,12 @@ function getRelationTraversalFragment({
 
     const lastSegment = segments[segments.length - 1];
 
-    // remove dangling edges, unless we already did because the last segment wasn't a list segment (see above, we add the FILTER there)
+    // remove dangling edges, unless we already did because the last segment wasn't a list segment
+    // (see above, we add the FILTER there)
     if (lastSegment.isListSegment) {
-        forFragments.push(aql`FILTER ${currentObjectFrag} != null`);
+        // using $var._key != null instead of $var != null because the latter prevents ArangoDB
+        // from applying the reduce-extraction-to-projection optimization
+        forFragments.push(aql`FILTER ${currentObjectFrag}._key != null`);
     }
 
     const returnFrag = mapFrag ? mapFrag(currentObjectFrag) : currentObjectFrag;

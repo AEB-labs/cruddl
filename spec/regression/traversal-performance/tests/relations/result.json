@@ -1,19 +1,40 @@
 {
   "Relation": {
-    "errors": [
-      {
-        "message": "AQL: query would use more memory than allowed [node #14: TraversalNode] [node #15: CalculationNode] [node #16: FilterNode] [node #17: CalculationNode] [node #24: SubqueryEndNode] [node #20: CalculationNode] [node #21: ReturnNode] (while executing)",
-        "locations": [
-          {
-            "line": 3,
-            "column": 5
-          }
-        ],
-        "path": ["Super"]
-      }
-    ],
     "data": {
-      "Super": null
+      "Super": {
+        "roots": [
+          {
+            "key": "root9"
+          },
+          {
+            "key": "root8"
+          },
+          {
+            "key": "root7"
+          },
+          {
+            "key": "root6"
+          },
+          {
+            "key": "root5"
+          },
+          {
+            "key": "root4"
+          },
+          {
+            "key": "root3"
+          },
+          {
+            "key": "root2"
+          },
+          {
+            "key": "root1"
+          },
+          {
+            "key": "root0"
+          }
+        ]
+      }
     }
   }
 }

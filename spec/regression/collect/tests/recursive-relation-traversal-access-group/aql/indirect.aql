@@ -25,7 +25,7 @@ RETURN {
           FOR v_node3, v_edge3, v_path3 IN @var10..@var11 OUTBOUND v_node2 @@handlingUnits_childHandlingUnits
           PRUNE !((v_node3.`accessGroup` IN @var12))
           FILTER v_path3.vertices[*].`accessGroup` ALL IN @var13
-          FILTER v_node3 != null
+          FILTER v_node3._key != null
           RETURN v_node3
         )
         FILTER v_item2 != null

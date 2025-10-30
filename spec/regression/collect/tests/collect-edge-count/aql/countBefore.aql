@@ -14,7 +14,7 @@ RETURN {
         IN (
           FOR v_node1
           IN OUTBOUND v_shipment1 @@shipments_deliveries
-          FILTER v_node1 != null
+          FILTER v_node1._key != null
           RETURN v_node1
         )
         COLLECT WITH COUNT INTO v_count1
@@ -25,7 +25,7 @@ RETURN {
       FOR v_item2
       IN (
         FOR v_node2, v_edge1, v_path1 IN @var4..@var5 OUTBOUND v_shipment1 @@shipments_deliveries
-        FILTER v_node2 != null
+        FILTER v_node2._key != null
         RETURN v_node2
       )
       COLLECT WITH COUNT INTO v_count2
@@ -34,4 +34,4 @@ RETURN {
   })
 }
 
-// Peak memory usage: 262144 bytes
+// Peak memory usage: 131072 bytes
