@@ -1,0 +1,48 @@
+RETURN (
+  FOR v_file1
+  IN (
+    FOR v_item1
+    IN @@files
+    FILTER ((v_item1.`customerName` == @var1) || (v_item1.`customerName` IN @var2))
+    RETURN v_item1
+  )
+  FILTER (v_file1._key == @var3)
+  LIMIT @var4
+  RETURN v_file1._key
+)
+
+// --------------------------------
+
+WITH @@files
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_file1
+    IN @v_ids1
+    FILTER !((DOCUMENT(@@files, v_file1).`customerName` IN @var1))
+    RETURN v_file1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) == 0)
+
+// --------------------------------
+
+WITH @@files
+LET v_file1 = FIRST((
+  FOR v_file2
+  IN @v_ids1
+  REMOVE v_file2
+  IN @@files
+  RETURN OLD
+))
+RETURN (IS_NULL(v_file1) ? null : {
+  "name": v_file1.`name`
+})
+
+// --------------------------------
+
+WITH @@files
+RETURN {
+  "deleteFile": @v_deleteFile1
+}

@@ -1,0 +1,34 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (v_delivery1._key == @var1)
+    LIMIT @var2
+    RETURN v_delivery1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "serialNumbers": @var3,
+    "updatedAt": @var4
+  }
+  IN @@deliveries
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "deliveryNumber": v_delivery1.`deliveryNumber`,
+  "serialNumbers": (IS_LIST(v_delivery1.`serialNumbers`) ? v_delivery1.`serialNumbers` : [])
+})
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN {
+  "updateDelivery": @v_updateDelivery1
+}

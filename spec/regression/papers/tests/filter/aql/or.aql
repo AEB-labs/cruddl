@@ -1,0 +1,11 @@
+RETURN {
+  "or": (
+    FOR v_paper1
+    IN @@papers
+    FILTER ((v_paper1.`title` == @var1) || (v_paper1.`title` == @var2))
+    SORT (v_paper1.`title`)
+    RETURN {
+      "title": v_paper1.`title`
+    }
+  )
+}

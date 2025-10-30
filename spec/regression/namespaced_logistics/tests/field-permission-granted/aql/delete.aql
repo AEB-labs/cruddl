@@ -1,0 +1,37 @@
+RETURN (
+  FOR v_forwarder1
+  IN @@forwarders
+  FILTER (v_forwarder1._key == @var1)
+  LIMIT @var2
+  RETURN v_forwarder1._key
+)
+
+// --------------------------------
+
+RETURN (
+  FOR v_to1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@deliveries_forwarder
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@deliveries_forwarder
+)
+
+// --------------------------------
+
+LET v_forwarder1 = FIRST((
+  FOR v_forwarder2
+  IN @v_ids1
+  REMOVE v_forwarder2
+  IN @@forwarders
+  RETURN OLD
+))
+RETURN (IS_NULL(v_forwarder1) ? null : {
+  "name": v_forwarder1.`name`
+})
+
+// --------------------------------
+
+RETURN {
+  "logistics": {
+    "deleteForwarder": @v_deleteForwarder1
+  }
+}

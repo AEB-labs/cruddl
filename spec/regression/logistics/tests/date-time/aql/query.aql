@@ -1,0 +1,12 @@
+LET v_delivery1 = FIRST((
+  FOR v_delivery2
+  IN @@deliveries
+  FILTER (v_delivery2._key == @var1)
+  LIMIT @var2
+  RETURN v_delivery2
+))
+RETURN {
+  "Delivery": (IS_NULL(v_delivery1) ? null : {
+    "shippedAt": v_delivery1.`shippedAt`
+  })
+}

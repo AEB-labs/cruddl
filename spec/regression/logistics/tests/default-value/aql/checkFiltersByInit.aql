@@ -1,0 +1,39 @@
+RETURN {
+  "allDeliveries": (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (((((((((((v_delivery1.`destination`.`street` == @var1) && (v_delivery1.`destination`.`city` == @var2)) && (v_delivery1.`destination`.`zipCode` == @var3)) && ((IS_NULL(v_delivery1.`destination`.`country`) ? null : FIRST((
+      FOR v_country1
+      IN @@countries
+      FILTER ((v_country1.`isoCode` > NULL) && (v_country1.`isoCode` == v_delivery1.`destination`.`country`))
+      LIMIT @var4
+      RETURN v_country1
+    ))).`isoCode` == @var5)) && (v_delivery1.`defaultValueString` == @var6)) && (v_delivery1.`defaultValueString2` == @var7)) && (v_delivery1.`defaultValueInt` == @var8)) && (v_delivery1.`defaultValueTrue` == @var9)) && (v_delivery1.`defaultValueFalse` == @var10)) && (v_delivery1.`defaultValueFloat` == @var11)) && (v_delivery1.`defaultValueEnum` == @var12))
+    SORT (v_delivery1.`deliveryNumber`)
+    LET v_country2 = (IS_NULL(v_delivery1.`destination`.`country`) ? null : FIRST((
+      FOR v_country3
+      IN @@countries
+      FILTER ((v_country3.`isoCode` > NULL) && (v_country3.`isoCode` == v_delivery1.`destination`.`country`))
+      LIMIT @var13
+      RETURN v_country3
+    )))
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`,
+      "destination": (IS_NULL(v_delivery1.`destination`) ? null : {
+        "street": v_delivery1.`destination`.`street`,
+        "city": v_delivery1.`destination`.`city`,
+        "zipCode": v_delivery1.`destination`.`zipCode`,
+        "country": (IS_NULL(v_country2) ? null : {
+          "isoCode": v_country2.`isoCode`
+        })
+      }),
+      "defaultValueString": v_delivery1.`defaultValueString`,
+      "defaultValueString2": v_delivery1.`defaultValueString2`,
+      "defaultValueInt": v_delivery1.`defaultValueInt`,
+      "defaultValueTrue": v_delivery1.`defaultValueTrue`,
+      "defaultValueFalse": v_delivery1.`defaultValueFalse`,
+      "defaultValueFloat": v_delivery1.`defaultValueFloat`,
+      "defaultValueEnum": v_delivery1.`defaultValueEnum`
+    }
+  )
+}

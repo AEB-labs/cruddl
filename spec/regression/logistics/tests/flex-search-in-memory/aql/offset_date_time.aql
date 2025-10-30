@@ -1,0 +1,17 @@
+RETURN {
+  "flexSearchDeliveries": (
+    FOR v_delivery1
+    IN (
+      FOR v_delivery2
+      IN @@flex_view_deliveries
+      SEARCH (v_delivery2.`dispatchDate`.`timestamp` == @var1)
+      RETURN v_delivery2
+    )
+    SORT (v_delivery1.`deliveryNumber`) , (v_delivery1.`createdAt`)  DESC, (v_delivery1._key)  DESC
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`,
+      "serialNumbers": (IS_LIST(v_delivery1.`serialNumbers`) ? v_delivery1.`serialNumbers` : []),
+      "dispatchDate": v_delivery1.`dispatchDate`
+    }
+  )
+}

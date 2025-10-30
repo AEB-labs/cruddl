@@ -1,0 +1,29 @@
+RETURN {
+  "allPapers": (
+    FOR v_paper1
+    IN UNION((
+      FOR v_paper2
+      IN @@papers
+      FILTER (v_paper2.`title` < @var1)
+      SORT (v_paper2.`title`)  DESC, (v_paper2._key)  DESC
+      LIMIT @var2
+      RETURN v_paper2
+    ), (
+      FOR v_paper3
+      IN @@papers
+      FILTER ((v_paper3.`title` == @var3) && (v_paper3._key < @var4))
+      SORT (v_paper3.`title`)  DESC, (v_paper3._key)  DESC
+      LIMIT @var5
+      RETURN v_paper3
+    ))
+    SORT (v_paper1.`title`)  DESC, (v_paper1._key)  DESC
+    LIMIT @var6
+    RETURN {
+      "title": v_paper1.`title`,
+      @var7: JSON_STRINGIFY({
+        "id": v_paper1._key,
+        "title": v_paper1.`title`
+      })
+    }
+  )
+}

@@ -1,0 +1,27 @@
+RETURN {
+  "allDeliveries": (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER ((IS_NULL(v_delivery1.`destinationCountryISOCode`) ? null : FIRST((
+      FOR v_destinationCountry1
+      IN @@countries
+      FILTER ((v_destinationCountry1.`isoCode` > NULL) && (v_destinationCountry1.`isoCode` == v_delivery1.`destinationCountryISOCode`))
+      LIMIT @var1
+      RETURN v_destinationCountry1
+    ))).`isoCode` == @var2)
+    LET v_country1 = (IS_NULL(v_delivery1.`destinationCountryISOCode`) ? null : FIRST((
+      FOR v_destinationCountry2
+      IN @@countries
+      FILTER ((v_destinationCountry2.`isoCode` > NULL) && (v_destinationCountry2.`isoCode` == v_delivery1.`destinationCountryISOCode`))
+      LIMIT @var3
+      RETURN v_destinationCountry2
+    )))
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`,
+      "destinationCountryISOCode": v_delivery1.`destinationCountryISOCode`,
+      "destinationCountry": (IS_NULL(v_country1) ? null : {
+        "isoCode": v_country1.`isoCode`
+      })
+    }
+  )
+}

@@ -1,0 +1,61 @@
+WITH @@deliveries, @@forwarders
+LET v_secretKey1 = FIRST((
+  FOR v_secretKey2
+  IN @@secretKeys
+  FILTER (v_secretKey2.`key` == @var1)
+  LIMIT @var2
+  RETURN v_secretKey2
+))
+RETURN {
+  "logistics": {
+    "delivery": {
+      "direct": (
+        FOR v_delivery1
+        IN @@deliveries
+        FILTER ((v_delivery1._key == @var3) && (v_delivery1.`totalValue` == @var4))
+        RETURN {
+          "deliveryNumber": v_delivery1.`deliveryNumber`
+        }
+      ),
+      "startsWith": (
+        FOR v_delivery2
+        IN @@deliveries
+        FILTER ((v_delivery2._key == @var5) && (v_delivery2.`totalValue` >= UPPER(@var6) && v_delivery2.`totalValue` < LOWER(@var7)) && (LEFT(v_delivery2.`totalValue`, LENGTH(@var8)) == @var9))
+        RETURN {
+          "deliveryNumber": v_delivery2.`deliveryNumber`
+        }
+      ),
+      "throughRelation": (
+        FOR v_handlingUnit1
+        IN @@handlingUnits
+        FILTER ((v_handlingUnit1._key == @var10) && (FIRST((
+          FOR v_node1
+          IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
+          FILTER v_node1 != null
+          RETURN v_node1
+        )).`totalValue` == @var11))
+        RETURN {
+          "huNumber": v_handlingUnit1.`huNumber`
+        }
+      ),
+      "toUnaccessibleEntity": (
+        FOR v_delivery3
+        IN @@deliveries
+        FILTER ((v_delivery3._key == @var12) && (FIRST((
+          FOR v_node2
+          IN OUTBOUND v_delivery3 @@deliveries_forwarder
+          FILTER v_node2 != null
+          RETURN v_node2
+        )).`name` == @var13))
+        RETURN {
+          "deliveryNumber": v_delivery3.`deliveryNumber`
+        }
+      )
+    }
+  },
+  "accounting": {
+    "simple": (IS_NULL(v_secretKey1) ? null : {
+      "value": v_secretKey1.`value`
+    })
+  }
+}

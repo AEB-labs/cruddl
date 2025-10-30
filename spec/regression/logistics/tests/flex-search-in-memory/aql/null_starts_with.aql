@@ -1,0 +1,15 @@
+RETURN {
+  "flexSearchDeliveries": (
+    FOR v_delivery1
+    IN (
+      FOR v_delivery2
+      IN @@flex_view_deliveries
+      SEARCH ANALYZER(STARTS_WITH(v_delivery2.`aText`, TOKENS(@var1,@var2)[0]), @var3)
+      RETURN v_delivery2
+    )
+    SORT (v_delivery1.`deliveryNumber`) , (v_delivery1.`createdAt`)  DESC, (v_delivery1._key)  DESC
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`
+    }
+  )
+}

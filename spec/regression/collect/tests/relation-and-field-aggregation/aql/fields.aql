@@ -1,0 +1,134 @@
+WITH @@deliveries, @@orders
+LET v_shipment1 = FIRST((
+  FOR v_shipment2
+  IN @@shipments
+  FILTER (v_shipment2.`shipmentNumber` == @var1)
+  LIMIT @var2
+  RETURN v_shipment2
+))
+RETURN {
+  "Shipment": (IS_NULL(v_shipment1) ? null : {
+    "totalWeightInKg": FIRST(
+      FOR v_item1
+      IN FLATTEN((
+        FOR v_node1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_shipment1 @@shipments_deliveries
+        FILTER v_node1 != null
+        RETURN v_node1.`deliveryContents`[*].`items`[*].`weightInKg`
+      ), 2)
+      FILTER v_item1 != null
+      COLLECT AGGREGATE v_sum1 = SUM(v_item1)
+      RETURN v_sum1 != null ? v_sum1 : 0
+    ),
+    "maxPriority": FIRST(
+      FOR v_item2
+      IN (
+        FOR v_node2, v_edge2, v_path2 IN @var5..@var6 OUTBOUND v_shipment1 @@shipments_deliveries
+        FILTER v_node2 != null
+        RETURN v_node2.`priority`
+      )
+      FILTER v_item2 != null
+      COLLECT AGGREGATE v_max1 = MAX(v_item2)
+      RETURN v_max1
+    ),
+    "itemCount": FIRST(
+      FOR v_item3
+      IN FLATTEN((
+        FOR v_node3, v_edge3, v_path3 IN @var7..@var8 OUTBOUND v_shipment1 @@shipments_deliveries
+        FILTER v_node3 != null
+        RETURN v_node3.`deliveryContents`[*].`items`[*]
+      ), 2)
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    ),
+    "allDeliveriesHaveOrders": FIRST(
+      FOR v_item4
+      IN (
+        FOR v_node4, v_edge4, v_path4 IN @var9..@var10 OUTBOUND v_shipment1 @@shipments_deliveries
+        LET v_nullableNode1 = FIRST(FOR v_node5, v_edge5, v_path5 IN @var11..@var12 OUTBOUND v_node4 @@deliveries_order FILTER v_node5 != null RETURN v_node5)
+        RETURN v_nullableNode1
+      )
+      COLLECT AGGREGATE v_none_null1 = MAX(v_item4 == null)
+      RETURN v_none_null1 < true
+    ),
+    "allDeliveriesArePayed": FIRST(
+      FOR v_item5
+      IN (
+        FOR v_node6, v_edge6, v_path6 IN @var13..@var14 OUTBOUND v_shipment1 @@shipments_deliveries
+        LET v_nullableNode2 = FIRST(FOR v_node7, v_edge7, v_path7 IN @var15..@var16 OUTBOUND v_node6 @@deliveries_order FILTER v_node7 != null RETURN v_node7)
+        RETURN v_nullableNode2.`payedAt`
+      )
+      COLLECT AGGREGATE v_none_null2 = MAX(v_item5 == null)
+      RETURN v_none_null2 < true
+    ),
+    "numberOfDeliveriesWithoutOrder": FIRST(
+      FOR v_item6
+      IN (
+        FOR v_node8, v_edge8, v_path8 IN @var17..@var18 OUTBOUND v_shipment1 @@shipments_deliveries
+        LET v_nullableNode3 = FIRST(FOR v_node9, v_edge9, v_path9 IN @var19..@var20 OUTBOUND v_node8 @@deliveries_order FILTER v_node9 != null RETURN v_node9)
+        RETURN v_nullableNode3
+      )
+      FILTER v_item6 == null
+      COLLECT AGGREGATE v_count_null1 = COUNT(v_item6)
+      RETURN v_count_null1
+    ),
+    "numberOfDeliveriesWithoutPayedOrder": FIRST(
+      FOR v_item7
+      IN (
+        FOR v_node10, v_edge10, v_path10 IN @var21..@var22 OUTBOUND v_shipment1 @@shipments_deliveries
+        LET v_nullableNode4 = FIRST(FOR v_node11, v_edge11, v_path11 IN @var23..@var24 OUTBOUND v_node10 @@deliveries_order FILTER v_node11 != null RETURN v_node11)
+        RETURN v_nullableNode4.`payedAt`
+      )
+      FILTER v_item7 == null
+      COLLECT AGGREGATE v_count_null2 = COUNT(v_item7)
+      RETURN v_count_null2
+    ),
+    "startedDispatchingAt": FIRST(
+      FOR v_item8
+      IN (
+        FOR v_offsetDateTime1
+        IN (
+          FOR v_node12, v_edge12, v_path12 IN @var25..@var26 OUTBOUND v_shipment1 @@shipments_deliveries
+          FILTER v_node12 != null
+          RETURN v_node12.`dispatchedAt`
+        )
+        RETURN v_offsetDateTime1.`timestamp`
+      )
+      FILTER v_item8 != null
+      COLLECT AGGREGATE v_min1 = MIN(v_item8)
+      RETURN v_min1
+    ),
+    "fullyDispatchedAt": FIRST(
+      FOR v_item9
+      IN (
+        FOR v_offsetDateTime2
+        IN (
+          FOR v_node13, v_edge13, v_path13 IN @var27..@var28 OUTBOUND v_shipment1 @@shipments_deliveries
+          FILTER v_node13 != null
+          RETURN v_node13.`dispatchedAt`
+        )
+        RETURN v_offsetDateTime2.`timestamp`
+      )
+      FILTER v_item9 != null
+      COLLECT AGGREGATE v_max2 = MAX(v_item9)
+      RETURN v_max2
+    ),
+    "allOrders": (
+      FOR v_order1
+      IN (
+        FOR v_item10
+        IN (
+          FOR v_node14, v_edge14, v_path14 IN @var29..@var30 OUTBOUND v_shipment1 @@shipments_deliveries
+          LET v_nullableNode5 = FIRST(FOR v_node15, v_edge15, v_path15 IN @var31..@var32 OUTBOUND v_node14 @@deliveries_order FILTER v_node15 != null RETURN v_node15)
+          RETURN v_nullableNode5
+        )
+        FILTER v_item10 != null
+        COLLECT v_distinct1 = v_item10
+        RETURN v_distinct1
+      )
+      SORT (v_order1.`orderNumber`)
+      RETURN {
+        "orderNumber": v_order1.`orderNumber`
+      }
+    )
+  })
+}

@@ -1,0 +1,57 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (v_delivery1._key == @var1)
+    LIMIT @var2
+    RETURN v_delivery1
+  )
+  UPDATE v_currentEntity1
+  WITH {}
+  IN @@deliveries
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@handlingUnits
+RETURN DOCUMENT(@@handlingUnits, @var1)
+
+// --------------------------------
+
+WITH @@handlingUnits
+RETURN (
+  FOR v_to1 IN @var1
+  FOR v_edge1 IN @@deliveries_handlingUnits
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@deliveries_handlingUnits
+)
+
+// --------------------------------
+
+WITH @@handlingUnits
+RETURN (
+  FOR v_edge1
+  IN [ {_from: CONCAT(@var1, FIRST(@v_updatedIds1)), _to: @var2} ]
+  UPSERT { _from: v_edge1._from, _to: v_edge1._to }
+  INSERT v_edge1
+  UPDATE {}
+  IN @@deliveries_handlingUnits
+)
+
+// --------------------------------
+
+WITH @@handlingUnits, @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "deliveryNumber": v_delivery1.`deliveryNumber`
+})
+
+// --------------------------------
+
+WITH @@handlingUnits, @@deliveries
+RETURN {
+  "updateDelivery": @v_updateDelivery1
+}

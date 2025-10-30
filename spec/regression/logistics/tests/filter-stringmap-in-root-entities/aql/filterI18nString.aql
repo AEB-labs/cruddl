@@ -1,0 +1,24 @@
+RETURN {
+  "allCountries": (
+    FOR v_country1
+    IN @@countries
+    FILTER (FIRST(
+      FOR v_item1
+      IN (
+        FOR v_descriptionI18nString1
+        IN (
+          LET v_object1 = v_country1.`descriptionI18nString`
+          FOR v_key1 IN IS_DOCUMENT(v_object1) ? ATTRIBUTES(v_object1) : []
+          RETURN [ v_key1, v_object1[v_key1] ]
+        )
+        FILTER ((v_descriptionI18nString1)[@var1] == @var2)
+        RETURN v_descriptionI18nString1
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    ) > @var3)
+    RETURN {
+      "isoCode": v_country1.`isoCode`
+    }
+  )
+}

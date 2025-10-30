@@ -1,0 +1,29 @@
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_file1
+    IN @@flex_view_files
+    SEARCH (true && ((v_file1.`customerName` == @var1) || (v_file1.`customerName` IN @var2)))
+    RETURN v_file1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) > @var3)
+
+// --------------------------------
+
+RETURN {
+  "flexSearchFiles": (@tmp1 ? { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 } : (
+    FOR v_file1
+    IN (
+      FOR v_file2
+      IN @@flex_view_files
+      SEARCH (true && ((v_file2.`customerName` == @var3) || (v_file2.`customerName` IN @var4)))
+      RETURN v_file2
+    )
+    SORT (v_file1.`name`) , (v_file1._key)
+    RETURN {
+      "name": v_file1.`name`
+    }
+  ))
+}
