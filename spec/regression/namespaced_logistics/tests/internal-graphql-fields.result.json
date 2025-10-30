@@ -1,14 +1,20 @@
 {
-  "data": {
-    "__type": {
-      "name": "Delivery"
-    },
-    "__typename": "Query",
-    "logistics": {
-      "delivery": {
-        "Delivery": {
-          "deliveryNumber": "1000173",
-          "__typename": "Delivery"
+  "introspection": {
+    "data": {
+      "__type": {
+        "name": "Delivery"
+      }
+    }
+  },
+  "typename": {
+    "data": {
+      "__typename": "Query",
+      "logistics": {
+        "delivery": {
+          "Delivery": {
+            "deliveryNumber": "1000173",
+            "__typename": "Delivery"
+          }
         }
       }
     }

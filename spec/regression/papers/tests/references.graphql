@@ -1,4 +1,4 @@
-query {
+query references {
     allPapers(orderBy: title_ASC) {
         title
         literatureReferences {

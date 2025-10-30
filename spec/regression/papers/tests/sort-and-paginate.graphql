@@ -3,28 +3,39 @@ fragment PapersPage on Paper {
     _cursor
 }
 
-query {
-    page1: allPapers(orderBy: title_ASC, first: 2) {
+query page1 {
+    allPapers(orderBy: title_ASC, first: 2) {
         ...PapersPage
     }
-    page2: allPapers(
+}
+query page2 {
+    allPapers(
         orderBy: title_ASC
         first: 2
         after: "{\"id\":\"@{ids/Paper/1}\",\"title\":\"Object-oriented modeling and design\"}"
     ) {
         ...PapersPage
     }
-    page1Desc: allPapers(orderBy: title_DESC, first: 2) {
+}
+
+query page1Desc {
+    allPapers(orderBy: title_DESC, first: 2) {
         ...PapersPage
     }
-    page2Desc: allPapers(
+}
+
+query page2Desc {
+    allPapers(
         orderBy: title_DESC
         first: 2
         after: "{\"id\":\"@{ids/Paper/2}\",\"title\":\"Unified modeling language reference manual, the\"}"
     ) {
         ...PapersPage
     }
-    emptyPage: allPapers(orderBy: title_ASC, first: 0) {
+}
+
+query emptyPage {
+    allPapers(orderBy: title_ASC, first: 0) {
         ...PapersPage
     }
 }
