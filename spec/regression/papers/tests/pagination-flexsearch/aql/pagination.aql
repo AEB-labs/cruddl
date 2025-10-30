@@ -38,7 +38,7 @@ RETURN {
       "readers": (
         FOR v_user1
         IN INBOUND v_paper1 @@users_papers
-        FILTER v_user1 != null
+        FILTER v_user1._key != null
         LIMIT @var6
         RETURN {
           "lastName": v_user1.`lastName`
@@ -47,7 +47,7 @@ RETURN {
       "b": (
         FOR v_user2
         IN INBOUND v_paper1 @@users_papers
-        FILTER v_user2 != null
+        FILTER v_user2._key != null
         SORT (v_user2._key)
         LIMIT @var7
         RETURN {
@@ -61,7 +61,7 @@ RETURN {
         FOR v_user3
         IN INBOUND v_paper1 @@users_papers
         FILTER (v_user3._key == @var9)
-        FILTER v_user3 != null
+        FILTER v_user3._key != null
         RETURN {
           "id": v_user3._key
         }
