@@ -15,40 +15,40 @@ RETURN {
             IN (IS_LIST(v_child1.`children`) ? v_child1.`children` : [])
             RETURN {
               "name": v_grandchild1.`name`,
-              "parent": (IS_NULL(v_child1) ? null : {
+              "parent": {
                 "name": v_child1.`name`,
-                "parent": (IS_NULL(v_root1) ? null : {
+                "parent": {
                   "name": v_root1.`name`
-                }),
+                },
                 "children": (
                   FOR v_grandchild2
                   IN (IS_LIST(v_child1.`children`) ? v_child1.`children` : [])
                   RETURN {
                     "name": v_grandchild2.`name`,
-                    "parent": (IS_NULL(v_child1) ? null : {
+                    "parent": {
                       "name": v_child1.`name`,
-                      "parent": (IS_NULL(v_root1) ? null : {
+                      "parent": {
                         "name": v_root1.`name`
-                      })
-                    })
+                      }
+                    }
                   }
                 )
-              }),
-              "root": (IS_NULL(v_root1) ? null : {
+              },
+              "root": {
                 "name": v_root1.`name`
-              })
+              }
             }
           ),
-          "parent": (IS_NULL(v_root1) ? null : {
+          "parent": {
             "name": v_root1.`name`
-          }),
-          "root": (IS_NULL(v_root1) ? null : {
+          },
+          "root": {
             "name": v_root1.`name`
-          })
+          }
         }
       )
     }
   )
 }
 
-// Peak memory usage: 1703936 bytes
+// Peak memory usage: 655360 bytes
