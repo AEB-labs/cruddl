@@ -1,4 +1,4 @@
-{
+query aliases {
     logistics {
         delivery {
             aDelivery: Delivery(id: "@{ids/logistics.delivery.Delivery/1}") {

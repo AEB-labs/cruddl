@@ -1,4 +1,4 @@
-{
+query countWithFirst {
     _allPapersMeta(first: 2) {
         count
     }

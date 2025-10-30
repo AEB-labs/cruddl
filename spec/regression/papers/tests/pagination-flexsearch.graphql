@@ -1,4 +1,4 @@
-query {
+query pagination {
     flexSearchPapers(first: 3, flexSearchFilter: { isPublished: true }, orderBy: key_ASC) {
         key
         _cursor
@@ -15,8 +15,9 @@ query {
             id
         }
     }
-
-    noPagesLeft: flexSearchPapers(
+}
+query noPagesLeft {
+    flexSearchPapers(
         first: 2
         after: "{\"id\":\"@{ids/Paper/5}\",\"key\":\"Scal\"}"
         flexSearchFilter: { isPublished: true }
@@ -24,15 +25,16 @@ query {
     ) {
         key
     }
+}
 
-    noPaginationButCursor: flexSearchPapers(postFilter: { id: "@{ids/Paper/1}" }) {
+query noPaginationButCursor {
+    flexSearchPapers(postFilter: { id: "@{ids/Paper/1}" }) {
         _cursor
     }
+}
 
-    noPaginationButCursorAndSort: flexSearchPapers(
-        postFilter: { id: "@{ids/Paper/1}" }
-        orderBy: key_ASC
-    ) {
+query noPaginationButCursorAndSort {
+    flexSearchPapers(postFilter: { id: "@{ids/Paper/1}" }, orderBy: key_ASC) {
         _cursor
     }
 }

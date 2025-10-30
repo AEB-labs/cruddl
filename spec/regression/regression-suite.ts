@@ -9,7 +9,12 @@ import { IDGenerationInfo, IDGenerator } from '../../src/execution/execution-opt
 import { ProjectOptions } from '../../src/project/project';
 import { loadProjectFromDir } from '../../src/project/project-from-fs';
 import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider';
-import { createTempDatabase, initTestData, TEMP_DATABASE_CONFIG, TestDataEnvironment, } from './initialization';
+import {
+    createTempDatabase,
+    initTestData,
+    TEMP_DATABASE_CONFIG,
+    TestDataEnvironment,
+} from './initialization';
 import { ErrorWithCause } from '../../src/utils/error-with-cause';
 import { InitTestDataContext } from './init-test-data-context';
 import { WarnAndErrorLoggerProvider } from '../helpers/warn-and-error-logger-provider';
@@ -266,7 +271,6 @@ export class RegressionSuite {
         ) as ReadonlyArray<OperationDefinitionNode>;
         this._isSetUpClean =
             this._isSetUpClean && !operations.some((op) => op.operation == 'mutation');
-        const hasNamedOperations = operations.length && operations[0].name;
 
         const expectedResultTemplate = JSON.parse(
             stripJsonComments(readFileSync(resultPath, 'utf-8')),
@@ -282,60 +286,44 @@ export class RegressionSuite {
             ? JSON.parse(stripJsonComments(readFileSync(metaPath, 'utf-8')))
             : {};
 
-        let actualResult: any;
-        if (hasNamedOperations) {
-            const operationNames = operations.map((def) => def.name!.value);
-            actualResult = {};
-            let arangoSearchPending = true;
-            for (const operationName of operationNames) {
-                const operation = operations.find((o) => o.name?.value === operationName);
-                if (!operation) {
-                    throw new Error(`Exected operation ${operationName} to exist`);
-                }
-
-                // we need to wait for arangosearch views to catch up before we can perform a query
-                if (
-                    meta.waitForArangoSearch &&
-                    this.databaseSpecifier === 'arangodb' &&
-                    arangoSearchPending &&
-                    operation.operation === OperationTypeNode.QUERY
-                ) {
-                    await new Promise((resolve) => setTimeout(resolve, 2000));
-                    arangoSearchPending = false;
-                }
-
-                let operationContext = context;
-                if (context && context.operations && context.operations[operationName]) {
-                    operationContext = context.operations[operationName];
-                }
-                let operationResult = await graphql({
-                    schema: this.schema,
-                    source: gqlSource,
-                    rootValue: {},
-                    contextValue: operationContext,
-                    variableValues,
-                    operationName,
-                });
-                operationResult = JSON.parse(JSON.stringify(operationResult)); // serialize e.g. errors as they would be in a GraphQL server
-                actualResult[operationName] = operationResult;
-
-                if (operation.operation === OperationTypeNode.MUTATION) {
-                    // we need to wait for arangosearch again if we performed a mutation
-                    arangoSearchPending = true;
-                }
+        let actualResult: Record<string, unknown> = {};
+        let arangoSearchPending = true;
+        for (const operation of operations) {
+            const operationName = operation.name?.value;
+            if (!operationName) {
+                throw new Error(`Anonymous operations are not sppported in regression tests`);
             }
-        } else {
-            if (meta.waitForArangoSearch && this.databaseSpecifier === 'arangodb') {
+
+            // we need to wait for arangosearch views to catch up before we can perform a query
+            if (
+                meta.waitForArangoSearch &&
+                this.databaseSpecifier === 'arangodb' &&
+                arangoSearchPending &&
+                operation.operation === OperationTypeNode.QUERY
+            ) {
                 await new Promise((resolve) => setTimeout(resolve, 2000));
+                arangoSearchPending = false;
             }
-            actualResult = await graphql({
+
+            let operationContext = context;
+            if (context && context.operations && context.operations[operationName]) {
+                operationContext = context.operations[operationName];
+            }
+            let operationResult = await graphql({
                 schema: this.schema,
                 source: gqlSource,
                 rootValue: {},
-                contextValue: context,
+                contextValue: operationContext,
                 variableValues,
+                operationName,
             });
-            actualResult = JSON.parse(JSON.stringify(actualResult)); // serialize e.g. errors as they would be in a GraphQL server
+            operationResult = JSON.parse(JSON.stringify(operationResult)); // serialize e.g. errors as they would be in a GraphQL server
+            actualResult[operationName] = operationResult;
+
+            if (operation.operation === OperationTypeNode.MUTATION) {
+                // we need to wait for arangosearch again if we performed a mutation
+                arangoSearchPending = true;
+            }
         }
 
         if (this.options.saveActualAsExpected && !deepEqual(actualResult, expectedResult)) {
