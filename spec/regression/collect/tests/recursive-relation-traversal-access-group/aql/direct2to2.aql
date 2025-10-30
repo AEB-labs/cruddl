@@ -14,19 +14,15 @@ LET v_delivery1 = FIRST((
 RETURN {
   "Delivery": (IS_NULL(v_delivery1) ? null : {
     "allHandlingUnits2to2": (
-      FOR v_handlingUnit1
-      IN (
-        FOR v_node1, v_edge1, v_path1 IN @var4..@var5 OUTBOUND v_delivery1 @@deliveries_handlingUnits
-        FILTER (v_node1.`accessGroup` IN @var6)
-        FOR v_node2, v_edge2, v_path2 IN @var7..@var8 OUTBOUND v_node1 @@handlingUnits_childHandlingUnits
-        PRUNE !((v_node2.`accessGroup` IN @var9))
-        FILTER v_path2.vertices[*].`accessGroup` ALL IN @var10
-        FILTER v_node2._key != null
-        RETURN v_node2
-      )
-      SORT (v_handlingUnit1.`handlingUnitNumber`)
+      FOR v_node1, v_edge1, v_path1 IN @var4..@var5 OUTBOUND v_delivery1 @@deliveries_handlingUnits
+      FILTER (v_node1.`accessGroup` IN @var6)
+      FOR v_node2, v_edge2, v_path2 IN @var7..@var8 OUTBOUND v_node1 @@handlingUnits_childHandlingUnits
+      PRUNE !((v_node2.`accessGroup` IN @var9))
+      FILTER v_path2.vertices[*].`accessGroup` ALL IN @var10
+      FILTER v_node2._key != null
+      SORT (v_node2.`handlingUnitNumber`)
       RETURN {
-        "handlingUnitNumber": v_handlingUnit1.`handlingUnitNumber`
+        "handlingUnitNumber": v_node2.`handlingUnitNumber`
       }
     )
   })

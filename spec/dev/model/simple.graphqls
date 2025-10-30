@@ -50,7 +50,7 @@ type Skill @valueObject {
 }
 
 "A superhero movie"
-type Movie @rootEntity @roles(read: ["logistics-reader"]) {
+type Movie @rootEntity {
     name: String
     "All the heroes starring in this movie"
     heroes: [Hero] @relation
@@ -71,6 +71,7 @@ type Movie @rootEntity @roles(read: ["logistics-reader"]) {
 type Director @rootEntity {
     name: String
     movies: [Movie] @relation(inverseOf: "director")
+    allMissions: [Mission] @collect(path: "movies.heroes.missions", aggregate: DISTINCT)
 }
 
 "A description of a hero suit"

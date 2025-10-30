@@ -4,36 +4,6 @@ mutation createEdge {
     }
 }
 
-query q {
-    allRoot2s {
-        name
-        roots(orderBy: name_ASC) {
-            grandchildren {
-                root {
-                    name
-                }
-            }
-            extensionGrandchildren {
-                root {
-                    name
-                }
-            }
-        }
-        rootGrandchildren(orderBy: name_ASC) {
-            name
-            root {
-                name
-            }
-        }
-        rootExtensionGrandchildren(orderBy: name_ASC) {
-            name
-            root {
-                name
-            }
-        }
-    }
-}
-
 query filter {
     allRoot2s {
         name
@@ -73,62 +43,6 @@ query filter {
         }
         _rootExtensionGrandchildrenMeta(filter: { name_ends_with: "2" }) {
             count
-        }
-    }
-}
-
-query order {
-    allRoot2s {
-        name
-        roots(orderBy: name_ASC) {
-            grandchildren(orderBy: name_ASC) {
-                name
-                root {
-                    name
-                }
-            }
-            grandchildrenReverse: grandchildren(orderBy: name_DESC) {
-                name
-                root {
-                    name
-                }
-            }
-            extensionGrandchildren(orderBy: name_ASC) {
-                name
-                root {
-                    name
-                }
-            }
-            extensionGrandchildrenReverse: extensionGrandchildren(orderBy: name_DESC) {
-                name
-                root {
-                    name
-                }
-            }
-        }
-        rootGrandchildren(orderBy: name_ASC) {
-            name
-            root {
-                name
-            }
-        }
-        rootGrandchildrenReverse: rootGrandchildren(orderBy: name_DESC) {
-            name
-            root {
-                name
-            }
-        }
-        rootExtensionGrandchildren(orderBy: name_ASC) {
-            name
-            root {
-                name
-            }
-        }
-        rootExtensionGrandchildrenReverse: rootExtensionGrandchildren(orderBy: name_DESC) {
-            name
-            root {
-                name
-            }
         }
     }
 }

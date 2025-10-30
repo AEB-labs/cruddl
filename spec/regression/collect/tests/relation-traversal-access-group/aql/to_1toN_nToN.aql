@@ -31,7 +31,7 @@ RETURN {
       )
       SORT (v_handlingUnit1.`handlingUnitNumber`)
       RETURN {
-        "handlingUnitNumber": v_handlingUnit1.`handlingUnitNumber`
+        "number": v_handlingUnit1.`handlingUnitNumber`
       }
     )
   })

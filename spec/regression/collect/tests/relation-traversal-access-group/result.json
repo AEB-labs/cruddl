@@ -12,37 +12,38 @@
       }
     }
   },
-  "toNtoN": {
+  "to_1toN_nToN": {
     "data": {
       "Shipment": {
         "allOuterHandlingUnits": [
           {
-            "handlingUnitNumber": "H3"
+            "number": "H3"
           }
         ]
       }
     }
   },
-  "toNto1": {
+  "to_1toN_1ToN": {
+    "data": {
+      "Shipment": {
+        "allInvoices": []
+      }
+    }
+  },
+  "to_1toN_1to1": {
     "data": {
       "Shipment": {
         "allOrders": [
           {
-            "orderNumber": "O2"
+            "number": "O2"
           }
         ]
       }
     }
   },
-  "to1toN": {
+  "to_1to1_ntoN": {
     "data": {
-      "Order": {
-        "allOuterHandlingUnits": [
-          {
-            "handlingUnitNumber": "H3"
-          }
-        ]
-      }
+      "Order": null
     }
   }
 }

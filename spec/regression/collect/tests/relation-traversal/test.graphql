@@ -10,8 +10,13 @@ mutation createEdges {
     d1: updateDelivery(
         input: {
             id: "@{ids/Delivery/1}"
-            addHandlingUnits: ["@{ids/HandlingUnit/1}", "@{ids/HandlingUnit/2}"]
+            addHandlingUnits: [
+                "@{ids/HandlingUnit/1}"
+                "@{ids/HandlingUnit/2}"
+                "@{ids/HandlingUnit/4}"
+            ]
             order: "@{ids/Order/1}"
+            addInvoices: ["@{ids/Invoice/1}", "@{ids/Invoice/5}"]
         }
     ) {
         deliveryNumber
@@ -21,32 +26,43 @@ mutation createEdges {
             id: "@{ids/Delivery/2}"
             addHandlingUnits: ["@{ids/HandlingUnit/3}"]
             order: "@{ids/Order/2}"
+            addInvoices: ["@{ids/Invoice/3}", "@{ids/Invoice/6}"]
         }
     ) {
         deliveryNumber
     }
 }
 
-query toNtoN {
+# we have aliases here to ensure the mapping actually happens
+
+query to_1toN_nToN {
     Shipment(shipmentNumber: "S1") {
         allOuterHandlingUnits(orderBy: handlingUnitNumber_ASC) {
-            handlingUnitNumber
+            number: handlingUnitNumber
         }
     }
 }
 
-query toNto1 {
+query to_1toN_1ToN {
+    Shipment(shipmentNumber: "S1") {
+        allInvoices(orderBy: invoiceNumber_ASC) {
+            number: invoiceNumber
+        }
+    }
+}
+
+query to_1toN_1to1 {
     Shipment(shipmentNumber: "S1") {
         allOrders(orderBy: orderNumber_ASC) {
-            orderNumber
+            number: orderNumber
         }
     }
 }
 
-query to1toN {
+query to_1to1_ntoN {
     Order(orderNumber: "O1") {
         allOuterHandlingUnits(orderBy: handlingUnitNumber_ASC) {
-            handlingUnitNumber
+            number: handlingUnitNumber
         }
     }
 }

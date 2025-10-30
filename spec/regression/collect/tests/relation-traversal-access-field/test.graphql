@@ -25,10 +25,12 @@ mutation createEdges {
     }
 }
 
+# we have aliases here to ensure the mapping actually happens
+
 query queryAll {
     Delivery(deliveryNumber: "D1") {
         allHandlingUnits(orderBy: handlingUnitNumber_ASC) {
-            handlingUnitNumber
+            number: handlingUnitNumber
         }
     }
 }
@@ -36,7 +38,7 @@ query queryAll {
 query queryRestricted {
     Delivery(deliveryNumber: "D1") {
         allHandlingUnits(orderBy: handlingUnitNumber_ASC) {
-            handlingUnitNumber
+            number: handlingUnitNumber
         }
     }
 }

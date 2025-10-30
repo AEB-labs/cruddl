@@ -4,6 +4,7 @@ import {
     QueryNode,
     RuntimeErrorQueryNode,
     TraversalQueryNode,
+    TraversalQueryNodeParams,
     VariableQueryNode,
 } from '../../query-tree';
 import { AccessOperation, AuthContext } from '../auth-basics';
@@ -13,6 +14,7 @@ import {
     getPermissionDescriptorOfRootEntityType,
 } from '../permission-descriptors-in-model';
 import { decapitalize } from '../../utils/utils';
+import { RequireAllProperties } from '../../utils/util-types';
 
 export function transformTraversalQueryNode(
     node: TraversalQueryNode,
@@ -83,8 +85,15 @@ export function transformTraversalQueryNode(
             sourceEntityNode: node.sourceEntityNode,
             relationSegments: filteredRelationSegments,
             fieldSegments: fieldSegments,
-            captureRootEntities: node.captureRootEntity,
-        });
+            orderBy: node.orderBy,
+            filterNode: node.filterNode,
+            sourceIsList: node.sourceIsList,
+            innerNode: node.innerNode,
+            rootEntityVariable: node.rootEntityVariable,
+            itemVariable: node.itemVariable,
+            alwaysProduceList: node.alwaysProduceList,
+            entitiesIdentifierKind: node.entitiesIdentifierKind,
+        } satisfies RequireAllProperties<TraversalQueryNodeParams>);
     }
 
     return node;

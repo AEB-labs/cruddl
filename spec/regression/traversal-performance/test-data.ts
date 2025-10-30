@@ -16,7 +16,7 @@ export default async function init(context: InitTestDataContext) {
                     key: 'super1',
                     createRoots: [...Array(10).keys()].map((rootIndex) => ({
                         key: `root${rootIndex}`,
-                        payload: generateRandomString(1_000_000),
+                        payload: generateRandomString(5_000_000),
                         children: [...Array(10).keys()].map((childIndex) => ({
                             key: `child${rootIndex}_${childIndex}`,
                         })),
