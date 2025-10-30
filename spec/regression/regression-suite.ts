@@ -209,16 +209,14 @@ export class RegressionSuite {
     }
 
     getTestNames() {
-        return readdirSync(resolve(this.path, 'tests'))
-            .filter((name) => name.endsWith('.graphql'))
-            .map((name) => name.substring(0, name.length - '.graphql'.length));
+        return readdirSync(resolve(this.path, 'tests'));
     }
 
     async shouldIgnoreTest(name: string) {
         if (!this._isSetUpClean) {
             await this.setUp();
         }
-        let metaPath = resolve(this.testsPath, name + '.meta.json');
+        let metaPath = resolve(this.testsPath, name, 'meta.json');
         if (!existsSync(metaPath)) {
             metaPath = resolve(this.path, 'meta.json');
         }
@@ -254,11 +252,11 @@ export class RegressionSuite {
             throw new Error(`Regression suite not set up correctly`);
         }
 
-        const gqlPath = resolve(this.testsPath, name + '.graphql');
-        const resultPath = resolve(this.testsPath, name + '.result.json');
-        const variablesPath = resolve(this.testsPath, name + '.vars.json');
-        let contextPath = resolve(this.testsPath, name + '.context.json');
-        const metaPath = resolve(this.testsPath, name + '.meta.json');
+        const gqlPath = resolve(this.testsPath, name, 'test.graphql');
+        const resultPath = resolve(this.testsPath, name, 'result.json');
+        const variablesPath = resolve(this.testsPath, name, 'vars.json');
+        let contextPath = resolve(this.testsPath, name, 'context.json');
+        const metaPath = resolve(this.testsPath, name, 'meta.json');
         if (!existsSync(contextPath)) {
             contextPath = resolve(this.path, 'default-context.json');
         }
