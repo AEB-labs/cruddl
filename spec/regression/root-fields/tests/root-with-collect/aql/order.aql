@@ -8,7 +8,7 @@ RETURN {
       "roots": (
         FOR v_root1
         IN OUTBOUND v_root21 @@root2s_roots
-        FILTER v_root1 != null
+        FILTER v_root1._key != null
         SORT (v_root1.`name`)
         RETURN {
           "grandchildren": (
@@ -61,7 +61,7 @@ RETURN {
         FOR v_grandchild3
         IN (
           FOR v_node1, v_edge1, v_path1 IN @var1..@var2 OUTBOUND v_root21 @@root2s_roots
-          FILTER v_node1 != null
+          FILTER v_node1._key != null
           RETURN (
             FOR v_entity1 IN v_node1.`children`[*].`children`[*][**]
             RETURN { obj: v_entity1, root: v_node1 }
@@ -79,7 +79,7 @@ RETURN {
         FOR v_grandchild4
         IN (
           FOR v_node2, v_edge2, v_path2 IN @var3..@var4 OUTBOUND v_root21 @@root2s_roots
-          FILTER v_node2 != null
+          FILTER v_node2._key != null
           RETURN (
             FOR v_entity2 IN v_node2.`children`[*].`children`[*][**]
             RETURN { obj: v_entity2, root: v_node2 }
@@ -97,7 +97,7 @@ RETURN {
         FOR v_extensionGrandchild3
         IN (
           FOR v_node3, v_edge3, v_path3 IN @var5..@var6 OUTBOUND v_root21 @@root2s_roots
-          FILTER v_node3 != null
+          FILTER v_node3._key != null
           RETURN (
             FOR v_entity3 IN v_node3.`children`[*].`extension`.`children`[*][**]
             RETURN { obj: v_entity3, root: v_node3 }
@@ -115,7 +115,7 @@ RETURN {
         FOR v_extensionGrandchild4
         IN (
           FOR v_node4, v_edge4, v_path4 IN @var7..@var8 OUTBOUND v_root21 @@root2s_roots
-          FILTER v_node4 != null
+          FILTER v_node4._key != null
           RETURN (
             FOR v_entity4 IN v_node4.`children`[*].`extension`.`children`[*][**]
             RETURN { obj: v_entity4, root: v_node4 }

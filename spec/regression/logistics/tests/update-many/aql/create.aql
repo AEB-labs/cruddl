@@ -258,7 +258,7 @@ RETURN (
     "handlingUnits": (
       FOR v_handlingUnit1
       IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
-      FILTER v_handlingUnit1 != null
+      FILTER v_handlingUnit1._key != null
       SORT (v_handlingUnit1.`huNumber`)
       RETURN {
         "huNumber": v_handlingUnit1.`huNumber`

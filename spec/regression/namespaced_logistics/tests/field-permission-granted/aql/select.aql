@@ -9,7 +9,7 @@ LET v_delivery1 = FIRST((
 LET v_forwarder1 = FIRST((
   FOR v_node1
   IN OUTBOUND v_delivery1 @@deliveries_forwarder
-  FILTER v_node1 != null
+  FILTER v_node1._key != null
   RETURN v_node1
 ))
 LET v_handlingUnit1 = FIRST((
@@ -22,7 +22,7 @@ LET v_handlingUnit1 = FIRST((
 LET v_delivery3 = FIRST((
   FOR v_node2
   IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
-  FILTER v_node2 != null
+  FILTER v_node2._key != null
   RETURN v_node2
 ))
 LET v_country1 = FIRST((

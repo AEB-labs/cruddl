@@ -12,7 +12,7 @@ RETURN {
       FOR v_deliveryItem1
       IN FLATTEN((
         FOR v_node1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_shipment1 @@shipments_deliveries
-        FILTER v_node1 != null
+        FILTER v_node1._key != null
         RETURN v_node1.`deliveryContents`[*].`items`[*]
       ), 2)
       SORT (v_deliveryItem1.`itemNumber`)
@@ -24,7 +24,7 @@ RETURN {
       FOR v_deliveryContent1
       IN (
         FOR v_node2, v_edge2, v_path2 IN @var5..@var6 OUTBOUND v_shipment1 @@shipments_deliveries
-        FILTER v_node2 != null
+        FILTER v_node2._key != null
         RETURN v_node2.`deliveryContents`[*]
       )[**]
       SORT (v_deliveryContent1.`deliveryContentNumber`)
