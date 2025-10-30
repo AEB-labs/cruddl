@@ -40,10 +40,7 @@
       "allDeliveries": [
         {
           "deliveryNumber": "1000173",
-          "serialNumbers": [
-            "12345",
-            "67890"
-          ]
+          "serialNumbers": ["12345", "67890"]
         }
       ]
     }
@@ -53,10 +50,7 @@
       "allDeliveries": [
         {
           "deliveryNumber": "1000173",
-          "serialNumbers": [
-            "12345",
-            "67890"
-          ]
+          "serialNumbers": ["12345", "67890"]
         }
       ]
     }
