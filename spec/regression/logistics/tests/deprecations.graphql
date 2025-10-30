@@ -1,4 +1,4 @@
-{
+query deprecations {
     Delivery: __type(name: "Delivery") {
         name
         fields(includeDeprecated: true) {

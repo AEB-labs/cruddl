@@ -1,4 +1,4 @@
-mutation {
+mutation multiMutation {
     update1: updateDelivery(input: { id: "@{ids/Delivery/1}", deliveryNumber: "123" }) {
         deliveryNumber
     }

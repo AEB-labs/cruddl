@@ -1,8 +1,11 @@
-query {
-    onlyCursor: allPapers(first: 3, orderBy: key_ASC) {
+query onlyCursor {
+    allPapers(first: 3, orderBy: key_ASC) {
         _cursor
     }
-    onlyCursorNoLimit: allPapers(orderBy: key_ASC) {
+}
+
+query onlyCursorNoLimit {
+    allPapers(orderBy: key_ASC) {
         _cursor
     }
 }
