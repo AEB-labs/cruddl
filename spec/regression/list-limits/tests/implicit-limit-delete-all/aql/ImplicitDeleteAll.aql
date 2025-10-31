@@ -10,16 +10,16 @@ RETURN (
 // ----------------------------------------------------------------
 
 RETURN (
-  FOR v_Hero1
+  FOR v_hero1
   IN (
-    FOR v_hero1
+    FOR v_hero2
     IN @tmp1
-    REMOVE v_hero1
+    REMOVE v_hero2
     IN @@heroes
     RETURN OLD
   )
   RETURN {
-    "name": v_Hero1.`name`
+    "name": v_hero1.`name`
   }
 )
 

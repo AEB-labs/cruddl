@@ -25,22 +25,22 @@ RETURN (FIRST(
 // ----------------------------------------------------------------
 
 RETURN (
-  FOR v_File1
+  FOR v_file1
   IN (
-    FOR v_file1
+    FOR v_file2
     IN (
       FOR v_item1
       IN @@files
       FILTER (v_item1.`accessGroup` IN @var1)
       RETURN v_item1
     )
-    FILTER (v_file1._key == @var2)
-    REMOVE v_file1
+    FILTER (v_file2._key == @var2)
+    REMOVE v_file2
     IN @@files
     RETURN OLD
   )
   RETURN {
-    "name": v_File1.`name`
+    "name": v_file1.`name`
   }
 )
 
