@@ -415,7 +415,11 @@ export class RegressionSuite {
         }
 
         if (this.options.saveActualAsExpected && !deepEqual(actualResult, expectedResult)) {
-            writeFileSync(resultPath, JSON.stringify(actualResult, undefined, '  '), 'utf-8');
+            writeFileSync(
+                resultPath,
+                formatWhitespaceInFile(JSON.stringify(actualResult, undefined, '  ')),
+                'utf-8',
+            );
         }
 
         return {
