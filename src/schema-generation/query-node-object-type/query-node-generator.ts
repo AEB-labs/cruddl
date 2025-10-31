@@ -258,7 +258,7 @@ function buildTransformListQueryNode(
         });
     }
 
-    const itemVariable = new VariableQueryNode(itemType.name);
+    const itemVariable = new VariableQueryNode(decapitalize(itemType.name));
     const innerNode = buildObjectQueryNode(itemVariable, itemType, selectionSet, context);
     return new TransformListQueryNode({
         listNode,

@@ -167,29 +167,29 @@ RETURN (
 
 WITH @@handlingUnits, @@deliveries
 RETURN (
-  FOR v_Delivery1
+  FOR v_delivery1
   IN [
     DOCUMENT(@@deliveries, @var1),
     DOCUMENT(@@deliveries, @var2)
   ]
-  LET v_country1 = (IS_NULL(v_Delivery1.`consignee`.`country`) ? null : FIRST((
+  LET v_country1 = (IS_NULL(v_delivery1.`consignee`.`country`) ? null : FIRST((
     FOR v_country2
     IN @@countries
-    FILTER ((v_country2.`isoCode` > NULL) && (v_country2.`isoCode` == v_Delivery1.`consignee`.`country`))
+    FILTER ((v_country2.`isoCode` > NULL) && (v_country2.`isoCode` == v_delivery1.`consignee`.`country`))
     LIMIT @var3
     RETURN v_country2
   )))
-  LET v_country3 = (IS_NULL(v_Delivery1.`destinationCountryISOCode`) ? null : FIRST((
+  LET v_country3 = (IS_NULL(v_delivery1.`destinationCountryISOCode`) ? null : FIRST((
     FOR v_destinationCountry1
     IN @@countries
-    FILTER ((v_destinationCountry1.`isoCode` > NULL) && (v_destinationCountry1.`isoCode` == v_Delivery1.`destinationCountryISOCode`))
+    FILTER ((v_destinationCountry1.`isoCode` > NULL) && (v_destinationCountry1.`isoCode` == v_delivery1.`destinationCountryISOCode`))
     LIMIT @var4
     RETURN v_destinationCountry1
   )))
   RETURN {
-    "deliveryNumber": v_Delivery1.`deliveryNumber`,
-    "consignee": (IS_NULL(v_Delivery1.`consignee`) ? null : {
-      "city": v_Delivery1.`consignee`.`city`,
+    "deliveryNumber": v_delivery1.`deliveryNumber`,
+    "consignee": (IS_NULL(v_delivery1.`consignee`) ? null : {
+      "city": v_delivery1.`consignee`.`city`,
       "country": (IS_NULL(v_country1) ? null : {
         "isoCode": v_country1.`isoCode`,
         "description": (
@@ -201,11 +201,11 @@ RETURN (
           }
         )
       }),
-      "street": v_Delivery1.`consignee`.`street`
+      "street": v_delivery1.`consignee`.`street`
     }),
     "contentInfo": (
       FOR v_translation2
-      IN (IS_LIST(v_Delivery1.`contentInfo`) ? v_Delivery1.`contentInfo` : [])
+      IN (IS_LIST(v_delivery1.`contentInfo`) ? v_delivery1.`contentInfo` : [])
       RETURN {
         "translation": v_translation2.`translation`,
         "languageIsoCode": v_translation2.`languageIsoCode`
@@ -215,21 +215,21 @@ RETURN (
       "isoCode": v_country3.`isoCode`
     }),
     "dgInfo": {
-      "flashpoint": v_Delivery1.`dgInfo`.`flashpoint`,
-      "unNumber": v_Delivery1.`dgInfo`.`unNumber`,
-      "notices": (IS_LIST(v_Delivery1.`dgInfo`.`notices`) ? v_Delivery1.`dgInfo`.`notices` : [])
+      "flashpoint": v_delivery1.`dgInfo`.`flashpoint`,
+      "unNumber": v_delivery1.`dgInfo`.`unNumber`,
+      "notices": (IS_LIST(v_delivery1.`dgInfo`.`notices`) ? v_delivery1.`dgInfo`.`notices` : [])
     },
-    "serialNumbers": (IS_LIST(v_Delivery1.`serialNumbers`) ? v_Delivery1.`serialNumbers` : []),
+    "serialNumbers": (IS_LIST(v_delivery1.`serialNumbers`) ? v_delivery1.`serialNumbers` : []),
     "items": (
       FOR v_deliveryItem1
-      IN (IS_LIST(v_Delivery1.`items`) ? v_Delivery1.`items` : [])
+      IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
       RETURN {
         "itemNumber": v_deliveryItem1.`itemNumber`
       }
     ),
     "handlingUnits": (
       FOR v_handlingUnit1
-      IN OUTBOUND v_Delivery1 @@deliveries_handlingUnits
+      IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
       FILTER v_handlingUnit1 != null
       SORT (v_handlingUnit1.`huNumber`)
       RETURN {
