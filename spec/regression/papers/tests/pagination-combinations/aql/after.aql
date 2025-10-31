@@ -1,0 +1,11 @@
+RETURN {
+  "allPapers": (
+    FOR v_paper1
+    IN @@papers
+    FILTER ((v_paper1.`title` > @var1) || ((v_paper1.`title` == @var2) && (v_paper1._key > @var3)))
+    SORT (v_paper1.`title`) , (v_paper1._key)
+    RETURN {
+      "title": v_paper1.`title`
+    }
+  )
+}

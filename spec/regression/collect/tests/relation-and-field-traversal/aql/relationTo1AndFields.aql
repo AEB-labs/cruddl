@@ -1,0 +1,27 @@
+WITH @@deliveries
+LET v_order1 = FIRST((
+  FOR v_order2
+  IN @@orders
+  FILTER (v_order2.`orderNumber` == @var1)
+  LIMIT @var2
+  RETURN v_order2
+))
+RETURN {
+  "Order": (IS_NULL(v_order1) ? null : {
+    "allItems": (
+      FOR v_item1 IN (FIRST(
+        LET v_nullableNode1 = FIRST(FOR v_node1, v_edge1, v_path1 IN @var3..@var4 INBOUND v_order1 @@deliveries_order FILTER v_node1 != null RETURN v_node1)
+        RETURN v_nullableNode1.`deliveryContents`[*].`items`[* RETURN {
+          item: {
+            "itemNumber": CURRENT.`itemNumber`
+          },
+          sortValues: [
+            CURRENT.`itemNumber`
+          ]
+        }]
+      )[**])
+      SORT v_item1.sortValues[0]
+      RETURN v_item1.item
+    )
+  })
+}

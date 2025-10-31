@@ -1,0 +1,21 @@
+RETURN {
+  "allDeliveries": (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (FIRST(
+      FOR v_item1
+      IN (
+        FOR v_serialNumbers1
+        IN (IS_LIST(v_delivery1.`serialNumbers`) ? v_delivery1.`serialNumbers` : [])
+        RETURN v_serialNumbers1
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    ) == @var1)
+    SORT (v_delivery1.`deliveryNumber`)
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`,
+      "serialNumbers": (IS_LIST(v_delivery1.`serialNumbers`) ? v_delivery1.`serialNumbers` : [])
+    }
+  )
+}

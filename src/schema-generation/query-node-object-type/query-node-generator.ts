@@ -3,6 +3,7 @@ import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
 import {
     BasicType,
     ConditionalQueryNode,
+    EntitiesIdentifierKind,
     FieldQueryNode,
     LiteralQueryNode,
     NullQueryNode,
@@ -10,7 +11,10 @@ import {
     PreExecQueryParms,
     PropertySpecification,
     QueryNode,
+    RuntimeErrorQueryNode,
     TransformListQueryNode,
+    TraversalQueryNode,
+    TraversalQueryNodeParams,
     TypeCheckQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
@@ -22,6 +26,8 @@ import { FieldContext, SelectionToken } from './context';
 import { QueryNodeField, QueryNodeObjectType } from './definition';
 import { extractQueryTreeObjectType, isListTypeIgnoringNonNull } from './utils';
 import { DefaultClock, UUIDGenerator } from '../../execution/execution-options';
+import { FieldSegment, RelationSegment } from '../../model/implementation/collect-path';
+import { RequireAllProperties } from '../../utils/util-types';
 
 export function createRootFieldContext(
     options: Partial<
@@ -194,6 +200,16 @@ function buildFieldQueryNode0(
 
     // object
     if (field.skipNullCheck) {
+        // if there is no null check, this output node does not access fieldQueryNode at all, so
+        // moveErrorsToOutputNodes() won't move errors here. Without this logic here, runtime errors
+        // would only be moved to the fields that use fieldQueryNode, and the main object would
+        // still exist (without error)
+        // Limitation: if fieldQueryNode is a complex expression that can sometimes result in a
+        // RuntimeErrorQueryNode, we still have the problem. Currently, we don't generate such a pattern.
+        if (fieldQueryNode instanceof RuntimeErrorQueryNode) {
+            return fieldQueryNode;
+        }
+
         return buildObjectQueryNode(
             fieldQueryNode,
             queryTreeObjectType,
@@ -258,7 +274,33 @@ function buildTransformListQueryNode(
         });
     }
 
-    const itemVariable = new VariableQueryNode(itemType.name);
+    // same applies to TraversalQueryNode which is used for collect fields
+    // this is actually functionally required because otherwise we would not have access to the rootEntityNode
+    // (needed for @root fields)
+    if (listNode instanceof TraversalQueryNode) {
+        const itemVariable = listNode.itemVariable ?? new VariableQueryNode(`collectItem`);
+        const rootEntityVariable =
+            listNode.rootEntityVariable ?? new VariableQueryNode(`collectRoot`);
+        const oldInnerNode = listNode.innerNode ?? itemVariable;
+        const innerNode = buildObjectQueryNode(oldInnerNode, itemType, selectionSet, context);
+
+        return new TraversalQueryNode({
+            entitiesIdentifierKind: listNode.entitiesIdentifierKind,
+            sourceEntityNode: listNode.sourceEntityNode,
+            relationSegments: listNode.relationSegments,
+            fieldSegments: listNode.fieldSegments,
+            sourceIsList: listNode.sourceIsList,
+            alwaysProduceList: listNode.alwaysProduceList,
+            filterNode: listNode.filterNode,
+            orderBy: listNode.orderBy,
+
+            innerNode,
+            itemVariable,
+            rootEntityVariable,
+        } satisfies RequireAllProperties<TraversalQueryNodeParams>);
+    }
+
+    const itemVariable = new VariableQueryNode(decapitalize(itemType.name));
     const innerNode = buildObjectQueryNode(itemVariable, itemType, selectionSet, context);
     return new TransformListQueryNode({
         listNode,

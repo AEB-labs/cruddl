@@ -1,0 +1,29 @@
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_paper1
+    IN @@flex_view_papers
+    SEARCH true
+    RETURN v_paper1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) > @var1)
+
+// --------------------------------
+
+RETURN {
+  "flexSearchPapers": (@tmp1 ? { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 } : (
+    FOR v_paper1
+    IN (
+      FOR v_paper2
+      IN @@flex_view_papers
+      SEARCH (true && (ANALYZER( IN_RANGE(v_paper2.`title`, TOKENS(@var3, @var4)[0], @var5, false, true), @var6) || (ANALYZER( v_paper2.`title` == TOKENS(@var7, @var8)[0],@var9) && ((v_paper2._key > @var10) || ((v_paper2._key == @var11) && false)))))
+      RETURN v_paper2
+    )
+    SORT (v_paper1.`title`) , (v_paper1._key)
+    RETURN {
+      "title": v_paper1.`title`
+    }
+  ))
+}

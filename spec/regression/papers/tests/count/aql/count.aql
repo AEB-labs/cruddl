@@ -1,0 +1,22 @@
+LET v_paper1 = FIRST((
+  FOR v_paper2
+  IN @@papers
+  FILTER (v_paper2._key == @var1)
+  LIMIT @var2
+  RETURN v_paper2
+))
+RETURN {
+  @var3: {
+    "count": LENGTH(@@papers)
+  },
+  "Paper": (IS_NULL(v_paper1) ? null : {
+    @var4: {
+      "count": FIRST(
+        FOR v_item1
+        IN (IS_LIST(v_paper1.`literatureReferences`) ? v_paper1.`literatureReferences` : [])
+        COLLECT WITH COUNT INTO v_count1
+        RETURN v_count1
+      )
+    }
+  })
+}

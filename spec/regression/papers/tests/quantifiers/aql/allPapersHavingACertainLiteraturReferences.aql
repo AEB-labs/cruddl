@@ -1,0 +1,19 @@
+RETURN {
+  "allPapers": (
+    FOR v_paper1
+    IN @@papers
+    FILTER (@var1 IN v_paper1.`literatureReferences`[*].`title`)
+    SORT (v_paper1.`key`)
+    RETURN {
+      "key": v_paper1.`key`,
+      "literatureReferences": (
+        FOR v_literatureReference1
+        IN (IS_LIST(v_paper1.`literatureReferences`) ? v_paper1.`literatureReferences` : [])
+        SORT (v_literatureReference1.`title`) , (v_literatureReference1.`pages`.`startPage`)
+        RETURN {
+          "title": v_literatureReference1.`title`
+        }
+      )
+    }
+  )
+}

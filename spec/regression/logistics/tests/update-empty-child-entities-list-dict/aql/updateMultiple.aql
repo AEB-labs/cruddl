@@ -1,0 +1,75 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (v_delivery1._key == @var1)
+    LIMIT @var2
+    RETURN v_delivery1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "items": (
+      LET v_items1 = (IS_LIST(v_currentEntity1.`items`) ? v_currentEntity1.`items` : [])
+      LET v_itemsWithIndex1 = (
+        FOR v_indexVar1
+        IN LENGTH(v_items1) > 0 ? 0..(LENGTH(v_items1) - 1) : []
+        RETURN MERGE(NTH(v_items1, v_indexVar1), { __index: v_indexVar1 })
+      )
+      LET v_dict1 = ZIP(v_items1[*].id, v_itemsWithIndex1)
+      LET v_updatedDict1 = MERGE(v_dict1, {
+        @var3: MERGE(v_dict1[@var4], {
+          "itemNumber": @var5,
+          "updatedAt": @var6
+        }),
+        @var7: MERGE(v_dict1[@var8], {
+          "itemNumber": @var9,
+          "updatedAt": @var10
+        }),
+        @var11: MERGE(v_dict1[@var12], {
+          "itemNumber": @var13,
+          "updatedAt": @var14
+        }),
+        @var15: MERGE(v_dict1[@var16], {
+          "itemNumber": @var17,
+          "updatedAt": @var18
+        }),
+        @var19: MERGE(v_dict1[@var20], {
+          "itemNumber": @var21,
+          "updatedAt": @var22
+        })
+      })
+      FOR v_item1
+      IN VALUES(v_updatedDict1)
+      FILTER v_item1.__index != null
+      SORT v_item1.__index
+      RETURN UNSET(v_item1, '__index')
+    ),
+    "updatedAt": @var23
+  }
+  IN @@deliveries
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "items": (
+    FOR v_deliveryItem1
+    IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
+    RETURN {
+      "id": v_deliveryItem1.`id`,
+      "itemNumber": v_deliveryItem1.`itemNumber`
+    }
+  )
+})
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN {
+  "updateDelivery": @v_updateDelivery1
+}

@@ -1,0 +1,44 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (v_delivery1._key == @var1)
+    LIMIT @var2
+    RETURN v_delivery1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "dgInfo": MERGE((IS_OBJECT(v_currentEntity1.`dgInfo`) ? v_currentEntity1.`dgInfo` : {}), {
+      "unNumber": @var3,
+      "details": MERGE((IS_OBJECT(v_currentEntity1.`dgInfo`.`details`) ? v_currentEntity1.`dgInfo`.`details` : {}), {
+        "expiryDate": @var4
+      })
+    }),
+    "updatedAt": @var5
+  }
+  IN @@deliveries
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "dgInfo": {
+    "unNumber": v_delivery1.`dgInfo`.`unNumber`,
+    "notices": (IS_LIST(v_delivery1.`dgInfo`.`notices`) ? v_delivery1.`dgInfo`.`notices` : []),
+    "details": {
+      "expiryDate": v_delivery1.`dgInfo`.`details`.`expiryDate`
+    }
+  }
+})
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN {
+  "updateDelivery": @v_updateDelivery1
+}

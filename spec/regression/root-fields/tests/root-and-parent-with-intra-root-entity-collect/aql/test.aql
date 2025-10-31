@@ -1,0 +1,12 @@
+RETURN {
+  "allRoots": (
+    FOR v_root1
+    IN @@roots
+    SORT (v_root1.`name`)
+    RETURN {
+      "name": v_root1.`name`,
+      "grandchildren": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 },
+      "extensionGrandchildren": { __cruddl_runtime_error_code: @var3, __cruddl_runtime_error: @var4 }
+    }
+  )
+}

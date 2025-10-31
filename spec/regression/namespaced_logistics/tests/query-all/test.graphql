@@ -1,0 +1,12 @@
+query queryAll {
+    foundation {
+        allCountries(orderBy: isoCode_ASC) {
+            id
+            isoCode
+            description {
+                languageIsoCode
+                translation
+            }
+        }
+    }
+}

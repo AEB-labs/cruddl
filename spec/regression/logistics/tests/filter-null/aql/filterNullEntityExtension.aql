@@ -1,0 +1,10 @@
+RETURN {
+  "allDeliveries": (
+    FOR v_delivery1
+    IN @@deliveries
+    SORT (v_delivery1.`deliveryNumber`)
+    RETURN {
+      "id": v_delivery1._key
+    }
+  )
+}

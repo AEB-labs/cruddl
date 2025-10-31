@@ -1,0 +1,11 @@
+query onlyCursor {
+    allPapers(first: 3, orderBy: key_ASC) {
+        _cursor
+    }
+}
+
+query onlyCursorNoLimit {
+    allPapers(orderBy: key_ASC) {
+        _cursor
+    }
+}

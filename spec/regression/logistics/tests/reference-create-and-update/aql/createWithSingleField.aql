@@ -1,0 +1,28 @@
+RETURN FIRST(
+  INSERT @var1 IN @@deliveries
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
+LET v_country1 = (IS_NULL(v_delivery1.`originCountry`) ? null : FIRST((
+  FOR v_originCountry1
+  IN @@countries
+  FILTER ((v_originCountry1.`isoCode` > NULL) && (v_originCountry1.`isoCode` == v_delivery1.`originCountry`))
+  LIMIT @var1
+  RETURN v_originCountry1
+)))
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "originCountry": (IS_NULL(v_country1) ? null : {
+    "isoCode": v_country1.`isoCode`
+  })
+})
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN {
+  "createDelivery": @v_createDelivery1
+}

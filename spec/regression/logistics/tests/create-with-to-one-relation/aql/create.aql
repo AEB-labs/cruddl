@@ -1,0 +1,34 @@
+RETURN FIRST(
+  INSERT @var1 IN @@handlingUnits
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN DOCUMENT(@@deliveries, @var1)
+
+// --------------------------------
+
+WITH @@deliveries
+RETURN (
+  UPSERT {_to: CONCAT(@var1, @v_newEntityId1)}
+  INSERT {_from: @var2, _to: CONCAT(@var3, @v_newEntityId1)}
+  UPDATE {_from: @var4, _to: CONCAT(@var5, @v_newEntityId1)}
+  IN @@deliveries_handlingUnits
+)
+
+// --------------------------------
+
+WITH @@deliveries, @@handlingUnits
+LET v_handlingUnit1 = DOCUMENT(@@handlingUnits, @v_newEntityId1)
+RETURN (IS_NULL(v_handlingUnit1) ? null : {
+  "huNumber": v_handlingUnit1.`huNumber`
+})
+
+// --------------------------------
+
+WITH @@deliveries, @@handlingUnits
+RETURN {
+  "createHandlingUnit": @v_createHandlingUnit1
+}

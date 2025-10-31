@@ -1,0 +1,35 @@
+{
+  "createEdge": {
+    "data": {
+      "updateRoot2": {
+        "name": null
+      }
+    }
+  },
+  "q": {
+    "errors": [
+      {
+        "message": "Parent entity is not available here",
+        "locations": [
+          {
+            "line": 12,
+            "column": 13
+          }
+        ],
+        "path": [
+          "allRoot2s",
+          0,
+          "roots",
+          0,
+          "grandchildren"
+        ],
+        "extensions": {
+          "code": "NOT_SUPPORTED"
+        }
+      }
+    ],
+    "data": {
+      "allRoot2s": null
+    }
+  }
+}

@@ -14,7 +14,6 @@ import {
     FollowEdgeQueryNode,
     NullQueryNode,
     ObjectQueryNode,
-    PropertyAccessQueryNode,
     QueryNode,
     RootEntityIDQueryNode,
     SafeListQueryNode,
@@ -24,17 +23,24 @@ import {
     VariableQueryNode,
 } from '../query-tree';
 import { ID_FIELD } from '../schema/constants';
-import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../schema/scalars/offset-date-time';
+import { GraphQLOffsetDateTime } from '../schema/scalars/offset-date-time';
 import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
 import { and } from './utils/input-types';
+
+export interface CreateFieldNodeOptions {
+    readonly skipNullFallbackForEntityExtensions?: boolean;
+    readonly rootEntityVar?: VariableQueryNode;
+
+    /**
+     * Call this on collect fields that traverse root entities to store a reference to the root entity in the stack
+     */
+    readonly registerRootNode?: (rootNode: QueryNode) => void;
+}
 
 export function createFieldNode(
     field: Field,
     sourceNode: QueryNode,
-    options: {
-        skipNullFallbackForEntityExtensions?: boolean;
-        captureRootEntitiesOnCollectFields?: boolean;
-    } = {},
+    options: CreateFieldNodeOptions = {},
 ): QueryNode {
     // make use of the fact that field access on non-objects is NULL, so that type checks for OBJECT are redundant
     // this e.g. reverses the effect of the isEntityExtensionType check below
@@ -57,12 +63,20 @@ export function createFieldNode(
 
     if (field.collectPath) {
         const { relationSegments, fieldSegments } = getEffectiveCollectSegments(field.collectPath);
+        const itemVariable = new VariableQueryNode('collectItem');
+        const rootEntityVariable = options.registerRootNode
+            ? new VariableQueryNode('collectRoot')
+            : undefined;
         const traversalNode = new TraversalQueryNode({
             sourceEntityNode: sourceNode,
             relationSegments,
             fieldSegments,
-            captureRootEntities: !!options.captureRootEntitiesOnCollectFields,
+            rootEntityVariable,
+            itemVariable,
         });
+        if (options.registerRootNode && rootEntityVariable) {
+            options.registerRootNode(rootEntityVariable);
+        }
 
         if (!field.aggregationOperator) {
             return traversalNode;

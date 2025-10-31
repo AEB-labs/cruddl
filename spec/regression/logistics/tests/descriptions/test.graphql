@@ -1,0 +1,18 @@
+query descriptions {
+    __schema {
+        types {
+            name
+            description
+            fields(includeDeprecated: true) {
+                name
+                description
+                deprecationReason
+            }
+            inputFields(includeDeprecated: true) {
+                name
+                description
+                deprecationReason
+            }
+        }
+    }
+}

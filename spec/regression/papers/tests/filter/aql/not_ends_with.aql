@@ -1,0 +1,11 @@
+RETURN {
+  "not_ends_with": (
+    FOR v_paper1
+    IN @@papers
+    FILTER !((RIGHT(v_paper1.`key`, LENGTH(@var1)) == @var2))
+    SORT (v_paper1.`key`)
+    RETURN {
+      "key": v_paper1.`key`
+    }
+  )
+}

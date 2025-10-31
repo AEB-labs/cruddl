@@ -1,0 +1,15 @@
+RETURN {
+  "allPapers": (
+    FOR v_paper1
+    IN @@papers
+    SORT (v_paper1.`title`)  DESC, (v_paper1._key)  DESC
+    LIMIT @var1
+    RETURN {
+      "title": v_paper1.`title`,
+      @var2: JSON_STRINGIFY({
+        "id": v_paper1._key,
+        "title": v_paper1.`title`
+      })
+    }
+  )
+}

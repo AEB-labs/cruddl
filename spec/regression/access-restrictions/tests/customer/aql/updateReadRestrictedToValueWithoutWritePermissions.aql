@@ -1,0 +1,94 @@
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_file1
+    IN (
+      FOR v_file2
+      IN (
+        FOR v_item2
+        IN @@files
+        FILTER ((v_item2.`customerName` == @var1) || (v_item2.`customerName` IN @var2))
+        RETURN v_item2
+      )
+      FILTER (v_file2._key == @var3)
+      LIMIT @var4
+      RETURN v_file2
+    )
+    FILTER !((v_file1.`customerName` IN @var5))
+    RETURN v_file1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) == 0)
+
+// --------------------------------
+
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_currentEntity1
+    IN (
+      FOR v_file1
+      IN (
+        FOR v_item2
+        IN @@files
+        FILTER ((v_item2.`customerName` == @var1) || (v_item2.`customerName` IN @var2))
+        RETURN v_item2
+      )
+      FILTER (v_file1._key == @var3)
+      LIMIT @var4
+      RETURN v_file1
+    )
+    FILTER !((MERGE(v_currentEntity1, {
+      "accessGroup": @var5,
+      "updatedAt": @var6
+    }).`customerName` IN @var7))
+    RETURN v_currentEntity1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) == 0)
+
+// --------------------------------
+
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_file1
+    IN (
+      FOR v_item1
+      IN @@files
+      FILTER ((v_item1.`customerName` == @var1) || (v_item1.`customerName` IN @var2))
+      RETURN v_item1
+    )
+    FILTER (v_file1._key == @var3)
+    LIMIT @var4
+    RETURN v_file1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "accessGroup": @var5,
+    "updatedAt": @var6
+  }
+  IN @@files
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@files
+LET v_file1 = FIRST(
+  LET v_entity1 = DOCUMENT(@@files, @var1)
+  RETURN (((v_entity1.`customerName` == @var2) || (v_entity1.`customerName` IN @var3)) ? v_entity1 : null)
+)
+RETURN (IS_NULL(v_file1) ? null : {
+  "name": v_file1.`name`
+})
+
+// --------------------------------
+
+WITH @@files
+RETURN {
+  "updateFile": @v_updateFile1
+}

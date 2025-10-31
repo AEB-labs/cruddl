@@ -7,6 +7,9 @@ import {
 import { blue } from '../utils/colors';
 import { QueryNode } from './base';
 import { EntitiesIdentifierKind } from './mutations';
+import { VariableQueryNode } from './variables';
+import { indent } from '../utils/utils';
+import { OrderSpecification } from './lists';
 
 export class EntityFromIdQueryNode extends QueryNode {
     constructor(
@@ -156,14 +159,44 @@ export class FollowEdgeQueryNode extends QueryNode {
     }
 }
 
-interface TraversalQueryNodeParams {
+export interface TraversalQueryNodeParams {
     readonly entitiesIdentifierKind?: EntitiesIdentifierKind;
     readonly sourceEntityNode: QueryNode;
     readonly sourceIsList?: boolean;
     readonly alwaysProduceList?: boolean;
     readonly relationSegments: ReadonlyArray<RelationSegment>;
     readonly fieldSegments: ReadonlyArray<FieldSegment>;
-    readonly captureRootEntities: boolean;
+
+    /**
+     * An optional transformation (map) to apply on the traversal result
+     */
+    readonly innerNode?: QueryNode;
+
+    /**
+     * The variable under which each item will be available in the innerNode
+     */
+    readonly itemVariable?: VariableQueryNode;
+
+    /**
+     * The variable under which the root entity (result after relation traversal, but before child entity traversals)
+     * will be available in the innerNode
+     */
+    readonly rootEntityVariable?: VariableQueryNode;
+
+    /**
+     * An optional filter that is applied on the resulting items of the traversal
+     *
+     * Don't access rootEntityVariable here (if we need that, we should add a rootFilterNode that is
+     * applied after the relation traversal but before the field traversal)
+     */
+    readonly filterNode?: QueryNode;
+
+    /**
+     * An optional filter that is applied on the resulting items of the traversal
+     *
+     * Both item and root can be accessed here
+     */
+    readonly orderBy?: OrderSpecification;
 }
 
 /**
@@ -174,7 +207,6 @@ export class TraversalQueryNode extends QueryNode {
     readonly sourceEntityNode: QueryNode;
     readonly relationSegments: ReadonlyArray<RelationSegment>;
     readonly fieldSegments: ReadonlyArray<FieldSegment>;
-    readonly captureRootEntity: boolean;
 
     /**
      * Specifies if sourceEntityNode resolves to a list of entities instead of a single entity
@@ -186,14 +218,39 @@ export class TraversalQueryNode extends QueryNode {
      */
     readonly alwaysProduceList: boolean;
 
+    /**
+     * An optional transformation (map) to apply on the traversal result
+     */
+    readonly innerNode?: QueryNode;
+
+    /**
+     * An optional filter that is applied on the resulting items of the traversal
+     *
+     * Don't access rootEntityVariable here (if we need that, we should add a rootFilterNode that is
+     * applied after the relation traversal but before the field traversal)
+     */
+    readonly filterNode?: QueryNode;
+
+    /**
+     * An optional filter that is applied on the resulting items of the traversal
+     *
+     * Both item and root can be accessed here
+     */
+    readonly orderBy: OrderSpecification;
+
+    /**
+     * The variable under which each item will be available in the innerNode
+     */
+    readonly itemVariable: VariableQueryNode;
+
+    /**
+     * The variable under which the root entity (result after relation traversal, but before child entity traversals)
+     * will be available in the innerNode
+     */
+    readonly rootEntityVariable: VariableQueryNode;
+
     constructor(params: TraversalQueryNodeParams) {
         super();
-
-        if (params.captureRootEntities && (!params.relationSegments || !params.fieldSegments)) {
-            throw new Error(
-                `A TraversalQueryNode with captureRootEntity=true requires both relationSegments and fieldSegments`,
-            );
-        }
 
         if (params.sourceIsList && !params.relationSegments) {
             // only need this, so keep it simpler
@@ -205,20 +262,29 @@ export class TraversalQueryNode extends QueryNode {
         this.sourceEntityNode = params.sourceEntityNode;
         this.relationSegments = params.relationSegments;
         this.fieldSegments = params.fieldSegments;
-        this.captureRootEntity = params.captureRootEntities;
         this.sourceIsList = params.sourceIsList ?? false;
         this.alwaysProduceList = params.alwaysProduceList ?? false;
         this.entitiesIdentifierKind =
             params.entitiesIdentifierKind || EntitiesIdentifierKind.ENTITY;
+        this.innerNode = params.innerNode;
+        this.filterNode = params.filterNode;
+        this.orderBy = params.orderBy ?? OrderSpecification.UNORDERED;
+        this.itemVariable = params.itemVariable ?? new VariableQueryNode(`collectItem`);
+        this.rootEntityVariable = params.rootEntityVariable ?? new VariableQueryNode(`collectRoot`);
     }
 
     describe() {
         const segments = [...this.relationSegments, ...this.fieldSegments];
         return (
-            `traverse ${segments.map((s) => this.describeSegment(s)).join('.')}` +
-            `from ${this.sourceEntityNode.describe()}${this.sourceIsList ? ' (as list)' : ''}${
-                this.captureRootEntity ? ` into { obj, root }` : ''
-            }${this.alwaysProduceList ? ` as list` : ''}`
+            `traverse "${segments.map((s) => this.describeSegment(s)).join('.')}" (\n` +
+            indent(
+                `from ${this.sourceEntityNode.describe()}${this.sourceIsList ? ' (as list)' : ''}${this.alwaysProduceList ? ` as list` : ''}` +
+                    `\nitem var: ${this.itemVariable?.describe()}, root var: ${this.rootEntityVariable?.describe()}` +
+                    (this.filterNode ? `\nwith filter: ${this.filterNode.describe()}` : '') +
+                    (!this.orderBy.isUnordered() ? `\norder by: ${this.orderBy.describe()}` : '') +
+                    (this.innerNode ? `\nas ${this.innerNode.describe()}` : ''),
+            ) +
+            `\n)`
         );
     }
 

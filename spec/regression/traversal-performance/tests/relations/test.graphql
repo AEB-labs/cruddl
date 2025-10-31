@@ -1,0 +1,8 @@
+# Root has a big payload field - make sure that's not read into memory
+query Relation {
+    Super(key: "super1") {
+        roots {
+            key
+        }
+    }
+}

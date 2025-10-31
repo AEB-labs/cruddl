@@ -1,0 +1,19 @@
+query references {
+    allPapers(orderBy: title_ASC) {
+        title
+        literatureReferences {
+            paper {
+                title
+                publishDate
+                isPublished
+                tags
+            }
+            authors
+            pages {
+                startPage
+                endPage
+            }
+        }
+        tags
+    }
+}

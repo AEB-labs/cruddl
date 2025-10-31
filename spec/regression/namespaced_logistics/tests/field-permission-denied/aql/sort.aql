@@ -1,0 +1,8 @@
+RETURN {
+  "logistics": {
+    "delivery": {
+      "direct": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 },
+      "throughRelation": { __cruddl_runtime_error_code: @var3, __cruddl_runtime_error: @var4 }
+    }
+  }
+}

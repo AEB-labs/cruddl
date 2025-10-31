@@ -1,0 +1,11 @@
+RETURN {
+  "tooBigLimit": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 },
+  "allHeroes": (
+    FOR v_hero1
+    IN @@heroes
+    LIMIT @var3
+    RETURN {
+      "name": v_hero1.`name`
+    }
+  )
+}

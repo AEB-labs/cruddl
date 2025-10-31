@@ -1,0 +1,98 @@
+{
+  "createEdge": {
+    "data": {
+      "updateRoot2": {
+        "name": null
+      }
+    }
+  },
+  "filter": {
+    "data": {
+      "allRoot2s": [
+        {
+          "name": null,
+          "roots": [
+            {
+              "grandchildren": [],
+              "_grandchildrenMeta": {
+                "count": 0
+              },
+              "extensionGrandchildren": [],
+              "_extensionGrandchildrenMeta": {
+                "count": 0
+              }
+            },
+            {
+              "grandchildren": [
+                {
+                  "name": "r2c1g2",
+                  "root": {
+                    "name": "r2"
+                  }
+                },
+                {
+                  "name": "r2c2g2",
+                  "root": {
+                    "name": "r2"
+                  }
+                }
+              ],
+              "_grandchildrenMeta": {
+                "count": 2
+              },
+              "extensionGrandchildren": [
+                {
+                  "root": {
+                    "name": "r2"
+                  }
+                },
+                {
+                  "root": {
+                    "name": "r2"
+                  }
+                }
+              ],
+              "_extensionGrandchildrenMeta": {
+                "count": 2
+              }
+            }
+          ],
+          "rootGrandchildren": [
+            {
+              "name": "r2c1g2",
+              "root": {
+                "name": "r2"
+              }
+            },
+            {
+              "name": "r2c2g2",
+              "root": {
+                "name": "r2"
+              }
+            }
+          ],
+          "_rootGrandchildrenMeta": {
+            "count": 2
+          },
+          "rootExtensionGrandchildren": [
+            {
+              "name": "r2c1eg2",
+              "root": {
+                "name": "r2"
+              }
+            },
+            {
+              "name": "r2c2ge2",
+              "root": {
+                "name": "r2"
+              }
+            }
+          ],
+          "_rootExtensionGrandchildrenMeta": {
+            "count": 2
+          }
+        }
+      ]
+    }
+  }
+}

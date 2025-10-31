@@ -1,0 +1,29 @@
+RETURN {
+  "allPapers": (
+    FOR v_paper1
+    IN @@papers
+    FILTER (FIRST(
+      FOR v_item1
+      IN (
+        FOR v_literatureReferences1
+        IN (IS_LIST(v_paper1.`literatureReferences`) ? v_paper1.`literatureReferences` : [])
+        FILTER (v_literatureReferences1.`title` >= UPPER(@var1) && v_literatureReferences1.`title` < LOWER(@var2)) && (LEFT(v_literatureReferences1.`title`, LENGTH(@var3)) == @var4)
+        RETURN v_literatureReferences1
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    ) > @var5)
+    SORT (v_paper1.`key`)
+    RETURN {
+      "key": v_paper1.`key`,
+      "literatureReferences": (
+        FOR v_literatureReference1
+        IN (IS_LIST(v_paper1.`literatureReferences`) ? v_paper1.`literatureReferences` : [])
+        SORT (v_literatureReference1.`title`) , (v_literatureReference1.`pages`.`startPage`)
+        RETURN {
+          "title": v_literatureReference1.`title`
+        }
+      )
+    }
+  )
+}

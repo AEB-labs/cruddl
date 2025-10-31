@@ -1,0 +1,35 @@
+query pagination {
+    allPapers(first: 3, filter: { isPublished: true }, orderBy: key_ASC) {
+        key
+        _cursor
+        title2: title
+        title
+        readers(first: 3) {
+            lastName
+        }
+        b: readers(first: 1) {
+            lastName
+            _cursor
+        }
+        empty: readers(filter: { id: "nonexistant" }) {
+            id
+        }
+    }
+}
+
+query noPagesLeft {
+    allPapers(
+        first: 2
+        after: "{\"id\":\"@{ids/Paper/5}\",\"key\":\"Scal\"}"
+        filter: { isPublished: true }
+        orderBy: key_ASC
+    ) {
+        key
+    }
+}
+
+query noPaginationButCursor {
+    allPapers(filter: { id: "@{ids/Paper/1}" }) {
+        _cursor
+    }
+}

@@ -1,0 +1,22 @@
+WITH @@roots
+RETURN {
+  "allRoot2s": (
+    FOR v_root21
+    IN @@root2s
+    RETURN {
+      "name": v_root21.`name`,
+      "roots": (
+        FOR v_root1
+        IN OUTBOUND v_root21 @@root2s_roots
+        FILTER v_root1._key != null
+        SORT (v_root1.`name`)
+        RETURN {
+          "grandchildren": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 },
+          "extensionGrandchildren": { __cruddl_runtime_error_code: @var3, __cruddl_runtime_error: @var4 }
+        }
+      ),
+      "rootGrandchildren": { __cruddl_runtime_error_code: @var5, __cruddl_runtime_error: @var6 },
+      "rootExtensionGrandchildren": { __cruddl_runtime_error_code: @var7, __cruddl_runtime_error: @var8 }
+    }
+  )
+}

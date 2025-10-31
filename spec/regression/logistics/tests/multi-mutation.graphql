@@ -1,9 +1,0 @@
-mutation {
-    update1: updateDelivery(input: { id: "@{ids/Delivery/1}", deliveryNumber: "123" }) {
-        deliveryNumber
-    }
-
-    update2: updateDelivery(input: { id: "@{ids/Delivery/2}", deliveryNumber: "456" }) {
-        deliveryNumber
-    }
-}

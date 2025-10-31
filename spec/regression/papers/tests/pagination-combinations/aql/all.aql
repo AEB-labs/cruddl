@@ -1,0 +1,10 @@
+RETURN {
+  "allPapers": (
+    FOR v_paper1
+    IN @@papers
+    SORT (v_paper1.`title`)
+    RETURN {
+      "title": v_paper1.`title`
+    }
+  )
+}

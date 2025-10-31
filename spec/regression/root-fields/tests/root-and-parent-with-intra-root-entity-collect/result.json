@@ -1,0 +1,26 @@
+{
+  "test": {
+    "errors": [
+      {
+        "message": "Parent entity is not available here",
+        "locations": [
+          {
+            "line": 4,
+            "column": 9
+          }
+        ],
+        "path": [
+          "allRoots",
+          0,
+          "grandchildren"
+        ],
+        "extensions": {
+          "code": "NOT_SUPPORTED"
+        }
+      }
+    ],
+    "data": {
+      "allRoots": null
+    }
+  }
+}

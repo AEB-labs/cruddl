@@ -1,0 +1,40 @@
+{
+  "Relation": {
+    "data": {
+      "Super": {
+        "roots": [
+          {
+            "key": "root9"
+          },
+          {
+            "key": "root8"
+          },
+          {
+            "key": "root7"
+          },
+          {
+            "key": "root6"
+          },
+          {
+            "key": "root5"
+          },
+          {
+            "key": "root4"
+          },
+          {
+            "key": "root3"
+          },
+          {
+            "key": "root2"
+          },
+          {
+            "key": "root1"
+          },
+          {
+            "key": "root0"
+          }
+        ]
+      }
+    }
+  }
+}

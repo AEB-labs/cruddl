@@ -250,6 +250,18 @@
           "warehouse": "North",
           "level": 0
         }
+      },
+      {
+        "@id": "5",
+        "handlingUnitNumber": "H5",
+        "accessGroup": "H5",
+        "location": {
+          "identCode": "licH5"
+        },
+        "warehouseSlot": {
+          "warehouse": "North",
+          "level": 0
+        }
       }
     ],
     "Order": [
@@ -285,6 +297,44 @@
         "location": {
           "identCode": "licO4"
         }
+      }
+    ],
+    "Invoice": [
+      {
+        "@id": "1",
+        "invoiceNumber": "I1",
+        "accessGroup": "I1",
+        "location": { "identCode": "licI1" }
+      },
+      {
+        "@id": "2",
+        "invoiceNumber": "I2",
+        "accessGroup": "I2",
+        "location": { "identCode": "licI2" }
+      },
+      {
+        "@id": "3",
+        "invoiceNumber": "I3",
+        "accessGroup": "I3",
+        "location": { "identCode": "licI3" }
+      },
+      {
+        "@id": "4",
+        "invoiceNumber": "I4",
+        "accessGroup": "I4",
+        "location": { "identCode": "licI4" }
+      },
+      {
+        "@id": "5",
+        "invoiceNumber": "I5",
+        "accessGroup": "I5",
+        "location": { "identCode": "licI5" }
+      },
+      {
+        "@id": "6",
+        "invoiceNumber": "I6",
+        "accessGroup": "D6",
+        "location": { "identCode": "licI6" }
       }
     ]
   }

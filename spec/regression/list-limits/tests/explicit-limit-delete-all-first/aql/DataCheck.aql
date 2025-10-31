@@ -1,0 +1,10 @@
+RETURN {
+  "allHeroes": (
+    FOR v_hero1
+    IN @@heroes
+    LIMIT @var1
+    RETURN {
+      "id": v_hero1._key
+    }
+  )
+}

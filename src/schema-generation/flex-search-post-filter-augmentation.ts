@@ -68,8 +68,6 @@ export class FlexSearchPostFilterAugmentation {
                     filterValue: filterValue || legacyFilterValue,
                     filterType,
                     itemType,
-                    objectNodeCallback: (itemNode) =>
-                        this.rootFieldHelper.getRealItemNode(itemNode, info),
                 });
             },
         };
