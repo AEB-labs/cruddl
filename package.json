@@ -19,7 +19,7 @@
     "stop_arangodb": "arangodb --starter.mode=single --starter.local --starter.port=8528 --starter.data-dir=./db stop",
     "compile-json-schema": "ajv --all-errors true compile -s src/schema/preparation/source-validation-modules/schema/schema.json -o src/schema/preparation/source-validation-modules/schema/validate-schema.js",
     "mrproper": "rimraf dist db node_modules package-lock.json",
-    "prepare": "husky install",
+    "prepare": "husky",
     "dev": "node cruddl-dev.js",
     "knip": "knip",
     "knip:prod": "knip --production"
@@ -60,7 +60,7 @@
     "deep-equal-in-any-order": "^1.1.20",
     "express": "^4.19.2",
     "graphql": "^16.6.0",
-    "husky": "^8.0.1",
+    "husky": "^9.1.7",
     "knip": "^5.27.0",
     "lint-staged": "^15.2.10",
     "log4js": "^6.6.0",
@@ -110,11 +110,6 @@
       "ts-node/register"
     ],
     "all": true
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npx lint-staged"
-    }
   },
   "lint-staged": {
     "*": "prettier --ignore-unknown --write"
