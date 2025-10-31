@@ -21,14 +21,14 @@ RETURN (
 
 WITH @@heroes
 RETURN (
-  FOR v_Hero1
+  FOR v_hero1
   IN (
     FOR v_id1
     IN @v_updatedIds1
     RETURN DOCUMENT(@@heroes, v_id1)
   )
   RETURN {
-    "name": v_Hero1.`name`
+    "name": v_hero1.`name`
   }
 )
 

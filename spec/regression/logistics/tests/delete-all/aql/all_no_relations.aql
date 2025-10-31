@@ -1,15 +1,15 @@
 RETURN (
-  FOR v_Country1
+  FOR v_country1
   IN (
-    FOR v_country1
+    FOR v_country2
     IN @@countries
-    FILTER (v_country1.`isoCode` == @var1)
-    REMOVE v_country1
+    FILTER (v_country2.`isoCode` == @var1)
+    REMOVE v_country2
     IN @@countries
     RETURN OLD
   )
   RETURN {
-    "isoCode": v_Country1.`isoCode`
+    "isoCode": v_country1.`isoCode`
   }
 )
 

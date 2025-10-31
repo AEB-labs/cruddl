@@ -343,16 +343,16 @@ RETURN (
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
-  FOR v_Main1
+  FOR v_main1
   IN (
-    FOR v_main1
+    FOR v_main2
     IN @v_ids1
-    REMOVE v_main1
+    REMOVE v_main2
     IN @@mains
     RETURN OLD
   )
   RETURN {
-    "key": v_Main1.`key`
+    "key": v_main1.`key`
   }
 )
 

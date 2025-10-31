@@ -12,6 +12,7 @@ import {
     getPermissionDescriptorOfField,
     getPermissionDescriptorOfRootEntityType,
 } from '../permission-descriptors-in-model';
+import { decapitalize } from '../../utils/utils';
 
 export function transformTraversalQueryNode(
     node: TraversalQueryNode,
@@ -61,7 +62,7 @@ export function transformTraversalQueryNode(
             case PermissionResult.DENIED:
                 throw new Error(`Unexpected DENIED permission - should have been caught earlier`);
             case PermissionResult.CONDITIONAL:
-                const variableNode = new VariableQueryNode(targetType.name);
+                const variableNode = new VariableQueryNode(decapitalize(targetType.name));
                 const filter = entityPermissionDescriptor.getAccessCondition(
                     authContext,
                     AccessOperation.READ,

@@ -91,13 +91,13 @@ RETURN (
 
 WITH @@dependents, @@mains
 RETURN (
-  FOR v_Main1
+  FOR v_main1
   IN [
     DOCUMENT(@@mains, @var1),
     DOCUMENT(@@mains, @var2)
   ]
   RETURN {
-    "key": v_Main1.`key`
+    "key": v_main1.`key`
   }
 )
 
@@ -151,12 +151,12 @@ RETURN (
 
 WITH @@dependents, @@mains, @@blockers
 RETURN (
-  FOR v_Dependent1
+  FOR v_dependent1
   IN [
     DOCUMENT(@@dependents, @var1)
   ]
   RETURN {
-    "key": v_Dependent1.`key`
+    "key": v_dependent1.`key`
   }
 )
 
