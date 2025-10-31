@@ -34,16 +34,16 @@ RETURN (FIRST(
 
 WITH @@files
 RETURN (
-  FOR v_File1
+  FOR v_file1
   IN (
-    FOR v_file1
+    FOR v_file2
     IN @v_ids1
-    REMOVE v_file1
+    REMOVE v_file2
     IN @@files
     RETURN OLD
   )
   RETURN {
-    "name": v_File1.`name`
+    "name": v_file1.`name`
   }
 )
 
