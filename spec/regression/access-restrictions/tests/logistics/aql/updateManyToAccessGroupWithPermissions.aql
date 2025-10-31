@@ -88,7 +88,7 @@ RETURN (
 
 WITH @@files
 RETURN (
-  FOR v_File1
+  FOR v_file1
   IN [
     FIRST(
       LET v_entity1 = DOCUMENT(@@files, @var1)
@@ -96,7 +96,7 @@ RETURN (
     )
   ]
   RETURN {
-    "name": v_File1.`name`
+    "name": v_file1.`name`
   }
 )
 

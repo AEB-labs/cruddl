@@ -82,7 +82,7 @@ RETURN (
 
 WITH @@files
 RETURN (
-  FOR v_File1
+  FOR v_file1
   IN (
     FOR v_id1
     IN @v_updatedIds1
@@ -90,7 +90,7 @@ RETURN (
     RETURN ((v_entity1.`accessGroup` IN @var1) ? v_entity1 : null)
   )
   RETURN {
-    "name": v_File1.`name`
+    "name": v_file1.`name`
   }
 )
 

@@ -30,16 +30,16 @@ RETURN (
 
 WITH @@deliveries
 RETURN (
-  FOR v_HandlingUnit1
+  FOR v_handlingUnit1
   IN (
-    FOR v_handlingUnit1
+    FOR v_handlingUnit2
     IN @v_ids1
-    REMOVE v_handlingUnit1
+    REMOVE v_handlingUnit2
     IN @@handlingUnits
     RETURN OLD
   )
   RETURN {
-    "huNumber": v_HandlingUnit1.`huNumber`
+    "huNumber": v_handlingUnit1.`huNumber`
   }
 )
 

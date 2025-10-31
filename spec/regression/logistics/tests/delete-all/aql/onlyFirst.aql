@@ -45,18 +45,18 @@ RETURN (
 // ----------------------------------------------------------------
 
 RETURN (
-  FOR v_Delivery1
+  FOR v_delivery1
   IN (
-    FOR v_delivery1
+    FOR v_delivery2
     IN @v_ids1
-    REMOVE v_delivery1
+    REMOVE v_delivery2
     IN @@deliveries
     RETURN OLD
   )
   RETURN {
-    "deliveryNumber": v_Delivery1.`deliveryNumber`,
-    "consignee": (IS_NULL(v_Delivery1.`consignee`) ? null : {
-      "city": v_Delivery1.`consignee`.`city`
+    "deliveryNumber": v_delivery1.`deliveryNumber`,
+    "consignee": (IS_NULL(v_delivery1.`consignee`) ? null : {
+      "city": v_delivery1.`consignee`.`city`
     })
   }
 )

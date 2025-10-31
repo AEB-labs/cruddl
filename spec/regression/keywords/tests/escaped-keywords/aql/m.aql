@@ -10,14 +10,14 @@ RETURN (
 
 WITH @@values
 RETURN (
-  FOR v_Value1
+  FOR v_value1
   IN (
     FOR v_id1
     IN @v_newEntityIds1
     RETURN DOCUMENT(@@values, v_id1)
   )
   RETURN {
-    "limit": v_Value1.`limit`
+    "limit": v_value1.`limit`
   }
 )
 
