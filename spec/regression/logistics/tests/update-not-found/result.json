@@ -9,9 +9,7 @@
             "column": 5
           }
         ],
-        "path": [
-          "updateDelivery"
-        ]
+        "path": ["updateDelivery"]
       }
     ],
     "data": {
