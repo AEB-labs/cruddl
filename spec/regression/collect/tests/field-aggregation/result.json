@@ -8,12 +8,7 @@
           "averageWeightInKg": 4.15,
           "minWeightInKg": 1.2,
           "maxWeightInKg": 8.8,
-          "allItemNumbers": [
-            "DI1.1.1",
-            "DI1.1.2",
-            "DI1.2.1",
-            "DI1.2.2"
-          ],
+          "allItemNumbers": ["DI1.1.1", "DI1.1.2", "DI1.2.1", "DI1.2.2"],
           "itemCount": 4,
           "hasItems": true,
           "hasNoItems": false,
@@ -36,12 +31,7 @@
           "averageWeightInKg": 24.24,
           "minWeightInKg": 16.16,
           "maxWeightInKg": 32.32,
-          "allItemNumbers": [
-            "DI2.1.1",
-            "DI2.1.2",
-            "DI2.2.1",
-            "DI2.2.2"
-          ],
+          "allItemNumbers": ["DI2.1.1", "DI2.1.2", "DI2.2.1", "DI2.2.2"],
           "itemCount": 4,
           "hasItems": true,
           "hasNoItems": false,
@@ -64,12 +54,7 @@
           "averageWeightInKg": null,
           "minWeightInKg": null,
           "maxWeightInKg": null,
-          "allItemNumbers": [
-            "DI3.1.1",
-            "DI3.1.2",
-            "DI3.2.1",
-            "DI3.2.2"
-          ],
+          "allItemNumbers": ["DI3.1.1", "DI3.1.2", "DI3.2.1", "DI3.2.2"],
           "itemCount": 4,
           "hasItems": true,
           "hasNoItems": false,
@@ -92,12 +77,7 @@
           "averageWeightInKg": null,
           "minWeightInKg": null,
           "maxWeightInKg": null,
-          "allItemNumbers": [
-            "DI4.1.1",
-            "DI4.1.2",
-            "DI4.2.1",
-            "DI4.2.2"
-          ],
+          "allItemNumbers": ["DI4.1.1", "DI4.1.2", "DI4.2.1", "DI4.2.2"],
           "itemCount": 4,
           "hasItems": true,
           "hasNoItems": false,

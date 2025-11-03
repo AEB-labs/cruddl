@@ -16,15 +16,7 @@
             "column": 17
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "roots",
-          0,
-          "grandchildren",
-          0,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "roots", 0, "grandchildren", 0, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -37,15 +29,7 @@
             "column": 17
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "roots",
-          1,
-          "grandchildren",
-          0,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "roots", 1, "grandchildren", 0, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -58,15 +42,7 @@
             "column": 17
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "roots",
-          1,
-          "grandchildren",
-          1,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "roots", 1, "grandchildren", 1, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -79,15 +55,7 @@
             "column": 17
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "roots",
-          1,
-          "grandchildren",
-          2,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "roots", 1, "grandchildren", 2, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -100,15 +68,7 @@
             "column": 17
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "roots",
-          1,
-          "grandchildren",
-          3,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "roots", 1, "grandchildren", 3, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -121,15 +81,7 @@
             "column": 17
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "roots",
-          1,
-          "extensionGrandchildren",
-          0,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "roots", 1, "extensionGrandchildren", 0, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -142,15 +94,7 @@
             "column": 17
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "roots",
-          1,
-          "extensionGrandchildren",
-          1,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "roots", 1, "extensionGrandchildren", 1, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -163,15 +107,7 @@
             "column": 17
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "roots",
-          1,
-          "extensionGrandchildren",
-          2,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "roots", 1, "extensionGrandchildren", 2, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -184,15 +120,7 @@
             "column": 17
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "roots",
-          1,
-          "extensionGrandchildren",
-          3,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "roots", 1, "extensionGrandchildren", 3, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -205,13 +133,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "rootGrandchildren",
-          0,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "rootGrandchildren", 0, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -224,13 +146,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "rootGrandchildren",
-          1,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "rootGrandchildren", 1, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -243,13 +159,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "rootGrandchildren",
-          2,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "rootGrandchildren", 2, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -262,13 +172,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "rootGrandchildren",
-          3,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "rootGrandchildren", 3, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -281,13 +185,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "rootGrandchildren",
-          4,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "rootGrandchildren", 4, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -300,13 +198,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "rootExtensionGrandchildren",
-          0,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "rootExtensionGrandchildren", 0, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -319,13 +211,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "rootExtensionGrandchildren",
-          1,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "rootExtensionGrandchildren", 1, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -338,13 +224,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "rootExtensionGrandchildren",
-          2,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "rootExtensionGrandchildren", 2, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
@@ -357,13 +237,7 @@
             "column": 13
           }
         ],
-        "path": [
-          "allRoot2s",
-          0,
-          "rootExtensionGrandchildren",
-          3,
-          "parent"
-        ],
+        "path": ["allRoot2s", 0, "rootExtensionGrandchildren", 3, "parent"],
         "extensions": {
           "code": "NOT_SUPPORTED"
         }
