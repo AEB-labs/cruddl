@@ -1,0 +1,63 @@
+{
+  "createEdges": {
+    "data": {
+      "updateShipment": {
+        "shipmentNumber": "S1"
+      },
+      "d1": {
+        "deliveryNumber": "D1"
+      },
+      "d2": {
+        "deliveryNumber": "D2"
+      }
+    }
+  },
+  "count": {
+    "data": {
+      "Shipment": {
+        "outerHandlingUnitCount": 5,
+        "distinctOuterHandlingUnitCount": 4
+      }
+    }
+  },
+  "distinct": {
+    "data": {
+      "Shipment": {
+        "allOuterHandlingUnits": [
+          {
+            "handlingUnitNumber": "H1"
+          },
+          {
+            "handlingUnitNumber": "H2"
+          },
+          {
+            "handlingUnitNumber": "H3"
+          },
+          {
+            "handlingUnitNumber": "H4"
+          }
+        ]
+      }
+    }
+  },
+  "distinctPitfall": {
+    "data": {
+      "Shipment": {
+        "allOuterHandlingUnits": [
+          {
+            "__typename": "HandlingUnit"
+          },
+          {
+            "__typename": "HandlingUnit"
+          },
+          {
+            "__typename": "HandlingUnit"
+          },
+          {
+            "__typename": "HandlingUnit"
+          }
+        ]
+      }
+    }
+  }
+}

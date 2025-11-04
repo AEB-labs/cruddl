@@ -767,9 +767,11 @@ function getFollowEdgeFragment(
     const idOnItemEqualsTargetIDOnEdge = js`${idOnItem} === ${targetIDOnEdge}`;
 
     return js.lines(
-        js`${edgeColl}`,
+        js`(${edgeColl}`,
         js.indent(
             js.lines(
+                // arangodb edge traversal seems to be newest-first. Replicate this here for regression tests that do not sort
+                js`.slice().reverse()`,
                 js`.filter(${jsExt.lambda(edgeVar, js`${sourceIDOnEdge} == ${sourceIDFrag}`)})`,
                 js`.map(${jsExt.lambda(
                     edgeVar,
@@ -778,6 +780,7 @@ function getFollowEdgeFragment(
                 js`.filter(${jsExt.lambda(itemVar, itemVar)})`, // filter out nulls
             ),
         ),
+        js`)`,
     );
 }
 
@@ -803,25 +806,21 @@ register(TraversalQueryNode, (node, context) => {
 
         const nodeVar = js.variable('node');
         const idFrag = isAlreadyID ? nodeVar : js`${nodeVar}.${js.identifier(ID_FIELD_NAME)}`;
+        const treatAsListSegment =
+            segment.isListSegment ||
+            (segmentIndex === node.relationSegments.length - 1 && node.alwaysProduceList);
         if (isList) {
             let edgeListFragment = js`${nodeVar} ? ${getFollowEdgeFragment(
                 segment.relationSide,
                 idFrag,
                 context,
             )} : null`;
-            if (
-                !segment.isListSegment &&
-                (!node.alwaysProduceList || segmentIndex < node.relationSegments.length - 1)
-            ) {
+            if (treatAsListSegment) {
+                currentFrag = js`${currentFrag}.flatMap(${jsExt.lambda(nodeVar, edgeListFragment)})`;
+            } else {
                 // to-1 relations can be nullable and we need to keep the NULL values (and not just pretend the source didn't exist)
-                const edgeListVar = js.variable('edges');
-                edgeListFragment = jsExt.evaluatingLambda(
-                    edgeListVar,
-                    js`${edgeListVar}.length ? ${edgeListVar} : [null]`,
-                    edgeListFragment,
-                );
+                currentFrag = js`${currentFrag}.map(${jsExt.lambda(nodeVar, js`(${edgeListFragment})?.[0] || null`)})`;
             }
-            currentFrag = js`${currentFrag}.flatMap(${jsExt.lambda(nodeVar, edgeListFragment)})`;
         } else {
             currentFrag = jsExt.evaluatingLambda(
                 nodeVar,
@@ -832,9 +831,9 @@ register(TraversalQueryNode, (node, context) => {
                 )} : null`,
                 currentFrag,
             );
-            if (!segment.isListSegment) {
+            if (!treatAsListSegment) {
                 // to-1 relations can be nullable and we need to keep the NULL values (and not just pretend the source didn't exist)
-                currentFrag = js`(${currentFrag}[0] || null)`;
+                currentFrag = js`((${currentFrag})[0] || null)`;
             }
         }
 

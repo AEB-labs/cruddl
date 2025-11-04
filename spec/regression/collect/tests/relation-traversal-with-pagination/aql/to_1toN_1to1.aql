@@ -22,8 +22,9 @@ RETURN {
         RETURN v_distinct1
       )
       SORT (v_order1.`orderNumber`)
+      LIMIT @var7, @var8
       RETURN {
-        "orderNumber": v_order1.`orderNumber`
+        "number": v_order1.`orderNumber`
       }
     )
   })

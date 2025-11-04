@@ -27,26 +27,36 @@ mutation createEdges {
     }
 }
 
-query toNtoN {
+# we have aliases here to ensure the mapping actually happens
+
+query to_1toN_nToN {
     Shipment(shipmentNumber: "S1") {
         allOuterHandlingUnits(orderBy: handlingUnitNumber_ASC) {
-            handlingUnitNumber
+            number: handlingUnitNumber
         }
     }
 }
 
-query toNto1 {
+query to_1toN_1ToN {
+    Shipment(shipmentNumber: "S1") {
+        allInvoices(orderBy: invoiceNumber_ASC) {
+            number: invoiceNumber
+        }
+    }
+}
+
+query to_1toN_1to1 {
     Shipment(shipmentNumber: "S1") {
         allOrders(orderBy: orderNumber_ASC) {
-            orderNumber
+            number: orderNumber
         }
     }
 }
 
-query to1toN {
-    Order(orderNumber: "O2") {
+query to_1to1_ntoN {
+    Order(orderNumber: "O1") {
         allOuterHandlingUnits(orderBy: handlingUnitNumber_ASC) {
-            handlingUnitNumber
+            number: handlingUnitNumber
         }
     }
 }

@@ -10,16 +10,26 @@ type Shipment @rootEntity {
         @collect(path: "deliveries.handlingUnits", aggregate: DISTINCT)
     allHandlingUnits: [HandlingUnit]
         @collect(path: "deliveries.allHandlingUnits", aggregate: DISTINCT)
+    outerHandlingUnitCount: Int @collect(path: "deliveries.handlingUnits", aggregate: COUNT)
+    distinctOuterHandlingUnitCount: Int
+        @collect(path: "deliveries.handlingUnits", aggregate: COUNT_DISTINCT)
     allOrders: [Order] @collect(path: "deliveries.order", aggregate: DISTINCT)
+    allInvoices: [Invoice] @collect(path: "deliveries.invoices")
     allDeliveryContents: [DeliveryContent] @collect(path: "deliveries.deliveryContents")
     allItems: [DeliveryItem] @collect(path: "deliveries.deliveryContents.items")
+    allDeliveryLocationIdentCodes: [String]
+        @collect(path: "deliveries.location.identCode", aggregate: DISTINCT)
     totalWeightInKg: Decimal3 @collect(path: "allItems.weightInKg", aggregate: SUM)
     maxPriority: Int @collect(path: "deliveries.priority", aggregate: MAX)
     itemCount: Int @collect(path: "allItems", aggregate: COUNT)
     deliveryCount: Int @collect(path: "deliveries", aggregate: COUNT)
     allDeliveriesHaveOrders: Boolean @collect(path: "deliveries.order", aggregate: NONE_NULL)
+    allDeliveriesHaveOriginalOrders: Boolean
+        @collect(path: "deliveries.order.originalOrder", aggregate: NONE_NULL)
     allDeliveriesArePayed: Boolean @collect(path: "deliveries.order.payedAt", aggregate: NONE_NULL)
     numberOfDeliveriesWithoutOrder: Int @collect(path: "deliveries.order", aggregate: COUNT_NULL)
+    numberOfDeliveriesWithoutOriginalOrder: Int
+        @collect(path: "deliveries.order.originalOrder", aggregate: COUNT_NULL)
     numberOfDeliveriesWithoutPayedOrder: Int
         @collect(path: "deliveries.order.payedAt", aggregate: COUNT_NULL)
     #numberOfUnpayedOrders: Int @collect(path: "allOrders.payedAt", aggregate: COUNT_NULL) # waiting for DISTINCT aggregations to be supported in collect paths
@@ -40,6 +50,7 @@ type Delivery @rootEntity {
     handlingUnits: [HandlingUnit] @relation
     shipment: Shipment @relation(inverseOf: "deliveries")
     order: Order @relation
+    invoices: [Invoice] @relation
 
     allItems: [DeliveryItem] @collect(path: "deliveryContents.items")
     allItemNumbers: [String]
@@ -105,12 +116,22 @@ type Order @rootEntity {
     accessGroup: String
     location: Location @accessField
     payedAt: DateTime
+    originalOrder: Order @relation # so we can have two 1-to-1 relations in a row
     payload: String
 
     delivery: Delivery @relation(inverseOf: "order")
 
     allOuterHandlingUnits: [HandlingUnit] @collect(path: "delivery.handlingUnits")
     allItems: [DeliveryItem] @collect(path: "delivery.allItems")
+}
+
+type Invoice @rootEntity {
+    invoiceNumber: String @key
+    accessGroup: String
+    location: Location @accessField
+    payload: String
+
+    delivery: Delivery @relation(inverseOf: "invoices")
 }
 
 type DeliveryContent @childEntity {
@@ -125,6 +146,9 @@ type DeliveryItem @childEntity {
     weightInKg: Decimal3
     isDangerousGoods: Boolean
     payload: String
+    subItems: [DeliveryItem]
+
+    subSubItems: [DeliveryItem] @collect(path: "subItems.subItems")
 }
 
 type WarehouseSlot @valueObject {

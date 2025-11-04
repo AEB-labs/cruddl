@@ -1,0 +1,90 @@
+mutation createEdges {
+    updateShipment(
+        input: {
+            id: "@{ids/Shipment/1}"
+            addDeliveries: ["@{ids/Delivery/1}", "@{ids/Delivery/2}"]
+        }
+    ) {
+        shipmentNumber
+    }
+}
+
+query simple {
+    Delivery(deliveryNumber: "D1") {
+        allItems {
+            subSubItems {
+                itemNumber
+            }
+        }
+    }
+}
+
+query outerWithOrder {
+    Delivery(deliveryNumber: "D1") {
+        allItems(orderBy: itemNumber_DESC) {
+            subSubItems {
+                itemNumber
+            }
+        }
+    }
+}
+
+# this is the actual test. In an earlier iteration, this resulted in an error because it generated
+# a subquery within an array expansion expression, which is not supported by ArangoDB
+query innerWithOrder {
+    Delivery(deliveryNumber: "D1") {
+        allItems {
+            subSubItems(orderBy: itemNumber_DESC) {
+                itemNumber
+            }
+        }
+    }
+}
+
+# same thing, but the potential array expansion would be within a relation traversal
+query outerWithRelation_innerWithOrder {
+    Shipment(shipmentNumber: "S1") {
+        allItems {
+            subSubItems(orderBy: itemNumber_DESC) {
+                itemNumber
+            }
+        }
+    }
+}
+
+# child entities (without collect) are a similar case, make sure that works, too
+
+query childEntitiesInCollect {
+    Delivery(deliveryNumber: "D1") {
+        allItems {
+            subItems(orderBy: itemNumber_DESC) {
+                itemNumber
+            }
+        }
+    }
+}
+
+query collectInChildEntities {
+    Delivery(deliveryNumber: "D1") {
+        deliveryContents {
+            items {
+                subSubItems(orderBy: itemNumber_DESC) {
+                    itemNumber
+                }
+            }
+        }
+    }
+}
+
+# not @collect, but it fits here to complete the matrix
+query childEntitiesInChildEntities {
+    Delivery(deliveryNumber: "D1") {
+        deliveryContents {
+            items {
+                subItems(orderBy: itemNumber_DESC) {
+                    itemNumber
+                }
+            }
+        }
+    }
+}
