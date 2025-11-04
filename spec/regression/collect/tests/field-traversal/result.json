@@ -1,5 +1,5 @@
 {
-  "fields": {
+  "unordered": {
     "data": {
       "Delivery": {
         "allItems": [
@@ -14,6 +14,26 @@
           },
           {
             "itemNumber": "DI1.2.2"
+          }
+        ]
+      }
+    }
+  },
+  "ordered": {
+    "data": {
+      "Delivery": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.2.2"
+          },
+          {
+            "itemNumber": "DI1.2.1"
+          },
+          {
+            "itemNumber": "DI1.1.2"
+          },
+          {
+            "itemNumber": "DI1.1.1"
           }
         ]
       }

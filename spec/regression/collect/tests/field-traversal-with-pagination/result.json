@@ -1,0 +1,24 @@
+{
+  "unordered": {
+    "data": {
+      "Delivery": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.2"
+          }
+        ]
+      }
+    }
+  },
+  "ordered": {
+    "data": {
+      "Delivery": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.2.1"
+          }
+        ]
+      }
+    }
+  }
+}

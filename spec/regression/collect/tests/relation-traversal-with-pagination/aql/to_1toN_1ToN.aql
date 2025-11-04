@@ -1,0 +1,26 @@
+WITH @@deliveries, @@invoices
+LET v_shipment1 = FIRST((
+  FOR v_shipment2
+  IN @@shipments
+  FILTER (v_shipment2.`shipmentNumber` == @var1)
+  LIMIT @var2
+  RETURN v_shipment2
+))
+RETURN {
+  "Shipment": (IS_NULL(v_shipment1) ? null : {
+    "allInvoices": (
+      FOR v_invoice1
+      IN (
+        FOR v_node1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_shipment1 @@shipments_deliveries
+        FOR v_node2, v_edge2, v_path2 IN @var5..@var6 OUTBOUND v_node1 @@deliveries_invoices
+        FILTER v_node2._key != null
+        RETURN v_node2
+      )
+      SORT (v_invoice1.`invoiceNumber`)
+      LIMIT @var7, @var8
+      RETURN {
+        "number": v_invoice1.`invoiceNumber`
+      }
+    )
+  })
+}

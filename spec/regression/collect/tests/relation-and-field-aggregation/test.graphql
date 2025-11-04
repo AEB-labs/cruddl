@@ -18,6 +18,9 @@ mutation createEdges {
     d2: updateDelivery(input: { id: "@{ids/Delivery/2}", order: "@{ids/Order/2}" }) {
         deliveryNumber
     }
+    o1: updateOrder(input: { id: "@{ids/Order/1}", originalOrder: "@{ids/Order/2}" }) {
+        orderNumber
+    }
 }
 query fields {
     Shipment(shipmentNumber: "S1") {
@@ -25,8 +28,10 @@ query fields {
         maxPriority
         itemCount
         allDeliveriesHaveOrders
+        allDeliveriesHaveOriginalOrders
         allDeliveriesArePayed
         numberOfDeliveriesWithoutOrder
+        numberOfDeliveriesWithoutOriginalOrder
         numberOfDeliveriesWithoutPayedOrder
         startedDispatchingAt
         fullyDispatchedAt

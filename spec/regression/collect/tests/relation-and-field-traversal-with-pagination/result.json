@@ -1,0 +1,39 @@
+{
+  "createEdges": {
+    "data": {
+      "updateShipment": {
+        "shipmentNumber": "S1"
+      },
+      "updateOrder": {
+        "orderNumber": "O1"
+      }
+    }
+  },
+  "relationToNAndFields": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.2"
+          }
+        ],
+        "allDeliveryContents": [
+          {
+            "deliveryContentNumber": "DC1.2"
+          }
+        ]
+      }
+    }
+  },
+  "relationTo1AndFields": {
+    "data": {
+      "Order": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.2"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 query unordered {
     Delivery(deliveryNumber: "D1") {
-        allItems {
+        allItems(skip: 1, first: 1) {
             itemNumber
         }
     }
@@ -8,7 +8,7 @@ query unordered {
 
 query ordered {
     Delivery(deliveryNumber: "D1") {
-        allItems(orderBy: itemNumber_DESC) {
+        allItems(orderBy: itemNumber_DESC, skip: 1, first: 1) {
             itemNumber
         }
     }

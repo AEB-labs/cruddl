@@ -30,7 +30,7 @@ RETURN {
       )
       SORT (v_order1.`orderNumber`)
       RETURN {
-        "orderNumber": v_order1.`orderNumber`
+        "number": v_order1.`orderNumber`
       }
     )
   })

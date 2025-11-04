@@ -171,8 +171,51 @@ RETURN (IS_NULL(v_delivery1) ? null : {
 // --------------------------------
 
 WITH @@deliveries, @@shipments, @@orders
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_order1
+    IN @@orders
+    FILTER (v_order1._key == @var1)
+    LIMIT @var2
+    RETURN v_order1
+  )
+  UPDATE v_currentEntity1
+  WITH {}
+  IN @@orders
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// --------------------------------
+
+WITH @@deliveries, @@shipments, @@orders
+RETURN DOCUMENT(@@orders, @var1)
+
+// --------------------------------
+
+WITH @@deliveries, @@shipments, @@orders
+RETURN (
+  UPSERT {_from: CONCAT(@var1, FIRST(@v_updatedIds1))}
+  INSERT {_from: CONCAT(@var2, FIRST(@v_updatedIds1)), _to: @var3}
+  UPDATE {_from: CONCAT(@var4, FIRST(@v_updatedIds1)), _to: @var5}
+  IN @@orders_originalOrder
+)
+
+// --------------------------------
+
+WITH @@deliveries, @@shipments, @@orders
+LET v_order1 = DOCUMENT(@@orders, @var1)
+RETURN (IS_NULL(v_order1) ? null : {
+  "orderNumber": v_order1.`orderNumber`
+})
+
+// --------------------------------
+
+WITH @@deliveries, @@shipments, @@orders
 RETURN {
   "updateShipment": @v_updateShipment1,
   "d1": @v_updateDelivery1,
-  "d2": @v_updateDelivery2
+  "d2": @v_updateDelivery2,
+  "o1": @v_updateOrder1
 }

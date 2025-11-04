@@ -9,6 +9,9 @@
       },
       "d2": {
         "deliveryNumber": "D2"
+      },
+      "o1": {
+        "orderNumber": "O1"
       }
     }
   },
@@ -19,8 +22,10 @@
         "maxPriority": 3,
         "itemCount": 8,
         "allDeliveriesHaveOrders": false,
+        "allDeliveriesHaveOriginalOrders": false,
         "allDeliveriesArePayed": false,
         "numberOfDeliveriesWithoutOrder": 2,
+        "numberOfDeliveriesWithoutOriginalOrder": 3,
         "numberOfDeliveriesWithoutPayedOrder": 3,
         "startedDispatchingAt": "2020-01-30T08:00:00Z",
         "fullyDispatchedAt": "2020-01-30T09:00:00Z",

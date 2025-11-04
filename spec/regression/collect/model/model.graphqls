@@ -10,6 +10,7 @@ type Shipment @rootEntity {
     allHandlingUnits: [HandlingUnit]
         @collect(path: "deliveries.allHandlingUnits", aggregate: DISTINCT)
     allOrders: [Order] @collect(path: "deliveries.order", aggregate: DISTINCT)
+    allInvoices: [Invoice] @collect(path: "deliveries.invoices")
     allDeliveryContents: [DeliveryContent] @collect(path: "deliveries.deliveryContents")
     allItems: [DeliveryItem] @collect(path: "deliveries.deliveryContents.items")
     totalWeightInKg: Decimal3 @collect(path: "allItems.weightInKg", aggregate: SUM)
@@ -17,8 +18,12 @@ type Shipment @rootEntity {
     itemCount: Int @collect(path: "allItems", aggregate: COUNT)
     deliveryCount: Int @collect(path: "deliveries", aggregate: COUNT)
     allDeliveriesHaveOrders: Boolean @collect(path: "deliveries.order", aggregate: NONE_NULL)
+    allDeliveriesHaveOriginalOrders: Boolean
+        @collect(path: "deliveries.order.originalOrder", aggregate: NONE_NULL)
     allDeliveriesArePayed: Boolean @collect(path: "deliveries.order.payedAt", aggregate: NONE_NULL)
     numberOfDeliveriesWithoutOrder: Int @collect(path: "deliveries.order", aggregate: COUNT_NULL)
+    numberOfDeliveriesWithoutOriginalOrder: Int
+        @collect(path: "deliveries.order.originalOrder", aggregate: COUNT_NULL)
     numberOfDeliveriesWithoutPayedOrder: Int
         @collect(path: "deliveries.order.payedAt", aggregate: COUNT_NULL)
     #numberOfUnpayedOrders: Int @collect(path: "allOrders.payedAt", aggregate: COUNT_NULL) # waiting for DISTINCT aggregations to be supported in collect paths
@@ -38,6 +43,7 @@ type Delivery @rootEntity {
     handlingUnits: [HandlingUnit] @relation
     shipment: Shipment @relation(inverseOf: "deliveries")
     order: Order @relation
+    invoices: [Invoice] @relation
 
     allItems: [DeliveryItem] @collect(path: "deliveryContents.items")
     allItemNumbers: [String]
@@ -102,11 +108,19 @@ type Order @rootEntity {
     accessGroup: String
     location: Location @accessField
     payedAt: DateTime
-
+    originalOrder: Order @relation # so we can have two 1-to-1 relations in a row
     delivery: Delivery @relation(inverseOf: "order")
 
     allOuterHandlingUnits: [HandlingUnit] @collect(path: "delivery.handlingUnits")
     allItems: [DeliveryItem] @collect(path: "delivery.allItems")
+}
+
+type Invoice @rootEntity {
+    invoiceNumber: String @key
+    accessGroup: String
+    location: Location @accessField
+
+    delivery: Delivery @relation(inverseOf: "invoices")
 }
 
 type DeliveryContent @childEntity {
