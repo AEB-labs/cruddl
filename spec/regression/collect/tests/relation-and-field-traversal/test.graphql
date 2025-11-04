@@ -12,7 +12,26 @@ mutation createEdges {
     }
 }
 
-query relationToNAndFields {
+query relationToN_fieldsToN {
+    Shipment(shipmentNumber: "S1") {
+        allItems {
+            itemNumber
+        }
+        allDeliveryContents {
+            deliveryContentNumber
+        }
+    }
+}
+
+query relationTo1_fieldsToN {
+    Order(orderNumber: "O1") {
+        allItems {
+            itemNumber
+        }
+    }
+}
+
+query relationToN_fieldsToN_order {
     Shipment(shipmentNumber: "S1") {
         allItems(orderBy: itemNumber_ASC) {
             itemNumber
@@ -23,9 +42,141 @@ query relationToNAndFields {
     }
 }
 
-query relationTo1AndFields {
+query relationTo1_fieldsToN_order {
     Order(orderNumber: "O1") {
         allItems(orderBy: itemNumber_ASC) {
+            itemNumber
+        }
+    }
+}
+
+query relationToN_fieldsToN_order_pagination {
+    Shipment(shipmentNumber: "S1") {
+        allItems(orderBy: itemNumber_ASC, skip: 1, first: 1) {
+            itemNumber
+        }
+        allDeliveryContents(orderBy: deliveryContentNumber_ASC, skip: 1, first: 1) {
+            deliveryContentNumber
+        }
+    }
+}
+
+query relationTo1_fieldsToN_order_pagination {
+    Order(orderNumber: "O1") {
+        allItems(orderBy: itemNumber_ASC, skip: 1, first: 1) {
+            itemNumber
+        }
+    }
+}
+
+query relationToN_fieldsToN_pagination {
+    Shipment(shipmentNumber: "S1") {
+        allItems(skip: 1, first: 1) {
+            itemNumber
+        }
+        allDeliveryContents(skip: 1, first: 1) {
+            deliveryContentNumber
+        }
+    }
+}
+
+query relationTo1_fieldsToN_pagination {
+    Order(orderNumber: "O1") {
+        allItems(orderBy: itemNumber_ASC, skip: 1, first: 1) {
+            itemNumber
+        }
+    }
+}
+
+query relationToN_fieldsToN_filter {
+    Shipment(shipmentNumber: "S1") {
+        allItems(filter: { itemNumber_ends_with: "1" }) {
+            itemNumber
+        }
+        allDeliveryContents(filter: { deliveryContentNumber_ends_with: "1" }) {
+            deliveryContentNumber
+        }
+    }
+}
+
+query relationTo1_fieldsToN_filter {
+    Order(orderNumber: "O1") {
+        allItems(filter: { itemNumber_ends_with: "1" }) {
+            itemNumber
+        }
+    }
+}
+
+query relationToN_fieldsToN_filter_order {
+    Shipment(shipmentNumber: "S1") {
+        allItems(filter: { itemNumber_ends_with: "1" }, orderBy: itemNumber_ASC) {
+            itemNumber
+        }
+        allDeliveryContents(
+            filter: { deliveryContentNumber_ends_with: "1" }
+            orderBy: deliveryContentNumber_ASC
+        ) {
+            deliveryContentNumber
+        }
+    }
+}
+
+query relationTo1_fieldsToN_filter_order {
+    Order(orderNumber: "O1") {
+        allItems(filter: { itemNumber_ends_with: "1" }, orderBy: itemNumber_ASC) {
+            itemNumber
+        }
+    }
+}
+
+query relationToN_fieldsToN_filter_pagination {
+    Shipment(shipmentNumber: "S1") {
+        allItems(filter: { itemNumber_ends_with: "1" }, skip: 1, first: 1) {
+            itemNumber
+        }
+        allDeliveryContents(filter: { deliveryContentNumber_ends_with: "1" }, skip: 1, first: 1) {
+            deliveryContentNumber
+        }
+    }
+}
+
+query relationTo1_fieldsToN_filter_pagination {
+    Order(orderNumber: "O1") {
+        allItems(filter: { itemNumber_ends_with: "1" }, skip: 1, first: 1) {
+            itemNumber
+        }
+    }
+}
+
+query relationToN_fieldsToN_filter_order_pagination {
+    Shipment(shipmentNumber: "S1") {
+        allItems(
+            filter: { itemNumber_ends_with: "1" }
+            orderBy: itemNumber_ASC
+            skip: 1
+            first: 1
+        ) {
+            itemNumber
+        }
+        allDeliveryContents(
+            filter: { deliveryContentNumber_ends_with: "1" }
+            orderBy: deliveryContentNumber_ASC
+            skip: 1
+            first: 1
+        ) {
+            deliveryContentNumber
+        }
+    }
+}
+
+query relationTo1_fieldsToN_filter_order_pagination {
+    Order(orderNumber: "O1") {
+        allItems(
+            filter: { itemNumber_ends_with: "1" }
+            orderBy: itemNumber_ASC
+            skip: 1
+            first: 1
+        ) {
             itemNumber
         }
     }

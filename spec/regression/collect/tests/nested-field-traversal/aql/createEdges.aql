@@ -1,0 +1,76 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_shipment1
+    IN @@shipments
+    FILTER (v_shipment1._key == @var1)
+    LIMIT @var2
+    RETURN v_shipment1
+  )
+  UPDATE v_currentEntity1
+  WITH {}
+  IN @@shipments
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@deliveries
+RETURN DOCUMENT(@@deliveries, @var1)
+
+// Peak memory usage: 131072 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@deliveries
+RETURN DOCUMENT(@@deliveries, @var1)
+
+// Peak memory usage: 131072 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@deliveries
+RETURN (
+  FOR v_to1 IN @var1
+  FOR v_edge1 IN @@shipments_deliveries
+  FILTER v_edge1._to == v_to1
+  REMOVE v_edge1 IN @@shipments_deliveries
+)
+
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@deliveries
+RETURN (
+  FOR v_edge1
+  IN [ {_from: CONCAT(@var1, FIRST(@v_updatedIds1)), _to: @var2}, {_from: CONCAT(@var3, FIRST(@v_updatedIds1)), _to: @var4} ]
+  UPSERT { _from: v_edge1._from, _to: v_edge1._to }
+  INSERT v_edge1
+  UPDATE {}
+  IN @@shipments_deliveries
+)
+
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@deliveries, @@shipments
+LET v_shipment1 = DOCUMENT(@@shipments, @var1)
+RETURN (IS_NULL(v_shipment1) ? null : {
+  "shipmentNumber": v_shipment1.`shipmentNumber`
+})
+
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@deliveries, @@shipments
+RETURN {
+  "updateShipment": @v_updateShipment1
+}
+
+// Peak memory usage: 0 bytes

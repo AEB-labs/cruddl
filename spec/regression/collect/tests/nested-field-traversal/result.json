@@ -1,0 +1,335 @@
+{
+  "createEdges": {
+    "data": {
+      "updateShipment": {
+        "shipmentNumber": "S1"
+      }
+    }
+  },
+  "simple": {
+    "data": {
+      "Delivery": {
+        "allItems": [
+          {
+            "subSubItems": [
+              {
+                "itemNumber": "SSD1.1.1.1.1.1"
+              },
+              {
+                "itemNumber": "SSD1.1.1.1.1.2"
+              },
+              {
+                "itemNumber": "SSD1.1.1.1.2.1"
+              },
+              {
+                "itemNumber": "SSD1.1.1.1.2.2"
+              }
+            ]
+          },
+          {
+            "subSubItems": [
+              {
+                "itemNumber": "SSD1.1.2.1.1.2"
+              },
+              {
+                "itemNumber": "SSD1.1.2.1.1.2"
+              },
+              {
+                "itemNumber": "SSD1.1.2.1.2.1"
+              },
+              {
+                "itemNumber": "SSD1.1.2.1.2.2"
+              }
+            ]
+          },
+          {
+            "subSubItems": []
+          },
+          {
+            "subSubItems": []
+          }
+        ]
+      }
+    }
+  },
+  "outerWithOrder": {
+    "data": {
+      "Delivery": {
+        "allItems": [
+          {
+            "subSubItems": []
+          },
+          {
+            "subSubItems": []
+          },
+          {
+            "subSubItems": [
+              {
+                "itemNumber": "SSD1.1.2.1.1.2"
+              },
+              {
+                "itemNumber": "SSD1.1.2.1.1.2"
+              },
+              {
+                "itemNumber": "SSD1.1.2.1.2.1"
+              },
+              {
+                "itemNumber": "SSD1.1.2.1.2.2"
+              }
+            ]
+          },
+          {
+            "subSubItems": [
+              {
+                "itemNumber": "SSD1.1.1.1.1.1"
+              },
+              {
+                "itemNumber": "SSD1.1.1.1.1.2"
+              },
+              {
+                "itemNumber": "SSD1.1.1.1.2.1"
+              },
+              {
+                "itemNumber": "SSD1.1.1.1.2.2"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "innerWithOrder": {
+    "data": {
+      "Delivery": {
+        "allItems": [
+          {
+            "subSubItems": [
+              {
+                "itemNumber": "SSD1.1.1.1.2.2"
+              },
+              {
+                "itemNumber": "SSD1.1.1.1.2.1"
+              },
+              {
+                "itemNumber": "SSD1.1.1.1.1.2"
+              },
+              {
+                "itemNumber": "SSD1.1.1.1.1.1"
+              }
+            ]
+          },
+          {
+            "subSubItems": [
+              {
+                "itemNumber": "SSD1.1.2.1.2.2"
+              },
+              {
+                "itemNumber": "SSD1.1.2.1.2.1"
+              },
+              {
+                "itemNumber": "SSD1.1.2.1.1.2"
+              },
+              {
+                "itemNumber": "SSD1.1.2.1.1.2"
+              }
+            ]
+          },
+          {
+            "subSubItems": []
+          },
+          {
+            "subSubItems": []
+          }
+        ]
+      }
+    }
+  },
+  "outerWithRelation_innerWithOrder": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "subSubItems": []
+          },
+          {
+            "subSubItems": []
+          },
+          {
+            "subSubItems": []
+          },
+          {
+            "subSubItems": []
+          },
+          {
+            "subSubItems": [
+              {
+                "itemNumber": "SSD1.1.1.1.2.2"
+              },
+              {
+                "itemNumber": "SSD1.1.1.1.2.1"
+              },
+              {
+                "itemNumber": "SSD1.1.1.1.1.2"
+              },
+              {
+                "itemNumber": "SSD1.1.1.1.1.1"
+              }
+            ]
+          },
+          {
+            "subSubItems": [
+              {
+                "itemNumber": "SSD1.1.2.1.2.2"
+              },
+              {
+                "itemNumber": "SSD1.1.2.1.2.1"
+              },
+              {
+                "itemNumber": "SSD1.1.2.1.1.2"
+              },
+              {
+                "itemNumber": "SSD1.1.2.1.1.2"
+              }
+            ]
+          },
+          {
+            "subSubItems": []
+          },
+          {
+            "subSubItems": []
+          }
+        ]
+      }
+    }
+  },
+  "childEntitiesInCollect": {
+    "data": {
+      "Delivery": {
+        "allItems": [
+          {
+            "subItems": [
+              {
+                "itemNumber": "SDI1.1.1.2"
+              },
+              {
+                "itemNumber": "SDI1.1.1.1"
+              }
+            ]
+          },
+          {
+            "subItems": [
+              {
+                "itemNumber": "SDI1.1.2.2"
+              },
+              {
+                "itemNumber": "SDI1.1.2.1"
+              }
+            ]
+          },
+          {
+            "subItems": []
+          },
+          {
+            "subItems": []
+          }
+        ]
+      }
+    }
+  },
+  "collectInChildEntities": {
+    "data": {
+      "Delivery": {
+        "deliveryContents": [
+          {
+            "items": [
+              {
+                "subSubItems": [
+                  {
+                    "itemNumber": "SSD1.1.1.1.2.2"
+                  },
+                  {
+                    "itemNumber": "SSD1.1.1.1.2.1"
+                  },
+                  {
+                    "itemNumber": "SSD1.1.1.1.1.2"
+                  },
+                  {
+                    "itemNumber": "SSD1.1.1.1.1.1"
+                  }
+                ]
+              },
+              {
+                "subSubItems": [
+                  {
+                    "itemNumber": "SSD1.1.2.1.2.2"
+                  },
+                  {
+                    "itemNumber": "SSD1.1.2.1.2.1"
+                  },
+                  {
+                    "itemNumber": "SSD1.1.2.1.1.2"
+                  },
+                  {
+                    "itemNumber": "SSD1.1.2.1.1.2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "items": [
+              {
+                "subSubItems": []
+              },
+              {
+                "subSubItems": []
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "childEntitiesInChildEntities": {
+    "data": {
+      "Delivery": {
+        "deliveryContents": [
+          {
+            "items": [
+              {
+                "subItems": [
+                  {
+                    "itemNumber": "SDI1.1.1.2"
+                  },
+                  {
+                    "itemNumber": "SDI1.1.1.1"
+                  }
+                ]
+              },
+              {
+                "subItems": [
+                  {
+                    "itemNumber": "SDI1.1.2.2"
+                  },
+                  {
+                    "itemNumber": "SDI1.1.2.1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "items": [
+              {
+                "subItems": []
+              },
+              {
+                "subItems": []
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
