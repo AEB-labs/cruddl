@@ -1,0 +1,37 @@
+WITH @@deliveries, @@handlingUnits
+LET v_shipment1 = FIRST((
+  FOR v_shipment2
+  IN @@shipments
+  FILTER (v_shipment2.`shipmentNumber` == @var1)
+  LIMIT @var2
+  RETURN v_shipment2
+))
+RETURN {
+  "Shipment": (IS_NULL(v_shipment1) ? null : {
+    "outerHandlingUnitCount": FIRST(
+      FOR v_item1
+      IN (
+        FOR v_node1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_shipment1 @@shipments_deliveries
+        FOR v_node2, v_edge2, v_path2 IN @var5..@var6 OUTBOUND v_node1 @@deliveries_handlingUnits
+        FILTER v_node2._key != null
+        RETURN v_node2
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    ),
+    "distinctOuterHandlingUnitCount": FIRST(
+      FOR v_item2
+      IN (
+        FOR v_node3, v_edge3, v_path3 IN @var7..@var8 OUTBOUND v_shipment1 @@shipments_deliveries
+        FOR v_node4, v_edge4, v_path4 IN @var9..@var10 OUTBOUND v_node3 @@deliveries_handlingUnits
+        FILTER v_node4._key != null
+        RETURN v_node4
+      )
+      FILTER v_item2 != null
+      COLLECT AGGREGATE v_count_distinct1 = COUNT_DISTINCT(v_item2)
+      RETURN v_count_distinct1
+    )
+  })
+}
+
+// Peak memory usage: 163840 bytes

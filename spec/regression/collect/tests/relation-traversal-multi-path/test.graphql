@@ -1,0 +1,58 @@
+mutation createEdges {
+    updateShipment(
+        input: {
+            id: "@{ids/Shipment/1}"
+            addDeliveries: ["@{ids/Delivery/1}", "@{ids/Delivery/2}"]
+        }
+    ) {
+        shipmentNumber
+    }
+    d1: updateDelivery(
+        input: {
+            id: "@{ids/Delivery/1}"
+            addHandlingUnits: [
+                "@{ids/HandlingUnit/1}"
+                "@{ids/HandlingUnit/2}"
+                "@{ids/HandlingUnit/4}"
+            ]
+        }
+    ) {
+        deliveryNumber
+    }
+    d2: updateDelivery(
+        input: {
+            id: "@{ids/Delivery/2}"
+            addHandlingUnits: ["@{ids/HandlingUnit/2}", "@{ids/HandlingUnit/3}"]
+        }
+    ) {
+        deliveryNumber
+    }
+}
+
+# there are two paths from S1 to HU2 (via D1 and D2), it should be counted as 2 unless DISTINCT is used
+
+query count {
+    Shipment(shipmentNumber: "S1") {
+        outerHandlingUnitCount
+        distinctOuterHandlingUnitCount
+    }
+}
+
+query distinct {
+    Shipment(shipmentNumber: "S1") {
+        # this is using the DISTINCT operator
+        allOuterHandlingUnits(orderBy: handlingUnitNumber_ASC) {
+            handlingUnitNumber
+        }
+    }
+}
+
+query distinctPitfall {
+    Shipment(shipmentNumber: "S1") {
+        # intentionally selecting only a field that's the same value for all so we know whether the
+        # DISTINCT is applied properly on the entity level or wrongly on the selection result
+        allOuterHandlingUnits {
+            __typename
+        }
+    }
+}

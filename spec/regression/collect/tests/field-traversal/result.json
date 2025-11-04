@@ -1,5 +1,5 @@
 {
-  "fields": {
+  "fieldsToN": {
     "data": {
       "Delivery": {
         "allItems": [
@@ -14,6 +14,98 @@
           },
           {
             "itemNumber": "DI1.2.2"
+          }
+        ]
+      }
+    }
+  },
+  "fieldsToN_order": {
+    "data": {
+      "Delivery": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.2.2"
+          },
+          {
+            "itemNumber": "DI1.2.1"
+          },
+          {
+            "itemNumber": "DI1.1.2"
+          },
+          {
+            "itemNumber": "DI1.1.1"
+          }
+        ]
+      }
+    }
+  },
+  "fieldsToN_pagination": {
+    "data": {
+      "Delivery": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.2"
+          }
+        ]
+      }
+    }
+  },
+  "fieldsToN_order_pagination": {
+    "data": {
+      "Delivery": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.2.1"
+          }
+        ]
+      }
+    }
+  },
+  "fieldsToN_filter": {
+    "data": {
+      "Delivery": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.1"
+          },
+          {
+            "itemNumber": "DI1.2.1"
+          }
+        ]
+      }
+    }
+  },
+  "fieldsToN_filter_order": {
+    "data": {
+      "Delivery": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.2.1"
+          },
+          {
+            "itemNumber": "DI1.1.1"
+          }
+        ]
+      }
+    }
+  },
+  "fieldsToN_filter_pagination": {
+    "data": {
+      "Delivery": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.2.1"
+          }
+        ]
+      }
+    }
+  },
+  "fieldsToN_filter_order_pagination": {
+    "data": {
+      "Delivery": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.1"
           }
         ]
       }

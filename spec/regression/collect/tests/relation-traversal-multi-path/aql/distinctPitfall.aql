@@ -22,10 +22,7 @@ RETURN {
         COLLECT v_distinct1 = v_item1
         RETURN v_distinct1
       )
-      SORT (v_handlingUnit1.`handlingUnitNumber`)
-      RETURN {
-        "handlingUnitNumber": v_handlingUnit1.`handlingUnitNumber`
-      }
+      RETURN {}
     )
   })
 }
