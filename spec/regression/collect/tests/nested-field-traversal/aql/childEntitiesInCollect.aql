@@ -1,0 +1,27 @@
+LET v_delivery1 = FIRST((
+  FOR v_delivery2
+  IN @@deliveries
+  FILTER (v_delivery2.`deliveryNumber` == @var1)
+  LIMIT @var2
+  RETURN v_delivery2
+))
+RETURN {
+  "Delivery": (IS_NULL(v_delivery1) ? null : {
+    "allItems": (
+      FOR v_deliveryItem1
+      IN v_delivery1.`deliveryContents`[*].`items`[*][**]
+      RETURN {
+        "subItems": (
+          FOR v_deliveryItem2
+          IN (IS_LIST(v_deliveryItem1.`subItems`) ? v_deliveryItem1.`subItems` : [])
+          SORT (v_deliveryItem2.`itemNumber`)  DESC
+          RETURN {
+            "itemNumber": v_deliveryItem2.`itemNumber`
+          }
+        )
+      }
+    )
+  })
+}
+
+// Peak memory usage: 163840 bytes

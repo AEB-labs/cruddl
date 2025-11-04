@@ -1,0 +1,40 @@
+WITH @@deliveries
+LET v_shipment1 = FIRST((
+  FOR v_shipment2
+  IN @@shipments
+  FILTER (v_shipment2.`shipmentNumber` == @var1)
+  LIMIT @var2
+  RETURN v_shipment2
+))
+RETURN {
+  "Shipment": (IS_NULL(v_shipment1) ? null : {
+    "allItems": (
+      FOR v_deliveryItem1
+      IN FLATTEN((
+        FOR v_node1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_shipment1 @@shipments_deliveries
+        FILTER v_node1._key != null
+        RETURN v_node1.`deliveryContents`[*].`items`[*]
+      ), 2)
+      FILTER (RIGHT(v_deliveryItem1.`itemNumber`, LENGTH(@var5)) == @var6)
+      LIMIT @var7, @var8
+      RETURN {
+        "itemNumber": v_deliveryItem1.`itemNumber`
+      }
+    ),
+    "allDeliveryContents": (
+      FOR v_deliveryContent1
+      IN (
+        FOR v_node2, v_edge2, v_path2 IN @var9..@var10 OUTBOUND v_shipment1 @@shipments_deliveries
+        FILTER v_node2._key != null
+        RETURN v_node2.`deliveryContents`[*]
+      )[**]
+      FILTER (RIGHT(v_deliveryContent1.`deliveryContentNumber`, LENGTH(@var11)) == @var12)
+      LIMIT @var13, @var14
+      RETURN {
+        "deliveryContentNumber": v_deliveryContent1.`deliveryContentNumber`
+      }
+    )
+  })
+}
+
+// Peak memory usage: 458752 bytes

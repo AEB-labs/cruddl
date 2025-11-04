@@ -33,6 +33,17 @@ RETURN (
 // ----------------------------------------------------------------
 
 RETURN (
+  FOR v_from1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
+  FOR v_edge1 IN @@deliveries_invoices
+  FILTER v_edge1._from == v_from1
+  REMOVE v_edge1 IN @@deliveries_invoices
+)
+
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
+
+RETURN (
   FOR v_to1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
   FOR v_edge1 IN @@shipments_deliveries
   FILTER v_edge1._to == v_to1

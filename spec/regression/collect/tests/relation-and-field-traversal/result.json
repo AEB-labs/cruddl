@@ -9,7 +9,73 @@
       }
     }
   },
-  "relationToNAndFields": {
+  "relationToN_fieldsToN": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "itemNumber": "DI2.1.1"
+          },
+          {
+            "itemNumber": "DI2.1.2"
+          },
+          {
+            "itemNumber": "DI2.2.1"
+          },
+          {
+            "itemNumber": "DI2.2.2"
+          },
+          {
+            "itemNumber": "DI1.1.1"
+          },
+          {
+            "itemNumber": "DI1.1.2"
+          },
+          {
+            "itemNumber": "DI1.2.1"
+          },
+          {
+            "itemNumber": "DI1.2.2"
+          }
+        ],
+        "allDeliveryContents": [
+          {
+            "deliveryContentNumber": "DC2.1"
+          },
+          {
+            "deliveryContentNumber": "DC2.2"
+          },
+          {
+            "deliveryContentNumber": "DC1.1"
+          },
+          {
+            "deliveryContentNumber": "DC1.2"
+          }
+        ]
+      }
+    }
+  },
+  "relationTo1_fieldsToN": {
+    "data": {
+      "Order": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.1"
+          },
+          {
+            "itemNumber": "DI1.1.2"
+          },
+          {
+            "itemNumber": "DI1.2.1"
+          },
+          {
+            "itemNumber": "DI1.2.2"
+          }
+        ]
+      }
+    }
+  },
+  "relationToN_fieldsToN_order": {
     "data": {
       "Shipment": {
         "allItems": [
@@ -55,7 +121,7 @@
       }
     }
   },
-  "relationTo1AndFields": {
+  "relationTo1_fieldsToN_order": {
     "data": {
       "Order": {
         "allItems": [
@@ -70,6 +136,198 @@
           },
           {
             "itemNumber": "DI1.2.2"
+          }
+        ]
+      }
+    }
+  },
+  "relationToN_fieldsToN_order_pagination": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.2"
+          }
+        ],
+        "allDeliveryContents": [
+          {
+            "deliveryContentNumber": "DC1.2"
+          }
+        ]
+      }
+    }
+  },
+  "relationTo1_fieldsToN_order_pagination": {
+    "data": {
+      "Order": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.2"
+          }
+        ]
+      }
+    }
+  },
+  "relationToN_fieldsToN_pagination": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "itemNumber": "DI2.1.2"
+          }
+        ],
+        "allDeliveryContents": [
+          {
+            "deliveryContentNumber": "DC2.2"
+          }
+        ]
+      }
+    }
+  },
+  "relationTo1_fieldsToN_pagination": {
+    "data": {
+      "Order": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.2"
+          }
+        ]
+      }
+    }
+  },
+  "relationToN_fieldsToN_filter": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "itemNumber": "DI2.1.1"
+          },
+          {
+            "itemNumber": "DI2.2.1"
+          },
+          {
+            "itemNumber": "DI1.1.1"
+          },
+          {
+            "itemNumber": "DI1.2.1"
+          }
+        ],
+        "allDeliveryContents": [
+          {
+            "deliveryContentNumber": "DC2.1"
+          },
+          {
+            "deliveryContentNumber": "DC1.1"
+          }
+        ]
+      }
+    }
+  },
+  "relationTo1_fieldsToN_filter": {
+    "data": {
+      "Order": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.1"
+          },
+          {
+            "itemNumber": "DI1.2.1"
+          }
+        ]
+      }
+    }
+  },
+  "relationToN_fieldsToN_filter_order": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.1"
+          },
+          {
+            "itemNumber": "DI1.2.1"
+          },
+          {
+            "itemNumber": "DI2.1.1"
+          },
+          {
+            "itemNumber": "DI2.2.1"
+          }
+        ],
+        "allDeliveryContents": [
+          {
+            "deliveryContentNumber": "DC1.1"
+          },
+          {
+            "deliveryContentNumber": "DC2.1"
+          }
+        ]
+      }
+    }
+  },
+  "relationTo1_fieldsToN_filter_order": {
+    "data": {
+      "Order": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.1.1"
+          },
+          {
+            "itemNumber": "DI1.2.1"
+          }
+        ]
+      }
+    }
+  },
+  "relationToN_fieldsToN_filter_pagination": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "itemNumber": "DI2.2.1"
+          }
+        ],
+        "allDeliveryContents": [
+          {
+            "deliveryContentNumber": "DC1.1"
+          }
+        ]
+      }
+    }
+  },
+  "relationTo1_fieldsToN_filter_pagination": {
+    "data": {
+      "Order": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.2.1"
+          }
+        ]
+      }
+    }
+  },
+  "relationToN_fieldsToN_filter_order_pagination": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.2.1"
+          }
+        ],
+        "allDeliveryContents": [
+          {
+            "deliveryContentNumber": "DC2.1"
+          }
+        ]
+      }
+    }
+  },
+  "relationTo1_fieldsToN_filter_order_pagination": {
+    "data": {
+      "Order": {
+        "allItems": [
+          {
+            "itemNumber": "DI1.2.1"
           }
         ]
       }

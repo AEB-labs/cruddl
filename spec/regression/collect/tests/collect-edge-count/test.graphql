@@ -1,6 +1,8 @@
 # make sure that counting edges does not include dangling edges
 # obviously, there should be no dangling edges because we should delete them properly, but this test is probably still
 # a good idea
+# TODO this does not actually test if dangling edges are filtered because deleteDelivery deletes the edges
+# if we want to test that, we need an test-data.ts that uses AQL directly
 
 mutation createEdges {
     updateShipment(

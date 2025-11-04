@@ -20,16 +20,16 @@
       "Delivery": {
         "allHandlingUnits": [
           {
-            "handlingUnitNumber": "H1"
+            "number": "H1"
           },
           {
-            "handlingUnitNumber": "H2"
+            "number": "H2"
           },
           {
-            "handlingUnitNumber": "H3"
+            "number": "H3"
           },
           {
-            "handlingUnitNumber": "H4"
+            "number": "H4"
           }
         ]
       }
@@ -40,10 +40,10 @@
       "Delivery": {
         "allHandlingUnits": [
           {
-            "handlingUnitNumber": "H1"
+            "number": "H1"
           },
           {
-            "handlingUnitNumber": "H4"
+            "number": "H4"
           }
         ]
       }

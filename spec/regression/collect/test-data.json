@@ -21,12 +21,64 @@
                 "itemNumber": "DI1.1.1",
                 "weightInKg": 1.2,
                 "isDangerousGoods": true,
-                "payload": "@{randomString(10000)}"
+                "payload": "@{randomString(10000)}",
+                "subItems": [
+                  {
+                    "itemNumber": "SDI1.1.1.1",
+                    "weightInKg": 0.6,
+                    "subItems": [
+                      {
+                        "itemNumber": "SSD1.1.1.1.1.1"
+                      },
+                      {
+                        "itemNumber": "SSD1.1.1.1.1.2"
+                      }
+                    ]
+                  },
+                  {
+                    "itemNumber": "SDI1.1.1.2",
+                    "weightInKg": 0.6,
+                    "subItems": [
+                      {
+                        "itemNumber": "SSD1.1.1.1.2.1"
+                      },
+                      {
+                        "itemNumber": "SSD1.1.1.1.2.2"
+                      }
+                    ]
+                  }
+                ]
               },
               {
                 "itemNumber": "DI1.1.2",
                 "weightInKg": 2.2,
-                "payload": "@{randomString(10000)}"
+                "payload": "@{randomString(10000)}",
+                "subItems": [
+                  {
+                    "itemNumber": "SDI1.1.2.1",
+                    "weightInKg": 0.6,
+                    "subItems": [
+                      {
+                        "itemNumber": "SSD1.1.2.1.1.2"
+                      },
+                      {
+                        "itemNumber": "SSD1.1.2.1.1.2"
+                      }
+                    ]
+                  },
+                  {
+                    "itemNumber": "SDI1.1.2.2",
+                    "weightInKg": 0.6,
+                    "subItems": [
+                      {
+                        "itemNumber": "SSD1.1.2.1.2.1"
+                      },
+                      {
+                        "itemNumber": "SSD1.1.2.1.2.2"
+                      }
+                    ]
+                  }
+                ]
               }
             ]
           },
@@ -290,6 +342,19 @@
           "level": 0
         },
         "payload": "@{randomString(10000)}"
+      },
+      {
+        "@id": "5",
+        "handlingUnitNumber": "H5",
+        "accessGroup": "H5",
+        "location": {
+          "identCode": "licH5"
+        },
+        "warehouseSlot": {
+          "warehouse": "North",
+          "level": 0
+        },
+        "payload": "@{randomString(10000)}"
       }
     ],
     "Order": [
@@ -328,6 +393,50 @@
         "location": {
           "identCode": "licO4"
         },
+        "payload": "@{randomString(10000)}"
+      }
+    ],
+    "Invoice": [
+      {
+        "@id": "1",
+        "invoiceNumber": "I1",
+        "accessGroup": "I1",
+        "location": { "identCode": "licI1" },
+        "payload": "@{randomString(10000)}"
+      },
+      {
+        "@id": "2",
+        "invoiceNumber": "I2",
+        "accessGroup": "I2",
+        "location": { "identCode": "licI2" },
+        "payload": "@{randomString(10000)}"
+      },
+      {
+        "@id": "3",
+        "invoiceNumber": "I3",
+        "accessGroup": "I3",
+        "location": { "identCode": "licI3" },
+        "payload": "@{randomString(10000)}"
+      },
+      {
+        "@id": "4",
+        "invoiceNumber": "I4",
+        "accessGroup": "I4",
+        "location": { "identCode": "licI4" },
+        "payload": "@{randomString(10000)}"
+      },
+      {
+        "@id": "5",
+        "invoiceNumber": "I5",
+        "accessGroup": "I5",
+        "location": { "identCode": "licI5" },
+        "payload": "@{randomString(10000)}"
+      },
+      {
+        "@id": "6",
+        "invoiceNumber": "I6",
+        "accessGroup": "D6",
+        "location": { "identCode": "licI6" },
         "payload": "@{randomString(10000)}"
       }
     ]

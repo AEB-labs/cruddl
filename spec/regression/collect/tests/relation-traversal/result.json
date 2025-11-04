@@ -12,46 +12,72 @@
       }
     }
   },
-  "toNtoN": {
+  "to_1toN_nToN": {
     "data": {
       "Shipment": {
         "allOuterHandlingUnits": [
           {
-            "handlingUnitNumber": "H1"
+            "number": "H1"
           },
           {
-            "handlingUnitNumber": "H2"
+            "number": "H2"
           },
           {
-            "handlingUnitNumber": "H3"
+            "number": "H3"
+          },
+          {
+            "number": "H4"
           }
         ]
       }
     }
   },
-  "toNto1": {
+  "to_1toN_1ToN": {
+    "data": {
+      "Shipment": {
+        "allInvoices": [
+          {
+            "number": "I1"
+          },
+          {
+            "number": "I3"
+          },
+          {
+            "number": "I5"
+          },
+          {
+            "number": "I6"
+          }
+        ]
+      }
+    }
+  },
+  "to_1toN_1to1": {
     "data": {
       "Shipment": {
         "allOrders": [
           {
-            "orderNumber": "O1"
+            "number": "O1"
           },
           {
-            "orderNumber": "O2"
+            "number": "O2"
           }
         ]
       }
     }
   },
-  "to1toN": {
+  "to_1to1_ntoN": {
     "data": {
       "Order": {
         "allOuterHandlingUnits": [
           {
-            "handlingUnitNumber": "H1"
+            "number": "H1"
           },
           {
-            "handlingUnitNumber": "H2"
+            "number": "H2"
+          },
+          {
+            "number": "H4"
           }
         ]
       }

@@ -1,6 +1,65 @@
-query fields {
+query fieldsToN {
     Delivery(deliveryNumber: "D1") {
         allItems {
+            itemNumber
+        }
+    }
+}
+
+query fieldsToN_order {
+    Delivery(deliveryNumber: "D1") {
+        allItems(orderBy: itemNumber_DESC) {
+            itemNumber
+        }
+    }
+}
+query fieldsToN_pagination {
+    Delivery(deliveryNumber: "D1") {
+        allItems(skip: 1, first: 1) {
+            itemNumber
+        }
+    }
+}
+
+query fieldsToN_order_pagination {
+    Delivery(deliveryNumber: "D1") {
+        allItems(orderBy: itemNumber_DESC, skip: 1, first: 1) {
+            itemNumber
+        }
+    }
+}
+
+query fieldsToN_filter {
+    Delivery(deliveryNumber: "D1") {
+        allItems(filter: { itemNumber_ends_with: "1" }) {
+            itemNumber
+        }
+    }
+}
+
+query fieldsToN_filter_order {
+    Delivery(deliveryNumber: "D1") {
+        allItems(filter: { itemNumber_ends_with: "1" }, orderBy: itemNumber_DESC) {
+            itemNumber
+        }
+    }
+}
+query fieldsToN_filter_pagination {
+    Delivery(deliveryNumber: "D1") {
+        allItems(filter: { itemNumber_ends_with: "1" }, skip: 1, first: 1) {
+            itemNumber
+        }
+    }
+}
+
+query fieldsToN_filter_order_pagination {
+    Delivery(deliveryNumber: "D1") {
+        allItems(
+            filter: { itemNumber_ends_with: "1" }
+            orderBy: itemNumber_DESC
+            skip: 1
+            first: 1
+        ) {
             itemNumber
         }
     }
