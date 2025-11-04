@@ -17,16 +17,7 @@
       "Shipment": {
         "allOuterHandlingUnits": [
           {
-            "number": "H1"
-          },
-          {
             "number": "H2"
-          },
-          {
-            "number": "H3"
-          },
-          {
-            "number": "H4"
           }
         ]
       }
@@ -37,16 +28,7 @@
       "Shipment": {
         "allInvoices": [
           {
-            "number": "I1"
-          },
-          {
             "number": "I3"
-          },
-          {
-            "number": "I5"
-          },
-          {
-            "number": "I6"
           }
         ]
       }
@@ -56,9 +38,6 @@
     "data": {
       "Shipment": {
         "allOrders": [
-          {
-            "number": "O1"
-          },
           {
             "number": "O2"
           }
@@ -71,13 +50,7 @@
       "Order": {
         "allOuterHandlingUnits": [
           {
-            "number": "H1"
-          },
-          {
             "number": "H2"
-          },
-          {
-            "number": "H4"
           }
         ]
       }

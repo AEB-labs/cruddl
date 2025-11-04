@@ -10,8 +10,13 @@ mutation createEdges {
     d1: updateDelivery(
         input: {
             id: "@{ids/Delivery/1}"
-            addHandlingUnits: ["@{ids/HandlingUnit/1}", "@{ids/HandlingUnit/2}"]
+            addHandlingUnits: [
+                "@{ids/HandlingUnit/1}"
+                "@{ids/HandlingUnit/2}"
+                "@{ids/HandlingUnit/4}"
+            ]
             order: "@{ids/Order/1}"
+            addInvoices: ["@{ids/Invoice/1}", "@{ids/Invoice/5}"]
         }
     ) {
         deliveryNumber
@@ -19,8 +24,9 @@ mutation createEdges {
     d2: updateDelivery(
         input: {
             id: "@{ids/Delivery/2}"
-            addHandlingUnits: ["@{ids/HandlingUnit/3}", "@{ids/HandlingUnit/2}"]
+            addHandlingUnits: ["@{ids/HandlingUnit/3}"]
             order: "@{ids/Order/2}"
+            addInvoices: ["@{ids/Invoice/3}", "@{ids/Invoice/6}"]
         }
     ) {
         deliveryNumber
@@ -31,7 +37,7 @@ mutation createEdges {
 
 query to_1toN_nToN {
     Shipment(shipmentNumber: "S1") {
-        allOuterHandlingUnits(orderBy: handlingUnitNumber_ASC) {
+        allOuterHandlingUnits(orderBy: handlingUnitNumber_ASC, skip: 1, first: 1) {
             number: handlingUnitNumber
         }
     }
@@ -39,7 +45,7 @@ query to_1toN_nToN {
 
 query to_1toN_1ToN {
     Shipment(shipmentNumber: "S1") {
-        allInvoices(orderBy: invoiceNumber_ASC) {
+        allInvoices(orderBy: invoiceNumber_ASC, skip: 1, first: 1) {
             number: invoiceNumber
         }
     }
@@ -47,7 +53,7 @@ query to_1toN_1ToN {
 
 query to_1toN_1to1 {
     Shipment(shipmentNumber: "S1") {
-        allOrders(orderBy: orderNumber_ASC) {
+        allOrders(orderBy: orderNumber_ASC, skip: 1, first: 1) {
             number: orderNumber
         }
     }
@@ -55,7 +61,7 @@ query to_1toN_1to1 {
 
 query to_1to1_ntoN {
     Order(orderNumber: "O1") {
-        allOuterHandlingUnits(orderBy: handlingUnitNumber_ASC) {
+        allOuterHandlingUnits(orderBy: handlingUnitNumber_ASC, skip: 1, first: 1) {
             number: handlingUnitNumber
         }
     }
