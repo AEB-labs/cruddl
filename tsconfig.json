@@ -14,7 +14,7 @@
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
-    "lib": ["ES2022"],
+    "lib": ["ES2023"],
     "paths": {
       "*": ["./src/typings/*"]
     },
