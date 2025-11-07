@@ -24,6 +24,7 @@
         "allDeliveriesHaveOrders": false,
         "allDeliveriesHaveOriginalOrders": false,
         "allDeliveriesArePayed": false,
+        "allDeliveryLocationIdentCodes": ["licD1", "licD2", "licD5"],
         "numberOfDeliveriesWithoutOrder": 2,
         "numberOfDeliveriesWithoutOriginalOrder": 3,
         "numberOfDeliveriesWithoutPayedOrder": 3,

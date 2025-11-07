@@ -13,6 +13,8 @@ type Shipment @rootEntity {
     allInvoices: [Invoice] @collect(path: "deliveries.invoices")
     allDeliveryContents: [DeliveryContent] @collect(path: "deliveries.deliveryContents")
     allItems: [DeliveryItem] @collect(path: "deliveries.deliveryContents.items")
+    allDeliveryLocationIdentCodes: [String]
+        @collect(path: "deliveries.location.identCode", aggregate: DISTINCT)
     totalWeightInKg: Decimal3 @collect(path: "allItems.weightInKg", aggregate: SUM)
     maxPriority: Int @collect(path: "deliveries.priority", aggregate: MAX)
     itemCount: Int @collect(path: "allItems", aggregate: COUNT)

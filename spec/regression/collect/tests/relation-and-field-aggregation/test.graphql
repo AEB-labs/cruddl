@@ -30,6 +30,7 @@ query fields {
         allDeliveriesHaveOrders
         allDeliveriesHaveOriginalOrders
         allDeliveriesArePayed
+        allDeliveryLocationIdentCodes
         numberOfDeliveriesWithoutOrder
         numberOfDeliveriesWithoutOriginalOrder
         numberOfDeliveriesWithoutPayedOrder
