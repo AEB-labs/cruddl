@@ -47,6 +47,7 @@ type Delivery @rootEntity {
     order: Order @relation
     invoices: [Invoice] @relation
 
+    originalOrder: Order @collect(path: "order.originalOrder")
     allItems: [DeliveryItem] @collect(path: "deliveryContents.items")
     allItemNumbers: [String]
         @collect(path: "deliveryContents.items.itemNumber", aggregate: DISTINCT)

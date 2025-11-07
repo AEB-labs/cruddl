@@ -31,9 +31,20 @@ mutation createEdges {
     ) {
         deliveryNumber
     }
+    o: updateOrder(input: { id: "@{ids/Order/1}", originalOrder: ["@{ids/Orders/2}"] }) {
+        orderNumber
+    }
 }
 
 # we have aliases here to ensure the mapping actually happens
+
+query to_1to1_1To1 {
+    Delivery(shipmentNumber: "S1") {
+        originalOrder {
+            number: orderNumber
+        }
+    }
+}
 
 query to_1toN_nToN {
     Shipment(shipmentNumber: "S1") {
