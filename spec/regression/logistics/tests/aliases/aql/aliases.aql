@@ -35,3 +35,5 @@ RETURN {
     "nr": v_delivery3.`deliveryNumber`
   })
 }
+
+// Peak memory usage: 131072 bytes

@@ -26,17 +26,23 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 98304 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN (
@@ -46,7 +52,9 @@ RETURN (
   REMOVE v_edge1 IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN (
@@ -58,7 +66,9 @@ RETURN (
   IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN (
@@ -67,7 +77,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN (
@@ -79,7 +91,9 @@ RETURN (
   IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN (
@@ -110,17 +124,23 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 98304 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN (
@@ -130,7 +150,9 @@ RETURN (
   REMOVE v_edge1 IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN (
@@ -142,7 +164,9 @@ RETURN (
   IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 98304 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN (
@@ -151,7 +175,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN (
@@ -163,7 +189,9 @@ RETURN (
   IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits, @@deliveries
 RETURN (
@@ -239,9 +267,13 @@ RETURN (
   }
 )
 
-// --------------------------------
+// Peak memory usage: 262144 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits, @@deliveries
 RETURN {
   "updateDeliveries": @v_updateDeliveries1
 }
+
+// Peak memory usage: 0 bytes

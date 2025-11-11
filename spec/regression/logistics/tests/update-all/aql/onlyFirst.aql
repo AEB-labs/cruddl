@@ -18,7 +18,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN (
@@ -36,9 +38,13 @@ RETURN (
   }
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN {
   "updateAllDeliveries": @v_updateAllDeliveries1
 }
+
+// Peak memory usage: 0 bytes

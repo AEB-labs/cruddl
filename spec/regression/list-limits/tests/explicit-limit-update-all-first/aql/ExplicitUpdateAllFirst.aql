@@ -17,7 +17,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@heroes
 RETURN (
@@ -32,9 +34,13 @@ RETURN (
   }
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@heroes
 RETURN {
   "updateAllHeroes": @v_updateAllHeroes1
 }
+
+// Peak memory usage: 0 bytes
