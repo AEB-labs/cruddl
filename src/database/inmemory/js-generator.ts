@@ -804,7 +804,6 @@ register(TraversalQueryNode, (node, context) => {
         const nodeVar = js.variable('node');
         const idFrag = isAlreadyID ? nodeVar : js`${nodeVar}.${js.identifier(ID_FIELD_NAME)}`;
         if (isList) {
-            const accVar = js.variable('acc');
             let edgeListFragment = js`${nodeVar} ? ${getFollowEdgeFragment(
                 segment.relationSide,
                 idFrag,
@@ -822,8 +821,7 @@ register(TraversalQueryNode, (node, context) => {
                     edgeListFragment,
                 );
             }
-            const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${edgeListFragment})`;
-            currentFrag = js`${currentFrag}.reduce(${reducer}, [])`;
+            currentFrag = js`${currentFrag}.flatMap(${jsExt.lambda(nodeVar, edgeListFragment)})`;
         } else {
             currentFrag = jsExt.evaluatingLambda(
                 nodeVar,
@@ -868,18 +866,12 @@ register(TraversalQueryNode, (node, context) => {
         if (isList) {
             if (segment.isListSegment) {
                 const nodeVar = js.variable('node');
-                const accVar = js.variable('acc');
-                const safeListVar = js.variable('list');
-                // || [] to not concat `null` to a list
-                const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${getPropertyAccessFrag(
-                    segment.field.name,
+                const mapper = jsExt.lambda(
                     nodeVar,
-                )} || [])`;
-                currentFrag = jsExt.evaluatingLambda(
-                    safeListVar,
-                    js`${safeListVar}.reduce(${reducer}, [])`,
-                    js`${currentFrag} || []`,
+                    // || [] so that null or undefined don't end up in the final list
+                    js`${getPropertyAccessFrag(segment.field.name, nodeVar)} || []`,
                 );
+                currentFrag = js`(${currentFrag} || []).flatMap(${mapper})`;
             } else {
                 const nodeVar = js.variable('node');
                 const mapper = jsExt.lambda(
@@ -900,14 +892,9 @@ register(TraversalQueryNode, (node, context) => {
     if (relationFrag && rootVar && node.captureRootEntity) {
         if (relationTraversalReturnsList) {
             if (node.fieldSegments.some((f) => f.isListSegment)) {
-                const accVar = js.variable('acc');
-                const objVar = js.variable('obj');
-                const mapper = js`${objVar} => ({ obj: ${objVar}, root: ${rootVar} })`;
-                const reducer = js`(${accVar}, ${rootVar}) => ${accVar}.concat((${currentFrag}).map(${mapper}))`;
-                currentFrag = js`${relationFrag}.reduce(${reducer}, [])`;
+                currentFrag = js`${relationFrag}.flatMap(${rootVar} => (${currentFrag}).map(obj => ({ obj: obj, root: ${rootVar} })))`;
             } else {
-                const mapper = js`${rootVar} => ({ obj: ${currentFrag}, root: ${rootVar} })`;
-                currentFrag = js`${relationFrag}.map(${mapper})`;
+                currentFrag = js`${relationFrag}.map(${rootVar} => ({ obj: ${currentFrag}, root: ${rootVar} }))`;
             }
         } else {
             if (node.fieldSegments.some((f) => f.isListSegment)) {
