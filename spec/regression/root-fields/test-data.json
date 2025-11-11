@@ -5,12 +5,15 @@
       {
         "@id": "1",
         "name": "r1",
+        "payload": "@{randomString(10000)}",
         "children": [
           {
             "name": "r1c1",
+            "payload": "@{randomString(10000)}",
             "children": [
               {
-                "name": "r1c1g1"
+                "name": "r1c1g1",
+                "payload": "@{randomString(10000)}"
               }
             ]
           }
@@ -19,45 +22,58 @@
       {
         "@id": "2",
         "name": "r2",
+        "payload": "@{randomString(10000)}",
         "children": [
           {
             "name": "r2c1",
+            "payload": "@{randomString(10000)}",
             "children": [
               {
-                "name": "r2c1g1"
+                "name": "r2c1g1",
+                "payload": "@{randomString(10000)}"
               },
               {
-                "name": "r2c1g2"
+                "name": "r2c1g2",
+                "payload": "@{randomString(10000)}"
               }
             ],
             "extension": {
+              "payload": "@{randomString(10000)}",
               "children": [
                 {
-                  "name": "r2c1eg1"
+                  "name": "r2c1eg1",
+                  "payload": "@{randomString(10000)}"
                 },
                 {
-                  "name": "r2c1eg2"
+                  "name": "r2c1eg2",
+                  "payload": "@{randomString(10000)}"
                 }
               ]
             }
           },
           {
             "name": "r2c2",
+            "payload": "@{randomString(10000)}",
             "children": [
               {
-                "name": "r2c2g1"
+                "name": "r2c2g1",
+                "payload": "@{randomString(10000)}"
               },
               {
-                "name": "r2c2g2"
+                "name": "r2c2g2",
+                "payload": "@{randomString(10000)}"
               }
             ],
             "extension": {
+              "payload": "@{randomString(10000)}",
               "children": [
                 {
-                  "name": "r2c2eg1"
+                  "name": "r2c2eg1",
+                  "payload": "@{randomString(10000)}"
                 },
                 {
-                  "name": "r2c2ge2"
+                  "name": "r2c2ge2",
+                  "payload": "@{randomString(10000)}"
                 }
               ]
             }
@@ -67,7 +83,8 @@
     ],
     "Root2": [
       {
-        "@id": "1"
+        "@id": "1",
+        "payload": "@{randomString(10000)}"
       }
     ]
   }
