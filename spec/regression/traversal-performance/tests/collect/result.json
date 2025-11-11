@@ -308,20 +308,611 @@
     }
   },
   "RelationAndFieldTraversalWithParent": {
-    "errors": [
-      {
-        "message": "AQL: query would use more memory than allowed [node #17: TraversalNode] [node #42: SubqueryStartNode] [node #22: FilterNode] [node #23: CalculationNode] [node #24: EnumerateListNode] [node #25: CalculationNode] [node #43: SubqueryEndNode] [node #41: SubqueryEndNode] [node #38: SubqueryStartNode] [node #13: FilterNode] [node #30: CalculationNode] [node #31: EnumerateListNode] [node #32: CalculationNode] [node #39: SubqueryEndNode] [node #35: CalculationNode] [node #36: ReturnNode] (while executing)",
-        "locations": [
-          {
-            "line": 10,
-            "column": 5
-          }
-        ],
-        "path": ["Super"]
-      }
-    ],
     "data": {
-      "Super": null
+      "Super": {
+        "rootChildren": [
+          {
+            "key": "child9_0",
+            "parent": {
+              "key": "root9"
+            }
+          },
+          {
+            "key": "child9_1",
+            "parent": {
+              "key": "root9"
+            }
+          },
+          {
+            "key": "child9_2",
+            "parent": {
+              "key": "root9"
+            }
+          },
+          {
+            "key": "child9_3",
+            "parent": {
+              "key": "root9"
+            }
+          },
+          {
+            "key": "child9_4",
+            "parent": {
+              "key": "root9"
+            }
+          },
+          {
+            "key": "child9_5",
+            "parent": {
+              "key": "root9"
+            }
+          },
+          {
+            "key": "child9_6",
+            "parent": {
+              "key": "root9"
+            }
+          },
+          {
+            "key": "child9_7",
+            "parent": {
+              "key": "root9"
+            }
+          },
+          {
+            "key": "child9_8",
+            "parent": {
+              "key": "root9"
+            }
+          },
+          {
+            "key": "child9_9",
+            "parent": {
+              "key": "root9"
+            }
+          },
+          {
+            "key": "child8_0",
+            "parent": {
+              "key": "root8"
+            }
+          },
+          {
+            "key": "child8_1",
+            "parent": {
+              "key": "root8"
+            }
+          },
+          {
+            "key": "child8_2",
+            "parent": {
+              "key": "root8"
+            }
+          },
+          {
+            "key": "child8_3",
+            "parent": {
+              "key": "root8"
+            }
+          },
+          {
+            "key": "child8_4",
+            "parent": {
+              "key": "root8"
+            }
+          },
+          {
+            "key": "child8_5",
+            "parent": {
+              "key": "root8"
+            }
+          },
+          {
+            "key": "child8_6",
+            "parent": {
+              "key": "root8"
+            }
+          },
+          {
+            "key": "child8_7",
+            "parent": {
+              "key": "root8"
+            }
+          },
+          {
+            "key": "child8_8",
+            "parent": {
+              "key": "root8"
+            }
+          },
+          {
+            "key": "child8_9",
+            "parent": {
+              "key": "root8"
+            }
+          },
+          {
+            "key": "child7_0",
+            "parent": {
+              "key": "root7"
+            }
+          },
+          {
+            "key": "child7_1",
+            "parent": {
+              "key": "root7"
+            }
+          },
+          {
+            "key": "child7_2",
+            "parent": {
+              "key": "root7"
+            }
+          },
+          {
+            "key": "child7_3",
+            "parent": {
+              "key": "root7"
+            }
+          },
+          {
+            "key": "child7_4",
+            "parent": {
+              "key": "root7"
+            }
+          },
+          {
+            "key": "child7_5",
+            "parent": {
+              "key": "root7"
+            }
+          },
+          {
+            "key": "child7_6",
+            "parent": {
+              "key": "root7"
+            }
+          },
+          {
+            "key": "child7_7",
+            "parent": {
+              "key": "root7"
+            }
+          },
+          {
+            "key": "child7_8",
+            "parent": {
+              "key": "root7"
+            }
+          },
+          {
+            "key": "child7_9",
+            "parent": {
+              "key": "root7"
+            }
+          },
+          {
+            "key": "child6_0",
+            "parent": {
+              "key": "root6"
+            }
+          },
+          {
+            "key": "child6_1",
+            "parent": {
+              "key": "root6"
+            }
+          },
+          {
+            "key": "child6_2",
+            "parent": {
+              "key": "root6"
+            }
+          },
+          {
+            "key": "child6_3",
+            "parent": {
+              "key": "root6"
+            }
+          },
+          {
+            "key": "child6_4",
+            "parent": {
+              "key": "root6"
+            }
+          },
+          {
+            "key": "child6_5",
+            "parent": {
+              "key": "root6"
+            }
+          },
+          {
+            "key": "child6_6",
+            "parent": {
+              "key": "root6"
+            }
+          },
+          {
+            "key": "child6_7",
+            "parent": {
+              "key": "root6"
+            }
+          },
+          {
+            "key": "child6_8",
+            "parent": {
+              "key": "root6"
+            }
+          },
+          {
+            "key": "child6_9",
+            "parent": {
+              "key": "root6"
+            }
+          },
+          {
+            "key": "child5_0",
+            "parent": {
+              "key": "root5"
+            }
+          },
+          {
+            "key": "child5_1",
+            "parent": {
+              "key": "root5"
+            }
+          },
+          {
+            "key": "child5_2",
+            "parent": {
+              "key": "root5"
+            }
+          },
+          {
+            "key": "child5_3",
+            "parent": {
+              "key": "root5"
+            }
+          },
+          {
+            "key": "child5_4",
+            "parent": {
+              "key": "root5"
+            }
+          },
+          {
+            "key": "child5_5",
+            "parent": {
+              "key": "root5"
+            }
+          },
+          {
+            "key": "child5_6",
+            "parent": {
+              "key": "root5"
+            }
+          },
+          {
+            "key": "child5_7",
+            "parent": {
+              "key": "root5"
+            }
+          },
+          {
+            "key": "child5_8",
+            "parent": {
+              "key": "root5"
+            }
+          },
+          {
+            "key": "child5_9",
+            "parent": {
+              "key": "root5"
+            }
+          },
+          {
+            "key": "child4_0",
+            "parent": {
+              "key": "root4"
+            }
+          },
+          {
+            "key": "child4_1",
+            "parent": {
+              "key": "root4"
+            }
+          },
+          {
+            "key": "child4_2",
+            "parent": {
+              "key": "root4"
+            }
+          },
+          {
+            "key": "child4_3",
+            "parent": {
+              "key": "root4"
+            }
+          },
+          {
+            "key": "child4_4",
+            "parent": {
+              "key": "root4"
+            }
+          },
+          {
+            "key": "child4_5",
+            "parent": {
+              "key": "root4"
+            }
+          },
+          {
+            "key": "child4_6",
+            "parent": {
+              "key": "root4"
+            }
+          },
+          {
+            "key": "child4_7",
+            "parent": {
+              "key": "root4"
+            }
+          },
+          {
+            "key": "child4_8",
+            "parent": {
+              "key": "root4"
+            }
+          },
+          {
+            "key": "child4_9",
+            "parent": {
+              "key": "root4"
+            }
+          },
+          {
+            "key": "child3_0",
+            "parent": {
+              "key": "root3"
+            }
+          },
+          {
+            "key": "child3_1",
+            "parent": {
+              "key": "root3"
+            }
+          },
+          {
+            "key": "child3_2",
+            "parent": {
+              "key": "root3"
+            }
+          },
+          {
+            "key": "child3_3",
+            "parent": {
+              "key": "root3"
+            }
+          },
+          {
+            "key": "child3_4",
+            "parent": {
+              "key": "root3"
+            }
+          },
+          {
+            "key": "child3_5",
+            "parent": {
+              "key": "root3"
+            }
+          },
+          {
+            "key": "child3_6",
+            "parent": {
+              "key": "root3"
+            }
+          },
+          {
+            "key": "child3_7",
+            "parent": {
+              "key": "root3"
+            }
+          },
+          {
+            "key": "child3_8",
+            "parent": {
+              "key": "root3"
+            }
+          },
+          {
+            "key": "child3_9",
+            "parent": {
+              "key": "root3"
+            }
+          },
+          {
+            "key": "child2_0",
+            "parent": {
+              "key": "root2"
+            }
+          },
+          {
+            "key": "child2_1",
+            "parent": {
+              "key": "root2"
+            }
+          },
+          {
+            "key": "child2_2",
+            "parent": {
+              "key": "root2"
+            }
+          },
+          {
+            "key": "child2_3",
+            "parent": {
+              "key": "root2"
+            }
+          },
+          {
+            "key": "child2_4",
+            "parent": {
+              "key": "root2"
+            }
+          },
+          {
+            "key": "child2_5",
+            "parent": {
+              "key": "root2"
+            }
+          },
+          {
+            "key": "child2_6",
+            "parent": {
+              "key": "root2"
+            }
+          },
+          {
+            "key": "child2_7",
+            "parent": {
+              "key": "root2"
+            }
+          },
+          {
+            "key": "child2_8",
+            "parent": {
+              "key": "root2"
+            }
+          },
+          {
+            "key": "child2_9",
+            "parent": {
+              "key": "root2"
+            }
+          },
+          {
+            "key": "child1_0",
+            "parent": {
+              "key": "root1"
+            }
+          },
+          {
+            "key": "child1_1",
+            "parent": {
+              "key": "root1"
+            }
+          },
+          {
+            "key": "child1_2",
+            "parent": {
+              "key": "root1"
+            }
+          },
+          {
+            "key": "child1_3",
+            "parent": {
+              "key": "root1"
+            }
+          },
+          {
+            "key": "child1_4",
+            "parent": {
+              "key": "root1"
+            }
+          },
+          {
+            "key": "child1_5",
+            "parent": {
+              "key": "root1"
+            }
+          },
+          {
+            "key": "child1_6",
+            "parent": {
+              "key": "root1"
+            }
+          },
+          {
+            "key": "child1_7",
+            "parent": {
+              "key": "root1"
+            }
+          },
+          {
+            "key": "child1_8",
+            "parent": {
+              "key": "root1"
+            }
+          },
+          {
+            "key": "child1_9",
+            "parent": {
+              "key": "root1"
+            }
+          },
+          {
+            "key": "child0_0",
+            "parent": {
+              "key": "root0"
+            }
+          },
+          {
+            "key": "child0_1",
+            "parent": {
+              "key": "root0"
+            }
+          },
+          {
+            "key": "child0_2",
+            "parent": {
+              "key": "root0"
+            }
+          },
+          {
+            "key": "child0_3",
+            "parent": {
+              "key": "root0"
+            }
+          },
+          {
+            "key": "child0_4",
+            "parent": {
+              "key": "root0"
+            }
+          },
+          {
+            "key": "child0_5",
+            "parent": {
+              "key": "root0"
+            }
+          },
+          {
+            "key": "child0_6",
+            "parent": {
+              "key": "root0"
+            }
+          },
+          {
+            "key": "child0_7",
+            "parent": {
+              "key": "root0"
+            }
+          },
+          {
+            "key": "child0_8",
+            "parent": {
+              "key": "root0"
+            }
+          },
+          {
+            "key": "child0_9",
+            "parent": {
+              "key": "root0"
+            }
+          }
+        ]
+      }
     }
   }
 }

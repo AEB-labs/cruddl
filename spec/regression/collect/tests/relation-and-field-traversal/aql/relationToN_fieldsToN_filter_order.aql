@@ -9,32 +9,34 @@ LET v_shipment1 = FIRST((
 RETURN {
   "Shipment": (IS_NULL(v_shipment1) ? null : {
     "allItems": (
-      FOR v_deliveryItem1
-      IN FLATTEN((
-        FOR v_node1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_shipment1 @@shipments_deliveries
-        FILTER v_node1._key != null
-        RETURN v_node1.`deliveryContents`[*].`items`[*]
-      ), 2)
-      FILTER (RIGHT(v_deliveryItem1.`itemNumber`, LENGTH(@var5)) == @var6)
-      SORT (v_deliveryItem1.`itemNumber`)
-      RETURN {
-        "itemNumber": v_deliveryItem1.`itemNumber`
-      }
+      FOR v_root1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_shipment1 @@shipments_deliveries
+      FILTER v_root1._key != null
+      FOR v_item1 IN v_root1.`deliveryContents`[*].`items`[*][** FILTER (RIGHT(CURRENT.`itemNumber`, LENGTH(@var5)) == @var6) RETURN {
+        value: {
+          "itemNumber": CURRENT.`itemNumber`
+        },
+        sortValues: [
+          CURRENT.`itemNumber`
+        ]
+      }]
+      SORT v_item1.sortValues[0]
+      RETURN v_item1.value
     ),
     "allDeliveryContents": (
-      FOR v_deliveryContent1
-      IN (
-        FOR v_node2, v_edge2, v_path2 IN @var7..@var8 OUTBOUND v_shipment1 @@shipments_deliveries
-        FILTER v_node2._key != null
-        RETURN v_node2.`deliveryContents`[*]
-      )[**]
-      FILTER (RIGHT(v_deliveryContent1.`deliveryContentNumber`, LENGTH(@var9)) == @var10)
-      SORT (v_deliveryContent1.`deliveryContentNumber`)
-      RETURN {
-        "deliveryContentNumber": v_deliveryContent1.`deliveryContentNumber`
-      }
+      FOR v_root2, v_edge2, v_path2 IN @var7..@var8 OUTBOUND v_shipment1 @@shipments_deliveries
+      FILTER v_root2._key != null
+      FOR v_item2 IN v_root2.`deliveryContents`[* FILTER (RIGHT(CURRENT.`deliveryContentNumber`, LENGTH(@var9)) == @var10) RETURN {
+        value: {
+          "deliveryContentNumber": CURRENT.`deliveryContentNumber`
+        },
+        sortValues: [
+          CURRENT.`deliveryContentNumber`
+        ]
+      }]
+      SORT v_item2.sortValues[0]
+      RETURN v_item2.value
     )
   })
 }
 
-// Peak memory usage: 491520 bytes
+// Peak memory usage: 262144 bytes
