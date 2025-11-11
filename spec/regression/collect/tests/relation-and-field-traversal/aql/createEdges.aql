@@ -21,14 +21,14 @@ RETURN (
 WITH @@deliveries
 RETURN DOCUMENT(@@deliveries, @var1)
 
-// Peak memory usage: 0 bytes
+// Peak memory usage: 131072 bytes
 
 // ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN DOCUMENT(@@deliveries, @var1)
 
-// Peak memory usage: 0 bytes
+// Peak memory usage: 131072 bytes
 
 // ----------------------------------------------------------------
 
@@ -92,7 +92,7 @@ RETURN (
 WITH @@deliveries, @@shipments
 RETURN DOCUMENT(@@deliveries, @var1)
 
-// Peak memory usage: 0 bytes
+// Peak memory usage: 131072 bytes
 
 // ----------------------------------------------------------------
 
