@@ -12,6 +12,7 @@ import {
     TransformListQueryNode,
     VariableAssignmentQueryNode,
     WithPreExecutionQueryNode,
+    TraversalQueryNode,
 } from '../query-tree';
 import { visitQueryNode } from '../query-tree/visitor';
 import { VisitResult } from '../utils/visitor';
@@ -154,6 +155,7 @@ namespace outputNodes {
     add(ListQueryNode, 'itemNodes');
     add(ConditionalQueryNode, 'expr1', 'expr2');
     add(TransformListQueryNode, 'innerNode');
+    add(TraversalQueryNode, 'innerNode');
     addExt(
         WithPreExecutionQueryNode,
         OutputNodeKind.OUTPUT_INTERMEDIATE,

@@ -35,7 +35,7 @@ RETURN {
         FILTER v_node1._key != null
         RETURN v_node1
       )
-      COLLECT WITH COUNT INTO v_count2
+      COLLECT AGGREGATE v_count2 = COUNT(v_item4)
       RETURN v_count2
     )
   })

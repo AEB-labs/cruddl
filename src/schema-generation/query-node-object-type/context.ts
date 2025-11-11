@@ -7,7 +7,7 @@ import { FieldSelection } from '../../graphql/query-distiller';
  *
  * There usually is a 1:1 relationship between a FieldSelection/FieldRequest and the SelectionToken. However, instances
  * of a FieldSelection do not convey an identity per se. Usage of the SelectionToken class makes it clear that it's not
- * taken for its values bot for the identity within an execution. This is a useful property for caches and external
+ * taken for its values but for the identity within an execution. This is a useful property for caches and external
  * state management.
  */
 export class SelectionToken {

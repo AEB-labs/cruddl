@@ -13,9 +13,9 @@ RETURN {
       IN (
         FOR v_item1
         IN (
-          FOR v_node1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_delivery1 @@deliveries_handlingUnits
-          FILTER v_node1._key != null
-          RETURN v_node1.`warehouseSlot`
+          FOR v_root1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_delivery1 @@deliveries_handlingUnits
+          FILTER v_root1._key != null
+          RETURN v_root1.`warehouseSlot`
         )
         FILTER v_item1 != null
         COLLECT v_distinct1 = v_item1
