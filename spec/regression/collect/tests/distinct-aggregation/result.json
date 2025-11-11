@@ -11,16 +11,16 @@
       "Delivery": {
         "allWarehouseSlots": [
           {
-            "level": 0,
-            "warehouse": "North"
+            "warehouse": "North",
+            "level": 0
           },
           {
-            "level": 0,
-            "warehouse": "South"
+            "warehouse": "South",
+            "level": 0
           },
           {
-            "level": 1,
-            "warehouse": "South"
+            "warehouse": "South",
+            "level": 1
           }
         ]
       }

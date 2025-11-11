@@ -83,6 +83,23 @@ export async function initTestData(
                     return id;
                 });
             }
+
+            // e.g. "@{randomString(10000)}"
+            // fields filled with this value are not intended to be queried (random wouldn't work)
+            // but they can test whether non-accessed fields cause memory issues
+            const randomStringExprs = [/@\{randomString\((\d+)\)}/g];
+            for (const expr of randomStringExprs) {
+                result = result.replace(expr, (_, lengthStr) => {
+                    const length = parseInt(lengthStr, 10);
+                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                    let randomStr = '';
+                    for (let i = 0; i < length; i++) {
+                        randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+                    }
+                    return randomStr;
+                });
+            }
+
             return result;
         }
         if (data && typeof data == 'object') {
