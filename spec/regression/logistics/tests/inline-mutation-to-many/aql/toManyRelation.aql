@@ -3,7 +3,9 @@ RETURN FIRST(
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN (
   FOR v_entity1 IN @var1
@@ -11,7 +13,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN (
   FOR v_edge1
@@ -22,7 +26,9 @@ RETURN (
   IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 LET v_entity1 = DOCUMENT(@@deliveries, @v_newEntityId1)
@@ -51,7 +57,9 @@ RETURN (
   RETURN @var8
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits
 LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
@@ -68,7 +76,9 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   )
 })
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits
 RETURN (
@@ -87,7 +97,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits
 RETURN (
@@ -96,7 +108,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits
 RETURN (
@@ -108,7 +122,9 @@ RETURN (
   IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits
 LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
@@ -124,10 +140,14 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   )
 })
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits
 RETURN {
   "createDelivery": @v_createDelivery1,
   "updateDelivery": @v_updateDelivery1
 }
+
+// Peak memory usage: 0 bytes

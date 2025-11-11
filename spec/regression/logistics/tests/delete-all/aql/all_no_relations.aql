@@ -13,8 +13,12 @@ RETURN (
   }
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN {
   "deleteAllCountries": @v_deleteAllCountries1
 }
+
+// Peak memory usage: 0 bytes

@@ -7,7 +7,9 @@ RETURN (
   RETURN v_delivery1._key
 )
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 RETURN (
   FOR v_from1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
@@ -16,7 +18,9 @@ RETURN (
   REMOVE v_edge1 IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN (
   FOR v_from1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
@@ -25,7 +29,9 @@ RETURN (
   REMOVE v_edge1 IN @@deliveries_forwarder
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN (
   FOR v_to1 IN (FOR v_id1 IN @v_ids1 RETURN CONCAT(@var1, v_id1))
@@ -34,7 +40,9 @@ RETURN (
   REMOVE v_edge1 IN @@onlyRelations_deliveries
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN (
   FOR v_Delivery1
@@ -53,8 +61,12 @@ RETURN (
   }
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN {
   "deleteAllDeliveries": @v_deleteAllDeliveries1
 }
+
+// Peak memory usage: 0 bytes

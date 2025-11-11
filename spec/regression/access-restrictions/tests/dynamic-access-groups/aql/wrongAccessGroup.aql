@@ -1,13 +1,15 @@
 RETURN ((@var1.`accessGroup` IN @var2) || (@var3.`accessGroup` == @var4))
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 RETURN FIRST(
   INSERT @var1 IN @@files
   RETURN NEW._key
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@files
 LET v_file1 = FIRST(
@@ -18,7 +20,7 @@ RETURN (IS_NULL(v_file1) ? null : {
   "accessGroup": v_file1.`accessGroup`
 })
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@files
 RETURN {

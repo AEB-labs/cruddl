@@ -14,12 +14,16 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents
 RETURN DOCUMENT(@@dependents, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents
 RETURN (
@@ -29,7 +33,9 @@ RETURN (
   REMOVE v_edge1 IN @@mains_dependents
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents
 RETURN (
@@ -41,7 +47,9 @@ RETURN (
   IN @@mains_dependents
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents
 RETURN (
@@ -60,12 +68,16 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents
 RETURN DOCUMENT(@@dependents, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents
 RETURN (
@@ -75,7 +87,9 @@ RETURN (
   REMOVE v_edge1 IN @@mains_dependents
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents
 RETURN (
@@ -87,7 +101,9 @@ RETURN (
   IN @@mains_dependents
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents, @@mains
 RETURN (
@@ -101,7 +117,9 @@ RETURN (
   }
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents, @@mains
 RETURN (
@@ -120,12 +138,16 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents, @@mains, @@blockers
 RETURN DOCUMENT(@@blockers, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents, @@mains, @@blockers
 RETURN (
@@ -135,7 +157,9 @@ RETURN (
   REMOVE v_edge1 IN @@dependents_blockers
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents, @@mains, @@blockers
 RETURN (
@@ -147,7 +171,9 @@ RETURN (
   IN @@dependents_blockers
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents, @@mains, @@blockers
 RETURN (
@@ -160,10 +186,14 @@ RETURN (
   }
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents, @@mains, @@blockers
 RETURN {
   "updateMains": @v_updateMains1,
   "updateDependents": @v_updateDependents1
 }
+
+// Peak memory usage: 0 bytes

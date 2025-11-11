@@ -3,12 +3,16 @@ RETURN FIRST(
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN (
@@ -18,7 +22,9 @@ RETURN (
   REMOVE v_edge1 IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN (
@@ -30,7 +36,9 @@ RETURN (
   IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits, @@deliveries
 LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
@@ -38,7 +46,9 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   "deliveryNumber": v_delivery1.`deliveryNumber`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits, @@deliveries
 RETURN {
@@ -48,3 +58,5 @@ RETURN {
     }
   }
 }
+
+// Peak memory usage: 0 bytes

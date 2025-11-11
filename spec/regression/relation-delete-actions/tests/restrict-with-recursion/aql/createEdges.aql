@@ -14,17 +14,23 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@mains
 RETURN DOCUMENT(@@mains, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@mains
 RETURN DOCUMENT(@@mains, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@mains
 RETURN (
@@ -34,7 +40,9 @@ RETURN (
   REMOVE v_edge1 IN @@mains_blockingMains
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@mains
 RETURN (
@@ -46,7 +54,9 @@ RETURN (
   IN @@mains_blockingMains
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@mains
 LET v_main1 = DOCUMENT(@@mains, @var1)
@@ -54,9 +64,13 @@ RETURN (IS_NULL(v_main1) ? null : {
   "key": v_main1.`key`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@mains
 RETURN {
   "updateMain": @v_updateMain1
 }
+
+// Peak memory usage: 0 bytes

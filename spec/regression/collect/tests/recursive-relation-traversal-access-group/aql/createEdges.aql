@@ -14,17 +14,23 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN DOCUMENT(@@deliveries, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN DOCUMENT(@@deliveries, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN (
@@ -34,7 +40,9 @@ RETURN (
   REMOVE v_edge1 IN @@shipments_deliveries
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN (
@@ -46,7 +54,9 @@ RETURN (
   IN @@shipments_deliveries
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments
 LET v_shipment1 = DOCUMENT(@@shipments, @var1)
@@ -54,7 +64,9 @@ RETURN (IS_NULL(v_shipment1) ? null : {
   "shipmentNumber": v_shipment1.`shipmentNumber`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments
 RETURN (
@@ -73,17 +85,23 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -95,7 +113,9 @@ RETURN (
   IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
@@ -103,7 +123,9 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   "deliveryNumber": v_delivery1.`deliveryNumber`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -122,12 +144,16 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -139,7 +165,9 @@ RETURN (
   IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
@@ -147,7 +175,9 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   "deliveryNumber": v_delivery1.`deliveryNumber`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -166,7 +196,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -175,7 +207,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -184,7 +218,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -196,7 +232,9 @@ RETURN (
   IN @@handlingUnits_childHandlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -205,7 +243,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -217,7 +257,9 @@ RETURN (
   IN @@handlingUnits_childHandlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 98304 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -229,7 +271,9 @@ RETURN (
   IN @@handlingUnits_childHandlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 98304 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 LET v_handlingUnit1 = DOCUMENT(@@handlingUnits, @var1)
@@ -237,7 +281,9 @@ RETURN (IS_NULL(v_handlingUnit1) ? null : {
   "handlingUnitNumber": v_handlingUnit1.`handlingUnitNumber`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -256,7 +302,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -265,7 +313,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -274,7 +324,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -286,7 +338,9 @@ RETURN (
   IN @@handlingUnits_childHandlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -298,7 +352,9 @@ RETURN (
   IN @@handlingUnits_childHandlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 98304 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 LET v_handlingUnit1 = DOCUMENT(@@handlingUnits, @var1)
@@ -306,7 +362,9 @@ RETURN (IS_NULL(v_handlingUnit1) ? null : {
   "handlingUnitNumber": v_handlingUnit1.`handlingUnitNumber`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -325,7 +383,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -334,7 +394,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -343,7 +405,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -355,7 +419,9 @@ RETURN (
   IN @@handlingUnits_childHandlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN (
@@ -367,7 +433,9 @@ RETURN (
   IN @@handlingUnits_childHandlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 98304 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 LET v_handlingUnit1 = DOCUMENT(@@handlingUnits, @var1)
@@ -375,7 +443,9 @@ RETURN (IS_NULL(v_handlingUnit1) ? null : {
   "handlingUnitNumber": v_handlingUnit1.`handlingUnitNumber`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@shipments, @@handlingUnits
 RETURN {
@@ -386,3 +456,5 @@ RETURN {
   "h2": @v_updateHandlingUnit2,
   "h3": @v_updateHandlingUnit3
 }
+
+// Peak memory usage: 0 bytes

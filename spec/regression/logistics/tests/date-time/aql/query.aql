@@ -10,3 +10,5 @@ RETURN {
     "shippedAt": v_delivery1.`shippedAt`
   })
 }
+
+// Peak memory usage: 0 bytes

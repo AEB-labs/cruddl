@@ -10,7 +10,9 @@ RETURN (FIRST(
   RETURN v_count1
 ) > @var2)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@users
 RETURN {
@@ -67,3 +69,5 @@ RETURN {
     }
   ))
 }
+
+// Peak memory usage: 131072 bytes

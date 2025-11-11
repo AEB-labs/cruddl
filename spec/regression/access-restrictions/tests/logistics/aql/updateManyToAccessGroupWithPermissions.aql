@@ -21,7 +21,9 @@ RETURN (FIRST(
   RETURN v_count1
 ) == 0)
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN (FIRST(
   FOR v_item1
@@ -52,7 +54,9 @@ RETURN (FIRST(
   RETURN v_count1
 ) == 0)
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN (
   FOR v_currentEntity1
@@ -78,7 +82,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@files
 RETURN (
@@ -94,9 +100,13 @@ RETURN (
   }
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@files
 RETURN {
   "updateFiles": @v_updateFiles1
 }
+
+// Peak memory usage: 0 bytes

@@ -13,8 +13,12 @@ RETURN (
   }
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN {
   "deleteAllHeroes": @v_deleteAllHeroes1
 }
+
+// Peak memory usage: 0 bytes

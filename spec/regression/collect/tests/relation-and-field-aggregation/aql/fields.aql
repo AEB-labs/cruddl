@@ -132,3 +132,5 @@ RETURN {
     )
   })
 }
+
+// Peak memory usage: 524288 bytes

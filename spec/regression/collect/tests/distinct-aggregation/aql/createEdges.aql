@@ -14,27 +14,37 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits
 RETURN (
@@ -46,7 +56,9 @@ RETURN (
   IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 98304 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits, @@deliveries
 LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
@@ -54,9 +66,13 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   "deliveryNumber": v_delivery1.`deliveryNumber`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@handlingUnits, @@deliveries
 RETURN {
   "updateDelivery": @v_updateDelivery1
 }
+
+// Peak memory usage: 0 bytes

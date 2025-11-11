@@ -60,3 +60,5 @@ RETURN {
     "totalInvestment": v_country1.`totalInvestment`
   })
 }
+
+// Peak memory usage: 196608 bytes

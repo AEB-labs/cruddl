@@ -17,7 +17,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
@@ -25,7 +27,9 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   "deliveryNumber": v_delivery1.`deliveryNumber`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN (
@@ -47,7 +51,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@forwarders
 LET v_forwarder1 = DOCUMENT(@@forwarders, @var1)
@@ -55,7 +61,9 @@ RETURN (IS_NULL(v_forwarder1) ? null : {
   "name": v_forwarder1.`name`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@forwarders
 RETURN (
@@ -77,7 +85,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@forwarders
 LET v_entity1 = DOCUMENT(@@deliveries, FIRST(@v_updatedIds1))
@@ -106,7 +116,9 @@ RETURN (
   RETURN @var8
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@forwarders
 LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
@@ -114,7 +126,9 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   "deliveryNumber": v_delivery1.`deliveryNumber`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@forwarders
 RETURN {
@@ -122,3 +136,5 @@ RETURN {
   "updateForwarder": @v_updateForwarder1,
   "update2": @v_updateDelivery2
 }
+
+// Peak memory usage: 0 bytes

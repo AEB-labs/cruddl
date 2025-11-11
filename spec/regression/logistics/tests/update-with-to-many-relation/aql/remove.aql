@@ -14,7 +14,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN (
   FOR v_from1 IN [CONCAT(@var1, FIRST(@v_updatedIds1))]
@@ -24,7 +26,9 @@ RETURN (
   REMOVE v_edge1 IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
@@ -32,9 +36,13 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   "deliveryNumber": v_delivery1.`deliveryNumber`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN {
   "updateDelivery": @v_updateDelivery1
 }
+
+// Peak memory usage: 0 bytes

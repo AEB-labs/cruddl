@@ -10,3 +10,5 @@ RETURN {
     "name": v_numberRange1.`name`
   })
 }
+
+// Peak memory usage: 0 bytes

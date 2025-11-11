@@ -12,7 +12,9 @@ RETURN (
   RETURN v_handlingUnit1._key
 )
 
-// --------------------------------
+// Peak memory usage: 98304 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN (
@@ -22,7 +24,9 @@ RETURN (
   REMOVE v_edge1 IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN (
@@ -39,9 +43,13 @@ RETURN (
   }
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN {
   "deleteAllHandlingUnits": @v_deleteAllHandlingUnits1
 }
+
+// Peak memory usage: 0 bytes

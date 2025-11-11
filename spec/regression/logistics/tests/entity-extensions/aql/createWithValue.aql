@@ -3,7 +3,9 @@ RETURN FIRST(
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 LET v_entity1 = DOCUMENT(@@deliveries, @v_newEntityId1)
@@ -32,7 +34,9 @@ RETURN (
   RETURN @var8
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
@@ -43,9 +47,13 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   }
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN {
   "createDelivery": @v_createDelivery1
 }
+
+// Peak memory usage: 0 bytes

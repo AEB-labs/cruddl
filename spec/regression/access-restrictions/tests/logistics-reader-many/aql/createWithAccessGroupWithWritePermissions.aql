@@ -9,7 +9,9 @@ RETURN FIRST(
   RETURN v_every_true1 < true
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN (
   FOR v_entity1 IN @var1
@@ -17,7 +19,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@files
 RETURN (
@@ -33,9 +37,13 @@ RETURN (
   }
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@files
 RETURN {
   "createFiles": @v_createFiles1
 }
+
+// Peak memory usage: 0 bytes

@@ -14,7 +14,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@papers
 LET v_paper1 = DOCUMENT(@@papers, @var1)
@@ -22,7 +24,7 @@ RETURN (IS_NULL(v_paper1) ? null : {
   "key": v_paper1.`key`
 })
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@papers
 RETURN FIRST(
@@ -30,7 +32,7 @@ RETURN FIRST(
   RETURN NEW._key
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@papers
 LET v_paper1 = DOCUMENT(@@papers, @v_newEntityId1)
@@ -38,7 +40,7 @@ RETURN (IS_NULL(v_paper1) ? null : {
   "key": v_paper1.`key`
 })
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@papers
 RETURN {

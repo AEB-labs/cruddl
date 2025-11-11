@@ -5,3 +5,5 @@ RETURN {
   "throughRelation": { __cruddl_runtime_error_code: @var7, __cruddl_runtime_error: @var8 },
   "toUnaccessibleEntity": { __cruddl_runtime_error_code: @var9, __cruddl_runtime_error: @var10 }
 }
+
+// Peak memory usage: 0 bytes

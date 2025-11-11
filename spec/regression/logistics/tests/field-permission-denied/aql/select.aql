@@ -52,3 +52,5 @@ RETURN {
     "totalInvestment": { __cruddl_runtime_error_code: @var16, __cruddl_runtime_error: @var17 }
   })
 }
+
+// Peak memory usage: 163840 bytes

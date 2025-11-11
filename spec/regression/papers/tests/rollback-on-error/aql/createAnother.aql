@@ -3,7 +3,9 @@ RETURN FIRST(
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@papers
 LET v_paper1 = DOCUMENT(@@papers, @v_newEntityId1)
@@ -11,9 +13,13 @@ RETURN (IS_NULL(v_paper1) ? null : {
   "key": v_paper1.`key`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@papers
 RETURN {
   "createPaper": @v_createPaper1
 }
+
+// Peak memory usage: 0 bytes

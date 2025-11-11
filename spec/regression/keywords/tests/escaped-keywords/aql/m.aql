@@ -4,7 +4,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@values
 RETURN (
@@ -19,9 +21,13 @@ RETURN (
   }
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@values
 RETURN {
   "createValues": @v_createValues1
 }
+
+// Peak memory usage: 0 bytes

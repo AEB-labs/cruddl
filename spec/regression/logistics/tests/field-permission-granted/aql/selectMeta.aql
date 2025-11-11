@@ -10,3 +10,5 @@ RETURN {
     "count": LENGTH(@@forwarders)
   }
 }
+
+// Peak memory usage: 32768 bytes
