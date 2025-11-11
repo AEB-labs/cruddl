@@ -8,12 +8,12 @@ LET v_delivery1 = FIRST((
 RETURN {
   "Delivery": (IS_NULL(v_delivery1) ? null : {
     "allItems": (
-      FOR v_deliveryItem1
+      FOR v_item1
       IN v_delivery1.`deliveryContents`[*].`items`[*][**]
-      FILTER (RIGHT(v_deliveryItem1.`itemNumber`, LENGTH(@var3)) == @var4)
-      SORT (v_deliveryItem1.`itemNumber`)  DESC
+      FILTER (RIGHT(v_item1.`itemNumber`, LENGTH(@var3)) == @var4)
+      SORT (v_item1.`itemNumber`)  DESC
       RETURN {
-        "itemNumber": v_deliveryItem1.`itemNumber`
+        "itemNumber": v_item1.`itemNumber`
       }
     )
   })
