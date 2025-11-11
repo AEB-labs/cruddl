@@ -10,7 +10,9 @@ RETURN (FIRST(
   RETURN v_count1
 ) > @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 RETURN {
   "flexSearchPapers": (@tmp1 ? { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 } : (
@@ -31,3 +33,5 @@ RETURN {
     }
   ))
 }
+
+// Peak memory usage: 98304 bytes

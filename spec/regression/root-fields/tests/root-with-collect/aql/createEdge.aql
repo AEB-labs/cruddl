@@ -14,17 +14,23 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@roots
 RETURN DOCUMENT(@@roots, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@roots
 RETURN DOCUMENT(@@roots, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@roots
 RETURN (
@@ -36,7 +42,9 @@ RETURN (
   IN @@root2s_roots
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@roots, @@root2s
 LET v_root21 = DOCUMENT(@@root2s, @var1)
@@ -44,9 +52,13 @@ RETURN (IS_NULL(v_root21) ? null : {
   "name": v_root21.`name`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@roots, @@root2s
 RETURN {
   "updateRoot2": @v_updateRoot21
 }
+
+// Peak memory usage: 0 bytes

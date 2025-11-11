@@ -20,7 +20,9 @@ RETURN (FIRST(
   RETURN v_count1
 ) == 0)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 RETURN (
   FOR v_File1
@@ -42,8 +44,12 @@ RETURN (
   }
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN {
   "deleteAllFiles": @v_deleteAllFiles1
 }
+
+// Peak memory usage: 0 bytes

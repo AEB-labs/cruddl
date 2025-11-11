@@ -3,14 +3,18 @@ RETURN FIRST(
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN FIRST(
   INSERT @var1 IN @@forwarders
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN (
   UPSERT {_from: CONCAT(@var1, @v_newEntityId1)}
@@ -19,7 +23,9 @@ RETURN (
   IN @@deliveries_forwarder
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 LET v_entity1 = DOCUMENT(@@deliveries, @v_newEntityId1)
@@ -48,7 +54,9 @@ RETURN (
   RETURN @var8
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@forwarders
 LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
@@ -64,9 +72,13 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   })
 })
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@forwarders
 RETURN {
   "createDelivery": @v_createDelivery1
 }
+
+// Peak memory usage: 0 bytes

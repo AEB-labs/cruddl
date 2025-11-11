@@ -6,7 +6,9 @@ RETURN (
   RETURN v_main1._key
 )
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@mains
 RETURN MINUS((
@@ -20,7 +22,9 @@ RETURN MINUS((
   RETURN v_item1._key
 ), @v_ids1)
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@mains
 RETURN (
@@ -30,7 +34,9 @@ RETURN (
   REMOVE v_edge1 IN @@mains_blockingMains
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers
 RETURN (
@@ -44,7 +50,9 @@ RETURN (
   RETURN v_item1._key
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers
 RETURN (
@@ -54,7 +62,7 @@ RETURN (
   REMOVE v_edge1 IN @@mains_blockers
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents
 RETURN (
@@ -68,7 +76,7 @@ RETURN (
   RETURN v_item1._key
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents
 RETURN (
@@ -78,7 +86,7 @@ RETURN (
   REMOVE v_edge1 IN @@mains_alternativeDependents
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents
 RETURN (
@@ -88,7 +96,7 @@ RETURN (
   REMOVE v_edge1 IN @@dependents_alternativeDependents
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents
 RETURN (
@@ -99,7 +107,7 @@ RETURN (
   RETURN OLD
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -112,7 +120,7 @@ RETURN (
   RETURN v_item1._key
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -126,7 +134,7 @@ RETURN (
   RETURN v_item1._key
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -136,7 +144,7 @@ RETURN (
   REMOVE v_edge1 IN @@dependents_blockers
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -150,7 +158,7 @@ RETURN (
   RETURN v_item1._key
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -160,7 +168,7 @@ RETURN (
   REMOVE v_edge1 IN @@mains_alternativeDependents
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -170,7 +178,7 @@ RETURN (
   REMOVE v_edge1 IN @@dependents_alternativeDependents
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -181,7 +189,7 @@ RETURN (
   RETURN OLD
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -191,7 +199,7 @@ RETURN (
   REMOVE v_edge1 IN @@mains_dependents
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -201,7 +209,7 @@ RETURN (
   REMOVE v_edge1 IN @@mains_additionalDependent
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -212,7 +220,7 @@ RETURN (
   RETURN OLD
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -226,7 +234,7 @@ RETURN (
   RETURN v_item1._key
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -240,7 +248,7 @@ RETURN (
   RETURN v_item1._key
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -250,7 +258,7 @@ RETURN (
   REMOVE v_edge1 IN @@dependents_blockers
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -264,7 +272,7 @@ RETURN (
   RETURN v_item1._key
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -274,7 +282,7 @@ RETURN (
   REMOVE v_edge1 IN @@mains_alternativeDependents
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -284,7 +292,7 @@ RETURN (
   REMOVE v_edge1 IN @@dependents_alternativeDependents
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -295,7 +303,7 @@ RETURN (
   RETURN OLD
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -305,7 +313,7 @@ RETURN (
   REMOVE v_edge1 IN @@mains_dependents
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -315,7 +323,7 @@ RETURN (
   REMOVE v_edge1 IN @@mains_additionalDependent
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -326,7 +334,7 @@ RETURN (
   RETURN OLD
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN (
@@ -336,7 +344,7 @@ RETURN (
   REMOVE v_edge1 IN @@mains_blockingMains
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 LET v_main1 = FIRST((
@@ -350,7 +358,7 @@ RETURN (IS_NULL(v_main1) ? null : {
   "key": v_main1.`key`
 })
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@mains, @@blockers, @@alternativeDependents, @@dependents
 RETURN {

@@ -17,7 +17,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@papers
 LET v_paper1 = DOCUMENT(@@papers, @var1)
@@ -25,9 +27,13 @@ RETURN (IS_NULL(v_paper1) ? null : {
   "title": v_paper1.`title`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@papers
 RETURN {
   "updatePaper": @v_updatePaper1
 }
+
+// Peak memory usage: 0 bytes

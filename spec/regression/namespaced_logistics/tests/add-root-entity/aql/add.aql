@@ -3,7 +3,9 @@ RETURN FIRST(
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@countries
 LET v_country1 = DOCUMENT(@@countries, @v_newEntityId1)
@@ -11,7 +13,9 @@ RETURN (IS_NULL(v_country1) ? null : {
   "isoCode": v_country1.`isoCode`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@countries
 RETURN {
@@ -19,3 +23,5 @@ RETURN {
     "createCountry": @v_createCountry1
   }
 }
+
+// Peak memory usage: 0 bytes

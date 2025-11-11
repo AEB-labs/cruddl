@@ -4,3 +4,5 @@ RETURN {
     "count": { __cruddl_runtime_error_code: @var4, __cruddl_runtime_error: @var5 }
   }
 }
+
+// Peak memory usage: 0 bytes

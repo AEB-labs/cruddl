@@ -20,3 +20,5 @@ RETURN {
     "key": v_paper3.`key`
   })
 }
+
+// Peak memory usage: 0 bytes
