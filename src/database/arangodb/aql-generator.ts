@@ -283,6 +283,10 @@ class QueryContext {
         if (!variable) {
             throw new Error(`Variable ${variableNode.toString()} is used but not introduced`);
         }
+        // we're returning an AQLFragment as AQLVariable
+        // it can be a non-variable fragment (e.g. a simple field access) if we used introduceVariableAlias
+        // typescript only allows it because there are no private fields in AQLVariable
+        // TODO introduce a better way to introduce a VariableQueryNode as AQLVariable, then make this here return AQLFragment
         return variable;
     }
 
@@ -373,6 +377,10 @@ const inFlexSearchFilterSymbol = Symbol('inFlexSearchFilter');
 namespace aqlExt {
     export function safeJSONKey(key: string): AQLFragment {
         if (aql.isSafeIdentifier(key)) {
+            // TODO meta fields are currently not considered safe because of the leading underscore
+            // think about if we should generally allow leading underscores in isSafeIdentifier
+            // or just allow them here (here it would definitely be safe)
+
             // we could always collide with a (future) keyword, so use "name" syntax instead of identifier
             // ("" looks more natural than `` in json keys)
             return aql`${aql.string(key)}`;
@@ -604,26 +612,13 @@ function generateInClauseWithFilterAndOrderAndLimit({
     let filterDanglingEdges = aql``;
     if (node.listNode instanceof FollowEdgeQueryNode) {
         list = getSimpleFollowEdgeFragment(node.listNode, context);
-        // using $var._key != null instead of $var != null because the latter prevents ArangodB
+        // using $var._key != null instead of $var != null because the latter prevents ArangoDB
         // from applying the reduce-extraction-to-projection optimization
         filterDanglingEdges = aql`FILTER ${itemVar}._key != null`;
     } else {
         list = processNode(node.listNode, context);
     }
     let filter = simplifyBooleans(node.filterNode);
-
-    let limitClause;
-    if (node.maxCount != undefined) {
-        if (node.skip === 0) {
-            limitClause = aql`LIMIT ${node.maxCount}`;
-        } else {
-            limitClause = aql`LIMIT ${node.skip}, ${node.maxCount}`;
-        }
-    } else if (node.skip > 0) {
-        limitClause = aql`LIMIT ${node.skip}, ${Number.MAX_SAFE_INTEGER}`;
-    } else {
-        limitClause = aql``;
-    }
 
     return aql.lines(
         aql`IN ${list}`,
@@ -632,8 +627,29 @@ function generateInClauseWithFilterAndOrderAndLimit({
             : aql`FILTER ${processNode(filter, itemContext)}`,
         filterDanglingEdges,
         generateSortAQL(node.orderBy, itemContext),
-        limitClause,
+        generateLimitClause(node) ?? aql``,
     );
+}
+
+interface LimitClauseArgs {
+    readonly skip?: number;
+    readonly maxCount?: number;
+}
+
+function generateLimitClause({ skip = 0, maxCount }: LimitClauseArgs): AQLFragment | undefined {
+    // Todo use something like aql.integer() which validates the number is an integer and within range
+    // (that way, we don't have so many bound parameters)
+    if (maxCount != undefined) {
+        if (skip === 0) {
+            return aql`LIMIT ${maxCount}`;
+        } else {
+            return aql`LIMIT ${skip}, ${maxCount}`;
+        }
+    } else if (skip > 0) {
+        return aql`LIMIT ${skip}, ${Number.MAX_SAFE_INTEGER}`;
+    } else {
+        return undefined;
+    }
 }
 
 /**
@@ -784,7 +800,6 @@ register(AggregationQueryNode, (node, context) => {
 
         // these should also remove NULL values by definition
         case AggregationOperator.DISTINCT:
-            // use COLLECT a = a instead of RETURN DISTINCT to be able to sort
             distinct = true;
             filterFrag = aql`${itemVar} != null`;
             isList = true;
@@ -1399,153 +1414,747 @@ register(FollowEdgeQueryNode, (node, context) => {
 });
 
 register(TraversalQueryNode, (node, context) => {
-    const sourceFrag = processNode(node.sourceEntityNode, context);
-    const fieldDepth = node.fieldSegments.filter((s) => s.isListSegment).length;
+    // We have a lot of different methods here for different cases
+    // The AQL looks very different depending on the case, and separate methods are easiser to
+    // understand than lots of conditionals in one big method
 
-    if (node.relationSegments.length) {
-        let mapFrag: ((itemFrag: AQLFragment) => AQLFragment) | undefined;
-
-        let remainingDepth = fieldDepth;
-        if (node.fieldSegments.length) {
-            // if we have both, it might be beneficial to do the field traversal within the mapping node
-            // because it may allow ArangoDB to figure out that only one particular field is of interest, and e.g.
-            // discard the root entities earlier
-
-            if (node.captureRootEntity) {
-                if (fieldDepth === 0) {
-                    // fieldSegments.length && fieldDepth === 0 means we only traverse through entity extensions
-                    // actually, shouldn't really occur because a collect path can't end with an entity extension and
-                    // value objects don't capture root entities
-                    // however, we can easily implement this so let's do it
-                    mapFrag = (nodeFrag) =>
-                        aql`{ obj: ${getFieldTraversalFragmentWithoutFlattening(
-                            node.fieldSegments,
-                            nodeFrag,
-                        )}, root: ${nodeFrag}) }`;
-                } else {
-                    // the result of getFieldTraversalFragmentWithoutFlattening() now is a list, so we need to iterate
-                    // over it. if the depth is > 1, we need to flatten the deeper ones so we can do one FOR loop over them
-                    // we still return a list, so we just reduce the depth to 1 and not to 0
-                    const entityVar = aql.variable('entity');
-                    mapFrag = (rootEntityFrag) =>
-                        aqlExt.parenthesizeList(
-                            aql`FOR ${entityVar} IN ${getFlattenFrag(
-                                getFieldTraversalFragmentWithoutFlattening(
-                                    node.fieldSegments,
-                                    rootEntityFrag,
-                                ),
-                                fieldDepth - 1,
-                            )}`,
-                            aql`RETURN { obj: ${entityVar}, root: ${rootEntityFrag} }`,
-                        );
-                    remainingDepth = 1;
-                }
+    if (node.relationSegments.length && node.fieldSegments.length) {
+        if (!node.fieldSegments.some((f) => f.isListSegment)) {
+            if (node.resultIsList) {
+                return processTraversalWithListRelationSegmentsAndNonListFieldSegments(
+                    node,
+                    context,
+                );
             } else {
-                mapFrag = (nodeFrag) =>
-                    getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, nodeFrag);
+                // We currently don't allow non-list @collect paths, so this is never executed
+                // Keep it for nonetheless because we might allow it in the future or use
+                // TraversalQueryNode for other purposes
+                return processTraversalWithNonListRelationSegmentsAndNonListFieldSegments(
+                    node,
+                    context,
+                );
             }
+        } else if (node.orderBy.isUnordered()) {
+            return processTraversalWithRelationAndListFieldSegmentsWithoutSort(node, context);
         } else {
-            if (node.captureRootEntity) {
-                // doesn't make sense to capture the root entity if we're returning the root entities
-                throw new Error(`captureRootEntity without fieldSegments detected`);
-            }
+            return processTraversalWithRelationAndListFieldSegmentsWithSort(node, context);
         }
-
-        // traversal requires real ids
-        let fixedSourceFrag = sourceFrag;
-        if (node.entitiesIdentifierKind === EntitiesIdentifierKind.ID) {
-            if (node.sourceIsList) {
-                fixedSourceFrag = getFullIDFromKeysFragment(
-                    sourceFrag,
-                    node.relationSegments[0].relationSide.sourceType,
-                );
-            } else {
-                fixedSourceFrag = getFullIDFromKeyFragment(
-                    sourceFrag,
-                    node.relationSegments[0].relationSide.sourceType,
-                );
-            }
+    } else if (node.relationSegments.length) {
+        if (node.resultIsList) {
+            return processTraversalWithOnlyRelationSegmentsAsList(node, context);
+        } else {
+            // We currently don't allow non-list @collect paths, so this is never executed
+            // Keep it for nonetheless because we might allow it in the future or use
+            // TraversalQueryNode for other purposes
+            return processTraversalWithOnlyRelationSegmentsNoList(node, context);
         }
-
-        const frag = getRelationTraversalFragment({
-            segments: node.relationSegments,
-            sourceFrag: fixedSourceFrag,
-            sourceIsList: node.sourceIsList,
-            alwaysProduceList: node.alwaysProduceList,
-            mapFrag,
-            context,
-        });
-        if (node.relationSegments.some((s) => s.isListSegment) || node.sourceIsList) {
-            // if the relation contains a list segment, getRelationTraversalFragment will return a list
-            // if we already returned lists within the mapFrag (-> current value of remainingDepth), we need to add that
-            remainingDepth++;
+    } else if (node.fieldSegments.length) {
+        if (node.orderBy.isUnordered()) {
+            return processTraversalWithOnlyFieldSegmentsWithoutSort(node, context);
+        } else {
+            return processTraversalWithOnlyFieldSegmentsWithSort(node, context);
         }
-        // flatten 1 less than the depth, see below
-        return getFlattenFrag(frag, remainingDepth - 1);
+    } else {
+        // don't need this case, so better guard against it
+        throw new Error(`TraversalQueryNode must have at least one segment`);
+    }
+});
+
+/**
+ * Produces:
+ *
+ *     FIRST(
+ *         FOR node1 IN OUTBOUND source_hop1
+ *         FOR node2 in OUTBOUND hop1_hop2
+ *         FOR result IN OUTBOUND hop2_target
+ *         RETURN innerNode(result)
+ *     )
+ *
+ * or, if preserveNullValues is true and hop2_target is a to-1 relation:
+ *
+ *     FIRST(
+ *         FOR node1 IN OUTBOUND source_hop1
+ *         FOR node2 in OUTBOUND hop1_hop2
+ *         LET result = FIRST(FOR node3 IN OUTBOUND hop2_target RETURNN node3)
+ *         RETURN innerNode(result)
+ *     )
+ */
+function processTraversalWithOnlyRelationSegmentsNoList(
+    node: TraversalQueryNode,
+    context: QueryContext,
+) {
+    if (node.fieldSegments.length > 0) {
+        throw new Error(`Did not expect any field segments`);
+    }
+    if (
+        node.filterNode ||
+        !node.orderBy.isUnordered() ||
+        node.skip !== undefined ||
+        node.maxCount !== undefined
+    ) {
+        throw new Error(
+            `Cannot have filter, orderBy, skip or maxCount on non-list relation traversal`,
+        );
     }
 
-    if (node.captureRootEntity) {
-        // doesn't make sense (and isn't possible) to capture the root entity if we're not even crossing root entities
-        throw new Error(`captureRootEntity without relationSegments detected`);
+    const innerContext = context.introduceVariable(node.itemVariable);
+    const itemVar = innerContext.getVariable(node.itemVariable);
+    const forStatementsFrag = getRelationTraversalForStatements({
+        node,
+        innermostItemVar: itemVar,
+        preserveNullValues: node.preserveNullValues,
+        context,
+    });
+
+    return aqlExt.parenthesizeObject(
+        forStatementsFrag,
+        aql`RETURN ${node.innerNode ? processNode(node.innerNode, innerContext) : itemVar}`,
+    );
+}
+
+/**
+ * Produces:
+ *
+ *     FOR node1 IN OUTBOUND source_hop1
+ *     FOR node2 in OUTBOUND hop1_hop2
+ *     FOR item IN OUTBOUND hop2_target
+ *     FILTER filterExpr(item)
+ *     SORT item.field1 ASC
+ *     LIMIT skip, maxCount
+ *     RETURN innerNode(item)
+ *
+ * or, if preserveNullValues is true and hop2_target is a to-1 relation:
+ *
+ *     FOR node1 IN OUTBOUND source_hop1
+ *     FOR node2 in OUTBOUND hop1_hop2
+ *     LET item = FIRST(FOR node3 IN OUTBOUND hop2_target RETURN node3)
+ *     FILTER filterExpr(item)
+ *     SORT item.field1 ASC
+ *     LIMIT skip, maxCount
+ *     RETURN innerNode(item)
+ */
+function processTraversalWithOnlyRelationSegmentsAsList(
+    node: TraversalQueryNode,
+    context: QueryContext,
+) {
+    if (node.fieldSegments.length > 0) {
+        throw new Error(`Did not expect any field segments`);
     }
 
-    if (node.sourceIsList) {
-        // don't need, don't bother
-        throw new Error(`sourceIsList without relationSegments detected`);
+    // note: this is the only variant where sourceIsList and alwaysProduceList is supported
+    // (used in getPreEntityRemovalStatementsForRelationSide())
+    // - sourceIsList is handled in getRelationTraversalForStatements()
+    // - alwaysProduceList is automatically handled because we always RETURN a list here
+    // we could refactor the single usage so it does not use a TraversalQueryNode in the first place
+
+    const itemVar = aql.variable(`node`);
+    const innerContext = context.introduceVariableAlias(node.itemVariable, itemVar);
+
+    const forStatementsFrag = getRelationTraversalForStatements({
+        node,
+        innermostItemVar: itemVar,
+        context,
+        preserveNullValues: node.preserveNullValues,
+    });
+
+    return aqlExt.parenthesizeList(
+        forStatementsFrag,
+        node.filterNode ? aql`FILTER ${processNode(node.filterNode, context)}` : aql``,
+
+        // yes, we can SORT and LIMIT like this even if there are multiple FOR statements
+        // because there is one result set for the cross product of all FOR statements
+        // see https://docs.arangodb.com/3.12/aql/high-level-operations/for/#usage
+        generateSortAQL(node.orderBy, innerContext),
+        generateLimitClause(node) ?? aql``,
+        aql`RETURN ${node.innerNode ? processNode(node.innerNode, innerContext) : itemVar}`,
+    );
+}
+
+/**
+ * Produces:
+ *
+ *     FOR node1 IN OUTBOUND source_hop1
+ *     FOR node2 in OUTBOUND hop1_hop2
+ *     FOR item IN OUTBOUND hop2_target
+ *     FILTER filterExpr(item.fieldSegment1.fieldSegment2)
+ *     SORT item.fieldSegment1.fieldSegment2.sortField ASC
+ *     LIMIT skip, maxCount
+ *     RETURN innerNode(item.fieldSegment1.fieldSegment2)
+ *
+ * or, if preserveNullValues is true and hop2_target is a to-1 relation:
+ *
+ *     FOR node1 IN OUTBOUND source_hop1
+ *     FOR node2 in OUTBOUND hop1_hop2
+ *     LET item = FIRST(FOR node3 IN OUTBOUND hop2_target RETURN node3)
+ *     FILTER filterExpr(item.fieldSegment1.fieldSegment2)
+ *     SORT item.fieldSegment1.fieldSegment2.sortField ASC
+ *     LIMIT skip, maxCount
+ *     RETURN innerNode(item.fieldSegment1.fieldSegment2)
+ */
+function processTraversalWithListRelationSegmentsAndNonListFieldSegments(
+    node: TraversalQueryNode,
+    context: QueryContext,
+) {
+    if (!node.relationSegments.some((f) => f.isListSegment)) {
+        throw new Error(`Expected at least one relation list segment`);
+    }
+    if (node.fieldSegments.some((f) => f.isListSegment)) {
+        throw new Error(`Did not expect any field list segments`);
     }
 
-    if (node.alwaysProduceList) {
-        // don't need, don't bother
-        throw new Error(`alwaysProduceList without relationSegments detected`);
+    // this is very similar to processTraversalWithOnlyRelationSegmentsAsList(),
+    // but instead of using the rootVar in filter, sort and mapping, we use the field traversal result
+
+    const rootVar = aql.variable(`root`);
+    const forStatementsFrag = getRelationTraversalForStatements({
+        node,
+        innermostItemVar: rootVar,
+        context,
+        preserveNullValues: node.preserveNullValues,
+    });
+    const fieldTraversalFrag = getFieldTraversalFragment({
+        segments: node.fieldSegments,
+        sourceFrag: rootVar,
+    });
+    const innerContext = context.introduceVariableAlias(node.itemVariable, fieldTraversalFrag);
+
+    // note: we don't filter out NULL values even if preserveNullValues is false because that's currently
+    // only a flag for performance - actually filtering out NULLs is done by a surrounding AggregationQueryNode
+    // TODO aql-perf remove this note once the NULL filtering / preserving has moved out of AggregationQueryNode
+    return aqlExt.parenthesizeList(
+        forStatementsFrag,
+        node.filterNode ? aql`FILTER ${processNode(node.filterNode, context)}` : aql``,
+        generateSortAQL(node.orderBy, innerContext),
+        generateLimitClause(node) ?? aql``,
+        aql`RETURN ${node.innerNode ? processNode(node.innerNode, innerContext) : fieldTraversalFrag}`,
+    );
+}
+
+/**
+ * Produces:
+ *
+ *     FIRST(
+ *         FOR node1 IN OUTBOUND source_hop1
+ *         FOR node2 in OUTBOUND hop1_hop2
+ *         FOR item IN OUTBOUND hop2_target
+ *         RETURN innerNode(item.fieldSegment1.fieldSegment2)
+ *     )
+ *
+ * or, if preserveNullValues is true and hop2_target is a to-1 relation:
+ *
+ *     FIRST(
+ *         FOR node1 IN OUTBOUND source_hop1
+ *         FOR node2 in OUTBOUND hop1_hop2
+ *         LET item = FIRST(FOR node3 IN OUTBOUND hop2_target RETURNN node3)
+ *         RETURN innerNode(item.fieldSegment1.fieldSegment2)
+ *     )
+ */
+function processTraversalWithNonListRelationSegmentsAndNonListFieldSegments(
+    node: TraversalQueryNode,
+    context: QueryContext,
+) {
+    if (node.fieldSegments.some((f) => f.isListSegment)) {
+        throw new Error(`Did not expect any field list segments`);
+    }
+    if (node.relationSegments.some((f) => f.isListSegment)) {
+        throw new Error(`Did not expect any relation list segments`);
+    }
+    if (
+        node.filterNode ||
+        !node.orderBy.isUnordered() ||
+        node.skip !== undefined ||
+        node.maxCount !== undefined
+    ) {
+        throw new Error(`Cannot have filter, orderBy, skip or maxCount on non-list traversal`);
     }
 
+    // this is very similar to processTraversalWithOnlyRelationSegmentsNoList(),
+    // but instead of using the rootVar in mapping, we use the field traversal result
+
+    const rootVar = aql.variable(`root`);
+    const forStatementsFrag = getRelationTraversalForStatements({
+        node,
+        innermostItemVar: rootVar,
+        preserveNullValues: node.preserveNullValues,
+        context,
+    });
+
+    const fieldTraversalFrag = getFieldTraversalFragment({
+        segments: node.fieldSegments,
+        sourceFrag: rootVar,
+    });
+    const innerContext = context.introduceVariableAlias(node.itemVariable, fieldTraversalFrag);
+
+    return aqlExt.parenthesizeObject(
+        forStatementsFrag,
+        aql`RETURN ${node.innerNode ? processNode(node.innerNode, innerContext) : fieldTraversalFrag}`,
+    );
+}
+
+/**
+ * Produces:
+ *
+ *     FOR node1 IN OUTBOUND source_hop1
+ *     FOR node2 in OUTBOUND hop1_hop2
+ *     FOR root IN OUTBOUND hop2_target
+ *     FOR item IN root.fieldSegment1[*].fieldSegment2[**][*
+ *         FILTER filterExpr(CURRENT)
+ *         LIMIT skip, maxCount
+ *         RETURN innerNode(CURRENT)
+ *     ]
+ *
+ * or, if preserveNullValues is true and hop2_target is a to-1 relation:
+ *
+ *     FOR node1 IN OUTBOUND source_hop1
+ *     FOR node2 in OUTBOUND hop1_hop2
+ *     LET root = FIRST(FOR node3 IN OUTBOUND hop2_target RETURN node3)
+ *     FOR item IN root.fieldSegment1[*].fieldSegment2[**][*
+ *         FILTER filterExpr(CURRENT)
+ *         LIMIT skip, maxCount
+ *         RETURN innerNode(CURRENT)
+ *     ]
+ */
+function processTraversalWithRelationAndListFieldSegmentsWithoutSort(
+    node: TraversalQueryNode,
+    context: QueryContext,
+) {
+    if (!node.relationSegments.length || !node.fieldSegments) {
+        throw new Error(`Expected both relation and field segments`);
+    }
+    if (!node.fieldSegments.some((s) => s.isListSegment)) {
+        throw new Error(`Expected at least one list field segment`);
+    }
+    if (!node.orderBy.isUnordered()) {
+        throw new Error(`Did not expect orderBy clauses`);
+    }
+
+    // this will hold the node of the innermost relation traversal
+    const rootVar = aql.variable('root');
+
+    const forStatementsFrag = getRelationTraversalForStatements({
+        node,
+        innermostItemVar: rootVar,
+        preserveNullValues: node.preserveNullValues,
+        context,
+    });
+
+    const innerNode = node.innerNode;
+    const innerMapFrag = innerNode
+        ? (itemFrag: AQLFragment) => {
+              const innerContext = context
+                  .introduceVariableAlias(node.itemVariable, itemFrag)
+                  .introduceVariableAlias(node.rootEntityVariable, rootVar);
+              return processNode(innerNode, innerContext);
+          }
+        : undefined;
+
+    // We can do the LIMIT within the field traversal's mapping function using an array expansion,
+    // but only if the relation traversal yields at most one result (i.e. if it only follows 1:1 relations)
+    const lastRelationSegment = node.relationSegments[node.relationSegments.length - 1];
+    let limitArgs: LimitClauseArgs | undefined;
+    let innerLimitArgs: LimitClauseArgs;
+    if (lastRelationSegment.resultIsList) {
+        limitArgs = {
+            skip: node.skip,
+            maxCount: node.maxCount,
+        };
+        innerLimitArgs = {};
+    } else {
+        limitArgs = {};
+        innerLimitArgs = {
+            skip: node.skip,
+            maxCount: node.maxCount,
+        };
+    }
+
+    let innerFilterFrag: ((item: AQLFragment) => AQLFragment) | undefined;
+    const filterNode = node.filterNode;
+    if (filterNode) {
+        innerFilterFrag = (itemFrag: AQLFragment) => {
+            // don't map rootEntityVariable
+            // (if we want to filter on root, it should happen outside already)
+            const innerContext = context.introduceVariableAlias(node.itemVariable, itemFrag);
+            return processNode(filterNode, innerContext);
+        };
+    }
+
+    const outerMapFrag = getFieldTraversalFragment({
+        segments: node.fieldSegments,
+        sourceFrag: rootVar,
+        mapFrag: innerMapFrag,
+        filterFrag: innerFilterFrag,
+        ...innerLimitArgs,
+    });
+
+    // the mapFrag will produce a list, so a simple RETURN mapFrag would result in nested lists
+    // -> we iterate over the items again to flatten the lists
+    // Note: If the relation traversal only consists of 1:1, we could theoretically use something like this:
+    //     LET root = FIRST(FOR obj IN OUTBOUND source edge_collection RETURN obj)
+    //     RETURN root.children
+    // however, that would prevent the reduce-extraction-to-projection optimization
+    // (because we would access the whole root object)
+    // -> it's better to produce the same structure as we do for 1:n relation traversals:
+    //     FOR root IN OUTBOUND source edge_collection
+    //     FOR item IN root.children
+    //     RETURN item
+    // (could also use FLATTEN(), but since we're already using nested FORs, this is probably cleaner)
+    const itemVar = aql.variable(`item`);
+    return aqlExt.parenthesizeList(
+        aql`${forStatementsFrag}`,
+        aql`FOR ${itemVar} IN ${outerMapFrag}`,
+        generateLimitClause(limitArgs) ?? aql``,
+        aql`RETURN ${itemVar}`,
+    );
+}
+
+/**
+ * Produces:
+ *
+ *     FOR node1 IN OUTBOUND source_hop1
+ *     FOR node2 in OUTBOUND hop1_hop2
+ *     FOR root IN OUTBOUND hop2_target
+ *     FOR item IN root.fieldSegment1[*].fieldSegment2[**][*
+ *         FILTER filterExpr(CURRENT)
+ *         RETURN {
+ *             value: innerNode(CURRENT),
+ *             sortValues: [
+ *                 CURRENT.sortField1,
+ *                 CURRENT.sortField2
+ *             ]
+ *         }
+ *     ]
+ *     SORT item.sortValues[0] ASC, item.sortValues[1] DESC
+ *     LIMIT skip, maxCount
+ *     RETURN item.value
+ *
+ * or, if preserveNullValues is true and hop2_target is a to-1 relation:
+ *
+ *     FOR node1 IN OUTBOUND source_hop1
+ *     FOR node2 in OUTBOUND hop1_hop2
+ *     LET root = FIRST(FOR node3 IN OUTBOUND hop2_target RETURN node3)
+ *     FOR item IN root.fieldSegment1[*].fieldSegment2[**][*
+ *         FILTER filterExpr(CURRENT)
+ *         RETURN {
+ *             value: innerNode(CURRENT),
+ *             sortValues: [
+ *                 CURRENT.sortField1,
+ *                 CURRENT.sortField2
+ *             ]
+ *         }
+ *     ]
+ *     SORT item.sortValues[0] ASC, item.sortValues[1] DESC
+ *     LIMIT skip, maxCount
+ *     RETURN item.value
+ */
+function processTraversalWithRelationAndListFieldSegmentsWithSort(
+    node: TraversalQueryNode,
+    context: QueryContext,
+) {
+    if (!node.relationSegments.length || !node.fieldSegments) {
+        throw new Error(`Expected both relation and field segments`);
+    }
+    if (!node.fieldSegments.some((s) => s.isListSegment)) {
+        throw new Error(`Expected at least one list field segment`);
+    }
+    if (!node.resultIsList) {
+        throw new Error(`Cannot have sort on non-list traversal`);
+    }
+
+    // this will hold the node of the innermost relation traversal
+    const rootVar = aql.variable('root');
+
+    const forStatementsFrag = getRelationTraversalForStatements({
+        node,
+        innermostItemVar: rootVar,
+        preserveNullValues: node.preserveNullValues,
+        context,
+    });
+
+    /*
+      A simple way to implement this would be to first SORT, and then map:
+
+          FOR v_root1 IN 1..1 INBOUND v_order1 @@deliveries_order
+          FOR v_item1 IN v_root1.`deliveryContents`[*].`items`[**]
+          SORT v_item1.`itemNumber`
+          RETURN {
+            "itemNumber": v_item1.`itemNumber`
+          }
+
+      Instead, we map first, then SORT:
+
+          FOR v_root1 IN 1..1 INBOUND v_order1 @@deliveries_order
+          FOR v_item1 IN v_root1.`deliveryContents`[*].`items`[** RETURN {
+            value: {
+              "itemNumber": CURRENT.`itemNumber`
+            },
+            sortValues: [
+              CURRENT.`itemNumber`
+            ]
+          }]
+          SORT v_item1.sortValues[0]
+          RETURN v_item1.value
+
+      This seems to reduce the memory consumption by up to factor 2
+      if there are many / large fields in the items that are not needed at all
+      (because sorting probably copies the whole item into some temporary structure)
+     */
+
+    // we sort after mapping roots to items, so we need to preserve the sort values that are based on the item
+    // -> we produce items like this: { value: ..., sortValues: [...] }
+    const innerMapFrag = (itemFrag: AQLFragment) => {
+        const innerContext = context
+            .introduceVariableAlias(node.itemVariable, itemFrag)
+            .introduceVariableAlias(node.rootEntityVariable, rootVar);
+        const valueFrag = node.innerNode ? processNode(node.innerNode, innerContext) : itemFrag;
+
+        return aql.lines(
+            aql`{`,
+            aql.indent(
+                aql.lines(
+                    aql`value: ${valueFrag},`,
+                    aql`sortValues: [`,
+                    aql.indent(
+                        aql.join(
+                            node.orderBy.clauses.map((c) => processNode(c.valueNode, innerContext)),
+                            aql`,\n`,
+                        ),
+                    ),
+                    aql`]`,
+                ),
+            ),
+            aql`}`,
+        );
+    };
+
+    const filterNode = node.filterNode;
+    const innerFilterFrag = filterNode
+        ? (itemFrag: AQLFragment) => {
+              // don't provide rootEntityVariable
+              // (if we want to filter on root, it should happen outside already)
+              const innerContext = context.introduceVariableAlias(node.itemVariable, itemFrag);
+              return processNode(filterNode, innerContext);
+          }
+        : undefined;
+
+    const outerMapFrag = getFieldTraversalFragment({
+        segments: node.fieldSegments,
+        sourceFrag: rootVar,
+        mapFrag: innerMapFrag,
+        filterFrag: innerFilterFrag,
+    });
+
+    // holds the { value, sortValues }
+    const itemVar = aql.variable(`item`);
+
+    const clauseFrags = node.orderBy.clauses.map(
+        (clause, index) =>
+            aql`${itemVar}.sortValues[${aql.integer(index)}]${dirAQL(clause.direction)}`,
+    );
+
+    // The mapFrag will produce a list, so a simple RETURN mapFrag would result in nested lists
+    // -> we iterate over the items again to flatten the lists (the FOR ${itemVar} ...)
+    return aqlExt.parenthesizeList(
+        aql`${forStatementsFrag}`,
+        aql`FOR ${itemVar} IN ${outerMapFrag}`,
+        aql`SORT ${aql.join(clauseFrags, aql`, `)}`,
+        generateLimitClause(node) ?? aql``,
+        aql`RETURN ${itemVar}.value`,
+    );
+}
+
+/**
+ * Produces:
+ *
+ *     source.listFieldSegment1[*].listFieldSegment2[**][*
+ *         FILTER filterExpr(CURRENT.nonListFieldSegment)
+ *         LIMIT skip, maxCount
+ *         RETURN innerNode(CURRENT.nonListFieldSegment)
+ *     ]
+ */
+function processTraversalWithOnlyFieldSegmentsWithoutSort(
+    node: TraversalQueryNode,
+    context: QueryContext,
+): AQLFragment {
+    if (node.relationSegments.length) {
+        throw new Error(`Expected no relation segments`);
+    }
     if (node.entitiesIdentifierKind !== EntitiesIdentifierKind.ENTITY) {
         throw new Error(`Only ENTITY identifiers supported without relationSegments`);
     }
-
+    if (!node.orderBy.isUnordered()) {
+        throw new Error(`Did not expect orderBy clauses`);
+    }
     if (!node.fieldSegments.length) {
-        // should normally not occur
-        return sourceFrag;
+        throw new Error(`Expected at least one field segment`);
     }
 
-    // flatten 1 less than the fieldDepth:
-    // - no list segments -> evaluate to the object
-    // - one list segment -> evaluate to the list, so no flattening
-    // - two list segments -> needs flattening once to get one list
-    return getFlattenFrag(
-        getFieldTraversalFragmentWithoutFlattening(node.fieldSegments, sourceFrag),
-        fieldDepth - 1,
+    const sourceFrag = processNode(node.sourceEntityNode, context);
+
+    // no SORT clause, so we can put everything into array expansions
+    // This is more efficient than using subqueries.
+
+    const innerNode = node.innerNode;
+    const mapFrag = innerNode
+        ? (itemFrag: AQLFragment) =>
+              processNode(innerNode, context.introduceVariableAlias(node.itemVariable, itemFrag))
+        : undefined;
+
+    const filterNode = node.filterNode;
+    const filterFrag = filterNode
+        ? (itemFrag: AQLFragment) =>
+              processNode(filterNode, context.introduceVariableAlias(node.itemVariable, itemFrag))
+        : undefined;
+
+    // if there are no list segments, this will just be a simple path access
+    // -> will naturally be either a list or not, depending on what's needed
+    return getFieldTraversalFragment({
+        segments: node.fieldSegments,
+        sourceFrag,
+        mapFrag,
+        filterFrag,
+        skip: node.skip,
+        maxCount: node.maxCount,
+    });
+}
+
+/**
+ * Produces:
+ *
+ *     FOR item IN source.listFieldSegment1[*].listFieldSegment2[**][*
+ *         FILTER filterExpr(CURRENT.nonListFieldSegment)
+ *         RETURN CURRENT.nonListFieldSegment
+ *     ]
+ *     SORT item.sortField1 ASC, item.sortField1 DESC
+ *     LIMIT skip, maxCount
+ *     RETURN innerNode(item)
+ */
+function processTraversalWithOnlyFieldSegmentsWithSort(
+    node: TraversalQueryNode,
+    context: QueryContext,
+): AQLFragment {
+    if (node.relationSegments.length) {
+        throw new Error(`Expected no relation segments`);
+    }
+    if (node.entitiesIdentifierKind !== EntitiesIdentifierKind.ENTITY) {
+        throw new Error(`Only ENTITY identifiers supported without relationSegments`);
+    }
+    if (!node.fieldSegments.length) {
+        throw new Error(`Expected at least one field segment`);
+    }
+    if (!node.resultIsList) {
+        // this branch would always create a list due to the subquery
+        throw new Error(`Cannot have orderBy on non-list field traversal`);
+    }
+
+    const sourceFrag = processNode(node.sourceEntityNode, context);
+
+    // need to use a subquery because array inline expressions don't support SORT
+    // this also means we can't do the innerNode mapping in inline expressions using [* RETURN ...]
+    // because otherwise we could not access the sort fields outside
+    // theoretically we could map the sort fields like we do in the relation + field traversal case,
+    // but we wouldn't gain anything from this here
+    // -> a simple subquery
+
+    // TODO aql-perf: we could use the { value, sortValues } approach here as well to reduce memory consumption
+
+    const fieldTraversalFrag = getFieldTraversalFragment({
+        segments: node.fieldSegments,
+        sourceFrag,
+    });
+
+    const itemVar = aql.variable('item');
+
+    const innerContext = context.introduceVariableAlias(node.itemVariable, itemVar);
+    const returnValueFrag = node.innerNode ? processNode(node.innerNode, innerContext) : itemVar;
+
+    // we could also do the filter in getFieldTraversalFragment(), but if we have a subquery anyway, this is simpler
+    const filterFrag = node.filterNode
+        ? aql`FILTER ${processNode(node.filterNode, innerContext)}`
+        : aql``;
+
+    return aqlExt.parenthesizeList(
+        aql`FOR ${itemVar}`,
+        aql`IN ${fieldTraversalFrag}`,
+        filterFrag,
+        generateSortAQL(node.orderBy, innerContext),
+        generateLimitClause(node) ?? aql``,
+        aql`RETURN ${returnValueFrag}`,
     );
-});
+}
 
-function getRelationTraversalFragment({
-    segments,
-    sourceFrag,
-    sourceIsList,
-    alwaysProduceList,
-    mapFrag,
-    context,
-}: {
-    readonly segments: ReadonlyArray<RelationSegment>;
-    readonly sourceFrag: AQLFragment;
-    readonly sourceIsList: boolean;
-    readonly alwaysProduceList: boolean;
-    readonly mapFrag?: (itemFrag: AQLFragment) => AQLFragment;
+interface GetRelationTraversalForStatementsParams {
+    readonly node: TraversalQueryNode;
     readonly context: QueryContext;
-}) {
-    if (!segments.length) {
-        return sourceFrag;
+
+    /**
+     * A variable where the item will be stored in
+     *
+     * This option exists so the caller can decide the name of the variable.
+     *
+     * Will usually be the variable of the innermost FOR, but can also be a LET to preserve nulls.
+     */
+    readonly innermostItemVar: AQLVariable;
+
+    /**
+     * If true, to-1 relations will result in NULL values instead of being skipped
+     *
+     * Makes the query more complex and prevent reduce-extraction-to-projection optimizations
+     *
+     * @default false
+     */
+    readonly preserveNullValues?: boolean;
+}
+
+function getRelationTraversalForStatements({
+    node,
+    innermostItemVar,
+    context,
+    preserveNullValues = false,
+}: GetRelationTraversalForStatementsParams) {
+    if (!node.relationSegments.length) {
+        throw new Error(`Expected at least one relation segment`);
     }
+    const segments = node.relationSegments;
+    const sourceIsList = node.sourceIsList;
+
+    const plainSourceFrag = processNode(node.sourceEntityNode, context);
+    // traversal requires real ids
+    let sourceFrag: AQLFragment;
+    if (node.entitiesIdentifierKind === EntitiesIdentifierKind.ID) {
+        if (node.sourceIsList) {
+            sourceFrag = getFullIDFromKeysFragment(
+                plainSourceFrag,
+                node.relationSegments[0].relationSide.sourceType,
+            );
+        } else {
+            sourceFrag = getFullIDFromKeyFragment(
+                plainSourceFrag,
+                node.relationSegments[0].relationSide.sourceType,
+            );
+        }
+    } else {
+        sourceFrag = plainSourceFrag;
+    }
+
+    const sourceEntityVar = aql.variable(`sourceEntity`);
+    let currentObjectFrag = sourceIsList ? sourceEntityVar : sourceFrag;
+    const forFragments: AQLFragment[] = sourceIsList
+        ? [aql`FOR ${sourceEntityVar} IN ${sourceFrag}`]
+        : [];
 
     // ArangoDB 3.4.5 introduced PRUNE which also supports IS_SAME_COLLECTION so we may be able to use just one
     // traversal which lists all affected edge collections and prunes on the path in the future.
 
-    const forFragments: AQLFragment[] = [];
-    const sourceEntityVar = aql.variable(`sourceEntity`);
-    let currentObjectFrag = sourceIsList ? sourceEntityVar : sourceFrag;
     let segmentIndex = 0;
+    const lastListSegmentIndex = segments.findLastIndex((s) => s.isListSegment);
     for (const segment of segments) {
-        const nodeVar = aql.variable(`node`);
+        const isLastSegment = segmentIndex === segments.length - 1;
+        // if there is no list segment, lastListSegmentIndex is -1, so needsNullableVar is true for all segments
+        const needsNullableVar = preserveNullValues && segmentIndex > lastListSegmentIndex; // see below
+        // the caller can specify the result var because they will need it to work with it
+        const nodeVar =
+            isLastSegment && !needsNullableVar ? innermostItemVar : aql.variable(`node`);
+
         const edgeVar = aql.variable(`edge`);
         const pathVar = aql.variable(`path`);
         const dir = segment.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
@@ -1599,20 +2208,33 @@ function getRelationTraversalFragment({
             AccessType.EXPLICIT_READ,
             context,
         )}${pruneFrag}${filterFrag}`;
-        if (segment.isListSegment || (alwaysProduceList && segmentIndex === segments.length - 1)) {
+
+        // if we just put one FOR after the other, we never get NULL values:
+        // consider Consignment has-many Delivery has-one Order
+        //   LET consignment = ...
+        //   FOR delivery IN OUTBOUND consignment consignment_deliveries
+        //   FOR order IN OUTBOUND delivery delivery_order
+        //   RETURN order
+        // The second FOR would simply not find any orders, so the whole subquery would be [].
+        // This is ok most of the time because regular lists in cruddl never have NULL values
+        // but for some aggregations, we need to count NULL values (-> preserveNullValues is true)
+        // to not break these cases, we use a LET statement. This is inefficient though as it
+        // retrieves the whole document and prevents reduce-extraction-to-projection optimizations
+        // TODO aql-perf we should refactor those cases to embed the aggregation in the traversal
+        if (needsNullableVar) {
+            // to ignore dangling edges, add a FILTER though
+            // (if there was one dangling edge and one real edge collected, we should use the real one)
+            // using $var._key != null instead of $var != null because the latter prevents ArangoDB
+            // from applying the reduce-extraction-to-projection optimization
+            const nullableVar = isLastSegment ? innermostItemVar : aql.variable(`nullableNode`);
+            forFragments.push(
+                aql`LET ${nullableVar} = FIRST(${traversalFrag} FILTER ${nodeVar}._key != NULL RETURN ${nodeVar})`,
+            );
+            currentObjectFrag = nullableVar;
+        } else {
             // this is simple - we can just push one FOR statement after the other
             forFragments.push(traversalFrag);
             currentObjectFrag = nodeVar;
-        } else {
-            // if this is not a list, we need to preserve NULL values
-            // (actually, we don't in some cases, but we need to figure out when)
-            // to preserve null values, we need to use FIRST
-            // to ignore dangling edges, add a FILTER though (if there was one dangling edge and one real edge collected, we should use the real one)
-            const nullableVar = aql.variable(`nullableNode`);
-            forFragments.push(
-                aql`LET ${nullableVar} = FIRST(${traversalFrag} FILTER ${nodeVar} != null RETURN ${nodeVar})`,
-            );
-            currentObjectFrag = nullableVar;
         }
 
         context.addCollectionAccess(
@@ -1623,54 +2245,127 @@ function getRelationTraversalFragment({
         segmentIndex++;
     }
 
-    const lastSegment = segments[segments.length - 1];
-
-    // remove dangling edges, unless we already did because the last segment wasn't a list segment
-    // (see above, we add the FILTER there)
-    if (lastSegment.isListSegment) {
+    // each FOR automatically removes NULLs of the previous step (just how FOR works)
+    // This does not apply to the last FOR though
+    // - if it's not a list, this is correct: we would want the NULL values there
+    //   (e.g. deliveries.order should have as many NULLs as there are deliveries without an order)
+    //   dangling edges are already filtered out above in the LET (needsNullableVar)
+    // - if it's a list, we shouldn't have any NULLs because we don't have "relation to NULL"s
+    //   in case of dangling edges however (i.e. edge without corresponding document)
+    //   we could generate NULLS. We generally ignore those in cruddl. -> filter them out
+    //   preserveNullValues is handled above (the dangling edge filter is in the LET there)
+    if (segments[segments.length - 1].isListSegment) {
         // using $var._key != null instead of $var != null because the latter prevents ArangoDB
         // from applying the reduce-extraction-to-projection optimization
         forFragments.push(aql`FILTER ${currentObjectFrag}._key != null`);
     }
 
-    const returnFrag = mapFrag ? mapFrag(currentObjectFrag) : currentObjectFrag;
-    const returnList = lastSegment.resultIsList || sourceIsList || alwaysProduceList;
     // make sure we don't return a list with one element
-    return aqlExt[returnList ? 'parenthesizeList' : 'parenthesizeObject'](
-        sourceIsList ? aql`FOR ${sourceEntityVar} IN ${sourceFrag}` : aql``,
-        ...forFragments,
-        aql`RETURN ${returnFrag}`,
-    );
+    return aql.lines(...forFragments);
 }
 
-function getFlattenFrag(listFrag: AQLFragment, depth: number) {
-    if (depth <= 0) {
-        return listFrag;
-    }
-    if (depth === 1) {
-        return aql`${listFrag}[**]`;
-    }
-    return aql`FLATTEN(${listFrag}, ${aql.integer(depth)})`;
+interface FieldTraversalFragment {
+    readonly segments: ReadonlyArray<FieldSegment>;
+    readonly sourceFrag: AQLFragment;
+    readonly mapFrag?: (itemFrag: AQLFragment) => AQLFragment;
+    readonly filterFrag?: (itemFrag: AQLFragment) => AQLFragment;
+    readonly skip?: number;
+    readonly maxCount?: number;
 }
 
-function getFieldTraversalFragmentWithoutFlattening(
-    segments: ReadonlyArray<FieldSegment>,
-    sourceFrag: AQLFragment,
-) {
+function getFieldTraversalFragment({
+    segments,
+    sourceFrag,
+    mapFrag,
+    filterFrag,
+    skip = 0,
+    maxCount,
+}: FieldTraversalFragment) {
     if (!segments.length) {
         return sourceFrag;
     }
+    if (
+        (mapFrag || filterFrag || maxCount !== undefined || skip > 0) &&
+        !segments.some((s) => s.isListSegment)
+    ) {
+        // if this is needed, it needs to happen outside the field traversal
+        // (it can just use the result of the field traversal as loop "variable")
+        throw new Error(
+            `Cannot have map, filter or limit on field traversal without list segments`,
+        );
+    }
+
+    const limitFrag = generateLimitClause({ skip, maxCount });
+
+    // We use array inline expressions instead of FOR ... IN ... RETURN ... because this reduces the number of
+    // execution nodes which would need to pass the data between them. Inline expressions are more efficient.
+    //
+    // We flatten on the go
+    //  -> source[*].field1[**].field2[**]
+    // (instead of (source[*].field1[*].field2[*])[***})
+    // because this allows us to put a LIMIT on the last item and have it apply to the list as a whole.
+    // Every access "into" an array requires a [*] or [**] operator because otherwise you would just get NULL
+    //
+    // The first array access uses [*], further ones use [**] because using [*] again would result in nested arrays.
+    // It's basically sourceFrag.map(o => o.field1).flatMap(o => o.field2).flatMap(o => ...)
+    //
+    // If there are non-list segments in the middle, those can just be put without an operator:
+    // source.items[*].extension.children[**].extension.children[**]
+    // (equivalent to source.items.map(o => o.extension.children).flatMap(o => o.extension.children))
+    //
+    // [*] treats NULL as an empty list, even though this is undocumented:
+    // https://docs.arangodb.com/stable/aql/operators/#array-expansion
+    // > It is required that the expanded variable is an array.
+    // however, the code that handles it looks very intentional (if not array, return empty array)
+    // https://github.com/arangodb/arangodb/blob/b1f655a12d80b6f44d3384919cb707019bd00c3a/arangod/Aql/Expression.cpp#L1685
+    // -> it is unlikely to be changed.
+    //
+    // The same does not apply to flattening however: while (NULL)[**] == [] just as (NULL)[*] == [],
+    // ([NULL])[**] == [ NULL ] (so it just does not flatten, but keep the null)
+    // we need to treat the NULL item as an empty list (e.g. an uninitialized child entity field)
+    // -> we need to use [*][**] instead of just [**]
+    //
+    // We also append [**] at the end if there were two list segments because we still need to flatten then
+    // If there was only one list segment, we append [*] at the end because it converts NULL to an empty list
 
     let frag = sourceFrag;
+    let index = 0;
+    let hasSeenList = false;
+    const lastListSegmentIndex = segments.findLastIndex((s) => s.isListSegment);
     for (const segment of segments) {
         frag = aql`${frag}${getPropertyAccessFragment(segment.field.name)}`;
         if (segment.isListSegment) {
-            // the array expansion operator [*] does two useful things:
-            // - it performs the next field access basically as .map(o => o.fieldName).
-            // - it converts non-lists to lists (important so that if we flatten afterwards, we don't include NULL lists
-            // the latter is why we also add the [*] at the end of the expression, which might look strange in the AQL.
-            frag = aql`${frag}[*]`;
+            // use ** to flatten / flatMap if this is a nested list
+            // always use * to convert NULLs to empty lists
+            const operatorPrefixFrag = hasSeenList ? aql`[*][**` : aql`[*`;
+            if (index === lastListSegmentIndex) {
+                // If there is a non-list segment at the end, we stop the regular expression at the last list segment
+                // and instead put the non-list segments into the RETURN / FILTER
+                // (e.g. source.items[*].children[** FILTER CURRENT.extension.field > 0 RETURN CURRENT.extension)
+                const remainingSegments = segments.slice(index + 1);
+                const itemAccessFrag = remainingSegments.reduce<AQLFragment | undefined>(
+                    (currentFrag, seg) =>
+                        aql`${currentFrag ?? aql``}${getPropertyAccessFragment(seg.field.name)}`,
+                    undefined,
+                );
+                const itemFrag = aql`CURRENT${itemAccessFrag ?? aql``}`;
+
+                // if there are remaining segments to access, and we don't have a map, just append the item
+                // access at the end: source.items[*].field
+                const suffixFrag = itemAccessFrag && !mapFrag ? itemAccessFrag : aql``;
+
+                const returnExprFrag = mapFrag ? aql` RETURN ${mapFrag(itemFrag)}` : aql``;
+                const filterExprFrag = filterFrag ? aql` FILTER ${filterFrag(itemFrag)}` : aql``;
+                const limitExprFrag = limitFrag ? aql` ${limitFrag}` : aql``;
+                return aql`${frag}${operatorPrefixFrag}${filterExprFrag}${limitExprFrag}${returnExprFrag}]${suffixFrag}`;
+            } else {
+                frag = aql`${frag}${operatorPrefixFrag}]`;
+            }
+
+            hasSeenList = true;
         }
+
+        index++;
     }
 
     return frag;
@@ -1950,15 +2645,15 @@ function getAQLOperator(op: BinaryOperator): AQLFragment | undefined {
     }
 }
 
+function dirAQL(dir: OrderDirection) {
+    if (dir == OrderDirection.DESCENDING) {
+        return aql` DESC`;
+    }
+    return aql``;
+}
+
 function generateSortAQL(orderBy: OrderSpecification, context: QueryContext): AQLFragment {
     if (orderBy.isUnordered()) {
-        return aql``;
-    }
-
-    function dirAQL(dir: OrderDirection) {
-        if (dir == OrderDirection.DESCENDING) {
-            return aql` DESC`;
-        }
         return aql``;
     }
 

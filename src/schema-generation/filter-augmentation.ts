@@ -36,8 +36,6 @@ export class FilterAugmentation {
                     filterValue: args[FILTER_ARG],
                     filterType,
                     itemType,
-                    objectNodeCallback: (itemNode) =>
-                        this.rootFieldHelper.getRealItemNode(itemNode, info),
                 });
             },
         };

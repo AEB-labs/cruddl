@@ -218,6 +218,11 @@ export class RegressionSuite {
                         queryMemoryLimit: isInitSchema
                             ? QUERY_MEMORY_LIMIT_FOR_INITIALIZATION
                             : QUERY_MEMORY_LIMIT_FOR_TESTS,
+                        createCollectionOptions: {
+                            keyOptions: {
+                                type: 'padded',
+                            },
+                        },
                     },
                     context,
                 );

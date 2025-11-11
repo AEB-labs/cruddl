@@ -7,15 +7,10 @@ LET v_delivery1 = FIRST((
 ))
 RETURN {
   "Delivery": (IS_NULL(v_delivery1) ? null : {
-    "allItems": (
-      FOR v_deliveryItem1
-      IN v_delivery1.`deliveryContents`[*].`items`[*][**]
-      LIMIT @var3, @var4
-      RETURN {
-        "itemNumber": v_deliveryItem1.`itemNumber`
-      }
-    )
+    "allItems": v_delivery1.`deliveryContents`[*].`items`[*][** LIMIT @var3, @var4 RETURN {
+      "itemNumber": CURRENT.`itemNumber`
+    }]
   })
 }
 
-// Peak memory usage: 163840 bytes
+// Peak memory usage: 131072 bytes
