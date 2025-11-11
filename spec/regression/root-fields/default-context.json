@@ -1,3 +1,4 @@
 {
-  "authRoles": ["users"]
+  "authRoles": ["users"],
+  "queryMemoryLimit": "10000000"
 }
