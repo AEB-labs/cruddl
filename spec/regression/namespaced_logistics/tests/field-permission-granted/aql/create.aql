@@ -3,7 +3,9 @@ RETURN FIRST(
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
@@ -11,7 +13,9 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   "deliveryNumber": v_delivery1.`deliveryNumber`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN FIRST(
@@ -19,7 +23,9 @@ RETURN FIRST(
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@forwarders
 LET v_forwarder1 = DOCUMENT(@@forwarders, @v_newEntityId1)
@@ -27,7 +33,9 @@ RETURN (IS_NULL(v_forwarder1) ? null : {
   "name": v_forwarder1.`name`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@forwarders
 RETURN {
@@ -38,3 +46,5 @@ RETURN {
     "createForwarder": @v_createForwarder1
   }
 }
+
+// Peak memory usage: 0 bytes

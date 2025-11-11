@@ -14,17 +14,23 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents
 RETURN DOCUMENT(@@dependents, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents
 RETURN DOCUMENT(@@dependents, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents
 RETURN (
@@ -34,7 +40,9 @@ RETURN (
   REMOVE v_edge1 IN @@mains_dependents
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents
 RETURN (
@@ -46,12 +54,16 @@ RETURN (
   IN @@mains_dependents
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents
 RETURN DOCUMENT(@@dependents, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents
 RETURN (
@@ -61,7 +73,9 @@ RETURN (
   REMOVE v_edge1 IN @@mains_additionalDependent
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents
 RETURN (
@@ -71,17 +85,23 @@ RETURN (
   IN @@mains_additionalDependent
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents, @@alternativeDependents
 RETURN DOCUMENT(@@alternativeDependents, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents, @@alternativeDependents
 RETURN DOCUMENT(@@alternativeDependents, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents, @@alternativeDependents
 RETURN (
@@ -91,7 +111,9 @@ RETURN (
   REMOVE v_edge1 IN @@mains_alternativeDependents
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents, @@alternativeDependents
 RETURN (
@@ -103,7 +125,9 @@ RETURN (
   IN @@mains_alternativeDependents
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents, @@alternativeDependents, @@mains
 LET v_main1 = DOCUMENT(@@mains, @var1)
@@ -111,9 +135,13 @@ RETURN (IS_NULL(v_main1) ? null : {
   "key": v_main1.`key`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@dependents, @@alternativeDependents, @@mains
 RETURN {
   "updateMain": @v_updateMain1
 }
+
+// Peak memory usage: 0 bytes

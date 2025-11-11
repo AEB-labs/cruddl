@@ -17,7 +17,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
@@ -31,7 +33,9 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   )
 })
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN {
@@ -41,3 +45,5 @@ RETURN {
     }
   }
 }
+
+// Peak memory usage: 0 bytes

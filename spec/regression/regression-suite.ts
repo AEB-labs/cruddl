@@ -353,10 +353,18 @@ export class RegressionSuite {
             if (this.databaseSpecifier === 'arangodb') {
                 // typescript incorrectly narrows down this.lastProfile to undefined
                 const profile = this.lastProfile as RequestProfile | undefined;
-                const queries = (profile?.plan?.transactionSteps ?? []).map((s) => s.query);
+                const queries = (profile?.plan?.transactionSteps ?? []).map(
+                    (s) =>
+                        s.query +
+                        (typeof s.stats?.peakMemoryUsage === 'number'
+                            ? `\n\n// Peak memory usage: ${s.stats.peakMemoryUsage} bytes`
+                            : ''),
+                );
                 const actualAql = queries.length
                     ? formatWhitespaceInFile(
-                          queries.join('\n\n// --------------------------------\n\n'),
+                          queries.join(
+                              '\n\n// ----------------------------------------------------------------\n\n',
+                          ),
                       )
                     : null;
 

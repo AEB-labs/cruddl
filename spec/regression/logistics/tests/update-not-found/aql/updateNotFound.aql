@@ -17,7 +17,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 LET v_entity1 = DOCUMENT(@@deliveries, FIRST(@v_updatedIds1))
@@ -46,7 +48,7 @@ RETURN (
   RETURN @var8
 )
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
@@ -54,7 +56,7 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   "deliveryNumber": v_delivery1.`deliveryNumber`
 })
 
-// --------------------------------
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN {

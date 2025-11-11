@@ -1,13 +1,17 @@
 RETURN (@var1.`accessGroup` IN @var2)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 RETURN FIRST(
   INSERT @var1 IN @@files
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@files
 LET v_file1 = FIRST(
@@ -18,12 +22,16 @@ RETURN (IS_NULL(v_file1) ? null : {
   "accessGroup": v_file1.`accessGroup`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@files
 RETURN (@var1.`accessGroup` IN @var2)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@files
 RETURN FIRST(
@@ -31,7 +39,9 @@ RETURN FIRST(
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@files
 LET v_file1 = FIRST(
@@ -42,12 +52,16 @@ RETURN (IS_NULL(v_file1) ? null : {
   "accessGroup": v_file1.`accessGroup`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@files
 RETURN (@var1.`accessGroup` IN @var2)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@files
 RETURN FIRST(
@@ -55,7 +69,9 @@ RETURN FIRST(
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@files
 LET v_file1 = FIRST(
@@ -66,7 +82,9 @@ RETURN (IS_NULL(v_file1) ? null : {
   "accessGroup": v_file1.`accessGroup`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@files
 RETURN {
@@ -74,3 +92,5 @@ RETURN {
   "f2": @v_createFile2,
   "f3": @v_createFile3
 }
+
+// Peak memory usage: 0 bytes

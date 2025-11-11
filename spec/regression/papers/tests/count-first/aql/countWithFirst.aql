@@ -13,3 +13,5 @@ RETURN {
     )
   }
 }
+
+// Peak memory usage: 0 bytes
