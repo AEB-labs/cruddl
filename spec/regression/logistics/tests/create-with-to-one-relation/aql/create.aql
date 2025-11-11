@@ -3,12 +3,16 @@ RETURN FIRST(
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN DOCUMENT(@@deliveries, @var1)
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN (
@@ -18,7 +22,9 @@ RETURN (
   IN @@deliveries_handlingUnits
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits
 LET v_handlingUnit1 = DOCUMENT(@@handlingUnits, @v_newEntityId1)
@@ -26,9 +32,13 @@ RETURN (IS_NULL(v_handlingUnit1) ? null : {
   "huNumber": v_handlingUnit1.`huNumber`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits
 RETURN {
   "createHandlingUnit": @v_createHandlingUnit1
 }
+
+// Peak memory usage: 0 bytes

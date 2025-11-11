@@ -10,8 +10,12 @@ RETURN (FIRST(
   RETURN v_count1
 ) > @var4)
 
-// --------------------------------
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
 
 RETURN {
   "flexSearchDeliveries": (@tmp1 ? { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 } : { __cruddl_runtime_error: @var3 })
 }
+
+// Peak memory usage: 0 bytes

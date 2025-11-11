@@ -17,7 +17,9 @@ RETURN (
   RETURN NEW._key
 )
 
-// --------------------------------
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@numberRanges
 LET v_numberRange1 = DOCUMENT(@@numberRanges, @var1)
@@ -25,9 +27,13 @@ RETURN (IS_NULL(v_numberRange1) ? null : {
   "number": v_numberRange1.`number`
 })
 
-// --------------------------------
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
 
 WITH @@numberRanges
 RETURN {
   "updateNumberRange": @v_updateNumberRange1
 }
+
+// Peak memory usage: 0 bytes
