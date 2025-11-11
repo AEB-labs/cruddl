@@ -16,23 +16,19 @@ export interface ProcessFieldResult {
     readonly resultNode: QueryNode | undefined;
 
     /**
-     * The source node, which might differ from the sourceNode passed in in case of root entity capture.
-     *
-     * Only relevant if resultNode is undefined.
+     * Call this on collect fields that traverse root entities to store a reference to the root entity in the stack
      */
-    readonly sourceNode: QueryNode;
-
-    /**
-     * if this field is a collect field, specifies whether it should capture root entities
-     */
-    readonly captureRootEntitiesOnCollectFields: boolean;
+    registerRootNode(rootNode: QueryNode): void;
 }
 
 interface HierarchyStackFrame {
     readonly currentEntityNode?: QueryNode;
     readonly parentEntityFrame?: HierarchyStackFrame;
-    // keep root explicitly because sometimes, we might have the root entity, but not the parent entity
     readonly rootEntityNode?: QueryNode;
+
+    // keep root explicitly because sometimes, we might have the root entity, but not the parent entity
+    // set by registerRootNode()
+    rootEntityNodeForChildFrames?: QueryNode;
 }
 
 export class RootFieldHelper {
@@ -41,7 +37,6 @@ export class RootFieldHelper {
         HierarchyStackFrame
     >();
     private readonly fieldsBySelection = new WeakMap<SelectionToken, Field>();
-    private readonly selectionsThatCaptureRootEntities = new WeakSet<SelectionToken>();
 
     /**
      * Should be called whenever a field is resolved. Will maintain a hierarchy structure, and may produce a value node
@@ -88,13 +83,6 @@ export class RootFieldHelper {
         const existingHierarchyFrame = this.getHierarchyStackFrame(fieldContext.selectionToken);
         const outerField = this.getFieldAtSelection(parentSelectionToken);
 
-        let collectRootNode: QueryNode | undefined;
-        if (this.capturesRootEntity(parentSelectionToken)) {
-            collectRootNode = new PropertyAccessQueryNode(sourceNode, 'root');
-            // we will return the sourceNode below
-            sourceNode = new PropertyAccessQueryNode(sourceNode, 'obj');
-        }
-
         // if this is the first time at this layer, calculate the hierarchy frame for this layer
         let hierarchyFrame: HierarchyStackFrame;
         if (existingHierarchyFrame) {
@@ -120,7 +108,7 @@ export class RootFieldHelper {
                     // traversing root entities, so need to take new root. parent is not available.
                     hierarchyFrame = {
                         currentEntityNode,
-                        rootEntityNode: collectRootNode,
+                        rootEntityNode: outerFrame?.rootEntityNodeForChildFrames,
                     };
                 } else {
                     // not traversing root entities just throw away the parent but keep root
@@ -142,41 +130,23 @@ export class RootFieldHelper {
             this.setHierarchyStackFrame(fieldContext.selectionToken, hierarchyFrame);
         }
 
-        const captureRootEntitiesOnCollectFields = this.shouldCaptureRootEntity(
-            field,
-            fieldContext.selectionStack[fieldContext.selectionStack.length - 1].fieldRequest,
-        );
-
-        if (captureRootEntitiesOnCollectFields) {
-            this.selectionsThatCaptureRootEntities.add(fieldContext.selectionToken);
-        }
-
         return {
-            sourceNode,
             resultNode: this.tryResolveField(field, hierarchyFrame),
-            captureRootEntitiesOnCollectFields,
+            registerRootNode(rootNode: QueryNode) {
+                if (hierarchyFrame.rootEntityNodeForChildFrames) {
+                    throw new Error(
+                        `Root query node already registered for field "${field.declaringType.name}.${field.name}"`,
+                    );
+                }
+                hierarchyFrame.rootEntityNodeForChildFrames = rootNode;
+            },
         };
-    }
-
-    getRealItemNode(itemNode: QueryNode, fieldContext: FieldContext) {
-        if (this.capturesRootEntity(fieldContext.selectionToken)) {
-            return new PropertyAccessQueryNode(itemNode, 'obj');
-        }
-        return itemNode;
-    }
-
-    /**
-     * Determines whether a selection has been instructed (by captureRootEntitiesOnCollectFields) to capture root entities
-     */
-    capturesRootEntity(selectionToken: SelectionToken) {
-        return this.selectionsThatCaptureRootEntities.has(selectionToken);
     }
 
     private tryResolveField(
         field: Field,
         hierarchyFrame: HierarchyStackFrame,
     ): QueryNode | undefined {
-        let resultNode: QueryNode | undefined;
         // parent fields that have root entity types are effectively root fields, and those are a bit easier to manage,
         // so use the logic for root fields in these cases.
         if (field.isRootField || (field.isParentField && field.type.isRootEntityType)) {
@@ -184,101 +154,22 @@ export class RootFieldHelper {
                 return new RuntimeErrorQueryNode(`Root entity is not available here`, {
                     code: NOT_SUPPORTED_ERROR,
                 });
-            } else {
-                return hierarchyFrame.rootEntityNode;
             }
-        } else if (field.isParentField) {
+
+            return hierarchyFrame.rootEntityNode;
+        }
+
+        if (field.isParentField) {
             if (!hierarchyFrame.parentEntityFrame?.currentEntityNode) {
                 return new RuntimeErrorQueryNode(`Parent entity is not available here`, {
                     code: NOT_SUPPORTED_ERROR,
                 });
             }
+
             return hierarchyFrame.parentEntityFrame.currentEntityNode;
         }
+
         return undefined;
-    }
-
-    private shouldCaptureRootEntity(field: Field, fieldRequest: FieldRequest) {
-        if (!field.collectPath) {
-            return false;
-        }
-
-        // we will only ever need it for collect paths that cross both inter- and intra-root-entity fields
-        // (and it's not allowed to capture it in other cases anyway)
-        // we also only need it if the result is a child entity type. It can't be an entity extension (that would be a
-        // validation error), and value objects can't declare parent fields.
-        // note that isChildEntityType + traversesRootEntityTypes implies that there are field traversals as well.
-        if (!field.type.isChildEntityType || !field.collectPath.traversesRootEntityTypes) {
-            return false;
-        }
-
-        return this.selectsRootField(fieldRequest, field.type);
-    }
-
-    // caching is helpful because it might get called further down in the hierarchy again
-    // caching is ok because it only keeps a small boolean in the case of a kept-alive FieldRequest
-    @memorize()
-    private selectsRootField(fieldRequest: FieldRequest, type: ObjectType): boolean {
-        // hasReachableRootField can be cached request-independently, so we can save the time to crawl the selections
-        // if we know there aren't any reachable root fields
-        if (!this.hasReachableRootField(type)) {
-            return false;
-        }
-
-        // assumes that parent/root fields, child entity fields and entity extension fields are always called
-        // exactly like in the model (to do this properly, using the output-type-generator itself, we would need several
-        // passes, or we would need to run the query-node-generator upfront and associate metadata with the
-        // QueryNodeFields
-
-        return fieldRequest.selectionSet.some((f) => {
-            const field = type.getField(f.fieldRequest.field.name);
-            if (!field) {
-                return false;
-            }
-            if (field.isRootField || (field.isParentField && field.type.isRootEntityType)) {
-                return true;
-            }
-            // don't walk out of the current root entity, we're not interested in them (that would change the root)
-            if (
-                (field.type.isChildEntityType || field.type.isEntityExtensionType) &&
-                (!field.collectPath || !field.collectPath.traversesRootEntityTypes)
-            ) {
-                return this.selectsRootField(f.fieldRequest, field.type);
-            }
-            return false;
-        });
-    }
-
-    /**
-     * Determines whether a @root field can be reached from anywhere within the given type.
-     *
-     * Stops at root entity boundaries
-     */
-    @memorize()
-    private hasReachableRootField(type: ObjectType): boolean {
-        const seen = new Set<ObjectType>([type]);
-        let fringe = [type];
-        do {
-            const newFringe: ObjectType[] = [];
-            for (const type of fringe) {
-                for (const field of type.fields) {
-                    // parent fields of root entity types are basically root fields (and they will make use of captureRootEntity)
-                    if (field.isRootField || (field.isParentField && field.type.isRootEntityType)) {
-                        return true;
-                    }
-                    if (
-                        (field.type.isChildEntityType || field.type.isEntityExtensionType) &&
-                        !seen.has(field.type) &&
-                        (!field.collectPath || !field.collectPath.traversesRootEntityTypes)
-                    ) {
-                        seen.add(field.type);
-                        newFringe.push(field.type);
-                    }
-                }
-            }
-            fringe = newFringe;
-        } while (fringe.length);
-        return false;
     }
 
     private getHierarchyStackFrame(

@@ -16,11 +16,11 @@ RETURN {
           IN (IS_LIST(v_deliveryContent1.`items`) ? v_deliveryContent1.`items` : [])
           RETURN {
             "subSubItems": (
-              FOR v_deliveryItem2
+              FOR v_item1
               IN v_deliveryItem1.`subItems`[*].`subItems`[*][**]
-              SORT (v_deliveryItem2.`itemNumber`)  DESC
+              SORT (v_item1.`itemNumber`)  DESC
               RETURN {
-                "itemNumber": v_deliveryItem2.`itemNumber`
+                "itemNumber": v_item1.`itemNumber`
               }
             )
           }

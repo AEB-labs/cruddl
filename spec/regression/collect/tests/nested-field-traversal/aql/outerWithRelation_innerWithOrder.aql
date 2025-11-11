@@ -9,19 +9,16 @@ LET v_shipment1 = FIRST((
 RETURN {
   "Shipment": (IS_NULL(v_shipment1) ? null : {
     "allItems": (
-      FOR v_deliveryItem1
-      IN FLATTEN((
-        FOR v_node1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_shipment1 @@shipments_deliveries
-        FILTER v_node1._key != null
-        RETURN v_node1.`deliveryContents`[*].`items`[*]
-      ), 2)
+      FOR v_root1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_shipment1 @@shipments_deliveries
+      FILTER v_root1._key != null
+      FOR v_item1 IN v_root1.`deliveryContents`[*].`items`[*][**]
       RETURN {
         "subSubItems": (
-          FOR v_deliveryItem2
-          IN v_deliveryItem1.`subItems`[*].`subItems`[*][**]
-          SORT (v_deliveryItem2.`itemNumber`)  DESC
+          FOR v_item2
+          IN v_item1.`subItems`[*].`subItems`[*][**]
+          SORT (v_item2.`itemNumber`)  DESC
           RETURN {
-            "itemNumber": v_deliveryItem2.`itemNumber`
+            "itemNumber": v_item2.`itemNumber`
           }
         )
       }

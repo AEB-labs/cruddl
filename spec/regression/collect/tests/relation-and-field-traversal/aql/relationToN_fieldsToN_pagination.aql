@@ -9,30 +9,24 @@ LET v_shipment1 = FIRST((
 RETURN {
   "Shipment": (IS_NULL(v_shipment1) ? null : {
     "allItems": (
-      FOR v_deliveryItem1
-      IN FLATTEN((
-        FOR v_node1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_shipment1 @@shipments_deliveries
-        FILTER v_node1._key != null
-        RETURN v_node1.`deliveryContents`[*].`items`[*]
-      ), 2)
+      FOR v_root1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_shipment1 @@shipments_deliveries
+      FILTER v_root1._key != null
+      FOR v_item1 IN v_root1.`deliveryContents`[*].`items`[*][** RETURN {
+        "itemNumber": CURRENT.`itemNumber`
+      }]
       LIMIT @var5, @var6
-      RETURN {
-        "itemNumber": v_deliveryItem1.`itemNumber`
-      }
+      RETURN v_item1
     ),
     "allDeliveryContents": (
-      FOR v_deliveryContent1
-      IN (
-        FOR v_node2, v_edge2, v_path2 IN @var7..@var8 OUTBOUND v_shipment1 @@shipments_deliveries
-        FILTER v_node2._key != null
-        RETURN v_node2.`deliveryContents`[*]
-      )[**]
+      FOR v_root2, v_edge2, v_path2 IN @var7..@var8 OUTBOUND v_shipment1 @@shipments_deliveries
+      FILTER v_root2._key != null
+      FOR v_item2 IN v_root2.`deliveryContents`[* RETURN {
+        "deliveryContentNumber": CURRENT.`deliveryContentNumber`
+      }]
       LIMIT @var9, @var10
-      RETURN {
-        "deliveryContentNumber": v_deliveryContent1.`deliveryContentNumber`
-      }
+      RETURN v_item2
     )
   })
 }
 
-// Peak memory usage: 491520 bytes
+// Peak memory usage: 262144 bytes

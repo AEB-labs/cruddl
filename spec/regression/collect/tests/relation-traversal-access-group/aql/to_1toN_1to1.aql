@@ -20,9 +20,9 @@ RETURN {
         IN (
           FOR v_node1, v_edge1, v_path1 IN @var4..@var5 OUTBOUND v_shipment1 @@shipments_deliveries
           FILTER (v_node1.`accessGroup` IN @var6)
-          LET v_nullableNode1 = FIRST(FOR v_node2, v_edge2, v_path2 IN @var7..@var8 OUTBOUND v_node1 @@deliveries_order
-          FILTER (v_node2.`accessGroup` IN @var9) FILTER v_node2 != null RETURN v_node2)
-          RETURN v_nullableNode1
+          FOR v_node2, v_edge2, v_path2 IN @var7..@var8 OUTBOUND v_node1 @@deliveries_order
+          FILTER (v_node2.`accessGroup` IN @var9)
+          RETURN v_node2
         )
         FILTER v_item2 != null
         COLLECT v_distinct1 = v_item2
@@ -36,4 +36,4 @@ RETURN {
   })
 }
 
-// Peak memory usage: 131072 bytes
+// Peak memory usage: 98304 bytes

@@ -8,20 +8,16 @@ LET v_delivery1 = FIRST((
 RETURN {
   "Delivery": (IS_NULL(v_delivery1) ? null : {
     "allItems": (
-      FOR v_deliveryItem1
+      FOR v_item1
       IN v_delivery1.`deliveryContents`[*].`items`[*][**]
-      SORT (v_deliveryItem1.`itemNumber`)  DESC
+      SORT (v_item1.`itemNumber`)  DESC
       RETURN {
-        "subSubItems": (
-          FOR v_deliveryItem2
-          IN v_deliveryItem1.`subItems`[*].`subItems`[*][**]
-          RETURN {
-            "itemNumber": v_deliveryItem2.`itemNumber`
-          }
-        )
+        "subSubItems": v_item1.`subItems`[*].`subItems`[*][** RETURN {
+          "itemNumber": CURRENT.`itemNumber`
+        }]
       }
     )
   })
 }
 
-// Peak memory usage: 196608 bytes
+// Peak memory usage: 163840 bytes

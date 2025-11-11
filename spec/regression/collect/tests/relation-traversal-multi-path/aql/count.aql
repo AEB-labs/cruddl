@@ -16,7 +16,7 @@ RETURN {
         FILTER v_node2._key != null
         RETURN v_node2
       )
-      COLLECT WITH COUNT INTO v_count1
+      COLLECT AGGREGATE v_count1 = COUNT(v_item1)
       RETURN v_count1
     ),
     "distinctOuterHandlingUnitCount": FIRST(

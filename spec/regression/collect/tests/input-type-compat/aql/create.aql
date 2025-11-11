@@ -13,19 +13,15 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   "itemCount": FIRST(
     FOR v_item1
     IN v_delivery1.`deliveryContents`[*].`items`[*][**]
-    COLLECT WITH COUNT INTO v_count1
+    COLLECT AGGREGATE v_count1 = COUNT(v_item1)
     RETURN v_count1
   ),
-  "allItems": (
-    FOR v_deliveryItem1
-    IN v_delivery1.`deliveryContents`[*].`items`[*][**]
-    RETURN {
-      "itemNumber": v_deliveryItem1.`itemNumber`
-    }
-  )
+  "allItems": v_delivery1.`deliveryContents`[*].`items`[*][** RETURN {
+    "itemNumber": CURRENT.`itemNumber`
+  }]
 })
 
-// Peak memory usage: 65536 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 

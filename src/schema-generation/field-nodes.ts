@@ -14,7 +14,6 @@ import {
     FollowEdgeQueryNode,
     NullQueryNode,
     ObjectQueryNode,
-    PropertyAccessQueryNode,
     QueryNode,
     RootEntityIDQueryNode,
     SafeListQueryNode,
@@ -24,17 +23,34 @@ import {
     VariableQueryNode,
 } from '../query-tree';
 import { ID_FIELD } from '../schema/constants';
-import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../schema/scalars/offset-date-time';
+import { GraphQLOffsetDateTime } from '../schema/scalars/offset-date-time';
 import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
 import { and } from './utils/input-types';
+
+export interface CreateFieldNodeOptions {
+    readonly skipNullFallbackForEntityExtensions?: boolean;
+    readonly rootEntityVar?: VariableQueryNode;
+
+    /**
+     * Call this on collect fields that traverse root entities to store a reference to the root entity in the stack
+     */
+    readonly registerRootNode?: (rootNode: QueryNode) => void;
+}
+
+// collect fields without aggregation or with a different operator can and should discard NULL values
+const aggregationsThatNeedNullValues: ReadonlySet<AggregationOperator> = new Set([
+    AggregationOperator.COUNT,
+    AggregationOperator.SOME,
+    AggregationOperator.NONE,
+    AggregationOperator.COUNT_NULL,
+    AggregationOperator.SOME_NULL,
+    AggregationOperator.NONE_NULL,
+]);
 
 export function createFieldNode(
     field: Field,
     sourceNode: QueryNode,
-    options: {
-        skipNullFallbackForEntityExtensions?: boolean;
-        captureRootEntitiesOnCollectFields?: boolean;
-    } = {},
+    options: CreateFieldNodeOptions = {},
 ): QueryNode {
     // make use of the fact that field access on non-objects is NULL, so that type checks for OBJECT are redundant
     // this e.g. reverses the effect of the isEntityExtensionType check below
@@ -57,26 +73,41 @@ export function createFieldNode(
 
     if (field.collectPath) {
         const { relationSegments, fieldSegments } = getEffectiveCollectSegments(field.collectPath);
+        const itemVariable = new VariableQueryNode('collectItem');
+        const rootEntityVariable = options.registerRootNode
+            ? new VariableQueryNode('collectRoot')
+            : undefined;
+        const preserveNullValues =
+            !!field.aggregationOperator &&
+            aggregationsThatNeedNullValues.has(field.aggregationOperator);
         const traversalNode = new TraversalQueryNode({
             sourceEntityNode: sourceNode,
             relationSegments,
             fieldSegments,
-            captureRootEntities: !!options.captureRootEntitiesOnCollectFields,
+            rootEntityVariable,
+            itemVariable,
+            preserveNullValues,
         });
+        if (options.registerRootNode && rootEntityVariable) {
+            options.registerRootNode(rootEntityVariable);
+        }
 
         if (!field.aggregationOperator) {
             return traversalNode;
         } else {
             let items: QueryNode = traversalNode;
-            if (field.aggregationOperator === AggregationOperator.COUNT) {
-                return new CountQueryNode(items);
-            }
+            // note: we used to use CountQueryNode for AggregationOperator.COUNT here, but that
+            // meant that the COUNT aggregation operator was never tested. Consistently having an
+            // AggregationQueryNode with TraversalQueryNodes also will help us generate more
+            // straightforward AQL in the future (we might even make it a property of
+            // TraversalQueryNode)
 
             if (
                 field.collectPath.resultingType &&
                 field.collectPath.resultingType.isScalarType &&
                 field.collectPath.resultingType.graphQLScalarType === GraphQLOffsetDateTime
             ) {
+                // TODO aql-perf move this into the TraversalQueryNode's innerNode
                 const offsetDateTimeNode = new VariableQueryNode('offsetDateTime');
                 items = new TransformListQueryNode({
                     listNode: items,
@@ -87,6 +118,12 @@ export function createFieldNode(
                     ),
                 });
             }
+
+            // TODO aql-perf think about moving the DISTINCT operator into TraversalQueryNode
+            // code like the ListAugmentation recognizes TraversalQueryNode and puts its additions
+            // into that existing node. They do not know about AggregationQueryNode, so they wrap
+            // it in a TransformListQueryNode. This is good for correctness (ensures that DISTICNT
+            // happens before the mapping step), but bad for performance.
 
             // scalar fields should be ordered automatically because there is no argument to sort them
             const sort =
