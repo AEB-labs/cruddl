@@ -11,32 +11,39 @@
         },
         "dispatchedAt": "2020-01-30T10:00:00+01:00",
         "priority": 1,
+        "payload": "@{randomString(10000)}",
         "deliveryContents": [
           {
             "deliveryContentNumber": "DC1.1",
+            "payload": "@{randomString(10000)}",
             "items": [
               {
                 "itemNumber": "DI1.1.1",
                 "weightInKg": 1.2,
-                "isDangerousGoods": true
+                "isDangerousGoods": true,
+                "payload": "@{randomString(10000)}"
               },
               {
                 "itemNumber": "DI1.1.2",
-                "weightInKg": 2.2
+                "weightInKg": 2.2,
+                "payload": "@{randomString(10000)}"
               }
             ]
           },
           {
             "deliveryContentNumber": "DC1.2",
+            "payload": "@{randomString(10000)}",
             "items": [
               {
                 "itemNumber": "DI1.2.1",
                 "weightInKg": 4.4,
-                "isDangerousGoods": false
+                "isDangerousGoods": false,
+                "payload": "@{randomString(10000)}"
               },
               {
                 "itemNumber": "DI1.2.2",
-                "weightInKg": 8.8
+                "weightInKg": 8.8,
+                "payload": "@{randomString(10000)}"
               }
             ]
           }
@@ -51,30 +58,37 @@
         },
         "dispatchedAt": "2020-01-30T11:00:00+03:00",
         "priority": 3,
+        "payload": "@{randomString(10000)}",
         "deliveryContents": [
           {
             "deliveryContentNumber": "DC2.1",
+            "payload": "@{randomString(10000)}",
             "items": [
               {
                 "itemNumber": "DI2.1.1",
                 "weightInKg": 16.16,
-                "isDangerousGoods": true
+                "isDangerousGoods": true,
+                "payload": "@{randomString(10000)}"
               },
               {
                 "itemNumber": "DI2.1.2",
                 "weightInKg": 32.32,
-                "isDangerousGoods": true
+                "isDangerousGoods": true,
+                "payload": "@{randomString(10000)}"
               }
             ]
           },
           {
             "deliveryContentNumber": "DC2.2",
+            "payload": "@{randomString(10000)}",
             "items": [
               {
-                "itemNumber": "DI2.2.1"
+                "itemNumber": "DI2.2.1",
+                "payload": "@{randomString(10000)}"
               },
               {
-                "itemNumber": "DI2.2.2"
+                "itemNumber": "DI2.2.2",
+                "payload": "@{randomString(10000)}"
               }
             ]
           }
@@ -88,27 +102,34 @@
           "identCode": "licD3"
         },
         "priority": 2,
+        "payload": "@{randomString(10000)}",
         "deliveryContents": [
           {
             "deliveryContentNumber": "DC3.1",
+            "payload": "@{randomString(10000)}",
             "items": [
               {
                 "itemNumber": "DI3.1.1",
-                "isDangerousGoods": false
+                "isDangerousGoods": false,
+                "payload": "@{randomString(10000)}"
               },
               {
-                "itemNumber": "DI3.1.2"
+                "itemNumber": "DI3.1.2",
+                "payload": "@{randomString(10000)}"
               }
             ]
           },
           {
             "deliveryContentNumber": "DC3.2",
+            "payload": "@{randomString(10000)}",
             "items": [
               {
-                "itemNumber": "DI3.2.1"
+                "itemNumber": "DI3.2.1",
+                "payload": "@{randomString(10000)}"
               },
               {
-                "itemNumber": "DI3.2.2"
+                "itemNumber": "DI3.2.2",
+                "payload": "@{randomString(10000)}"
               }
             ]
           }
@@ -121,26 +142,33 @@
         "location": {
           "identCode": "licD4"
         },
+        "payload": "@{randomString(10000)}",
         "deliveryContents": [
           {
             "deliveryContentNumber": "DC4.1",
+            "payload": "@{randomString(10000)}",
             "items": [
               {
-                "itemNumber": "DI4.1.1"
+                "itemNumber": "DI4.1.1",
+                "payload": "@{randomString(10000)}"
               },
               {
-                "itemNumber": "DI4.1.2"
+                "itemNumber": "DI4.1.2",
+                "payload": "@{randomString(10000)}"
               }
             ]
           },
           {
             "deliveryContentNumber": "DC4.2",
+            "payload": "@{randomString(10000)}",
             "items": [
               {
-                "itemNumber": "DI4.2.1"
+                "itemNumber": "DI4.2.1",
+                "payload": "@{randomString(10000)}"
               },
               {
-                "itemNumber": "DI4.2.2"
+                "itemNumber": "DI4.2.2",
+                "payload": "@{randomString(10000)}"
               }
             ]
           }
@@ -153,19 +181,23 @@
         "location": {
           "identCode": "licD5"
         },
+        "payload": "@{randomString(10000)}",
         "deliveryContents": [
           {
-            "deliveryContentNumber": "DC5.1"
+            "deliveryContentNumber": "DC5.1",
+            "payload": "@{randomString(10000)}"
           },
           {
             "deliveryContentNumber": "DC5.2",
+            "payload": "@{randomString(10000)}",
             "items": []
           }
         ]
       },
       {
         "@id": "6",
-        "deliveryNumber": "D6"
+        "deliveryNumber": "D6",
+        "payload": "@{randomString(10000)}"
       }
     ],
     "Shipment": [
@@ -175,7 +207,8 @@
         "accessGroup": "S1",
         "location": {
           "identCode": "licS1"
-        }
+        },
+        "payload": "@{randomString(10000)}"
       },
       {
         "@id": "2",
@@ -183,7 +216,8 @@
         "accessGroup": "S2",
         "location": {
           "identCode": "licS2"
-        }
+        },
+        "payload": "@{randomString(10000)}"
       },
       {
         "@id": "3",
@@ -191,7 +225,8 @@
         "accessGroup": "S3",
         "location": {
           "identCode": "licS3"
-        }
+        },
+        "payload": "@{randomString(10000)}"
       },
       {
         "@id": "4",
@@ -199,7 +234,8 @@
         "accessGroup": "S4",
         "location": {
           "identCode": "licS4"
-        }
+        },
+        "payload": "@{randomString(10000)}"
       }
     ],
     "HandlingUnit": [
@@ -213,7 +249,8 @@
         "warehouseSlot": {
           "warehouse": "South",
           "level": 0
-        }
+        },
+        "payload": "@{randomString(10000)}"
       },
       {
         "@id": "2",
@@ -225,7 +262,8 @@
         "warehouseSlot": {
           "warehouse": "South",
           "level": 1
-        }
+        },
+        "payload": "@{randomString(10000)}"
       },
       {
         "@id": "3",
@@ -237,7 +275,8 @@
         "warehouseSlot": {
           "warehouse": "South",
           "level": 0
-        }
+        },
+        "payload": "@{randomString(10000)}"
       },
       {
         "@id": "4",
@@ -249,7 +288,8 @@
         "warehouseSlot": {
           "warehouse": "North",
           "level": 0
-        }
+        },
+        "payload": "@{randomString(10000)}"
       }
     ],
     "Order": [
@@ -260,7 +300,8 @@
         "location": {
           "identCode": "licO1"
         },
-        "payedAt": "2019-06-21T18:10:00Z"
+        "payedAt": "2019-06-21T18:10:00Z",
+        "payload": "@{randomString(10000)}"
       },
       {
         "@id": "2",
@@ -268,7 +309,8 @@
         "accessGroup": "O2",
         "location": {
           "identCode": "licO2"
-        }
+        },
+        "payload": "@{randomString(10000)}"
       },
       {
         "@id": "3",
@@ -276,7 +318,8 @@
         "accessGroup": "O3",
         "location": {
           "identCode": "licO3"
-        }
+        },
+        "payload": "@{randomString(10000)}"
       },
       {
         "@id": "4",
@@ -284,7 +327,8 @@
         "accessGroup": "O4",
         "location": {
           "identCode": "licO4"
-        }
+        },
+        "payload": "@{randomString(10000)}"
       }
     ]
   }

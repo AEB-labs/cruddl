@@ -1,0 +1,4 @@
+{
+  "queryMemoryLimit": "10000000",
+  "authRoles": ["users"]
+}

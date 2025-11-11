@@ -114,6 +114,7 @@ export class RegressionSuite {
                 idGenerator: this.idGenerator,
                 implicitLimitForRootEntityQueries: context.implicitLimitForRootEntityQueries,
                 maxLimitForRootEntityQueries: context.maxLimitForRootEntityQueries,
+                queryMemoryLimit: context.queryMemoryLimit,
                 recordPlan: true,
             }),
             modelOptions: {

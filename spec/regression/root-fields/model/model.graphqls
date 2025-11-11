@@ -1,5 +1,6 @@
 type Root @rootEntity {
     name: String @key
+    payload: String
     children: [Child]
     grandchildren: [Grandchild] @collect(path: "children.children")
     extensionGrandchildren: [ExtensionGrandchild] @collect(path: "children.extension.children")
@@ -7,6 +8,7 @@ type Root @rootEntity {
 
 type Child @childEntity {
     name: String
+    payload: String
     children: [Grandchild]
     extension: Extension
     parent: Root @parent
@@ -14,23 +16,27 @@ type Child @childEntity {
 }
 
 type Extension @entityExtension {
+    payload: String
     children: [ExtensionGrandchild]
 }
 
 type Grandchild @childEntity {
     name: String
+    payload: String
     parent: Child @parent
     root: Root @root
 }
 
 type ExtensionGrandchild @childEntity {
     name: String
+    payload: String
     root: Root @root
     parent: Child @parent
 }
 
 type Root2 @rootEntity {
     name: String @key
+    payload: String
     roots: [Root] @relation
     rootGrandchildren: [Grandchild] @collect(path: "roots.children.children")
     rootExtensionGrandchildren: [ExtensionGrandchild]
