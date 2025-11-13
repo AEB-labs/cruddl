@@ -25,7 +25,7 @@
   "invalidJSON": {
     "errors": [
       {
-        "message": "Invalid cursor \"this-is-not-json\" supplied to \"after\": Unexpected token h in JSON at position 1",
+        "message": "Invalid cursor \"this-is-not-json\" supplied to \"after\": Unexpected token 'h', \"this-is-not-json\" is not valid JSON",
         "locations": [
           {
             "line": 12,
