@@ -28,6 +28,8 @@ import {
     GraphQLOffsetDateTime,
     TIMESTAMP_PROPERTY,
 } from '../../../schema/scalars/offset-date-time';
+import { FieldPath } from '../../../model/implementation/field-path';
+import { OffsetDateTime } from '@js-joda/core';
 
 export const FLEX_SEARCH_VIEW_PREFIX = 'flex_view_';
 
@@ -96,10 +98,21 @@ function getViewForRootEntity(rootEntityType: RootEntityType): ArangoSearchDefin
         viewName: getFlexSearchViewNameForRootEntity(rootEntityType),
         collectionName: getCollectionNameForRootEntity(rootEntityType),
         primarySort: rootEntityType.flexSearchPrimarySort.map((clause) => ({
-            field: clause.field.path === ID_FIELD ? '_key' : clause.field.path,
+            field: getPrimarySortFieldPath(clause.field),
             asc: clause.direction === OrderDirection.ASCENDING,
         })),
     };
+}
+
+function getPrimarySortFieldPath(path: FieldPath): string {
+    if (path.path === ID_FIELD) {
+        return '_key';
+    }
+    if (path.type?.name === OffsetDateTime.name) {
+        // OffsetDateTime is stored as { timestamp, offset } - we need to sort by the timestamp
+        return `${path.path}.${TIMESTAMP_PROPERTY}`;
+    }
+    return path.path;
 }
 
 export async function calculateRequiredArangoSearchViewCreateOperations(
