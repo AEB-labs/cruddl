@@ -1,0 +1,5 @@
+{
+  "authRoles": ["user"],
+  // we request the predictablePayload field here. Pay close attention to actual memory usage in the .aql files
+  "queryMemoryLimit": "100000000"
+}

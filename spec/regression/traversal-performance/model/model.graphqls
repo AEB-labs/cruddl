@@ -12,7 +12,20 @@ type Root @rootEntity {
     children: [Child]
     grandchildren: [Grandchild] @collect(path: "children.children")
     extensionGrandchildren: [ExtensionGrandchild] @collect(path: "children.extension.children")
+
+    # 5 MB random string. Should not be queried because it's not stable
+    # it's just used to we see whether the reduce-extraction-to-projection optimization works
     payload: String
+
+    # 100 KB predictable string. Can be queried.
+    predictablePayload: String
+
+    # can be queried to make sure the reduce-extraction-to-projection optimization is not applied
+    fieldA: String
+    fieldB: String
+    fieldC: String
+    fieldD: String
+    fieldE: String
 }
 
 type Child @childEntity {
