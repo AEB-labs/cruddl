@@ -1,0 +1,60 @@
+# this will probably use the reduce-extraction-to-projection optimization so only the root key
+# will be kept in memory
+query fewRootFields {
+    Super(key: "super1") {
+        rootChildren {
+            root {
+                key
+            }
+
+            children(orderBy: key_ASC) {
+                key
+            }
+        }
+    }
+}
+
+# this requests more fields so the reduce-extraction-to-projection optimization will not be used
+# hence, the root objects will be big.
+# There are 10 root entities with 5 MB payload each, so it should take 50 MB
+# If it duplicates the root object (pre-mapping) into each child, it will take 500 MB
+# (because there are 10 children per root)
+query manyRootFields {
+    Super(key: "super1") {
+        rootChildren {
+            root {
+                key
+                fieldA
+                fieldB
+                fieldC
+                fieldD
+                fieldE
+            }
+
+            children(orderBy: key_ASC) {
+                key
+            }
+        }
+    }
+}
+
+# this should again have smaller memory consumption because the root field has no subquery sibling
+# expected memory usage: 10 roots * 5 MB (payload field is loaded into memory) = 50 MB
+query manyRootFields_innerWithArrayExpansion {
+    Super(key: "super1") {
+        rootChildren {
+            root {
+                key
+                fieldA
+                fieldB
+                fieldC
+                fieldD
+                fieldE
+            }
+
+            children {
+                key
+            }
+        }
+    }
+}
