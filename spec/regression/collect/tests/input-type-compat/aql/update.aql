@@ -14,7 +14,7 @@ RETURN (
   RETURN NEW._key
 )
 
-// Peak memory usage: 98304 bytes
+// Peak memory usage: 131072 bytes
 
 // ----------------------------------------------------------------
 
@@ -36,7 +36,7 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   )
 })
 
-// Peak memory usage: 294912 bytes
+// Peak memory usage: 327680 bytes
 
 // ----------------------------------------------------------------
 

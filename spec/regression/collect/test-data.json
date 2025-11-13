@@ -98,6 +98,11 @@
                 "payload": "@{randomString(10000)}"
               }
             ]
+          },
+          {
+            // a content where items is null (should be treated as empty array)
+            "deliveryContentNumber": "DC1.3",
+            "payload": "@{randomString(10000)}"
           }
         ]
       },

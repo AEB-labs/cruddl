@@ -65,7 +65,7 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   "deliveryNumber": v_delivery1.`deliveryNumber`
 })
 
-// Peak memory usage: 131072 bytes
+// Peak memory usage: 163840 bytes
 
 // ----------------------------------------------------------------
 
