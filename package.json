@@ -37,7 +37,7 @@
   },
   "engines": {
     "npm": ">=6.0.0",
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "devDependencies": {
     "@graphql-tools/utils": "^8.8.0",
@@ -47,7 +47,7 @@
     "@types/deep-equal-in-any-order": "^1.0.1",
     "@types/lodash": "^4.14.184",
     "@types/mocha": "10.0.6",
-    "@types/node": "^18.19.42",
+    "@types/node": "^20.14.8",
     "@types/pluralize": "0.0.29",
     "@types/uuid": "^8.3.4",
     "ajv-cli": "^5.0.0",
