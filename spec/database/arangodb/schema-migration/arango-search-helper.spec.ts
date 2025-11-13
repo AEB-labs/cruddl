@@ -74,5 +74,27 @@ describe('arango-search-helper', () => {
                 { field: '_key', asc: false },
             ]);
         });
+
+        it('appends .timestamp to OffsetDateTime fields in primary sort', () => {
+            const model = createSimpleModel(gql`
+                type Delivery
+                    @rootEntity(
+                        flexSearch: true
+                        flexSearchOrder: [{ field: "pickedUpAt", direction: DESC }]
+                    ) {
+                    deliveryNumber: String @flexSearch
+                    pickedUpAt: OffsetDateTime @flexSearch
+                }
+            `);
+
+            const views = getRequiredViewsFromModel(model);
+            expect(views).to.have.lengthOf(1);
+            const view = views[0];
+            expect(view.primarySort).to.deep.equal([
+                { field: 'pickedUpAt.timestamp', asc: false },
+                { field: 'createdAt', asc: false },
+                { field: '_key', asc: false },
+            ]);
+        });
     });
 });
