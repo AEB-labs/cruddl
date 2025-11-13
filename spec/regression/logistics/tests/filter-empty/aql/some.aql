@@ -6,7 +6,7 @@ RETURN {
       FOR v_item1
       IN (
         FOR v_items1
-        IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
+        IN v_delivery1.`items`[*]
         RETURN v_items1
       )
       COLLECT WITH COUNT INTO v_count1
@@ -17,7 +17,7 @@ RETURN {
       @var2: {
         "count": FIRST(
           FOR v_item2
-          IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
+          IN v_delivery1.`items`[*]
           COLLECT WITH COUNT INTO v_count2
           RETURN v_count2
         )
@@ -26,4 +26,4 @@ RETURN {
   )
 }
 
-// Peak memory usage: 98304 bytes
+// Peak memory usage: 131072 bytes

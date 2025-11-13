@@ -8,19 +8,19 @@ LET v_delivery1 = FIRST((
 RETURN {
   "Delivery": (IS_NULL(v_delivery1) ? null : {
     "deliveryContents": (
-      FOR v_deliveryContent1
-      IN (IS_LIST(v_delivery1.`deliveryContents`) ? v_delivery1.`deliveryContents` : [])
+      FOR v_item1
+      IN v_delivery1.`deliveryContents`[*]
       RETURN {
         "items": (
-          FOR v_deliveryItem1
-          IN (IS_LIST(v_deliveryContent1.`items`) ? v_deliveryContent1.`items` : [])
+          FOR v_item2
+          IN v_item1.`items`[*]
           RETURN {
             "subItems": (
-              FOR v_deliveryItem2
-              IN (IS_LIST(v_deliveryItem1.`subItems`) ? v_deliveryItem1.`subItems` : [])
-              SORT (v_deliveryItem2.`itemNumber`)  DESC
+              FOR v_item3
+              IN v_item2.`subItems`[*]
+              SORT (v_item3.`itemNumber`)  DESC
               RETURN {
-                "itemNumber": v_deliveryItem2.`itemNumber`
+                "itemNumber": v_item3.`itemNumber`
               }
             )
           }

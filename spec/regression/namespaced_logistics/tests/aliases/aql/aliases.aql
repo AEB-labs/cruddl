@@ -17,21 +17,12 @@ RETURN {
     "delivery": {
       "aDelivery": (IS_NULL(v_delivery1) ? null : {
         "nr": v_delivery1.`deliveryNumber`,
-        "oneItem": (
-          FOR v_deliveryItem1
-          IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
-          FILTER (v_deliveryItem1.`itemNumber` == @var5)
-          RETURN {
-            "itemNumber": v_deliveryItem1.`itemNumber`
-          }
-        ),
-        "items": (
-          FOR v_deliveryItem2
-          IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
-          RETURN {
-            "itemNumber": v_deliveryItem2.`itemNumber`
-          }
-        )
+        "oneItem": v_delivery1.`items`[* FILTER (CURRENT.`itemNumber` == @var5) RETURN {
+          "itemNumber": CURRENT.`itemNumber`
+        }],
+        "items": v_delivery1.`items`[* RETURN {
+          "itemNumber": CURRENT.`itemNumber`
+        }]
       }),
       "anotherDelivery": (IS_NULL(v_delivery3) ? null : {
         "nr": v_delivery3.`deliveryNumber`
@@ -40,4 +31,4 @@ RETURN {
   }
 }
 
-// Peak memory usage: 131072 bytes
+// Peak memory usage: 0 bytes

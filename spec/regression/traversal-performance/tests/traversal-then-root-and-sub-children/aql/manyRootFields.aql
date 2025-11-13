@@ -22,11 +22,11 @@ RETURN {
           "fieldE": v_root1.`fieldE`
         },
         "children": (
-          FOR v_grandchild1
-          IN (IS_LIST(v_item1.`children`) ? v_item1.`children` : [])
-          SORT (v_grandchild1.`key`)
+          FOR v_item2
+          IN v_item1.`children`[*]
+          SORT (v_item2.`key`)
           RETURN {
-            "key": v_grandchild1.`key`
+            "key": v_item2.`key`
           }
         )
       }

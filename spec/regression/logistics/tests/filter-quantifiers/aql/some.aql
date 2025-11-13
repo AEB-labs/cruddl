@@ -2,7 +2,17 @@ RETURN {
   "allDeliveries": (
     FOR v_delivery1
     IN @@deliveries
-    FILTER (v_delivery1.`items`[*].`quantity` ANY > @var1)
+    FILTER (FIRST(
+      FOR v_item1
+      IN (
+        FOR v_items1
+        IN v_delivery1.`items`[*]
+        FILTER (v_items1.`quantity` > @var1)
+        RETURN v_items1
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    ) > @var2)
     SORT (v_delivery1.`deliveryNumber`)
     RETURN {
       "deliveryNumber": v_delivery1.`deliveryNumber`
@@ -10,4 +20,4 @@ RETURN {
   )
 }
 
-// Peak memory usage: 32768 bytes
+// Peak memory usage: 65536 bytes
