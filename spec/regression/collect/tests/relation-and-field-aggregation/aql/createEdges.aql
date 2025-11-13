@@ -21,7 +21,7 @@ RETURN (
 WITH @@deliveries
 RETURN DOCUMENT(@@deliveries, @var1)
 
-// Peak memory usage: 131072 bytes
+// Peak memory usage: 163840 bytes
 
 // ----------------------------------------------------------------
 
@@ -99,7 +99,7 @@ RETURN (
   RETURN NEW._key
 )
 
-// Peak memory usage: 98304 bytes
+// Peak memory usage: 131072 bytes
 
 // ----------------------------------------------------------------
 
