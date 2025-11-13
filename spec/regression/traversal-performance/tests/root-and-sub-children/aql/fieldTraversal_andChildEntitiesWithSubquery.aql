@@ -10,14 +10,14 @@ RETURN {
     "predictablePayload": v_root1.`predictablePayload`,
     "children": (
       FOR v_child1
-      IN (IS_LIST(v_root1.`children`) ? v_root1.`children` : [])
+      IN v_root1.`children`[*]
       RETURN {
         "root": {
           "key": v_root1.`key`
         },
         "children": (
           FOR v_grandchild1
-          IN (IS_LIST(v_child1.`children`) ? v_child1.`children` : [])
+          IN v_child1.`children`[*]
           SORT (v_grandchild1.`key`)
           RETURN {
             "key": v_grandchild1.`key`

@@ -8,23 +8,15 @@ LET v_root1 = FIRST((
 RETURN {
   "Root": (IS_NULL(v_root1) ? null : {
     "predictablePayload": v_root1.`predictablePayload`,
-    "children": (
-      FOR v_child1
-      IN (IS_LIST(v_root1.`children`) ? v_root1.`children` : [])
-      RETURN {
-        "root": {
-          "key": v_root1.`key`
-        },
-        "children": (
-          FOR v_grandchild1
-          IN (IS_LIST(v_child1.`children`) ? v_child1.`children` : [])
-          RETURN {
-            "key": v_grandchild1.`key`
-          }
-        )
-      }
-    )
+    "children": v_root1.`children`[* RETURN {
+      "root": {
+        "key": v_root1.`key`
+      },
+      "children": CURRENT.`children`[* RETURN {
+        "key": CURRENT.`key`
+      }]
+    }]
   })
 }
 
-// Peak memory usage: 61243392 bytes
+// Peak memory usage: 10190848 bytes

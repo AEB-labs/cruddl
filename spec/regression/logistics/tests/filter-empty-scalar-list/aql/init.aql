@@ -25,7 +25,7 @@ WITH @@deliveries
 LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
 RETURN (IS_NULL(v_delivery1) ? null : {
   "deliveryNumber": v_delivery1.`deliveryNumber`,
-  "serialNumbers": (IS_LIST(v_delivery1.`serialNumbers`) ? v_delivery1.`serialNumbers` : [])
+  "serialNumbers": v_delivery1.`serialNumbers`[*]
 })
 
 // Peak memory usage: 0 bytes

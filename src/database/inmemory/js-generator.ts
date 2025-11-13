@@ -909,6 +909,8 @@ register(TraversalQueryNode, (node, context): JSFragment => {
 
     if (relationFrag && rootVar) {
         if (relationTraversalReturnsList) {
+            relationFrag = js`(${relationFrag} || [])`;
+
             if (node.fieldSegments.some((f) => f.isListSegment)) {
                 currentFrag = js`${relationFrag}.flatMap(${rootVar} => (${currentFrag}).map(obj => ({ obj: obj, root: ${rootVar} })))`;
             } else {
@@ -920,7 +922,7 @@ register(TraversalQueryNode, (node, context): JSFragment => {
                 const mapper = js`${objVar} => ({ obj: ${objVar}, root: ${rootVar} })`;
                 currentFrag = jsExt.evaluatingLambda(
                     rootVar,
-                    js`(${currentFrag}).map(${mapper})`,
+                    js`(${currentFrag} || []).map(${mapper})`,
                     relationFrag,
                 );
             } else {

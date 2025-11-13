@@ -278,7 +278,7 @@ function applyListTransformations(
     // this is actually functionally required because otherwise we would not have access to the rootEntityNode
     // (needed for @root fields)
     if (listNode instanceof TraversalQueryNode) {
-        const itemVariable = listNode.itemVariable ?? new VariableQueryNode(`collectItem`);
+        const itemVariable = listNode.itemVariable;
         const rootEntityVariable =
             listNode.rootEntityVariable ?? new VariableQueryNode(`collectRoot`);
         const oldInnerNode = listNode.innerNode ?? itemVariable;

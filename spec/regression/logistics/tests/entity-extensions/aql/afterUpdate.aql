@@ -9,7 +9,7 @@ RETURN {
   "Delivery": (IS_NULL(v_delivery1) ? null : {
     "dgInfo": {
       "unNumber": v_delivery1.`dgInfo`.`unNumber`,
-      "notices": (IS_LIST(v_delivery1.`dgInfo`.`notices`) ? v_delivery1.`dgInfo`.`notices` : [])
+      "notices": v_delivery1.`dgInfo`.`notices`[*]
     }
   })
 }

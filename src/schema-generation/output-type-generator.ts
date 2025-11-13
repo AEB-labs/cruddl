@@ -259,6 +259,11 @@ export class OutputTypeGenerator {
 
         return createFieldNode(field, sourceNode, {
             skipNullFallbackForEntityExtensions: true,
+
+            // we expect that filtering, mapping etc. will happen,
+            // and traversals are better optimized in that case
+            preferTraversals: true,
+
             registerRootNode: (rootNode) => rootHelperResult.registerRootNode(rootNode),
         });
     }

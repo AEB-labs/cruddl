@@ -228,41 +228,29 @@ RETURN (
       "city": v_delivery1.`consignee`.`city`,
       "country": (IS_NULL(v_country1) ? null : {
         "isoCode": v_country1.`isoCode`,
-        "description": (
-          FOR v_translation1
-          IN (IS_LIST(v_country1.`description`) ? v_country1.`description` : [])
-          RETURN {
-            "languageIsoCode": v_translation1.`languageIsoCode`,
-            "translation": v_translation1.`translation`
-          }
-        )
+        "description": v_country1.`description`[* RETURN {
+          "languageIsoCode": CURRENT.`languageIsoCode`,
+          "translation": CURRENT.`translation`
+        }]
       }),
       "street": v_delivery1.`consignee`.`street`
     }),
-    "contentInfo": (
-      FOR v_translation2
-      IN (IS_LIST(v_delivery1.`contentInfo`) ? v_delivery1.`contentInfo` : [])
-      RETURN {
-        "translation": v_translation2.`translation`,
-        "languageIsoCode": v_translation2.`languageIsoCode`
-      }
-    ),
+    "contentInfo": v_delivery1.`contentInfo`[* RETURN {
+      "translation": CURRENT.`translation`,
+      "languageIsoCode": CURRENT.`languageIsoCode`
+    }],
     "destinationCountry": (IS_NULL(v_country3) ? null : {
       "isoCode": v_country3.`isoCode`
     }),
     "dgInfo": {
       "flashpoint": v_delivery1.`dgInfo`.`flashpoint`,
       "unNumber": v_delivery1.`dgInfo`.`unNumber`,
-      "notices": (IS_LIST(v_delivery1.`dgInfo`.`notices`) ? v_delivery1.`dgInfo`.`notices` : [])
+      "notices": v_delivery1.`dgInfo`.`notices`[*]
     },
-    "serialNumbers": (IS_LIST(v_delivery1.`serialNumbers`) ? v_delivery1.`serialNumbers` : []),
-    "items": (
-      FOR v_deliveryItem1
-      IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
-      RETURN {
-        "itemNumber": v_deliveryItem1.`itemNumber`
-      }
-    ),
+    "serialNumbers": v_delivery1.`serialNumbers`[*],
+    "items": v_delivery1.`items`[* RETURN {
+      "itemNumber": CURRENT.`itemNumber`
+    }],
     "handlingUnits": (
       FOR v_handlingUnit1
       IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
@@ -275,7 +263,7 @@ RETURN (
   }
 )
 
-// Peak memory usage: 262144 bytes
+// Peak memory usage: 163840 bytes
 
 // ----------------------------------------------------------------
 

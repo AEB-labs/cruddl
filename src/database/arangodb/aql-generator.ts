@@ -91,7 +91,7 @@ import { getFlexSearchViewNameForRootEntity } from './schema-migration/arango-se
 import { Clock, DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
 import { visitQueryNode } from '../../query-tree/visitor';
 import { VisitResult } from '../../utils/visitor';
-import { mightGenerateSubquery } from './traversal-helpers';
+import { supportedAsArrayExpansion } from './traversal-helpers';
 
 enum AccessType {
     /**
@@ -1445,7 +1445,7 @@ register(TraversalQueryNode, (node, context) => {
             }
         }
 
-        if (node.innerNode && mightGenerateSubquery(node.innerNode)) {
+        if (!supportedAsArrayExpansion(node, { skipTopLevelChecks: true })) {
             // cannot have subqueries within array expansions, so we need to use a subquery here
             return processTraversalWithRelationAndListFieldSegmentsUsingSubquery(node, context);
         }
@@ -1475,10 +1475,7 @@ register(TraversalQueryNode, (node, context) => {
         // In the simple case, we can use an array expansion expression instead of a subquery
         // - SORT is not supported by array expressions (documented)
         // - subqueries in array expressions currently cause an internal error in arangodb (3.12.6)
-        if (
-            node.orderBy.isUnordered() &&
-            (!node.innerNode || !mightGenerateSubquery(node.innerNode))
-        ) {
+        if (supportedAsArrayExpansion(node)) {
             return processTraversalWithOnlyFieldSegmentsUsingArrayExpansion(node, context);
         } else {
             return processTraversalWithOnlyFieldSegmentsUsingSubquery(node, context);
@@ -2199,7 +2196,7 @@ function processTraversalWithOnlyFieldSegmentsUsingSubquery(
         sourceFrag,
     });
 
-    const itemVar = aql.variable('item');
+    const itemVar = aql.variable(node.itemVariable.label ?? 'item');
 
     const innerContext = context.bindVariable(node.itemVariable, itemVar);
     const returnValueFrag = node.innerNode ? processNode(node.innerNode, innerContext) : itemVar;

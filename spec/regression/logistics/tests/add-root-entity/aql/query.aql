@@ -5,16 +5,12 @@ RETURN {
     SORT (v_country1.`isoCode`)
     RETURN {
       "isoCode": v_country1.`isoCode`,
-      "description": (
-        FOR v_translation1
-        IN (IS_LIST(v_country1.`description`) ? v_country1.`description` : [])
-        RETURN {
-          "languageIsoCode": v_translation1.`languageIsoCode`,
-          "translation": v_translation1.`translation`
-        }
-      )
+      "description": v_country1.`description`[* RETURN {
+        "languageIsoCode": CURRENT.`languageIsoCode`,
+        "translation": CURRENT.`translation`
+      }]
     }
   )
 }
 
-// Peak memory usage: 65536 bytes
+// Peak memory usage: 32768 bytes
