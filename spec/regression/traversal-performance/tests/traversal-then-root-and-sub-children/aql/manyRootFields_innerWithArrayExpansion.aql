@@ -1,0 +1,36 @@
+WITH @@roots
+LET v_super1 = FIRST((
+  FOR v_super2
+  IN @@supers
+  FILTER (v_super2.`key` == @var1)
+  LIMIT @var2
+  RETURN v_super2
+))
+RETURN {
+  "Super": (IS_NULL(v_super1) ? null : {
+    "rootChildren": (
+      FOR v_root1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_super1 @@supers_roots
+      FILTER v_root1._key != null
+      FOR v_item1 IN v_root1.`children`[*]
+      RETURN {
+        "root": {
+          "key": v_root1.`key`,
+          "fieldA": v_root1.`fieldA`,
+          "fieldB": v_root1.`fieldB`,
+          "fieldC": v_root1.`fieldC`,
+          "fieldD": v_root1.`fieldD`,
+          "fieldE": v_root1.`fieldE`
+        },
+        "children": (
+          FOR v_grandchild1
+          IN (IS_LIST(v_item1.`children`) ? v_item1.`children` : [])
+          RETURN {
+            "key": v_grandchild1.`key`
+          }
+        )
+      }
+    )
+  })
+}
+
+// Peak memory usage: 561217536 bytes
