@@ -15,7 +15,7 @@ RETURN {
     SORT (v_delivery1.`deliveryNumber`)
     RETURN {
       "deliveryNumber": v_delivery1.`deliveryNumber`,
-      "serialNumbers": (IS_LIST(v_delivery1.`serialNumbers`) ? v_delivery1.`serialNumbers` : [])
+      "serialNumbers": v_delivery1.`serialNumbers`[*]
     }
   )
 }

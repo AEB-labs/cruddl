@@ -16,15 +16,15 @@ RETURN {
   "withValue": (IS_NULL(v_delivery1) ? null : {
     "dgInfo": {
       "unNumber": v_delivery1.`dgInfo`.`unNumber`,
-      "notices": (IS_LIST(v_delivery1.`dgInfo`.`notices`) ? v_delivery1.`dgInfo`.`notices` : [])
+      "notices": v_delivery1.`dgInfo`.`notices`[*]
     }
   }),
   "withoutValue": (IS_NULL(v_delivery3) ? null : {
     "dgInfo": {
       "unNumber": v_delivery3.`dgInfo`.`unNumber`,
-      "notices": (IS_LIST(v_delivery3.`dgInfo`.`notices`) ? v_delivery3.`dgInfo`.`notices` : [])
+      "notices": v_delivery3.`dgInfo`.`notices`[*]
     }
   })
 }
 
-// Peak memory usage: 32768 bytes
+// Peak memory usage: 0 bytes

@@ -12,7 +12,7 @@ LET v_delivery1 = DOCUMENT(@@deliveries, @v_newEntityId1)
 RETURN (IS_NULL(v_delivery1) ? null : {
   "dgInfo": {
     "unNumber": v_delivery1.`dgInfo`.`unNumber`,
-    "notices": (IS_LIST(v_delivery1.`dgInfo`.`notices`) ? v_delivery1.`dgInfo`.`notices` : [])
+    "notices": v_delivery1.`dgInfo`.`notices`[*]
   }
 })
 

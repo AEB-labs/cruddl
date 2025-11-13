@@ -23,7 +23,7 @@ RETURN {
         },
         "children": (
           FOR v_grandchild1
-          IN (IS_LIST(v_item1.`children`) ? v_item1.`children` : [])
+          IN v_item1.`children`[*]
           SORT (v_grandchild1.`key`)
           RETURN {
             "key": v_grandchild1.`key`
