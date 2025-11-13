@@ -50,6 +50,9 @@
           },
           {
             "deliveryContentNumber": "DC1.2"
+          },
+          {
+            "deliveryContentNumber": "DC1.3"
           }
         ]
       }
@@ -110,6 +113,9 @@
           },
           {
             "deliveryContentNumber": "DC1.2"
+          },
+          {
+            "deliveryContentNumber": "DC1.3"
           },
           {
             "deliveryContentNumber": "DC2.1"
