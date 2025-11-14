@@ -1,5 +1,6 @@
+import { Clock, DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
 import { AggregationOperator, Field, Relation, RootEntityType } from '../../model';
-import { FieldSegment, RelationSegment } from '../../model/implementation/collect-path';
+import { FieldSegment } from '../../model/implementation/collect-path';
 import { IDENTITY_ANALYZER } from '../../model/implementation/flex-search';
 import {
     AddEdgesQueryNode,
@@ -28,6 +29,7 @@ import {
     FieldQueryNode,
     FirstOfListQueryNode,
     FollowEdgeQueryNode,
+    HoistableQueryNode,
     ListItemQueryNode,
     ListQueryNode,
     LiteralQueryNode,
@@ -69,7 +71,11 @@ import {
     FlexSearchStartsWithQueryNode,
 } from '../../query-tree/flex-search';
 import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { extractVariableAssignments, simplifyBooleans } from '../../query-tree/utils';
+import {
+    extractVariableAssignments,
+    getReferencedVariables,
+    simplifyBooleans,
+} from '../../query-tree/utils';
 import { not } from '../../schema-generation/utils/input-types';
 import { Constructor, decapitalize, isReadonlyArray } from '../../utils/utils';
 import { FlexSearchTokenizable } from '../database-adapter';
@@ -88,9 +94,6 @@ import {
     getCollectionNameForRootEntity,
 } from './arango-basics';
 import { getFlexSearchViewNameForRootEntity } from './schema-migration/arango-search-helpers';
-import { Clock, DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
-import { visitQueryNode } from '../../query-tree/visitor';
-import { VisitResult } from '../../utils/visitor';
 import { mightGenerateSubquery } from './traversal-helpers';
 
 enum AccessType {
@@ -471,6 +474,11 @@ register(VariableQueryNode, (node, context) => {
     return context.getVariable(node);
 });
 
+register(HoistableQueryNode, (node, context) => {
+    // if we process a HoistableQueryNode here, the node did not get hoisted, but that's fine too
+    return processNode(node.node, context);
+});
+
 register(VariableAssignmentQueryNode, (node, context) => {
     const newContext = context.introduceVariable(node.variableNode);
     const tmpVar = newContext.getVariable(node.variableNode);
@@ -565,23 +573,59 @@ register(FlexSearchQueryNode, (node, context) => {
 });
 
 register(TransformListQueryNode, (node, context) => {
-    let itemContext = context.introduceVariable(node.itemVariable);
-    const itemVar = itemContext.getVariable(node.itemVariable);
-    let itemProjectionContext = itemContext;
-
     // move LET statements up
     // they often occur for value objects / entity extensions
     // this avoids the FIRST() and the subquery which reduces load on the AQL query optimizer
-    let variableAssignments: AQLFragment[] = [];
+    const hoistedAssignments: AQLFragment[] = [];
+    const loopScopedAssignmentNodes: VariableAssignmentQueryNode[] = [];
+    const loopScopedVariables = new Set<VariableQueryNode>();
+
+    let currentContext = context;
     let innerNode = node.innerNode;
     const variableAssignmentNodes: VariableAssignmentQueryNode[] = [];
     innerNode = extractVariableAssignments(innerNode, variableAssignmentNodes);
+
     for (const assignmentNode of variableAssignmentNodes) {
+        const referencedVariables = getReferencedVariables(assignmentNode.variableValueNode);
+        const referencesItemVariable = referencedVariables.has(node.itemVariable);
+        let referencesLoopScopedVariable = false;
+        for (const variableNode of loopScopedVariables) {
+            if (referencedVariables.has(variableNode)) {
+                referencesLoopScopedVariable = true;
+                break;
+            }
+        }
+
+        if (!referencesItemVariable && !referencesLoopScopedVariable) {
+            currentContext = currentContext.introduceVariable(assignmentNode.variableNode);
+            const tmpVar = currentContext.getVariable(assignmentNode.variableNode);
+            // ArangoDB will try to move the hoisted variable down to their usages again, even
+            // though that increases memory usage because it requires the subquery to hold the whole
+            // source (root) variable. NOEVAL() forces the optimizer to keep the variable where it's
+            // declared
+            hoistedAssignments.push(
+                aql`LET ${tmpVar} = NOEVAL(${processNode(
+                    assignmentNode.variableValueNode,
+                    currentContext,
+                )})`,
+            );
+        } else {
+            loopScopedAssignmentNodes.push(assignmentNode);
+            loopScopedVariables.add(assignmentNode.variableNode);
+        }
+    }
+
+    let itemContext = currentContext.introduceVariable(node.itemVariable);
+    const itemVar = itemContext.getVariable(node.itemVariable);
+    let itemProjectionContext = itemContext;
+    const loopScopedAssignments: AQLFragment[] = [];
+
+    for (const assignmentNode of loopScopedAssignmentNodes) {
         itemProjectionContext = itemProjectionContext.introduceVariable(
             assignmentNode.variableNode,
         );
         const tmpVar = itemProjectionContext.getVariable(assignmentNode.variableNode);
-        variableAssignments.push(
+        loopScopedAssignments.push(
             aql`LET ${tmpVar} = ${processNode(
                 assignmentNode.variableValueNode,
                 itemProjectionContext,
@@ -590,9 +634,15 @@ register(TransformListQueryNode, (node, context) => {
     }
 
     return aqlExt.parenthesizeList(
+        ...hoistedAssignments,
         aql`FOR ${itemVar}`,
-        generateInClauseWithFilterAndOrderAndLimit({ node, context, itemContext, itemVar }),
-        ...variableAssignments,
+        generateInClauseWithFilterAndOrderAndLimit({
+            node,
+            context: currentContext,
+            itemContext,
+            itemVar,
+        }),
+        ...loopScopedAssignments,
         aql`RETURN ${processNode(innerNode, itemProjectionContext)}`,
     );
 });
@@ -1532,6 +1582,100 @@ function processTraversalWithOnlyRelationSegmentsNoList(
     );
 }
 
+interface SplitTraversalInnerNodeAssignmentsResult {
+    readonly innerNode: QueryNode | undefined;
+    readonly hoistedAssignments: ReadonlyArray<VariableAssignmentQueryNode>;
+    readonly loopScopedAssignments: ReadonlyArray<VariableAssignmentQueryNode>;
+}
+
+function splitTraversalInnerNodeAssignments(
+    node: TraversalQueryNode,
+    innerNode: QueryNode | undefined,
+    initialHoistableVariables: ReadonlyArray<VariableQueryNode>,
+): SplitTraversalInnerNodeAssignmentsResult {
+    if (!innerNode) {
+        return {
+            innerNode,
+            hoistedAssignments: [] as ReadonlyArray<VariableAssignmentQueryNode>,
+            loopScopedAssignments: [] as ReadonlyArray<VariableAssignmentQueryNode>,
+        };
+    }
+
+    const extractedAssignments: VariableAssignmentQueryNode[] = [];
+    const processedInnerNode = extractVariableAssignments(innerNode, extractedAssignments);
+
+    const hoistedAssignments: VariableAssignmentQueryNode[] = [];
+    const loopScopedAssignments: VariableAssignmentQueryNode[] = [];
+    const availableHoistVariables = new Set<VariableQueryNode>(initialHoistableVariables);
+    const loopScopedVariables = new Set<VariableQueryNode>();
+
+    for (const assignmentNode of extractedAssignments) {
+        const referencedVariables = getReferencedVariables(assignmentNode.variableValueNode);
+
+        if (referencedVariables.has(node.itemVariable)) {
+            loopScopedAssignments.push(assignmentNode);
+            loopScopedVariables.add(assignmentNode.variableNode);
+            continue;
+        }
+
+        let referencesLoopScopedVariable = false;
+        for (const variableNode of loopScopedVariables) {
+            if (referencedVariables.has(variableNode)) {
+                referencesLoopScopedVariable = true;
+                break;
+            }
+        }
+        if (referencesLoopScopedVariable) {
+            loopScopedAssignments.push(assignmentNode);
+            loopScopedVariables.add(assignmentNode.variableNode);
+            continue;
+        }
+
+        let referencesNonHoistableVariable = false;
+        for (const referencedVar of referencedVariables) {
+            if (!availableHoistVariables.has(referencedVar)) {
+                referencesNonHoistableVariable = true;
+                break;
+            }
+        }
+
+        if (referencesNonHoistableVariable) {
+            loopScopedAssignments.push(assignmentNode);
+            loopScopedVariables.add(assignmentNode.variableNode);
+            continue;
+        }
+
+        hoistedAssignments.push(assignmentNode);
+        availableHoistVariables.add(assignmentNode.variableNode);
+    }
+
+    return {
+        innerNode: processedInnerNode,
+        hoistedAssignments,
+        loopScopedAssignments,
+    };
+}
+
+function buildAssignmentFragments(
+    assignments: ReadonlyArray<VariableAssignmentQueryNode>,
+    startContext: QueryContext,
+    { wrapWithNoEval = false }: { wrapWithNoEval?: boolean } = {},
+): { fragments: AQLFragment[]; context: QueryContext } {
+    let currentContext = startContext;
+    const fragments: AQLFragment[] = [];
+    for (const assignmentNode of assignments) {
+        currentContext = currentContext.introduceVariable(assignmentNode.variableNode);
+        const tmpVar = currentContext.getVariable(assignmentNode.variableNode);
+        const valueFrag = processNode(assignmentNode.variableValueNode, currentContext);
+        fragments.push(
+            wrapWithNoEval
+                ? aql`LET ${tmpVar} = NOEVAL(${valueFrag})`
+                : aql`LET ${tmpVar} = ${valueFrag}`,
+        );
+    }
+    return { fragments, context: currentContext };
+}
+
 /**
  * Produces:
  *
@@ -1756,6 +1900,15 @@ function processTraversalWithRelationAndListFieldSegmentsUsingSubquery(
         context,
     });
 
+    const hoistableVariables: VariableQueryNode[] = node.rootEntityVariable
+        ? [node.rootEntityVariable]
+        : [];
+    const {
+        innerNode: processedInnerNode,
+        hoistedAssignments,
+        loopScopedAssignments,
+    } = splitTraversalInnerNodeAssignments(node, node.innerNode, hoistableVariables);
+
     const filterNode = node.filterNode;
     const innerFilterFrag = filterNode
         ? (itemFrag: AQLFragment) => {
@@ -1772,19 +1925,32 @@ function processTraversalWithRelationAndListFieldSegmentsUsingSubquery(
         filterFrag: innerFilterFrag,
     });
 
+    const hoistBaseContext = context.introduceVariableAlias(node.rootEntityVariable, rootVar);
+    const { fragments: hoistedAssignmentFrags, context: contextAfterHoist } =
+        buildAssignmentFragments(hoistedAssignments, hoistBaseContext, {
+            wrapWithNoEval: true,
+        });
+
     const itemVar = aql.variable(`item`);
-    const innerContext = context
-        .introduceVariableAlias(node.itemVariable, itemVar)
-        .introduceVariableAlias(node.rootEntityVariable, rootVar);
+    const itemContext = contextAfterHoist.introduceVariableAlias(node.itemVariable, itemVar);
+    const { fragments: loopAssignmentFrags, context: projectionContext } = buildAssignmentFragments(
+        loopScopedAssignments,
+        itemContext,
+    );
+    const resultFrag = processedInnerNode
+        ? processNode(processedInnerNode, projectionContext)
+        : itemVar;
 
     // The outerMapFrag will produce a list, so a simple RETURN mapFrag would result in nested lists
     // -> we iterate over the items again to flatten the lists (the FOR ${itemVar} ...)
     return aqlExt.parenthesizeList(
         aql`${forStatementsFrag}`,
+        ...hoistedAssignmentFrags,
         aql`FOR ${itemVar} IN ${outerMapFrag}`,
-        generateSortAQL(node.orderBy, innerContext),
+        generateSortAQL(node.orderBy, itemContext),
         generateLimitClause(node) ?? aql``,
-        aql`RETURN ${node.innerNode ? processNode(node.innerNode, innerContext) : itemVar}`,
+        ...loopAssignmentFrags,
+        aql`RETURN ${resultFrag}`,
     );
 }
 
@@ -1835,15 +2001,20 @@ function processTraversalWithRelationAndListFieldSegmentsWithoutSort(
         context,
     });
 
-    const innerNode = node.innerNode;
-    const innerMapFrag = innerNode
-        ? (itemFrag: AQLFragment) => {
-              const innerContext = context
-                  .introduceVariableAlias(node.itemVariable, itemFrag)
-                  .introduceVariableAlias(node.rootEntityVariable, rootVar);
-              return processNode(innerNode, innerContext);
-          }
-        : undefined;
+    const hoistableVariables: VariableQueryNode[] = node.rootEntityVariable
+        ? [node.rootEntityVariable]
+        : [];
+    const {
+        innerNode: processedInnerNode,
+        hoistedAssignments,
+        loopScopedAssignments,
+    } = splitTraversalInnerNodeAssignments(node, node.innerNode, hoistableVariables);
+
+    if (loopScopedAssignments.length > 0) {
+        throw new Error(
+            'processTraversalWithRelationAndListFieldSegmentsWithoutSort() encountered VariableAssignmentQueryNode that accesses loop variable, this should not occur',
+        );
+    }
 
     // We can do the LIMIT within the field traversal's mapping function using an array expansion,
     // but only if the relation traversal yields at most one result (i.e. if it only follows 1:1 relations)
@@ -1875,6 +2046,20 @@ function processTraversalWithRelationAndListFieldSegmentsWithoutSort(
         };
     }
 
+    const hoistBaseContext = context.introduceVariableAlias(node.rootEntityVariable, rootVar);
+    const { fragments: hoistedAssignmentFrags, context: contextAfterHoist } =
+        buildAssignmentFragments(hoistedAssignments, hoistBaseContext, {
+            wrapWithNoEval: true,
+        });
+
+    const innerMapFrag = processedInnerNode
+        ? (itemFrag: AQLFragment) =>
+              processNode(
+                  processedInnerNode,
+                  contextAfterHoist.introduceVariableAlias(node.itemVariable, itemFrag),
+              )
+        : undefined;
+
     const outerMapFrag = getFieldTraversalFragment({
         segments: node.fieldSegments,
         sourceFrag: rootVar,
@@ -1896,8 +2081,10 @@ function processTraversalWithRelationAndListFieldSegmentsWithoutSort(
     //     RETURN item
     // (could also use FLATTEN(), but since we're already using nested FORs, this is probably cleaner)
     const itemVar = aql.variable(`item`);
+
     return aqlExt.parenthesizeList(
         aql`${forStatementsFrag}`,
+        ...hoistedAssignmentFrags,
         aql`FOR ${itemVar} IN ${outerMapFrag}`,
         generateLimitClause(limitArgs) ?? aql``,
         aql`RETURN ${itemVar}`,

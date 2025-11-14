@@ -3,6 +3,7 @@ import {
     ConditionalQueryNode,
     FieldQueryNode,
     FirstOfListQueryNode,
+    HoistableQueryNode,
     ObjectQueryNode,
     OrderClause,
     OrderSpecification,
@@ -11,6 +12,7 @@ import {
     RootEntityIDQueryNode,
     UnaryOperationQueryNode,
     VariableAssignmentQueryNode,
+    VariableQueryNode,
 } from '..';
 
 /**
@@ -23,26 +25,6 @@ export function extractVariableAssignments(
     node: QueryNode,
     variableAssignmentsList: VariableAssignmentQueryNode[],
 ): QueryNode {
-    if (node instanceof UnaryOperationQueryNode) {
-        return new UnaryOperationQueryNode(
-            extractVariableAssignments(node.valueNode, variableAssignmentsList),
-            node.operator,
-        );
-    }
-    if (node instanceof BinaryOperationQueryNode) {
-        return new BinaryOperationQueryNode(
-            extractVariableAssignments(node.lhs, variableAssignmentsList),
-            node.operator,
-            extractVariableAssignments(node.rhs, variableAssignmentsList),
-        );
-    }
-    if (node instanceof ConditionalQueryNode) {
-        return new ConditionalQueryNode(
-            extractVariableAssignments(node.condition, variableAssignmentsList),
-            extractVariableAssignments(node.expr1, variableAssignmentsList),
-            extractVariableAssignments(node.expr2, variableAssignmentsList),
-        );
-    }
     if (node instanceof VariableAssignmentQueryNode) {
         // traverse into the variable value node
         const newVariableValueNode = extractVariableAssignments(
@@ -62,22 +44,64 @@ export function extractVariableAssignments(
         }
         return extractVariableAssignments(node.resultNode, variableAssignmentsList);
     }
+
+    if (node instanceof HoistableQueryNode) {
+        // this is basically an "optional" variable assignment - it should be extracted / hoisted
+        // if possible, but otherwise the value will be inline (without variable)
+        const variableNode = new VariableQueryNode(node.variableLabel);
+        const newInnerNode = extractVariableAssignments(node.node, variableAssignmentsList);
+        variableAssignmentsList.push(
+            new VariableAssignmentQueryNode({
+                variableNode,
+                resultNode: variableNode,
+                variableValueNode: newInnerNode,
+            }),
+        );
+        return variableNode;
+    }
+
+    if (node instanceof UnaryOperationQueryNode) {
+        return new UnaryOperationQueryNode(
+            extractVariableAssignments(node.valueNode, variableAssignmentsList),
+            node.operator,
+        );
+    }
+
+    if (node instanceof BinaryOperationQueryNode) {
+        return new BinaryOperationQueryNode(
+            extractVariableAssignments(node.lhs, variableAssignmentsList),
+            node.operator,
+            extractVariableAssignments(node.rhs, variableAssignmentsList),
+        );
+    }
+
+    if (node instanceof ConditionalQueryNode) {
+        return new ConditionalQueryNode(
+            extractVariableAssignments(node.condition, variableAssignmentsList),
+            extractVariableAssignments(node.expr1, variableAssignmentsList),
+            extractVariableAssignments(node.expr2, variableAssignmentsList),
+        );
+    }
+
     if (node instanceof FirstOfListQueryNode) {
         return new FirstOfListQueryNode(
             extractVariableAssignments(node.listNode, variableAssignmentsList),
         );
     }
+
     if (node instanceof FieldQueryNode) {
         return new FieldQueryNode(
             extractVariableAssignments(node.objectNode, variableAssignmentsList),
             node.field,
         );
     }
+
     if (node instanceof RootEntityIDQueryNode) {
         return new RootEntityIDQueryNode(
             extractVariableAssignments(node.objectNode, variableAssignmentsList),
         );
     }
+
     if (node instanceof ObjectQueryNode) {
         return new ObjectQueryNode(
             node.properties.map(
@@ -89,6 +113,7 @@ export function extractVariableAssignments(
             ),
         );
     }
+
     return node;
 }
 
