@@ -1,10 +1,11 @@
 import { resolveReadonlyArrayThunk } from 'graphql';
+import { DefaultClock, UUIDGenerator } from '../../execution/execution-options';
 import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
 import {
     BasicType,
     ConditionalQueryNode,
-    EntitiesIdentifierKind,
     FieldQueryNode,
+    HoistableQueryNode,
     LiteralQueryNode,
     NullQueryNode,
     ObjectQueryNode,
@@ -21,13 +22,11 @@ import {
     WithPreExecutionQueryNode,
 } from '../../query-tree';
 import { groupByEquivalence } from '../../utils/group-by-equivalence';
+import { RequireAllProperties } from '../../utils/util-types';
 import { decapitalize, flatMap } from '../../utils/utils';
 import { FieldContext, SelectionToken } from './context';
 import { QueryNodeField, QueryNodeObjectType } from './definition';
 import { extractQueryTreeObjectType, isListTypeIgnoringNonNull } from './utils';
-import { DefaultClock, UUIDGenerator } from '../../execution/execution-options';
-import { FieldSegment, RelationSegment } from '../../model/implementation/collect-path';
-import { RequireAllProperties } from '../../utils/util-types';
 
 export function createRootFieldContext(
     options: Partial<
@@ -137,14 +136,21 @@ function buildObjectQueryNode(
                 selectionToken,
             };
             const fieldQueryNode = buildFieldQueryNode(sourceNode, field, fieldRequest, newContext);
-            if (selections.length === 1) {
-                return [new PropertySpecification(selections[0].propertyName, fieldQueryNode)];
-            } else {
+            if (selections.length > 1) {
                 const variableNode = new VariableQueryNode(field.name);
                 variableAssignments.push([variableNode, fieldQueryNode]);
                 return selections.map(
                     (s) => new PropertySpecification(s.propertyName, variableNode),
                 );
+            } else if (field.hoist) {
+                return [
+                    new PropertySpecification(
+                        selections[0].propertyName,
+                        new HoistableQueryNode(fieldQueryNode, selections[0].propertyName),
+                    ),
+                ];
+            } else {
+                return [new PropertySpecification(selections[0].propertyName, fieldQueryNode)];
             }
         }),
     );

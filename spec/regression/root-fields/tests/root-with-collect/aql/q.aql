@@ -26,12 +26,13 @@ RETURN {
       "rootGrandchildren": (
         FOR v_root2, v_edge1, v_path1 IN @var1..@var2 OUTBOUND v_root21 @@root2s_roots
         FILTER v_root2._key != null
+        LET v_root3 = NOEVAL({
+          "name": v_root2.`name`
+        })
         FOR v_item1 IN v_root2.`children`[*].`children`[*][** RETURN {
           value: {
             "name": CURRENT.`name`,
-            "root": {
-              "name": v_root2.`name`
-            }
+            "root": v_root3
           },
           sortValues: [
             CURRENT.`name`
@@ -41,14 +42,15 @@ RETURN {
         RETURN v_item1.value
       ),
       "rootExtensionGrandchildren": (
-        FOR v_root3, v_edge2, v_path2 IN @var3..@var4 OUTBOUND v_root21 @@root2s_roots
-        FILTER v_root3._key != null
-        FOR v_item2 IN v_root3.`children`[*].`extension`.`children`[*][** RETURN {
+        FOR v_root4, v_edge2, v_path2 IN @var3..@var4 OUTBOUND v_root21 @@root2s_roots
+        FILTER v_root4._key != null
+        LET v_root5 = NOEVAL({
+          "name": v_root4.`name`
+        })
+        FOR v_item2 IN v_root4.`children`[*].`extension`.`children`[*][** RETURN {
           value: {
             "name": CURRENT.`name`,
-            "root": {
-              "name": v_root3.`name`
-            }
+            "root": v_root5
           },
           sortValues: [
             CURRENT.`name`
@@ -61,4 +63,4 @@ RETURN {
   )
 }
 
-// Peak memory usage: 393216 bytes
+// Peak memory usage: 425984 bytes

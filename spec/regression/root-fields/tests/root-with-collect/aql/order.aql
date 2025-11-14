@@ -12,60 +12,65 @@ RETURN {
         SORT (v_root1.`name`)
         RETURN {
           "grandchildren": (
+            LET v_root2 = NOEVAL({
+              "name": v_root1.`name`
+            })
             FOR v_item1
             IN v_root1.`children`[*].`children`[*][**]
             SORT (v_item1.`name`)
             RETURN {
               "name": v_item1.`name`,
-              "root": {
-                "name": v_root1.`name`
-              }
+              "root": v_root2
             }
           ),
           "grandchildrenReverse": (
+            LET v_root3 = NOEVAL({
+              "name": v_root1.`name`
+            })
             FOR v_item2
             IN v_root1.`children`[*].`children`[*][**]
             SORT (v_item2.`name`)  DESC
             RETURN {
               "name": v_item2.`name`,
-              "root": {
-                "name": v_root1.`name`
-              }
+              "root": v_root3
             }
           ),
           "extensionGrandchildren": (
+            LET v_root4 = NOEVAL({
+              "name": v_root1.`name`
+            })
             FOR v_item3
             IN v_root1.`children`[*].`extension`.`children`[*][**]
             SORT (v_item3.`name`)
             RETURN {
               "name": v_item3.`name`,
-              "root": {
-                "name": v_root1.`name`
-              }
+              "root": v_root4
             }
           ),
           "extensionGrandchildrenReverse": (
+            LET v_root5 = NOEVAL({
+              "name": v_root1.`name`
+            })
             FOR v_item4
             IN v_root1.`children`[*].`extension`.`children`[*][**]
             SORT (v_item4.`name`)  DESC
             RETURN {
               "name": v_item4.`name`,
-              "root": {
-                "name": v_root1.`name`
-              }
+              "root": v_root5
             }
           )
         }
       ),
       "rootGrandchildren": (
-        FOR v_root2, v_edge1, v_path1 IN @var1..@var2 OUTBOUND v_root21 @@root2s_roots
-        FILTER v_root2._key != null
-        FOR v_item5 IN v_root2.`children`[*].`children`[*][** RETURN {
+        FOR v_root6, v_edge1, v_path1 IN @var1..@var2 OUTBOUND v_root21 @@root2s_roots
+        FILTER v_root6._key != null
+        LET v_root7 = NOEVAL({
+          "name": v_root6.`name`
+        })
+        FOR v_item5 IN v_root6.`children`[*].`children`[*][** RETURN {
           value: {
             "name": CURRENT.`name`,
-            "root": {
-              "name": v_root2.`name`
-            }
+            "root": v_root7
           },
           sortValues: [
             CURRENT.`name`
@@ -75,14 +80,15 @@ RETURN {
         RETURN v_item5.value
       ),
       "rootGrandchildrenReverse": (
-        FOR v_root3, v_edge2, v_path2 IN @var3..@var4 OUTBOUND v_root21 @@root2s_roots
-        FILTER v_root3._key != null
-        FOR v_item6 IN v_root3.`children`[*].`children`[*][** RETURN {
+        FOR v_root8, v_edge2, v_path2 IN @var3..@var4 OUTBOUND v_root21 @@root2s_roots
+        FILTER v_root8._key != null
+        LET v_root9 = NOEVAL({
+          "name": v_root8.`name`
+        })
+        FOR v_item6 IN v_root8.`children`[*].`children`[*][** RETURN {
           value: {
             "name": CURRENT.`name`,
-            "root": {
-              "name": v_root3.`name`
-            }
+            "root": v_root9
           },
           sortValues: [
             CURRENT.`name`
@@ -92,14 +98,15 @@ RETURN {
         RETURN v_item6.value
       ),
       "rootExtensionGrandchildren": (
-        FOR v_root4, v_edge3, v_path3 IN @var5..@var6 OUTBOUND v_root21 @@root2s_roots
-        FILTER v_root4._key != null
-        FOR v_item7 IN v_root4.`children`[*].`extension`.`children`[*][** RETURN {
+        FOR v_root10, v_edge3, v_path3 IN @var5..@var6 OUTBOUND v_root21 @@root2s_roots
+        FILTER v_root10._key != null
+        LET v_root11 = NOEVAL({
+          "name": v_root10.`name`
+        })
+        FOR v_item7 IN v_root10.`children`[*].`extension`.`children`[*][** RETURN {
           value: {
             "name": CURRENT.`name`,
-            "root": {
-              "name": v_root4.`name`
-            }
+            "root": v_root11
           },
           sortValues: [
             CURRENT.`name`
@@ -109,14 +116,15 @@ RETURN {
         RETURN v_item7.value
       ),
       "rootExtensionGrandchildrenReverse": (
-        FOR v_root5, v_edge4, v_path4 IN @var7..@var8 OUTBOUND v_root21 @@root2s_roots
-        FILTER v_root5._key != null
-        FOR v_item8 IN v_root5.`children`[*].`extension`.`children`[*][** RETURN {
+        FOR v_root12, v_edge4, v_path4 IN @var7..@var8 OUTBOUND v_root21 @@root2s_roots
+        FILTER v_root12._key != null
+        LET v_root13 = NOEVAL({
+          "name": v_root12.`name`
+        })
+        FOR v_item8 IN v_root12.`children`[*].`extension`.`children`[*][** RETURN {
           value: {
             "name": CURRENT.`name`,
-            "root": {
-              "name": v_root5.`name`
-            }
+            "root": v_root13
           },
           sortValues: [
             CURRENT.`name`
@@ -129,4 +137,4 @@ RETURN {
   )
 }
 
-// Peak memory usage: 1114112 bytes
+// Peak memory usage: 622592 bytes

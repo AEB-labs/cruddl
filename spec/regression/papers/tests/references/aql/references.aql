@@ -8,22 +8,20 @@ RETURN {
       "literatureReferences": (
         FOR v_literatureReference1
         IN v_paper1.`literatureReferences`[*]
+        LET v_paper2 = (IS_NULL(v_literatureReference1.`paper`) ? null : FIRST((
+          FOR v_paper3
+          IN @@papers
+          FILTER ((v_paper3.`key` > NULL) && (v_paper3.`key` == v_literatureReference1.`paper`))
+          LIMIT @var1
+          RETURN v_paper3
+        )))
         RETURN {
-          "paper": FIRST(
-            LET v_paper2 = (IS_NULL(v_literatureReference1.`paper`) ? null : FIRST((
-              FOR v_paper3
-              IN @@papers
-              FILTER ((v_paper3.`key` > NULL) && (v_paper3.`key` == v_literatureReference1.`paper`))
-              LIMIT @var1
-              RETURN v_paper3
-            )))
-            RETURN (IS_NULL(v_paper2) ? null : {
-              "title": v_paper2.`title`,
-              "publishDate": v_paper2.`publishDate`,
-              "isPublished": v_paper2.`isPublished`,
-              "tags": v_paper2.`tags`[*]
-            })
-          ),
+          "paper": (IS_NULL(v_paper2) ? null : {
+            "title": v_paper2.`title`,
+            "publishDate": v_paper2.`publishDate`,
+            "isPublished": v_paper2.`isPublished`,
+            "tags": v_paper2.`tags`[*]
+          }),
           "authors": v_literatureReference1.`authors`[*],
           "pages": (IS_NULL(v_literatureReference1.`pages`) ? null : {
             "startPage": v_literatureReference1.`pages`.`startPage`,
@@ -36,4 +34,4 @@ RETURN {
   )
 }
 
-// Peak memory usage: 131072 bytes
+// Peak memory usage: 98304 bytes
