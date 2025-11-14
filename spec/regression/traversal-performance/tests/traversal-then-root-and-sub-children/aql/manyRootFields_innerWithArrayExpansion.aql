@@ -11,26 +11,23 @@ RETURN {
     "rootChildren": (
       FOR v_root1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_super1 @@supers_roots
       FILTER v_root1._key != null
-      FOR v_item1 IN v_root1.`children`[*]
-      RETURN {
-        "root": {
-          "key": v_root1.`key`,
-          "fieldA": v_root1.`fieldA`,
-          "fieldB": v_root1.`fieldB`,
-          "fieldC": v_root1.`fieldC`,
-          "fieldD": v_root1.`fieldD`,
-          "fieldE": v_root1.`fieldE`
-        },
-        "children": (
-          FOR v_grandchild1
-          IN (IS_LIST(v_item1.`children`) ? v_item1.`children` : [])
-          RETURN {
-            "key": v_grandchild1.`key`
-          }
-        )
-      }
+      LET v_root2 = NOEVAL({
+        "key": v_root1.`key`,
+        "fieldA": v_root1.`fieldA`,
+        "fieldB": v_root1.`fieldB`,
+        "fieldC": v_root1.`fieldC`,
+        "fieldD": v_root1.`fieldD`,
+        "fieldE": v_root1.`fieldE`
+      })
+      FOR v_item1 IN v_root1.`children`[* RETURN {
+        "root": v_root2,
+        "children": CURRENT.`children`[* RETURN {
+          "key": CURRENT.`key`
+        }]
+      }]
+      RETURN v_item1
     )
   })
 }
 
-// Peak memory usage: 561217536 bytes
+// Peak memory usage: 51085312 bytes

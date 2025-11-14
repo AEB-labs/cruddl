@@ -27,6 +27,7 @@ import {
     FirstOfListQueryNode,
     FlexSearchStartsWithQueryNode,
     FollowEdgeQueryNode,
+    HoistableQueryNode,
     ListItemQueryNode,
     ListQueryNode,
     LiteralQueryNode,
@@ -314,6 +315,11 @@ register(ConcatListsQueryNode, (node, context) => {
 
 register(VariableQueryNode, (node, context) => {
     return context.getVariable(node);
+});
+
+register(HoistableQueryNode, (node, context) => {
+    // if we process a HoistableQueryNode here, the node did not get hoisted, but that's fine too
+    return processNode(node.node, context);
 });
 
 register(VariableAssignmentQueryNode, (node, context) => {

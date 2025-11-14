@@ -65,6 +65,12 @@ export interface QueryNodeField {
      * Pure fields are assumed to be pure all the way down - the purity of nested fields is not checked.
      */
     isPure?: boolean;
+
+    /**
+     * If set to `true`, the whole field (including mapping logic) is put into a HoistableQueryNode
+     * so it can be hoisted out of loops.
+     */
+    hoist?: boolean;
 }
 
 export interface QueryNodeObjectType {
