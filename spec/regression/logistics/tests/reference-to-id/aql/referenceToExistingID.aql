@@ -11,21 +11,19 @@ RETURN {
     "items": (
       FOR v_deliveryItem1
       IN v_delivery1.`items`[*]
+      LET v_handlingUnit1 = (IS_NULL(v_deliveryItem1.`handlingUnit`) ? null : FIRST((
+        FOR v_handlingUnit2
+        IN @@handlingUnits
+        FILTER ((v_handlingUnit2._key > NULL) && (v_handlingUnit2._key == v_deliveryItem1.`handlingUnit`))
+        LIMIT @var3
+        RETURN v_handlingUnit2
+      )))
       RETURN {
         "itemNumber": v_deliveryItem1.`itemNumber`,
-        "handlingUnit": FIRST(
-          LET v_handlingUnit1 = (IS_NULL(v_deliveryItem1.`handlingUnit`) ? null : FIRST((
-            FOR v_handlingUnit2
-            IN @@handlingUnits
-            FILTER ((v_handlingUnit2._key > NULL) && (v_handlingUnit2._key == v_deliveryItem1.`handlingUnit`))
-            LIMIT @var3
-            RETURN v_handlingUnit2
-          )))
-          RETURN (IS_NULL(v_handlingUnit1) ? null : {
-            "id": v_handlingUnit1._key,
-            "huNumber": v_handlingUnit1.`huNumber`
-          })
-        )
+        "handlingUnit": (IS_NULL(v_handlingUnit1) ? null : {
+          "id": v_handlingUnit1._key,
+          "huNumber": v_handlingUnit1.`huNumber`
+        })
       }
     )
   })

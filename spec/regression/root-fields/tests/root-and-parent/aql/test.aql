@@ -6,6 +6,9 @@ RETURN {
     RETURN {
       "name": v_root1.`name`,
       "children": (
+        LET v_root2 = NOEVAL({
+          "name": v_root1.`name`
+        })
         FOR v_child1
         IN v_root1.`children`[*]
         RETURN {
@@ -34,9 +37,7 @@ RETURN {
           "parent": {
             "name": v_root1.`name`
           },
-          "root": {
-            "name": v_root1.`name`
-          }
+          "root": v_root2
         }
       )
     }

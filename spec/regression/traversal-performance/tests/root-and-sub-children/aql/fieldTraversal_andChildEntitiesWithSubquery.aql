@@ -9,12 +9,13 @@ RETURN {
   "Root": (IS_NULL(v_root1) ? null : {
     "predictablePayload": v_root1.`predictablePayload`,
     "children": (
+      LET v_root3 = NOEVAL({
+        "key": v_root1.`key`
+      })
       FOR v_child1
       IN v_root1.`children`[*]
       RETURN {
-        "root": {
-          "key": v_root1.`key`
-        },
+        "root": v_root3,
         "children": (
           FOR v_grandchild1
           IN v_child1.`children`[*]
@@ -28,4 +29,4 @@ RETURN {
   })
 }
 
-// Peak memory usage: 61243392 bytes
+// Peak memory usage: 15335424 bytes

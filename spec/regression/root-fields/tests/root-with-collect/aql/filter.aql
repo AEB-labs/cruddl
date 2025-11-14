@@ -43,12 +43,13 @@ RETURN {
       "rootGrandchildren": (
         FOR v_root2, v_edge1, v_path1 IN @var11..@var12 OUTBOUND v_root21 @@root2s_roots
         FILTER v_root2._key != null
+        LET v_root3 = NOEVAL({
+          "name": v_root2.`name`
+        })
         FOR v_item3 IN v_root2.`children`[*].`children`[*][** FILTER (RIGHT(CURRENT.`name`, LENGTH(@var13)) == @var14) RETURN {
           value: {
             "name": CURRENT.`name`,
-            "root": {
-              "name": v_root2.`name`
-            }
+            "root": v_root3
           },
           sortValues: [
             CURRENT.`name`
@@ -61,9 +62,9 @@ RETURN {
         "count": FIRST(
           FOR v_item4
           IN (
-            FOR v_root3, v_edge2, v_path2 IN @var16..@var17 OUTBOUND v_root21 @@root2s_roots
-            FILTER v_root3._key != null
-            FOR v_item5 IN v_root3.`children`[*].`children`[*][** FILTER (RIGHT(CURRENT.`name`, LENGTH(@var18)) == @var19)]
+            FOR v_root4, v_edge2, v_path2 IN @var16..@var17 OUTBOUND v_root21 @@root2s_roots
+            FILTER v_root4._key != null
+            FOR v_item5 IN v_root4.`children`[*].`children`[*][** FILTER (RIGHT(CURRENT.`name`, LENGTH(@var18)) == @var19)]
             RETURN v_item5
           )
           COLLECT WITH COUNT INTO v_count3
@@ -71,14 +72,15 @@ RETURN {
         )
       },
       "rootExtensionGrandchildren": (
-        FOR v_root4, v_edge3, v_path3 IN @var20..@var21 OUTBOUND v_root21 @@root2s_roots
-        FILTER v_root4._key != null
-        FOR v_item6 IN v_root4.`children`[*].`extension`.`children`[*][** FILTER (RIGHT(CURRENT.`name`, LENGTH(@var22)) == @var23) RETURN {
+        FOR v_root5, v_edge3, v_path3 IN @var20..@var21 OUTBOUND v_root21 @@root2s_roots
+        FILTER v_root5._key != null
+        LET v_root6 = NOEVAL({
+          "name": v_root5.`name`
+        })
+        FOR v_item6 IN v_root5.`children`[*].`extension`.`children`[*][** FILTER (RIGHT(CURRENT.`name`, LENGTH(@var22)) == @var23) RETURN {
           value: {
             "name": CURRENT.`name`,
-            "root": {
-              "name": v_root4.`name`
-            }
+            "root": v_root6
           },
           sortValues: [
             CURRENT.`name`
@@ -91,9 +93,9 @@ RETURN {
         "count": FIRST(
           FOR v_item7
           IN (
-            FOR v_root5, v_edge4, v_path4 IN @var25..@var26 OUTBOUND v_root21 @@root2s_roots
-            FILTER v_root5._key != null
-            FOR v_item8 IN v_root5.`children`[*].`extension`.`children`[*][** FILTER (RIGHT(CURRENT.`name`, LENGTH(@var27)) == @var28)]
+            FOR v_root7, v_edge4, v_path4 IN @var25..@var26 OUTBOUND v_root21 @@root2s_roots
+            FILTER v_root7._key != null
+            FOR v_item8 IN v_root7.`children`[*].`extension`.`children`[*][** FILTER (RIGHT(CURRENT.`name`, LENGTH(@var27)) == @var28)]
             RETURN v_item8
           )
           COLLECT WITH COUNT INTO v_count4

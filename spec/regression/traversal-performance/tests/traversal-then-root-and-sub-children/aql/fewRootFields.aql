@@ -11,11 +11,12 @@ RETURN {
     "rootChildren": (
       FOR v_root1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_super1 @@supers_roots
       FILTER v_root1._key != null
+      LET v_root2 = NOEVAL({
+        "key": v_root1.`key`
+      })
       FOR v_item1 IN v_root1.`children`[*]
       RETURN {
-        "root": {
-          "key": v_root1.`key`
-        },
+        "root": v_root2,
         "children": (
           FOR v_grandchild1
           IN v_item1.`children`[*]
@@ -29,4 +30,4 @@ RETURN {
   })
 }
 
-// Peak memory usage: 196608 bytes
+// Peak memory usage: 98304 bytes

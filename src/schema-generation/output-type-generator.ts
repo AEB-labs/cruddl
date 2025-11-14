@@ -7,7 +7,6 @@ import { Field, ObjectType, Type, TypeKind } from '../model';
 import {
     NullQueryNode,
     ObjectQueryNode,
-    OrderDirection,
     PropertySpecification,
     QueryNode,
     RevisionQueryNode,
@@ -232,6 +231,7 @@ export class OutputTypeGenerator {
             skipNullCheck:
                 field.type.isEntityExtensionType || field.isParentField || field.isRootField,
             isPure: true,
+            hoist: field.isRootField,
             resolve: (sourceNode, args, info) => this.resolveField(field, sourceNode, info),
         };
 
