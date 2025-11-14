@@ -1,0 +1,18 @@
+query RelationAndFieldTraversal {
+    Super(key: "super1") {
+        rootChildren {
+            key
+        }
+    }
+}
+
+query RelationAndFieldTraversalWithParent {
+    Super(key: "super1") {
+        rootChildren {
+            key
+            parent {
+                key
+            }
+        }
+    }
+}

@@ -1,0 +1,12 @@
+RETURN {
+  "allPapers": (
+    FOR v_paper1
+    IN @@papers
+    SORT (v_paper1.`isPublished`)  DESC
+    RETURN {
+      "isPublished": v_paper1.`isPublished`
+    }
+  )
+}
+
+// Peak memory usage: 32768 bytes

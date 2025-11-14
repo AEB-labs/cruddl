@@ -72,6 +72,7 @@ import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
 import { Clock, DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
+import paginationPerf from '../../../spec/performance/pagination.perf';
 
 const ID_FIELD_NAME = 'id';
 
@@ -88,7 +89,7 @@ export interface QueryGenerationOptions {
 }
 
 class QueryContext {
-    private variableMap = new Map<VariableQueryNode, JSVariable>();
+    private variableMap = new Map<VariableQueryNode, JSFragment>();
     private preExecQueries: JSCompoundQuery[] = [];
 
     constructor(
@@ -115,11 +116,11 @@ class QueryContext {
     /**
      * Creates a new QueryContext that is identical to this one but has one additional variable binding
      * @param variableNode the variable token as it is referenced in the query tree
-     * @param jsVariable the variable token as it will be available within the JS fragment
+     * @param jsVariable the token as it will be available within the JS fragment
      */
     private newNestedContextWithNewVariable(
         variableNode: VariableQueryNode,
-        jsVariable: JSVariable,
+        jsVariable: JSFragment,
     ): QueryContext {
         if (this.variableMap.has(variableNode)) {
             throw new Error(`Variable ${variableNode} is introduced twice`);
@@ -142,6 +143,16 @@ class QueryContext {
     introduceVariable(variableNode: VariableQueryNode): QueryContext {
         const variable = new JSVariable(variableNode.label);
         return this.newNestedContextWithNewVariable(variableNode, variable);
+    }
+
+    /**
+     * Creates a new QueryContext that is identical to this one but has one additional variable binding
+     */
+    introduceVariableAlias(
+        variableNode: VariableQueryNode,
+        existingVariable: JSFragment,
+    ): QueryContext {
+        return this.newNestedContextWithNewVariable(variableNode, existingVariable);
     }
 
     /**
@@ -392,6 +403,22 @@ register(RootEntityIDQueryNode, (node, context) => {
     return getPropertyAccessFrag('id', processNode(node.objectNode, context));
 });
 
+function getPaginationFrag({
+    maxCount = undefined,
+    skip = 0,
+}: {
+    readonly maxCount?: number;
+    readonly skip?: number;
+}): JSFragment {
+    if (maxCount != undefined) {
+        return js`.slice(${skip}, ${skip + maxCount})`;
+    }
+    if (skip > 0) {
+        return js`.slice(${skip})`;
+    }
+    return js``;
+}
+
 register(TransformListQueryNode, (node, context) => {
     let itemContext = context.introduceVariable(node.itemVariable);
     const itemVar = itemContext.getVariable(node.itemVariable);
@@ -407,22 +434,13 @@ register(TransformListQueryNode, (node, context) => {
         !(node.filterNode instanceof ConstBoolQueryNode) || node.filterNode.value != true;
     const isMapped = node.innerNode != node.itemVariable;
 
-    let sliceClause;
-    if (node.maxCount != undefined) {
-        sliceClause = js`.slice(${node.skip}, ${node.skip + node.maxCount})`;
-    } else if (node.skip > 0) {
-        sliceClause = js`.slice(${node.skip})`;
-    } else {
-        sliceClause = js``;
-    }
-
     return js.lines(
         processNode(node.listNode, context),
         js.indent(
             js.lines(
                 isFiltered ? js`.filter(${lambda(node.filterNode)})` : js``,
                 comparator ? js`.slice().sort(${comparator})` : js``, // need slice() to not replace something in-place
-                sliceClause,
+                getPaginationFrag(node),
                 isMapped ? js`.map(${lambda(node.innerNode)})` : js``,
             ),
         ),
@@ -767,9 +785,11 @@ function getFollowEdgeFragment(
     const idOnItemEqualsTargetIDOnEdge = js`${idOnItem} === ${targetIDOnEdge}`;
 
     return js.lines(
-        js`${edgeColl}`,
+        js`(${edgeColl}`,
         js.indent(
             js.lines(
+                // arangodb edge traversal seems to be newest-first. Replicate this here for regression tests that do not sort
+                js`.slice().reverse()`,
                 js`.filter(${jsExt.lambda(edgeVar, js`${sourceIDOnEdge} == ${sourceIDFrag}`)})`,
                 js`.map(${jsExt.lambda(
                     edgeVar,
@@ -778,10 +798,11 @@ function getFollowEdgeFragment(
                 js`.filter(${jsExt.lambda(itemVar, itemVar)})`, // filter out nulls
             ),
         ),
+        js`)`,
     );
 }
 
-register(TraversalQueryNode, (node, context) => {
+register(TraversalQueryNode, (node, context): JSFragment => {
     let currentFrag: JSFragment = processNode(node.sourceEntityNode, context);
     let isList = node.sourceIsList;
     let isAlreadyID = node.entitiesIdentifierKind === EntitiesIdentifierKind.ID;
@@ -803,27 +824,21 @@ register(TraversalQueryNode, (node, context) => {
 
         const nodeVar = js.variable('node');
         const idFrag = isAlreadyID ? nodeVar : js`${nodeVar}.${js.identifier(ID_FIELD_NAME)}`;
+        const treatAsListSegment =
+            segment.isListSegment ||
+            (segmentIndex === node.relationSegments.length - 1 && node.alwaysProduceList);
         if (isList) {
-            const accVar = js.variable('acc');
             let edgeListFragment = js`${nodeVar} ? ${getFollowEdgeFragment(
                 segment.relationSide,
                 idFrag,
                 context,
-            )} : null`;
-            if (
-                !segment.isListSegment &&
-                (!node.alwaysProduceList || segmentIndex < node.relationSegments.length - 1)
-            ) {
+            )} : []`;
+            if (treatAsListSegment) {
+                currentFrag = js`${currentFrag}.flatMap(${jsExt.lambda(nodeVar, edgeListFragment)})`;
+            } else {
                 // to-1 relations can be nullable and we need to keep the NULL values (and not just pretend the source didn't exist)
-                const edgeListVar = js.variable('edges');
-                edgeListFragment = jsExt.evaluatingLambda(
-                    edgeListVar,
-                    js`${edgeListVar}.length ? ${edgeListVar} : [null]`,
-                    edgeListFragment,
-                );
+                currentFrag = js`${currentFrag}.map(${jsExt.lambda(nodeVar, js`(${edgeListFragment})?.[0] || null`)})`;
             }
-            const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${edgeListFragment})`;
-            currentFrag = js`${currentFrag}.reduce(${reducer}, [])`;
         } else {
             currentFrag = jsExt.evaluatingLambda(
                 nodeVar,
@@ -831,12 +846,12 @@ register(TraversalQueryNode, (node, context) => {
                     segment.relationSide,
                     idFrag,
                     context,
-                )} : null`,
+                )} : []`,
                 currentFrag,
             );
-            if (!segment.isListSegment) {
-                // to-1 relations can be nullable and we need to keep the NULL values (and not just pretend the source didn't exist)
-                currentFrag = js`(${currentFrag}[0] || null)`;
+            if (!treatAsListSegment) {
+                // if there is no related entity, currentFrag is []. We want to convert that to null.
+                currentFrag = js`((${currentFrag})[0] || null)`;
             }
         }
 
@@ -850,14 +865,16 @@ register(TraversalQueryNode, (node, context) => {
         segmentIndex++;
     }
 
-    // if we need to capture the root, do this (pseudo-code)
+    // The root needs to available in innerNode, but we need to apply that last (after filter and sort)
+    // Therefore, we capture both item and root:
     // source.rel1.flatMap(o => o.rel2).flatMap(o2 => o2.rel3).flatMap(root => { root, obj: root.field1.flatMap(o => o.field2)  })
-    // if the relations don't return a list, call the mapper directly
 
     const relationTraversalReturnsList = isList;
     let rootVar: JSVariable | undefined;
     let relationFrag: JSFragment | undefined;
-    if (node.captureRootEntity) {
+    let isRootCaptured = false;
+    if (node.fieldSegments.some((s) => s.isListSegment)) {
+        isRootCaptured = true;
         relationFrag = currentFrag;
         rootVar = js.variable('root');
         currentFrag = rootVar;
@@ -868,18 +885,12 @@ register(TraversalQueryNode, (node, context) => {
         if (isList) {
             if (segment.isListSegment) {
                 const nodeVar = js.variable('node');
-                const accVar = js.variable('acc');
-                const safeListVar = js.variable('list');
-                // || [] to not concat `null` to a list
-                const reducer = js`(${accVar}, ${nodeVar}) => ${accVar}.concat(${getPropertyAccessFrag(
-                    segment.field.name,
+                const mapper = jsExt.lambda(
                     nodeVar,
-                )} || [])`;
-                currentFrag = jsExt.evaluatingLambda(
-                    safeListVar,
-                    js`${safeListVar}.reduce(${reducer}, [])`,
-                    js`${currentFrag} || []`,
+                    // || [] so that null or undefined don't end up in the final list
+                    js`${getPropertyAccessFrag(segment.field.name, nodeVar)} || []`,
                 );
+                currentFrag = js`(${currentFrag} || []).flatMap(${mapper})`;
             } else {
                 const nodeVar = js.variable('node');
                 const mapper = jsExt.lambda(
@@ -897,17 +908,12 @@ register(TraversalQueryNode, (node, context) => {
         }
     }
 
-    if (relationFrag && rootVar && node.captureRootEntity) {
+    if (relationFrag && rootVar) {
         if (relationTraversalReturnsList) {
             if (node.fieldSegments.some((f) => f.isListSegment)) {
-                const accVar = js.variable('acc');
-                const objVar = js.variable('obj');
-                const mapper = js`${objVar} => ({ obj: ${objVar}, root: ${rootVar} })`;
-                const reducer = js`(${accVar}, ${rootVar}) => ${accVar}.concat((${currentFrag}).map(${mapper}))`;
-                currentFrag = js`${relationFrag}.reduce(${reducer}, [])`;
+                currentFrag = js`${relationFrag}.flatMap(${rootVar} => (${currentFrag}).map(obj => ({ obj: obj, root: ${rootVar} })))`;
             } else {
-                const mapper = js`${rootVar} => ({ obj: ${currentFrag}, root: ${rootVar} })`;
-                currentFrag = js`${relationFrag}.map(${mapper})`;
+                currentFrag = js`${relationFrag}.map(${rootVar} => ({ obj: ${currentFrag}, root: ${rootVar} }))`;
             }
         } else {
             if (node.fieldSegments.some((f) => f.isListSegment)) {
@@ -937,7 +943,25 @@ register(TraversalQueryNode, (node, context) => {
         );
     }
 
-    return currentFrag;
+    if (!isList) {
+        return currentFrag;
+    }
+
+    const loopVar = js.variable(`item`);
+    const itemFrag = isRootCaptured ? js`${loopVar}.obj` : loopVar;
+    const itemContext = context
+        .introduceVariableAlias(node.itemVariable, itemFrag)
+        .introduceVariableAlias(node.rootEntityVariable, js`${loopVar}.root`);
+    const filterFrag = node.filterNode
+        ? js`.filter(${jsExt.lambda(loopVar, processNode(node.filterNode, itemContext))})`
+        : js``;
+    const orderFrag = node.orderBy.isUnordered()
+        ? js``
+        : js`.slice().sort(${getComparatorForOrderSpecification(node.orderBy, loopVar, itemContext)})`;
+    const mapFrag = js`.map(${jsExt.lambda(loopVar, node.innerNode ? processNode(node.innerNode, itemContext) : itemFrag)})`;
+    const paginationFrag = getPaginationFrag(node);
+
+    return js`${currentFrag}\n${js.indent(js.lines(filterFrag, orderFrag, paginationFrag, mapFrag))}`;
 });
 
 register(CreateEntityQueryNode, (node, context) => {

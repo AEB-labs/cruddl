@@ -1,0 +1,13 @@
+RETURN {
+  "contains": (
+    FOR v_paper1
+    IN @@papers
+    FILTER (v_paper1.`key` LIKE CONCAT("%", @var1, "%"))
+    SORT (v_paper1.`key`)
+    RETURN {
+      "key": v_paper1.`key`
+    }
+  )
+}
+
+// Peak memory usage: 32768 bytes

@@ -6,8 +6,8 @@ import { ArangoDBAdapter } from '../../../src/database/arangodb';
 import { Project } from '../../../src/project/project';
 import { loadProjectFromDir } from '../../../src/project/project-from-fs';
 import { range } from '../../../src/utils/utils';
-import { Log4jsLoggerProvider } from '../../helpers/log4js-logger-provider';
 import { createTempDatabase } from '../../regression/initialization';
+import { WarnAndErrorLoggerProvider } from '../../helpers/warn-and-error-logger-provider';
 
 // arangojs typings for this are completely broken
 export const aql: (template: TemplateStringsArray, ...args: ReadonlyArray<any>) => any =
@@ -22,7 +22,7 @@ export interface TestEnvironment {
 }
 
 const schemaContext: ProjectOptions = {
-    loggerProvider: new Log4jsLoggerProvider('warn'),
+    loggerProvider: new WarnAndErrorLoggerProvider(),
     getExecutionOptions: ({}) => ({ authContext: { authRoles: ['admin'] } }),
 };
 

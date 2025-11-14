@@ -1,0 +1,44 @@
+mutation createEdges {
+    updateShipment(
+        input: {
+            id: "@{ids/Shipment/1}"
+            addDeliveries: [
+                "@{ids/Delivery/1}"
+                "@{ids/Delivery/2}"
+                "@{ids/Delivery/5}"
+                "@{ids/Delivery/6}"
+            ]
+        }
+    ) {
+        shipmentNumber
+    }
+    d1: updateDelivery(input: { id: "@{ids/Delivery/1}", order: "@{ids/Order/1}" }) {
+        deliveryNumber
+    }
+    d2: updateDelivery(input: { id: "@{ids/Delivery/2}", order: "@{ids/Order/2}" }) {
+        deliveryNumber
+    }
+    o1: updateOrder(input: { id: "@{ids/Order/1}", originalOrder: "@{ids/Order/2}" }) {
+        orderNumber
+    }
+}
+query fields {
+    Shipment(shipmentNumber: "S1") {
+        totalWeightInKg
+        maxPriority
+        itemCount
+        allDeliveriesHaveOrders
+        allDeliveriesHaveOriginalOrders
+        allDeliveriesArePayed
+        allDeliveryLocationIdentCodes
+        numberOfDeliveriesWithoutOrder
+        numberOfDeliveriesWithoutOriginalOrder
+        numberOfDeliveriesWithoutPayedOrder
+        startedDispatchingAt
+        fullyDispatchedAt
+        allOrders(orderBy: orderNumber_ASC) {
+            orderNumber
+        }
+        # numberOfUnpayedOrders # not yet supported
+    }
+}

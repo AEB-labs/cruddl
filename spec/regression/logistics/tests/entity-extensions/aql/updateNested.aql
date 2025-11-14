@@ -1,0 +1,49 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (v_delivery1._key == @var1)
+    LIMIT @var2
+    RETURN v_delivery1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "dgInfo": MERGE((IS_OBJECT(v_currentEntity1.`dgInfo`) ? v_currentEntity1.`dgInfo` : {}), {
+      "details": MERGE((IS_OBJECT(v_currentEntity1.`dgInfo`.`details`) ? v_currentEntity1.`dgInfo`.`details` : {}), {
+        "comment": @var3
+      })
+    }),
+    "updatedAt": @var4
+  }
+  IN @@deliveries
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "dgInfo": {
+    "unNumber": v_delivery1.`dgInfo`.`unNumber`,
+    "details": {
+      "expiryDate": v_delivery1.`dgInfo`.`details`.`expiryDate`,
+      "comment": v_delivery1.`dgInfo`.`details`.`comment`
+    }
+  }
+})
+
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@deliveries
+RETURN {
+  "updateDelivery": @v_updateDelivery1
+}
+
+// Peak memory usage: 0 bytes

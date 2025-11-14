@@ -1,0 +1,21 @@
+WITH @@deliveries
+LET v_order1 = FIRST((
+  FOR v_order2
+  IN @@orders
+  FILTER (v_order2.`orderNumber` == @var1)
+  LIMIT @var2
+  RETURN v_order2
+))
+RETURN {
+  "Order": (IS_NULL(v_order1) ? null : {
+    "allItems": (
+      FOR v_root1, v_edge1, v_path1 IN @var3..@var4 INBOUND v_order1 @@deliveries_order
+      FOR v_item1 IN v_root1.`deliveryContents`[*].`items`[*][** RETURN {
+        "itemNumber": CURRENT.`itemNumber`
+      }]
+      RETURN v_item1
+    )
+  })
+}
+
+// Peak memory usage: 131072 bytes

@@ -4,6 +4,7 @@ import {
     QueryNode,
     RuntimeErrorQueryNode,
     TraversalQueryNode,
+    TraversalQueryNodeParams,
     VariableQueryNode,
 } from '../../query-tree';
 import { AccessOperation, AuthContext } from '../auth-basics';
@@ -12,6 +13,8 @@ import {
     getPermissionDescriptorOfField,
     getPermissionDescriptorOfRootEntityType,
 } from '../permission-descriptors-in-model';
+import { decapitalize } from '../../utils/utils';
+import { RequireAllProperties } from '../../utils/util-types';
 
 export function transformTraversalQueryNode(
     node: TraversalQueryNode,
@@ -61,7 +64,7 @@ export function transformTraversalQueryNode(
             case PermissionResult.DENIED:
                 throw new Error(`Unexpected DENIED permission - should have been caught earlier`);
             case PermissionResult.CONDITIONAL:
-                const variableNode = new VariableQueryNode(targetType.name);
+                const variableNode = new VariableQueryNode(decapitalize(targetType.name));
                 const filter = entityPermissionDescriptor.getAccessCondition(
                     authContext,
                     AccessOperation.READ,
@@ -82,8 +85,18 @@ export function transformTraversalQueryNode(
             sourceEntityNode: node.sourceEntityNode,
             relationSegments: filteredRelationSegments,
             fieldSegments: fieldSegments,
-            captureRootEntities: node.captureRootEntity,
-        });
+            orderBy: node.orderBy,
+            filterNode: node.filterNode,
+            sourceIsList: node.sourceIsList,
+            innerNode: node.innerNode,
+            rootEntityVariable: node.rootEntityVariable,
+            itemVariable: node.itemVariable,
+            alwaysProduceList: node.alwaysProduceList,
+            preserveNullValues: node.preserveNullValues,
+            entitiesIdentifierKind: node.entitiesIdentifierKind,
+            skip: node.skip,
+            maxCount: node.maxCount,
+        } satisfies RequireAllProperties<TraversalQueryNodeParams>);
     }
 
     return node;

@@ -1,0 +1,16 @@
+# these fields should be ignored and handled by the graphql engine
+
+query introspection {
+    __type(name: "Delivery") {
+        name
+    }
+}
+
+query typename {
+    __typename
+
+    Delivery(id: "@{ids/Delivery/1}") {
+        deliveryNumber
+        __typename
+    }
+}

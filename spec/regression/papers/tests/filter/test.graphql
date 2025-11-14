@@ -1,0 +1,170 @@
+query eq {
+    eq: allPapers(filter: { key: "OOM" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query neq {
+    neq: allPapers(filter: { key_not: "OOM" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query gt {
+    gt: allPapers(filter: { key_gt: "OOM" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query gte {
+    gte: allPapers(filter: { key_gte: "OOM" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query lt {
+    lt: allPapers(filter: { key_lt: "OOM" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query lte {
+    lte: allPapers(filter: { key_lte: "OOM" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query in {
+    in: allPapers(filter: { key_in: ["OOM", "Part"] }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query not_in {
+    not_in: allPapers(filter: { key_not_in: ["OOM", "Part"] }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query contains {
+    contains: allPapers(filter: { key_contains: "a" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query contains_empty_string {
+    contains_empty_string: allPapers(filter: { key_contains: "" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query not_contains {
+    not_contains: allPapers(filter: { key_not_contains: "a" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query not_contains_empty_string {
+    not_contains_empty_string: allPapers(filter: { key_not_contains: "" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query starts_with {
+    starts_with: allPapers(filter: { key_starts_with: "O" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query not_starts_with {
+    not_starts_with: allPapers(filter: { key_not_starts_with: "O" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query ends_with {
+    ends_with: allPapers(filter: { key_ends_with: "M" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query not_ends_with {
+    not_ends_with: allPapers(filter: { key_not_ends_with: "M" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query like {
+    like_prefix: allPapers(filter: { key_like: "o%" }, orderBy: key_ASC) {
+        key
+    }
+    like_underscore: allPapers(filter: { key_like: "OO_" }, orderBy: key_ASC) {
+        key
+    }
+    like_not_matching: allPapers(filter: { key_like: "OOM_" }, orderBy: key_ASC) {
+        key
+    }
+    like_upper_matching_lower_prefix: allPapers(filter: { key_like: "PART%" }, orderBy: key_ASC) {
+        key
+    }
+    like_lower_matching_upper_prefix: allPapers(filter: { key_like: "part%" }, orderBy: key_ASC) {
+        key
+    }
+    like_upper_matching_lower_exact: allPapers(filter: { key_like: "PART" }, orderBy: key_ASC) {
+        key
+    }
+    like_lower_matching_upper_exact: allPapers(filter: { key_like: "part" }, orderBy: key_ASC) {
+        key
+    }
+    like_upper_matching_lower_pattern: allPapers(filter: { key_like: "%PART" }, orderBy: key_ASC) {
+        key
+    }
+    like_lower_matching_upper_pattern: allPapers(filter: { key_like: "%part" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query not_like {
+    not_like: allPapers(filter: { key_not_like: "O%" }, orderBy: key_ASC) {
+        key
+    }
+}
+
+query or {
+    or: allPapers(
+        filter: {
+            OR: [
+                { title: "Unified modeling language reference manual, the" }
+                { title: "Scalable SQL and NoSQL data stores" }
+            ]
+        }
+        orderBy: title_ASC
+    ) {
+        title
+    }
+}
+
+query enums {
+    enum_in: allUsers(
+        filter: { category_in: [Telecommunications, Programming] }
+        orderBy: lastName_ASC
+    ) {
+        lastName
+    }
+    enum_not_in: allUsers(
+        filter: { category_not_in: [Telecommunications, Programming] }
+        orderBy: lastName_ASC
+    ) {
+        lastName
+    }
+
+    enum_equal: allUsers(filter: { category: Telecommunications }, orderBy: lastName_ASC) {
+        lastName
+        category
+    }
+
+    enum_not_equal: allUsers(filter: { category_not: Telecommunications }, orderBy: lastName_ASC) {
+        lastName
+        category
+    }
+}

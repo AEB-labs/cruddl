@@ -1,0 +1,44 @@
+{
+  "createEdges": {
+    "data": {
+      "updateShipment": {
+        "shipmentNumber": "S1"
+      },
+      "d1": {
+        "deliveryNumber": "D1"
+      },
+      "d2": {
+        "deliveryNumber": "D2"
+      },
+      "o1": {
+        "orderNumber": "O1"
+      }
+    }
+  },
+  "fields": {
+    "data": {
+      "Shipment": {
+        "totalWeightInKg": 65.08,
+        "maxPriority": 3,
+        "itemCount": 8,
+        "allDeliveriesHaveOrders": false,
+        "allDeliveriesHaveOriginalOrders": false,
+        "allDeliveriesArePayed": false,
+        "allDeliveryLocationIdentCodes": ["licD1", "licD2", "licD5"],
+        "numberOfDeliveriesWithoutOrder": 2,
+        "numberOfDeliveriesWithoutOriginalOrder": 3,
+        "numberOfDeliveriesWithoutPayedOrder": 3,
+        "startedDispatchingAt": "2020-01-30T08:00:00Z",
+        "fullyDispatchedAt": "2020-01-30T09:00:00Z",
+        "allOrders": [
+          {
+            "orderNumber": "O1"
+          },
+          {
+            "orderNumber": "O2"
+          }
+        ]
+      }
+    }
+  }
+}

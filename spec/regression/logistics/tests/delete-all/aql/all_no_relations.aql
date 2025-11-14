@@ -1,0 +1,24 @@
+RETURN (
+  FOR v_country1
+  IN (
+    FOR v_country2
+    IN @@countries
+    FILTER (v_country2.`isoCode` == @var1)
+    REMOVE v_country2
+    IN @@countries
+    RETURN OLD
+  )
+  RETURN {
+    "isoCode": v_country1.`isoCode`
+  }
+)
+
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
+
+RETURN {
+  "deleteAllCountries": @v_deleteAllCountries1
+}
+
+// Peak memory usage: 0 bytes

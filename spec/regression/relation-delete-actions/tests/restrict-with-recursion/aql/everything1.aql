@@ -1,0 +1,12 @@
+RETURN {
+  "allMains": (
+    FOR v_main1
+    IN @@mains
+    SORT (v_main1.`key`)
+    RETURN {
+      "key": v_main1.`key`
+    }
+  )
+}
+
+// Peak memory usage: 32768 bytes

@@ -1,9 +1,8 @@
 import { Database } from 'arangojs';
 import { CreateCollectionOptions } from 'arangojs/collection';
 import { Config } from 'arangojs/connection';
-import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
-import { Logger } from '../../config/logging';
+import { DEFAULT_LOGGER_PROVIDER, Logger } from '../../config/logging';
 import { CustomDatabase } from './arangojs-instrumentation/custom-database';
 import { ArangoSearchConfiguration } from './schema-migration/arango-search-helpers';
 
@@ -92,10 +91,6 @@ export function initDatabase(config: ArangoDBConfig): Database {
 }
 
 export function getArangoDBLogger(schemaContext: ProjectOptions | undefined): Logger {
-    globalContext.registerContext(schemaContext);
-    try {
-        return globalContext.loggerProvider.getLogger('ArangoDBAdapter');
-    } finally {
-        globalContext.unregisterContext();
-    }
+    const loggerProvider = schemaContext?.loggerProvider ?? DEFAULT_LOGGER_PROVIDER;
+    return loggerProvider.getLogger('ArangoDBAdapter');
 }

@@ -1,0 +1,28 @@
+RETURN {
+  "allMains": (
+    FOR v_main1
+    IN @@mains
+    SORT (v_main1.`key`)
+    RETURN {
+      "key": v_main1.`key`
+    }
+  ),
+  "allDependents": (
+    FOR v_dependent1
+    IN @@dependents
+    SORT (v_dependent1.`key`)
+    RETURN {
+      "key": v_dependent1.`key`
+    }
+  ),
+  "allAlternativeDependents": (
+    FOR v_alternativeDependent1
+    IN @@alternativeDependents
+    SORT (v_alternativeDependent1.`key`)
+    RETURN {
+      "key": v_alternativeDependent1.`key`
+    }
+  )
+}
+
+// Peak memory usage: 32768 bytes

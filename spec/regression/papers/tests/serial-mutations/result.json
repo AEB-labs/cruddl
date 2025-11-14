@@ -1,0 +1,16 @@
+{
+  "a": {
+    "data": {
+      "updatePaper": {
+        "title": "Test 1"
+      }
+    }
+  },
+  "b": {
+    "data": {
+      "updatePaper": {
+        "title": "Test 2"
+      }
+    }
+  }
+}

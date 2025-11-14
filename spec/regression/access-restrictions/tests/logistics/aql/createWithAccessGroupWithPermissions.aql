@@ -1,0 +1,34 @@
+RETURN ((@var1.`accessGroup` == @var2) || (@var3.`accessGroup` == @var4))
+
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
+
+RETURN FIRST(
+  INSERT @var1 IN @@files
+  RETURN NEW._key
+)
+
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@files
+LET v_file1 = FIRST(
+  LET v_entity1 = DOCUMENT(@@files, @v_newEntityId1)
+  RETURN (((v_entity1.`accessGroup` == @var1) || (v_entity1.`accessGroup` == @var2)) ? v_entity1 : null)
+)
+RETURN (IS_NULL(v_file1) ? null : {
+  "name": v_file1.`name`
+})
+
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@files
+RETURN {
+  "createFile": @v_createFile1
+}
+
+// Peak memory usage: 0 bytes

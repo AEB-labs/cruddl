@@ -1,0 +1,59 @@
+{
+  "createEdges": {
+    "data": {
+      "updateShipment": {
+        "shipmentNumber": "S1"
+      },
+      "d1": {
+        "deliveryNumber": "D1"
+      },
+      "d2": {
+        "deliveryNumber": "D2"
+      }
+    }
+  },
+  "to_1toN_nToN": {
+    "data": {
+      "Shipment": {
+        "allOuterHandlingUnits": [
+          {
+            "number": "H2"
+          }
+        ]
+      }
+    }
+  },
+  "to_1toN_1ToN": {
+    "data": {
+      "Shipment": {
+        "allInvoices": [
+          {
+            "number": "I3"
+          }
+        ]
+      }
+    }
+  },
+  "to_1toN_1to1": {
+    "data": {
+      "Shipment": {
+        "allOrders": [
+          {
+            "number": "O2"
+          }
+        ]
+      }
+    }
+  },
+  "to_1to1_ntoN": {
+    "data": {
+      "Order": {
+        "allOuterHandlingUnits": [
+          {
+            "number": "H2"
+          }
+        ]
+      }
+    }
+  }
+}

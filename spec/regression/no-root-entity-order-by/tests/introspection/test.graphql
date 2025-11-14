@@ -1,0 +1,32 @@
+query typeDoesNotExist {
+    shipmentDataOrderByType: __type(name: "ShipmentDataOrderBy") {
+        name
+    }
+}
+
+query typeExists {
+    shipmentOrderByType: __type(name: "ShipmentOrderBy") {
+        name
+    }
+}
+
+# should not include orderBy for shipmentDatas, but for shipments
+query fields {
+    deliveryType: __type(name: "Delivery") {
+        fields {
+            name
+            args {
+                name
+                type {
+                    name
+                    ofType {
+                        name
+                        ofType {
+                            name
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

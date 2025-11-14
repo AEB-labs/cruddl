@@ -1,0 +1,12 @@
+RETURN {
+  "allHeroes": (
+    FOR v_hero1
+    IN @@heroes
+    LIMIT @var1
+    RETURN {
+      "name": v_hero1.`name`
+    }
+  )
+}
+
+// Peak memory usage: 0 bytes

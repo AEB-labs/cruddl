@@ -1,0 +1,24 @@
+RETURN (
+  FOR v_hero1
+  IN (
+    FOR v_hero2
+    IN @@heroes
+    LIMIT @var1
+    REMOVE v_hero2
+    IN @@heroes
+    RETURN OLD
+  )
+  RETURN {
+    "name": v_hero1.`name`
+  }
+)
+
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
+
+RETURN {
+  "deleteAllHeroes": @v_deleteAllHeroes1
+}
+
+// Peak memory usage: 0 bytes

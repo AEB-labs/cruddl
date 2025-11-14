@@ -1,0 +1,26 @@
+{
+  "ExpectedToSucceed": {
+    "data": {
+      "Super": {
+        "key": "super1"
+      }
+    }
+  },
+  "ExpectedToFail": {
+    "errors": [
+      {
+        "message": "AQL: query would use more memory than allowed [node #12: IndexNode] [node #6: LimitNode] [node #14: SubqueryEndNode] [node #9: CalculationNode] [node #10: CalculationNode] [node #11: ReturnNode] (while executing)",
+        "locations": [
+          {
+            "line": 8,
+            "column": 5
+          }
+        ],
+        "path": ["Root"]
+      }
+    ],
+    "data": {
+      "Root": null
+    }
+  }
+}

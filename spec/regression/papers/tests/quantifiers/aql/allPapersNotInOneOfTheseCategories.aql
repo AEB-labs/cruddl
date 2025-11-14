@@ -1,0 +1,14 @@
+RETURN {
+  "allPapers": (
+    FOR v_paper1
+    IN @@papers
+    FILTER ((IS_LIST(v_paper1.`categories`) ? v_paper1.`categories` : []) NONE == @var1)
+    SORT (v_paper1.`key`)
+    RETURN {
+      "key": v_paper1.`key`,
+      "categories": (IS_LIST(v_paper1.`categories`) ? v_paper1.`categories` : [])
+    }
+  )
+}
+
+// Peak memory usage: 65536 bytes
