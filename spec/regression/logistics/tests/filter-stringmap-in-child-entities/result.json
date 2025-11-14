@@ -1,38 +1,70 @@
 {
   "filterI18nString": {
-    "data": {
-      "Delivery": {
-        "items": [
+    "errors": [
+      {
+        "message": "AQL: variable not found '4_' in ExecutorExpressionContext (exception location: arangod/Aql/ExecutorExpressionContext.cpp:70). Please report this error to arangodb.com [node #13: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #14: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #15: EnumerateListNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #25: CollectNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #30: LimitNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #33: SubqueryEndNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #9: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #28: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #29: ReturnNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com (while executing)",
+        "locations": [
           {
-            "itemNumber": "1001"
+            "line": 2,
+            "column": 5
           }
-        ]
+        ],
+        "path": ["Delivery"]
       }
+    ],
+    "data": {
+      "Delivery": null
     }
   },
   "filterI18nStringWithCorrectLanguage": {
-    "data": {
-      "Delivery": {
-        "items": [
+    "errors": [
+      {
+        "message": "AQL: variable not found '4_' in ExecutorExpressionContext (exception location: arangod/Aql/ExecutorExpressionContext.cpp:70). Please report this error to arangodb.com [node #13: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #14: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #15: EnumerateListNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #25: CollectNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #30: LimitNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #33: SubqueryEndNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #9: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #28: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #29: ReturnNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com (while executing)",
+        "locations": [
           {
-            "itemNumber": "1001"
+            "line": 10,
+            "column": 5
           }
-        ]
+        ],
+        "path": ["Delivery"]
       }
+    ],
+    "data": {
+      "Delivery": null
     }
   },
   "filterI18nStringWithIncorrectLanguage": {
-    "data": {
-      "Delivery": {
-        "items": []
+    "errors": [
+      {
+        "message": "AQL: variable not found '4_' in ExecutorExpressionContext (exception location: arangod/Aql/ExecutorExpressionContext.cpp:70). Please report this error to arangodb.com [node #13: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #14: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #15: EnumerateListNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #25: CollectNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #30: LimitNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #33: SubqueryEndNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #9: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #28: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #29: ReturnNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com (while executing)",
+        "locations": [
+          {
+            "line": 18,
+            "column": 5
+          }
+        ],
+        "path": ["Delivery"]
       }
+    ],
+    "data": {
+      "Delivery": null
     }
   },
   "filterI18nStringWithNullValueForI18nString": {
-    "data": {
-      "Delivery": {
-        "items": []
+    "errors": [
+      {
+        "message": "AQL: variable not found '4_' in ExecutorExpressionContext (exception location: arangod/Aql/ExecutorExpressionContext.cpp:70). Please report this error to arangodb.com [node #13: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #14: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #15: EnumerateListNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #25: CollectNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #30: LimitNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #33: SubqueryEndNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #9: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #28: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #29: ReturnNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com (while executing)",
+        "locations": [
+          {
+            "line": 26,
+            "column": 5
+          }
+        ],
+        "path": ["Delivery"]
       }
+    ],
+    "data": {
+      "Delivery": null
     }
   }
 }

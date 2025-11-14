@@ -138,8 +138,30 @@ export function createFieldNode(
             return createToNRelationNode(field, sourceNode);
         }
 
-        // there are no lists of references
+        // note: there are no lists of references
 
+        // TraversalQueryNode has support for filtering, sorting, paging etc. and those cases
+        // are optimized in the aql-generator
+        if (field.type.isChildEntityType) {
+            return new TraversalQueryNode({
+                sourceEntityNode: sourceNode,
+                fieldSegments: [
+                    {
+                        field,
+                        isListSegment: true,
+                        resultingType: field.type,
+                        isNullableSegment: false,
+                        resultIsList: true,
+                        kind: 'field',
+                        resultIsNullable: false,
+                        resultMayContainDuplicateEntities: false,
+                    },
+                ],
+                relationSegments: [],
+            });
+        }
+
+        // TODO aql-perf can we use TraversalQueryNode for other lists too?
         return createSafeListQueryNode(new FieldQueryNode(sourceNode, field));
     }
 

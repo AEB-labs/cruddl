@@ -6,7 +6,7 @@ RETURN {
       FOR v_item1
       IN (
         FOR v_items1
-        IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
+        IN v_delivery1.`items`[*]
         FILTER ((v_items1.`quantity` < @var1) && (v_items1.`quantity` > @var2))
         RETURN v_items1
       )

@@ -1,0 +1,22 @@
+LET v_root1 = FIRST((
+  FOR v_root2
+  IN @@roots
+  FILTER (v_root2.`key` == @var1)
+  LIMIT @var2
+  RETURN v_root2
+))
+RETURN {
+  "Root": (IS_NULL(v_root1) ? null : {
+    "predictablePayload": v_root1.`predictablePayload`,
+    "children": v_root1.`children`[* RETURN {
+      "root": {
+        "key": v_root1.`key`
+      },
+      "children": CURRENT.`children`[* RETURN {
+        "key": CURRENT.`key`
+      }]
+    }]
+  })
+}
+
+// Peak memory usage: 10190848 bytes
