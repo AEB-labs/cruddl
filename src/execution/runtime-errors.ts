@@ -31,10 +31,10 @@ export class ConflictRetriesExhaustedError extends ErrorWithCause {
     static readonly CODE = 'CONFLICT_RETRIES_EXHAUSTED';
 
     readonly code = ConflictRetriesExhaustedError.CODE;
+    readonly retries: number;
 
     constructor({ causedBy, retries }: { causedBy: unknown; retries: number }) {
-        super(`Operation detected conflicts and was aborted after ${retries} retries`, {
-            causedBy,
-        });
+        super(`Operation detected conflicts and was aborted after ${retries} retries`, causedBy);
+        this.retries = retries;
     }
 }
