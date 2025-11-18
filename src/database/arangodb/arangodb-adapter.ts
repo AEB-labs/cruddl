@@ -436,6 +436,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             transactionTimeoutMs: number | undefined;
         },
     ): Error {
+        if (error instanceof ConflictRetriesExhaustedError) {
+            // this is returned in executeTransactionWithRetries()
+            return error;
+        }
+
         // might be just something like a TypeError
         if (!isArangoError(error)) {
             return new TransactionError(error.message, error);
@@ -503,16 +508,33 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             }
 
             if (retries >= maxRetries) {
-                // retries exhausted
-                return {
-                    ...result,
-                    timings,
-                    stats,
-                    databaseError: new ConflictRetriesExhaustedError({
-                        causedBy: result.databaseError,
-                        retries,
-                    }),
-                };
+                // retries exhausted. If it's a CONFLICT error, report in a special way
+                if (
+                    isArangoError(result.databaseError) &&
+                    result.databaseError.errorNum === ERROR_ARANGO_CONFLICT
+                ) {
+                    const convertedCause = this.processDatabaseError(result.databaseError, {
+                        wasCancelled: false,
+                        hasTimedOut: false,
+                        transactionTimeoutMs: undefined,
+                    });
+                    return {
+                        ...result,
+                        timings,
+                        stats,
+                        databaseError: new ConflictRetriesExhaustedError({
+                            causedBy: convertedCause,
+                            retries,
+                        }),
+                    };
+                } else {
+                    // non-conflict error that just happened to occur on the last retry
+                    return {
+                        ...result,
+                        timings,
+                        stats,
+                    };
+                }
             }
 
             const sleepStart = getPreciseTime();

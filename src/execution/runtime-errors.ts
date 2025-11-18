@@ -33,8 +33,6 @@ export class ConflictRetriesExhaustedError extends ErrorWithCause {
     readonly code = ConflictRetriesExhaustedError.CODE;
 
     constructor({ causedBy, retries }: { causedBy: unknown; retries: number }) {
-        super(`Operation detected conflicts and was aborted after ${retries} retries`, {
-            causedBy,
-        });
+        super(`Operation detected conflicts and was aborted after ${retries} retries`, causedBy);
     }
 }
