@@ -20,6 +20,24 @@
       ]
     }
   },
+  "skip": {
+    "data": {
+      "flexSearchPapers": [
+        {
+          "title": "Object-oriented modeling and design"
+        },
+        {
+          "title": "Scalable SQL and NoSQL data stores"
+        },
+        {
+          "title": "Unified modeling language reference manual, the"
+        },
+        {
+          "title": "Will NoSQL databases live up to their promise?"
+        }
+      ]
+    }
+  },
   "skipAndFirst": {
     "data": {
       "flexSearchPapers": [

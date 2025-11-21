@@ -314,24 +314,6 @@ export class OrderByAndPaginationAugmentation {
                     return originalListNode;
                 }
 
-                // There is no way to specify LIMIT with an offset but without count properly, and specifying a huge
-                // count would still trigger the constrained-heap optimization for flexsearch views which would OOM
-                // https://arangodb.atlassian.net/servicedesk/customer/portal/10/DEVSUP-625
-                // https://github.com/AEB-labs/cruddl/pull/171#issuecomment-669032789
-                if (
-                    listNode instanceof FlexSearchQueryNode &&
-                    skip &&
-                    maxCount === undefined &&
-                    !orderBy.isUnordered()
-                ) {
-                    return new RuntimeErrorQueryNode(
-                        `Using "skip" without "first" in combination with "orderBy" or cursor-based pagination is not supported on flex search queries.`,
-                        {
-                            code: NOT_SUPPORTED_ERROR,
-                        },
-                    );
-                }
-
                 if (
                     !(listNode instanceof FlexSearchQueryNode) &&
                     !(listNode instanceof TraversalQueryNode) && // does not make use of indices for sorting
