@@ -160,7 +160,7 @@ class QueryContext {
      * @param variableNode the variable token as it is referenced in the query tree
      * @param aqlVariable the variable token as it will be available within the AQL fragment
      */
-    private newNestedContextWithVariableMapping(
+    private newNestedContextWithVariableBinding(
         variableNode: VariableQueryNode,
         aqlVariable: AQLFragment,
     ): QueryContext {
@@ -177,31 +177,24 @@ class QueryContext {
     /**
      * Creates a new QueryContext that is identical to this one but has one additional variable binding
      *
-     * The AQLFragment for the variable will be available via getVariable().
+     * If aqlFrag is omitted, a new AQLVariable will be created using the name of the variableNode.
      *
-     * @param {VariableQueryNode} variableNode the variable as referenced in the query tree
-     * @returns {QueryContext} the nested context
+     * For aqlFrag, you can specify an AQLVariable or a different AQLFragment (e.g. a field access).
+     * Do not specify complex AQL expressions because they would be repeated for every use of the
+     * variable.
+     *
+     * @param variableNode the variable as referenced in the query tree
+     * @param aqlFrag the fragment representing the variable in AQL
+     * @returns the new context
      */
-    introduceVariable(variableNode: VariableQueryNode): QueryContext {
+    bindVariable(
+        variableNode: VariableQueryNode,
+        aqlFrag: AQLFragment = new AQLVariable(variableNode.label),
+    ): QueryContext {
         if (this.variableMap.has(variableNode)) {
             throw new Error(`Variable ${variableNode} is introduced twice`);
         }
-        const variable = new AQLVariable(variableNode.label);
-        return this.newNestedContextWithVariableMapping(variableNode, variable);
-    }
-
-    /**
-     * Creates a new QueryContext that is identical to this one but has one additional variable binding
-     *
-     * @param variableNode the variable as referenced in the query tree
-     * @param existingVariable a variable that has been previously introduced with introduceVariable() and fetched by getVariable
-     * @returns {QueryContext} the nested context
-     */
-    introduceVariableAlias(
-        variableNode: VariableQueryNode,
-        existingVariable: AQLFragment,
-    ): QueryContext {
-        return this.newNestedContextWithVariableMapping(variableNode, existingVariable);
+        return this.newNestedContextWithVariableBinding(variableNode, aqlFrag);
     }
 
     /**
@@ -224,7 +217,7 @@ class QueryContext {
         let newContext: QueryContext;
         if (resultVariable) {
             resultVar = new AQLQueryResultVariable(resultVariable.label);
-            newContext = this.newNestedContextWithVariableMapping(resultVariable, resultVar);
+            newContext = this.newNestedContextWithVariableBinding(resultVariable, resultVar);
         } else {
             resultVar = undefined;
             newContext = this;
@@ -287,7 +280,7 @@ class QueryContext {
             throw new Error(`Variable ${variableNode.toString()} is used but not introduced`);
         }
         // we're returning an AQLFragment as AQLVariable
-        // it can be a non-variable fragment (e.g. a simple field access) if we used introduceVariableAlias
+        // it can be a non-variable fragment (e.g. a simple field access) if we used bindVariable
         // typescript only allows it because there are no private fields in AQLVariable
         // TODO introduce a better way to introduce a VariableQueryNode as AQLVariable, then make this here return AQLFragment
         return variable;
@@ -337,7 +330,7 @@ function createAQLCompoundQuery(
     const variableAssignmentNodes: VariableAssignmentQueryNode[] = [];
     node = extractVariableAssignments(node, variableAssignmentNodes);
     for (const assignmentNode of variableAssignmentNodes) {
-        context = context.introduceVariable(assignmentNode.variableNode);
+        context = context.bindVariable(assignmentNode.variableNode);
         const tmpVar = context.getVariable(assignmentNode.variableNode);
         variableAssignments.push(
             aql`LET ${tmpVar} = ${processNode(assignmentNode.variableValueNode, context)}`,
@@ -472,7 +465,7 @@ register(VariableQueryNode, (node, context) => {
 });
 
 register(VariableAssignmentQueryNode, (node, context) => {
-    const newContext = context.introduceVariable(node.variableNode);
+    const newContext = context.bindVariable(node.variableNode);
     const tmpVar = newContext.getVariable(node.variableNode);
 
     // note that we have to know statically if the context var is a list or an object
@@ -551,7 +544,7 @@ register(RevisionQueryNode, (node, context) => {
 
 register(FlexSearchQueryNode, (node, context) => {
     let itemContext = context
-        .introduceVariable(node.itemVariable)
+        .bindVariable(node.itemVariable)
         .withExtension(inFlexSearchFilterSymbol, true);
     const viewName = getFlexSearchViewNameForRootEntity(node.rootEntityType!);
     context.addCollectionAccess(viewName, AccessType.EXPLICIT_READ);
@@ -565,7 +558,7 @@ register(FlexSearchQueryNode, (node, context) => {
 });
 
 register(TransformListQueryNode, (node, context) => {
-    let itemContext = context.introduceVariable(node.itemVariable);
+    let itemContext = context.bindVariable(node.itemVariable);
     const itemVar = itemContext.getVariable(node.itemVariable);
     let itemProjectionContext = itemContext;
 
@@ -577,9 +570,7 @@ register(TransformListQueryNode, (node, context) => {
     const variableAssignmentNodes: VariableAssignmentQueryNode[] = [];
     innerNode = extractVariableAssignments(innerNode, variableAssignmentNodes);
     for (const assignmentNode of variableAssignmentNodes) {
-        itemProjectionContext = itemProjectionContext.introduceVariable(
-            assignmentNode.variableNode,
-        );
+        itemProjectionContext = itemProjectionContext.bindVariable(assignmentNode.variableNode);
         const tmpVar = itemProjectionContext.getVariable(assignmentNode.variableNode);
         variableAssignments.push(
             aql`LET ${tmpVar} = ${processNode(
@@ -665,7 +656,7 @@ function generateLimitClause({ skip = 0, maxCount }: LimitClauseArgs): AQLFragme
  */
 function generateInClause(node: QueryNode, context: QueryContext, entityVar: AQLFragment) {
     if (node instanceof TransformListQueryNode && node.innerNode === node.itemVariable) {
-        const itemContext = context.introduceVariableAlias(node.itemVariable, entityVar);
+        const itemContext = context.bindVariable(node.itemVariable, entityVar);
         return generateInClauseWithFilterAndOrderAndLimit({
             node,
             itemContext,
@@ -846,7 +837,7 @@ register(AggregationQueryNode, (node, context) => {
 register(UpdateChildEntitiesQueryNode, (node, context) => {
     const itemsVar = aql.variable('items');
     const itemsWithIndexVar = aql.variable('itemsWithIndex');
-    const childContext = context.introduceVariable(node.dictionaryVar);
+    const childContext = context.bindVariable(node.dictionaryVar);
     const dictVar = childContext.getVariable(node.dictionaryVar);
     const updatedDictVar = aql.variable('updatedDict');
     const itemVar = aql.variable('item');
@@ -1535,7 +1526,7 @@ function processTraversalWithOnlyRelationSegmentsNoList(
         );
     }
 
-    const innerContext = context.introduceVariable(node.itemVariable);
+    const innerContext = context.bindVariable(node.itemVariable);
     const itemVar = innerContext.getVariable(node.itemVariable);
     const forStatementsFrag = getRelationTraversalForStatements({
         node,
@@ -1586,7 +1577,7 @@ function processTraversalWithOnlyRelationSegmentsAsList(
     // we could refactor the single usage so it does not use a TraversalQueryNode in the first place
 
     const itemVar = aql.variable(`node`);
-    const innerContext = context.introduceVariableAlias(node.itemVariable, itemVar);
+    const innerContext = context.bindVariable(node.itemVariable, itemVar);
 
     const forStatementsFrag = getRelationTraversalForStatements({
         node,
@@ -1654,7 +1645,7 @@ function processTraversalWithListRelationSegmentsAndNonListFieldSegments(
         segments: node.fieldSegments,
         sourceFrag: rootVar,
     });
-    const innerContext = context.introduceVariableAlias(node.itemVariable, fieldTraversalFrag);
+    const innerContext = context.bindVariable(node.itemVariable, fieldTraversalFrag);
 
     // note: we don't filter out NULL values even if preserveNullValues is false because that's currently
     // only a flag for performance - actually filtering out NULLs is done by a surrounding AggregationQueryNode
@@ -1721,7 +1712,7 @@ function processTraversalWithNonListRelationSegmentsAndNonListFieldSegments(
         segments: node.fieldSegments,
         sourceFrag: rootVar,
     });
-    const innerContext = context.introduceVariableAlias(node.itemVariable, fieldTraversalFrag);
+    const innerContext = context.bindVariable(node.itemVariable, fieldTraversalFrag);
 
     return aqlExt.firstOfSubquery(
         forStatementsFrag,
@@ -1779,7 +1770,7 @@ function processTraversalWithRelationAndListFieldSegmentsUsingSubquery(
         ? (itemFrag: AQLFragment) => {
               // don't provide rootEntityVariable
               // (if we want to filter on root, it should happen outside already)
-              const innerContext = context.introduceVariableAlias(node.itemVariable, itemFrag);
+              const innerContext = context.bindVariable(node.itemVariable, itemFrag);
               return processNode(filterNode, innerContext);
           }
         : undefined;
@@ -1792,8 +1783,8 @@ function processTraversalWithRelationAndListFieldSegmentsUsingSubquery(
 
     const itemVar = aql.variable(`item`);
     const innerContext = context
-        .introduceVariableAlias(node.itemVariable, itemVar)
-        .introduceVariableAlias(node.rootEntityVariable, rootVar);
+        .bindVariable(node.itemVariable, itemVar)
+        .bindVariable(node.rootEntityVariable, rootVar);
 
     // The outerMapFrag will produce a list, so a simple RETURN mapFrag would result in nested lists
     // -> we iterate over the items again to flatten the lists (the FOR ${itemVar} ...)
@@ -1885,8 +1876,8 @@ function processTraversalWithRelationAndListFieldSegmentsUsingArrayExpansionWith
     const innerMapFrag = innerNode
         ? (itemFrag: AQLFragment) => {
               const innerContext = context
-                  .introduceVariableAlias(node.itemVariable, itemFrag)
-                  .introduceVariableAlias(node.rootEntityVariable, rootVar);
+                  .bindVariable(node.itemVariable, itemFrag)
+                  .bindVariable(node.rootEntityVariable, rootVar);
               return processNode(innerNode, innerContext);
           }
         : undefined;
@@ -1916,7 +1907,7 @@ function processTraversalWithRelationAndListFieldSegmentsUsingArrayExpansionWith
         innerFilterFrag = (itemFrag: AQLFragment) => {
             // don't map rootEntityVariable
             // (if we want to filter on root, it should happen outside already)
-            const innerContext = context.introduceVariableAlias(node.itemVariable, itemFrag);
+            const innerContext = context.bindVariable(node.itemVariable, itemFrag);
             return processNode(filterNode, innerContext);
         };
     }
@@ -2051,8 +2042,8 @@ function processTraversalWithRelationAndListFieldSegmentsUsingArrayExpansionWith
     // -> we produce items like this: { value: ..., sortValues: [...] }
     const innerMapFrag = (itemFrag: AQLFragment) => {
         const innerContext = context
-            .introduceVariableAlias(node.itemVariable, itemFrag)
-            .introduceVariableAlias(node.rootEntityVariable, rootVar);
+            .bindVariable(node.itemVariable, itemFrag)
+            .bindVariable(node.rootEntityVariable, rootVar);
         const valueFrag = node.innerNode ? processNode(node.innerNode, innerContext) : itemFrag;
 
         return aql.lines(
@@ -2079,7 +2070,7 @@ function processTraversalWithRelationAndListFieldSegmentsUsingArrayExpansionWith
         ? (itemFrag: AQLFragment) => {
               // don't provide rootEntityVariable
               // (if we want to filter on root, it should happen outside already)
-              const innerContext = context.introduceVariableAlias(node.itemVariable, itemFrag);
+              const innerContext = context.bindVariable(node.itemVariable, itemFrag);
               return processNode(filterNode, innerContext);
           }
         : undefined;
@@ -2144,13 +2135,13 @@ function processTraversalWithOnlyFieldSegmentsUsingArrayExpansion(
     const innerNode = node.innerNode;
     const mapFrag = innerNode
         ? (itemFrag: AQLFragment) =>
-              processNode(innerNode, context.introduceVariableAlias(node.itemVariable, itemFrag))
+              processNode(innerNode, context.bindVariable(node.itemVariable, itemFrag))
         : undefined;
 
     const filterNode = node.filterNode;
     const filterFrag = filterNode
         ? (itemFrag: AQLFragment) =>
-              processNode(filterNode, context.introduceVariableAlias(node.itemVariable, itemFrag))
+              processNode(filterNode, context.bindVariable(node.itemVariable, itemFrag))
         : undefined;
 
     // if there are no list segments, this will just be a simple path access
@@ -2210,7 +2201,7 @@ function processTraversalWithOnlyFieldSegmentsUsingSubquery(
 
     const itemVar = aql.variable('item');
 
-    const innerContext = context.introduceVariableAlias(node.itemVariable, itemVar);
+    const innerContext = context.bindVariable(node.itemVariable, itemVar);
     const returnValueFrag = node.innerNode ? processNode(node.innerNode, innerContext) : itemVar;
 
     // filter in the subquery instead of in getFieldTraversalFragment() because the filter
@@ -2311,10 +2302,7 @@ function getRelationTraversalForStatements({
             if (!segment.vertexFilterVariable) {
                 throw new Error(`vertexFilter is set, but vertexFilterVariable is not`);
             }
-            const filterContext = context.introduceVariableAlias(
-                segment.vertexFilterVariable,
-                nodeVar,
-            );
+            const filterContext = context.bindVariable(segment.vertexFilterVariable, nodeVar);
             // PRUNE to stop on a node that has to be filtered out (only necessary for traversals > 1 path length)
             // however, PRUNE only seems to be a performance feature and is not reliably evaluated
             // (e.g. it's not when using COLLECT with distinct for some reason), so we need to add a path filter
@@ -2328,7 +2316,7 @@ function getRelationTraversalForStatements({
                 }
 
                 const vertexInPathFrag = aql`${pathVar}.vertices[*]`;
-                const pathFilterContext = context.introduceVariableAlias(
+                const pathFilterContext = context.bindVariable(
                     segment.vertexFilterVariable,
                     vertexInPathFrag,
                 );
@@ -2548,7 +2536,7 @@ register(CreateEntitiesQueryNode, (node, context) => {
 });
 
 register(UpdateEntitiesQueryNode, (node, context) => {
-    const newContext = context.introduceVariable(node.currentEntityVariable);
+    const newContext = context.bindVariable(node.currentEntityVariable);
     const entityVar = newContext.getVariable(node.currentEntityVariable);
     let entityFrag: AQLFragment;
     let options: AQLFragment;
