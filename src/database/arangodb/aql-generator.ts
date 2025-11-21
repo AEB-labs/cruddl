@@ -392,12 +392,12 @@ namespace aqlExt {
         }
     }
 
-    export function parenthesizeList(...content: AQLFragment[]): AQLFragment {
+    export function subquery(...content: AQLFragment[]): AQLFragment {
         return aql.lines(aql`(`, aql.indent(aql.lines(...content)), aql`)`);
     }
 
-    export function parenthesizeObject(...content: AQLFragment[]): AQLFragment {
-        return aql`FIRST${parenthesizeList(...content)}`;
+    export function firstOfSubquery(...content: AQLFragment[]): AQLFragment {
+        return aql`FIRST${subquery(...content)}`;
     }
 }
 
@@ -477,7 +477,7 @@ register(VariableAssignmentQueryNode, (node, context) => {
 
     // note that we have to know statically if the context var is a list or an object
     // assuming object here because lists are not needed currently
-    return aqlExt.parenthesizeObject(
+    return aqlExt.firstOfSubquery(
         aql`LET ${tmpVar} = ${processNode(node.variableValueNode, newContext)}`,
         aql`RETURN ${processNode(node.resultNode, newContext)}`,
     );
@@ -555,7 +555,7 @@ register(FlexSearchQueryNode, (node, context) => {
         .withExtension(inFlexSearchFilterSymbol, true);
     const viewName = getFlexSearchViewNameForRootEntity(node.rootEntityType!);
     context.addCollectionAccess(viewName, AccessType.EXPLICIT_READ);
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         aql`FOR ${itemContext.getVariable(node.itemVariable)}`,
         aql`IN ${aql.collection(viewName)}`,
         aql`SEARCH ${processNode(node.flexFilterNode, itemContext)}`,
@@ -594,7 +594,7 @@ register(TransformListQueryNode, (node, context) => {
     // over large root entities if only some of the fields are queried. The default is to only apply
     // it if 5 or less fields are selected. We probably want to increase this limit
     // (also applies to FollowEdgeQueryNode and TraversalQueryNode)
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         aql`FOR ${itemVar}`,
         generateInClauseWithFilterAndOrderAndLimit({ node, context, itemContext, itemVar }),
         ...variableAssignments,
@@ -692,7 +692,7 @@ register(CountQueryNode, (node, context) => {
     // note that ArangoDB's inline-subqueries rule optimizes for the case where listNode is a TransformList again.
     const itemVar = aql.variable('item');
     const countVar = aql.variable('count');
-    return aqlExt.parenthesizeObject(
+    return aqlExt.firstOfSubquery(
         aql`FOR ${itemVar}`,
         aql`IN ${processNode(node.listNode, context)}`,
         aql`COLLECT WITH COUNT INTO ${countVar}`,
@@ -822,7 +822,7 @@ register(AggregationQueryNode, (node, context) => {
         default:
             throw new Error(`Unsupported aggregator: ${(node as any).aggregationOperator}`);
     }
-    return aqlExt[isList ? 'parenthesizeList' : 'parenthesizeObject'](
+    const subqueryFrag = aqlExt.subquery(
         aql`FOR ${itemVar}`,
         aql`IN ${processNode(node.listNode, context)}`,
         filterFrag ? aql`FILTER ${filterFrag}` : aql``,
@@ -834,6 +834,13 @@ register(AggregationQueryNode, (node, context) => {
               : aql``,
         aql`RETURN ${resultFragment}`,
     );
+
+    if (isList) {
+        return subqueryFrag;
+    } else {
+        // generates FIRST(...) because subqueryFrag has parentheses
+        return aql`FIRST${subqueryFrag}`;
+    }
 });
 
 register(UpdateChildEntitiesQueryNode, (node, context) => {
@@ -845,14 +852,14 @@ register(UpdateChildEntitiesQueryNode, (node, context) => {
     const itemVar = aql.variable('item');
     const indexVar = aql.variable('indexVar');
 
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         // could be a complex expression, and we're using it multiple times -> store in a variable
         aql`LET ${itemsVar} = ${processNode(node.originalList, context)}`,
 
         // add a __index property to each item so we can sort by this later
         // regular field names cannot start with an underscore, so we're safe to use __index as a
         // temporary property to store the index of the child entity in the list
-        aql`LET ${itemsWithIndexVar} = ${aqlExt.parenthesizeList(
+        aql`LET ${itemsWithIndexVar} = ${aqlExt.subquery(
             aql`FOR ${indexVar}`,
             // 0..-1 would evaluate to [0, -1], so the ZIP would complain because the right side
             // has more entries (2) than the left (0). RANGE() behaves the same
@@ -902,7 +909,7 @@ register(ObjectEntriesQueryNode, (node, context) => {
     // TODO aql-perf: use array inline expression
     const objectVar = aql.variable('object');
     const keyVar = aql.variable('key');
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         aql`LET ${objectVar} = ${processNode(node.objectNode, context)}`,
         aql`FOR ${keyVar} IN IS_DOCUMENT(${objectVar}) ? ATTRIBUTES(${objectVar}) : []`,
         aql`RETURN [ ${keyVar}, ${objectVar}[${keyVar}] ]`,
@@ -1084,7 +1091,7 @@ function getBillingInput(
 
 register(CreateBillingEntityQueryNode, (node, context) => {
     const currentTimestamp = context.options.clock.getCurrentTimestamp();
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         aql`UPSERT {
             key: ${node.key},
             type: ${node.rootEntityTypeName}
@@ -1106,7 +1113,7 @@ register(CreateBillingEntityQueryNode, (node, context) => {
 register(ConfirmForBillingQueryNode, (node, context) => {
     const key = processNode(node.keyNode, context);
     const currentTimestamp = context.options.clock.getCurrentTimestamp();
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         aql`UPSERT {
             key: ${key},
             type: ${node.rootEntityTypeName}
@@ -1411,7 +1418,7 @@ register(EntitiesQueryNode, (node, context) => {
 
 register(FollowEdgeQueryNode, (node, context) => {
     const tmpVar = aql.variable('node');
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         aql`FOR ${tmpVar}`,
         aql`IN ${getSimpleFollowEdgeFragment(node, context)}`,
         // filter out dangling edges (edges that point to non-existing entities)
@@ -1537,7 +1544,7 @@ function processTraversalWithOnlyRelationSegmentsNoList(
         context,
     });
 
-    return aqlExt.parenthesizeObject(
+    return aqlExt.firstOfSubquery(
         forStatementsFrag,
         aql`RETURN ${node.innerNode ? processNode(node.innerNode, innerContext) : itemVar}`,
     );
@@ -1588,7 +1595,7 @@ function processTraversalWithOnlyRelationSegmentsAsList(
         preserveNullValues: node.preserveNullValues,
     });
 
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         forStatementsFrag,
         node.filterNode ? aql`FILTER ${processNode(node.filterNode, context)}` : aql``,
 
@@ -1652,7 +1659,7 @@ function processTraversalWithListRelationSegmentsAndNonListFieldSegments(
     // note: we don't filter out NULL values even if preserveNullValues is false because that's currently
     // only a flag for performance - actually filtering out NULLs is done by a surrounding AggregationQueryNode
     // TODO aql-perf remove this note once the NULL filtering / preserving has moved out of AggregationQueryNode
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         forStatementsFrag,
         node.filterNode ? aql`FILTER ${processNode(node.filterNode, innerContext)}` : aql``,
         generateSortAQL(node.orderBy, innerContext),
@@ -1716,7 +1723,7 @@ function processTraversalWithNonListRelationSegmentsAndNonListFieldSegments(
     });
     const innerContext = context.introduceVariableAlias(node.itemVariable, fieldTraversalFrag);
 
-    return aqlExt.parenthesizeObject(
+    return aqlExt.firstOfSubquery(
         forStatementsFrag,
         aql`RETURN ${node.innerNode ? processNode(node.innerNode, innerContext) : fieldTraversalFrag}`,
     );
@@ -1790,7 +1797,7 @@ function processTraversalWithRelationAndListFieldSegmentsUsingSubquery(
 
     // The outerMapFrag will produce a list, so a simple RETURN mapFrag would result in nested lists
     // -> we iterate over the items again to flatten the lists (the FOR ${itemVar} ...)
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         aql`${forStatementsFrag}`,
         aql`FOR ${itemVar} IN ${outerMapFrag}`,
         generateSortAQL(node.orderBy, innerContext),
@@ -1935,7 +1942,7 @@ function processTraversalWithRelationAndListFieldSegmentsUsingArrayExpansionWith
     //     RETURN item
     // (could also use FLATTEN(), but since we're already using nested FORs, this is probably cleaner)
     const itemVar = aql.variable(`item`);
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         aql`${forStatementsFrag}`,
         aql`FOR ${itemVar} IN ${outerMapFrag}`,
         generateLimitClause(limitArgs) ?? aql``,
@@ -2094,7 +2101,7 @@ function processTraversalWithRelationAndListFieldSegmentsUsingArrayExpansionWith
 
     // The outerMapFrag will produce a list, so a simple RETURN mapFrag would result in nested lists
     // -> we iterate over the items again to flatten the lists (the FOR ${itemVar} ...)
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         aql`${forStatementsFrag}`,
         aql`FOR ${itemVar} IN ${outerMapFrag}`,
         aql`SORT ${aql.join(clauseFrags, aql`, `)}`,
@@ -2212,7 +2219,7 @@ function processTraversalWithOnlyFieldSegmentsUsingSubquery(
         ? aql`FILTER ${processNode(node.filterNode, innerContext)}`
         : aql``;
 
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         aql`FOR ${itemVar}`,
         aql`IN ${fieldTraversalFrag}`,
         filterFrag,
@@ -2517,7 +2524,7 @@ function getFieldTraversalFragment({
 }
 
 register(CreateEntityQueryNode, (node, context) => {
-    return aqlExt.parenthesizeObject(
+    return aqlExt.firstOfSubquery(
         aql`INSERT ${processNode(node.objectNode, context)} IN ${getCollectionForType(
             node.rootEntityType,
             AccessType.WRITE,
@@ -2529,7 +2536,7 @@ register(CreateEntityQueryNode, (node, context) => {
 
 register(CreateEntitiesQueryNode, (node, context) => {
     const entityVar = aql.variable('entity');
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         aql`FOR ${entityVar} IN ${processNode(node.objectsNode, context)}`,
         aql`INSERT ${entityVar} IN ${getCollectionForType(
             node.rootEntityType,
@@ -2558,7 +2565,7 @@ register(UpdateEntitiesQueryNode, (node, context) => {
         options = aql`{ mergeObjects: false }`;
     }
 
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         aql`FOR ${entityVar}`,
         aql`IN ${processNode(node.listNode, context)}`,
         aql`UPDATE ${entityFrag}`,
@@ -2586,26 +2593,29 @@ register(DeleteEntitiesQueryNode, (node, context) => {
         optionsFrag = aql``;
     }
 
-    const countVar = aql.variable(`count`);
-    return aqlExt[
-        node.resultValue === DeleteEntitiesResultValue.OLD_ENTITIES
-            ? 'parenthesizeList'
-            : 'parenthesizeObject'
-    ](
+    const commonFrags = [
         aql`FOR ${entityVar}`,
         aql`${generateInClause(node.listNode, context, entityVar)}`,
         aql`REMOVE ${entityFrag}`,
         aql`IN ${getCollectionForType(node.rootEntityType, AccessType.WRITE, context)}`,
         optionsFrag,
-        node.resultValue === DeleteEntitiesResultValue.OLD_ENTITIES
-            ? aql`RETURN OLD`
-            : aql.lines(aql`COLLECT WITH COUNT INTO ${countVar}`, aql`RETURN ${countVar}`),
-    );
+    ];
+
+    if (node.resultValue === DeleteEntitiesResultValue.OLD_ENTITIES) {
+        return aqlExt.subquery(...commonFrags, aql`RETURN OLD`);
+    } else {
+        const countVar = aql.variable(`count`);
+        return aqlExt.firstOfSubquery(
+            ...commonFrags,
+            aql`COLLECT WITH COUNT INTO ${countVar}`,
+            aql`RETURN ${countVar}`,
+        );
+    }
 });
 
 register(AddEdgesQueryNode, (node, context) => {
     const edgeVar = aql.variable('edge');
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         aql`FOR ${edgeVar}`,
         aql`IN [ ${aql.join(
             node.edges.map((edge) => formatEdge(node.relation, edge, context)),
@@ -2632,7 +2642,7 @@ register(RemoveEdgesQueryNode, (node, context) => {
     } else {
         edgeFilter = aql``;
     }
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         node.edgeFilter.fromIDsNode
             ? aql`FOR ${fromVar} IN ${getFullIDsFromKeysNode(
                   node.edgeFilter.fromIDsNode!,
@@ -2663,7 +2673,7 @@ register(RemoveEdgesQueryNode, (node, context) => {
 
 register(SetEdgeQueryNode, (node, context) => {
     const edgeVar = aql.variable('edge');
-    return aqlExt.parenthesizeList(
+    return aqlExt.subquery(
         aql`UPSERT ${formatEdge(node.relation, node.existingEdge, context)}`,
         aql`INSERT ${formatEdge(node.relation, node.newEdge, context)}`,
         aql`UPDATE ${formatEdge(node.relation, node.newEdge, context)}`,
