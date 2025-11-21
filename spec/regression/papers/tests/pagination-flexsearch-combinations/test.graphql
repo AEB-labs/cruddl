@@ -4,11 +4,11 @@ query all {
     }
 }
 
-# skip without first with order is not supported in flexSearch
-# see https://github.com/AEB-labs/cruddl/pull/171#issuecomment-669032789
-#skip: flexSearchPapers(skip: 1, orderBy: title_ASC) {
-#    title
-#}
+query skip {
+    flexSearchPapers(skip: 1, orderBy: title_ASC) {
+        title
+    }
+}
 
 query skipAndFirst {
     flexSearchPapers(skip: 1, first: 1, orderBy: title_ASC) {
