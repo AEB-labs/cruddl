@@ -72,7 +72,6 @@ import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
 import { Clock, DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
-import paginationPerf from '../../../spec/performance/pagination.perf';
 
 const ID_FIELD_NAME = 'id';
 
@@ -118,7 +117,7 @@ class QueryContext {
      * @param variableNode the variable token as it is referenced in the query tree
      * @param jsVariable the token as it will be available within the JS fragment
      */
-    private newNestedContextWithNewVariable(
+    private newNestedContextWithVariableBinding(
         variableNode: VariableQueryNode,
         jsVariable: JSFragment,
     ): QueryContext {
@@ -135,24 +134,24 @@ class QueryContext {
     /**
      * Creates a new QueryContext that is identical to this one but has one additional variable binding
      *
-     * The JSFragment for the variable will be available via getVariable().
+     * If aqlFrag is omitted, a new JSVariable will be created using the name of the variableNode.
      *
-     * @param {VariableQueryNode} variableNode the variable as referenced in the query tree
-     * @returns {QueryContext} the nested context
+     * For jsFrag, you can specify a JSVariable or a different JSFragment (e.g. a field access).
+     * Do not specify complex expressions because they would be repeated for every use of the
+     * variable.
+     *
+     * @param variableNode the variable as referenced in the query tree
+     * @param jsFrag the fragment representing the variable in javascript
+     * @returns the new context
      */
-    introduceVariable(variableNode: VariableQueryNode): QueryContext {
-        const variable = new JSVariable(variableNode.label);
-        return this.newNestedContextWithNewVariable(variableNode, variable);
-    }
-
-    /**
-     * Creates a new QueryContext that is identical to this one but has one additional variable binding
-     */
-    introduceVariableAlias(
+    bindVariable(
         variableNode: VariableQueryNode,
-        existingVariable: JSFragment,
+        jsFrag: JSFragment = new JSVariable(variableNode.label),
     ): QueryContext {
-        return this.newNestedContextWithNewVariable(variableNode, existingVariable);
+        if (this.variableMap.has(variableNode)) {
+            throw new Error(`Variable ${variableNode} is introduced twice`);
+        }
+        return this.newNestedContextWithVariableBinding(variableNode, jsFrag);
     }
 
     /**
@@ -175,7 +174,7 @@ class QueryContext {
         let newContext: QueryContext;
         if (resultVariable) {
             resultVar = new JSQueryResultVariable(resultVariable.label);
-            newContext = this.newNestedContextWithNewVariable(resultVariable, resultVar);
+            newContext = this.newNestedContextWithVariableBinding(resultVariable, resultVar);
         } else {
             resultVar = undefined;
             newContext = this;
@@ -318,7 +317,7 @@ register(VariableQueryNode, (node, context) => {
 });
 
 register(VariableAssignmentQueryNode, (node, context) => {
-    const newContext = context.introduceVariable(node.variableNode);
+    const newContext = context.bindVariable(node.variableNode);
     const tmpVar = newContext.getVariable(node.variableNode);
 
     return jsExt.executingFunction(
@@ -420,7 +419,7 @@ function getPaginationFrag({
 }
 
 register(TransformListQueryNode, (node, context) => {
-    let itemContext = context.introduceVariable(node.itemVariable);
+    let itemContext = context.bindVariable(node.itemVariable);
     const itemVar = itemContext.getVariable(node.itemVariable);
 
     function lambda(exprNode: QueryNode) {
@@ -535,7 +534,7 @@ register(UpdateChildEntitiesQueryNode, (node, context) => {
     }
 
     const itemsVar = js.variable('items');
-    const childContext = context.introduceVariable(node.dictionaryVar);
+    const childContext = context.bindVariable(node.dictionaryVar);
     const dictVar = childContext.getVariable(node.dictionaryVar);
     const updatedDictVar = js.variable('updatedDict');
     const itemVar = js.variable('item');
@@ -950,8 +949,8 @@ register(TraversalQueryNode, (node, context): JSFragment => {
     const loopVar = js.variable(`item`);
     const itemFrag = isRootCaptured ? js`${loopVar}.obj` : loopVar;
     const itemContext = context
-        .introduceVariableAlias(node.itemVariable, itemFrag)
-        .introduceVariableAlias(node.rootEntityVariable, js`${loopVar}.root`);
+        .bindVariable(node.itemVariable, itemFrag)
+        .bindVariable(node.rootEntityVariable, js`${loopVar}.root`);
     const filterFrag = node.filterNode
         ? js`.filter(${jsExt.lambda(loopVar, processNode(node.filterNode, itemContext))})`
         : js``;
@@ -987,7 +986,7 @@ register(CreateEntitiesQueryNode, (node, context) => {
 });
 
 register(UpdateEntitiesQueryNode, (node, context) => {
-    const newContext = context.introduceVariable(node.currentEntityVariable);
+    const newContext = context.bindVariable(node.currentEntityVariable);
     const entityVar = newContext.getVariable(node.currentEntityVariable);
 
     function lambda(inner: JSFragment) {
@@ -1172,7 +1171,7 @@ register(OperatorWithAnalyzerQueryNode, (node, context) => {
 });
 
 register(FlexSearchQueryNode, (node, context) => {
-    let itemContext = context.introduceVariable(node.itemVariable);
+    let itemContext = context.bindVariable(node.itemVariable);
     const itemVar = itemContext.getVariable(node.itemVariable);
 
     function lambda(exprNode: QueryNode) {
