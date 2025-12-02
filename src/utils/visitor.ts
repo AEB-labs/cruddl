@@ -1,7 +1,18 @@
 import { isReadonlyArray } from './utils';
 
 export type VisitResult<T> = {
+    /**
+     * Whether to recurse into the object's properties.
+     *
+     * @default true
+     */
     recurse?: boolean;
+
+    /**
+     * The value to assign to the property
+     *
+     * Use the value of the `object` parameter to keep the same value.
+     */
     newValue: T;
 };
 

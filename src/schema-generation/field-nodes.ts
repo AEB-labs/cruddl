@@ -26,10 +26,24 @@ import { ID_FIELD } from '../schema/constants';
 import { GraphQLOffsetDateTime } from '../schema/scalars/offset-date-time';
 import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
 import { and } from './utils/input-types';
+import { decapitalize } from '../utils/utils';
 
 export interface CreateFieldNodeOptions {
     readonly skipNullFallbackForEntityExtensions?: boolean;
     readonly rootEntityVar?: VariableQueryNode;
+
+    /**
+     * If true, child entity fields use a TraversalQueryNode instead of a FieldQueryNode
+     *
+     * This is useful if it is expected that filtering, mapping, sorting etc. will be added because
+     * TraversalQueryNode has native support for those and will be optimized better in the AQL generation.
+     *
+     * We do not always set this, because sometimes, a FieldQueryNode (with SafeListQueryNode)
+     * can be recognized more easily by other optimizations like those of QuantifierFilterNode
+     *
+     * @default false
+     */
+    readonly preferTraversals?: boolean;
 
     /**
      * Call this on collect fields that traverse root entities to store a reference to the root entity in the stack
@@ -73,7 +87,6 @@ export function createFieldNode(
 
     if (field.collectPath) {
         const { relationSegments, fieldSegments } = getEffectiveCollectSegments(field.collectPath);
-        const itemVariable = new VariableQueryNode('collectItem');
         const rootEntityVariable = options.registerRootNode
             ? new VariableQueryNode('collectRoot')
             : undefined;
@@ -85,7 +98,6 @@ export function createFieldNode(
             relationSegments,
             fieldSegments,
             rootEntityVariable,
-            itemVariable,
             preserveNullValues,
         });
         if (options.registerRootNode && rootEntityVariable) {
@@ -138,7 +150,27 @@ export function createFieldNode(
             return createToNRelationNode(field, sourceNode);
         }
 
-        // there are no lists of references
+        // note: there are no lists of references
+
+        if (options.preferTraversals) {
+            return new TraversalQueryNode({
+                sourceEntityNode: sourceNode,
+                itemVariable: new VariableQueryNode(decapitalize(field.type.name)),
+                fieldSegments: [
+                    {
+                        field,
+                        isListSegment: true,
+                        resultingType: field.type,
+                        isNullableSegment: false,
+                        resultIsList: true,
+                        kind: 'field',
+                        resultIsNullable: false,
+                        resultMayContainDuplicateEntities: false,
+                    },
+                ],
+                relationSegments: [],
+            });
+        }
 
         return createSafeListQueryNode(new FieldQueryNode(sourceNode, field));
     }

@@ -24,16 +24,12 @@ RETURN (
 WITH @@deliveries
 LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
 RETURN (IS_NULL(v_delivery1) ? null : {
-  "items": (
-    FOR v_deliveryItem1
-    IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
-    RETURN {
-      "itemNumber": v_deliveryItem1.`itemNumber`
-    }
-  )
+  "items": v_delivery1.`items`[* RETURN {
+    "itemNumber": CURRENT.`itemNumber`
+  }]
 })
 
-// Peak memory usage: 32768 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 

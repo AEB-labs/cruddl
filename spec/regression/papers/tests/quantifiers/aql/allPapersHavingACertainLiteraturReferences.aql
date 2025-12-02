@@ -8,7 +8,7 @@ RETURN {
       "key": v_paper1.`key`,
       "literatureReferences": (
         FOR v_literatureReference1
-        IN (IS_LIST(v_paper1.`literatureReferences`) ? v_paper1.`literatureReferences` : [])
+        IN v_paper1.`literatureReferences`[*]
         SORT (v_literatureReference1.`title`) , (v_literatureReference1.`pages`.`startPage`)
         RETURN {
           "title": v_literatureReference1.`title`

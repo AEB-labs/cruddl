@@ -10,7 +10,7 @@ RETURN {
     SORT (v_delivery1.`deliveryNumber`) , (v_delivery1.`createdAt`)  DESC, (v_delivery1._key)  DESC
     RETURN {
       "deliveryNumber": v_delivery1.`deliveryNumber`,
-      "serialNumbers": (IS_LIST(v_delivery1.`serialNumbers`) ? v_delivery1.`serialNumbers` : []),
+      "serialNumbers": v_delivery1.`serialNumbers`[*],
       "dispatchDate": v_delivery1.`dispatchDate`
     }
   )

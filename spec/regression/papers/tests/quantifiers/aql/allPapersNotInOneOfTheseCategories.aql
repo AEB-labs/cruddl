@@ -6,7 +6,7 @@ RETURN {
     SORT (v_paper1.`key`)
     RETURN {
       "key": v_paper1.`key`,
-      "categories": (IS_LIST(v_paper1.`categories`) ? v_paper1.`categories` : [])
+      "categories": v_paper1.`categories`[*]
     }
   )
 }

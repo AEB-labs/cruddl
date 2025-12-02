@@ -84,3 +84,25 @@ export class VariableAssignmentQueryNode extends QueryNode {
         )}\n) in (\n${indent(this.resultNode.describe())}\n)`;
     }
 }
+
+/**
+ * A wrapper around an expression that should be hoisted out of certain contexts
+ *
+ * This is a simpler version of a variable assignment (which is also hoistable) but does not require
+ * a variable. For this reason, it cannot be used if the expression is used multiple times.
+ */
+export class HoistableQueryNode extends QueryNode {
+    constructor(
+        public readonly node: QueryNode,
+        /**
+         * The name of the variable this node would be assigned to when hoisted
+         */
+        public readonly variableLabel: string,
+    ) {
+        super();
+    }
+
+    public describe() {
+        return `hoistable as ${this.variableLabel} (\n${indent(this.node.describe())}\n)`;
+    }
+}

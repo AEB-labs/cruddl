@@ -9,11 +9,11 @@ RETURN {
   "Delivery": (IS_NULL(v_delivery1) ? null : {
     "deliveryContents": (
       FOR v_deliveryContent1
-      IN (IS_LIST(v_delivery1.`deliveryContents`) ? v_delivery1.`deliveryContents` : [])
+      IN v_delivery1.`deliveryContents`[*]
       RETURN {
         "items": (
           FOR v_deliveryItem1
-          IN (IS_LIST(v_deliveryContent1.`items`) ? v_deliveryContent1.`items` : [])
+          IN v_deliveryContent1.`items`[*]
           RETURN {
             "subSubItems": (
               FOR v_item1

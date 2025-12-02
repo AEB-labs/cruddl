@@ -27,6 +27,7 @@ import {
     FirstOfListQueryNode,
     FlexSearchStartsWithQueryNode,
     FollowEdgeQueryNode,
+    HoistableQueryNode,
     ListItemQueryNode,
     ListQueryNode,
     LiteralQueryNode,
@@ -314,6 +315,11 @@ register(ConcatListsQueryNode, (node, context) => {
 
 register(VariableQueryNode, (node, context) => {
     return context.getVariable(node);
+});
+
+register(HoistableQueryNode, (node, context) => {
+    // if we process a HoistableQueryNode here, the node did not get hoisted, but that's fine too
+    return processNode(node.node, context);
 });
 
 register(VariableAssignmentQueryNode, (node, context) => {
@@ -909,6 +915,8 @@ register(TraversalQueryNode, (node, context): JSFragment => {
 
     if (relationFrag && rootVar) {
         if (relationTraversalReturnsList) {
+            relationFrag = js`(${relationFrag} || [])`;
+
             if (node.fieldSegments.some((f) => f.isListSegment)) {
                 currentFrag = js`${relationFrag}.flatMap(${rootVar} => (${currentFrag}).map(obj => ({ obj: obj, root: ${rootVar} })))`;
             } else {
@@ -920,7 +928,7 @@ register(TraversalQueryNode, (node, context): JSFragment => {
                 const mapper = js`${objVar} => ({ obj: ${objVar}, root: ${rootVar} })`;
                 currentFrag = jsExt.evaluatingLambda(
                     rootVar,
-                    js`(${currentFrag}).map(${mapper})`,
+                    js`(${currentFrag} || []).map(${mapper})`,
                     relationFrag,
                 );
             } else {

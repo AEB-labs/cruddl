@@ -7,7 +7,6 @@ import { Field, ObjectType, Type, TypeKind } from '../model';
 import {
     NullQueryNode,
     ObjectQueryNode,
-    OrderDirection,
     PropertySpecification,
     QueryNode,
     RevisionQueryNode,
@@ -232,6 +231,7 @@ export class OutputTypeGenerator {
             skipNullCheck:
                 field.type.isEntityExtensionType || field.isParentField || field.isRootField,
             isPure: true,
+            hoist: field.isRootField,
             resolve: (sourceNode, args, info) => this.resolveField(field, sourceNode, info),
         };
 
@@ -259,6 +259,11 @@ export class OutputTypeGenerator {
 
         return createFieldNode(field, sourceNode, {
             skipNullFallbackForEntityExtensions: true,
+
+            // we expect that filtering, mapping etc. will happen,
+            // and traversals are better optimized in that case
+            preferTraversals: true,
+
             registerRootNode: (rootNode) => rootHelperResult.registerRootNode(rootNode),
         });
     }

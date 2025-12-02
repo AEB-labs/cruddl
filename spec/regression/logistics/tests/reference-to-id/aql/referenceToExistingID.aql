@@ -10,7 +10,7 @@ RETURN {
     "deliveryNumber": v_delivery1.`deliveryNumber`,
     "items": (
       FOR v_deliveryItem1
-      IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
+      IN v_delivery1.`items`[*]
       LET v_handlingUnit1 = (IS_NULL(v_deliveryItem1.`handlingUnit`) ? null : FIRST((
         FOR v_handlingUnit2
         IN @@handlingUnits

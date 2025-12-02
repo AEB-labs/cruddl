@@ -328,8 +328,8 @@ export class TraversalQueryNode extends QueryNode {
         this.innerNode = params.innerNode;
         this.filterNode = params.filterNode;
         this.orderBy = params.orderBy ?? OrderSpecification.UNORDERED;
-        this.itemVariable = params.itemVariable ?? new VariableQueryNode(`collectItem`);
-        this.rootEntityVariable = params.rootEntityVariable ?? new VariableQueryNode(`collectRoot`);
+        this.itemVariable = params.itemVariable ?? new VariableQueryNode(`item`);
+        this.rootEntityVariable = params.rootEntityVariable ?? new VariableQueryNode(`root`);
         this.skip = params.skip ?? 0;
         this.maxCount = params.maxCount;
 

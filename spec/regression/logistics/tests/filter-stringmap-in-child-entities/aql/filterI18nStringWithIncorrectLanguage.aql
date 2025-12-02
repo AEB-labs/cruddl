@@ -9,7 +9,7 @@ RETURN {
   "Delivery": (IS_NULL(v_delivery1) ? null : {
     "items": (
       FOR v_deliveryItem1
-      IN (IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])
+      IN v_delivery1.`items`[*]
       FILTER (FIRST(
         FOR v_item1
         IN (

@@ -1,0 +1,36 @@
+query fieldTraversal_andChildEntitiesWithArrayExpansion {
+    Root(key: "root1") {
+        # this is a big field. query it so we're sure it is loaded from disk
+        predictablePayload
+
+        children {
+            # accessing root in a child entity subquery can lead to the root being copied into a
+            # register for each child. This happens if there is another subquery, that's why we're
+            # querying the children's children.
+            root {
+                key
+            }
+            children {
+                key
+            }
+        }
+    }
+}
+
+query fieldTraversal_andChildEntitiesWithSubquery {
+    Root(key: "root1") {
+        predictablePayload
+
+        children {
+            root {
+                key
+            }
+            # without order, the children can be fetched via an array expansion expression, which
+            # avoids the problem outlined above - but this no longer works if there is sorting
+            # because SORT is not supported in array expansion expressions
+            children(orderBy: key_ASC) {
+                key
+            }
+        }
+    }
+}
