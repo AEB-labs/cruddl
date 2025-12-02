@@ -19,6 +19,8 @@ jobs:
       - run: timeout 10 docker logs --follow arangodb || true # wait until arangodb is started
       - run: curl -L http://localhost:8529/_api/version
       - run: npm ci
+      - run: npm run knip
+      - run: npm run knip:prod
       - run: npm test
   deploy:
     if: startsWith(github.ref, 'refs/tags/v')
