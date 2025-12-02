@@ -1,6 +1,11 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["index.ts!", "spec/**/*.spec.ts", "src/project/project-from-fs.ts!"],
+  "entry": [
+    "index.ts!",
+    "spec/**/*.spec.ts",
+    "spec/**/test-data.ts",
+    "src/project/project-from-fs.ts!"
+  ],
   "project": ["src/**/*.ts!", "spec/**/*.ts"],
   "rules": {
     "exports": "off",
