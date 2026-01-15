@@ -7,7 +7,7 @@ import { Project } from '../../../../src/project/project';
 import { ProjectSource } from '../../../../src/project/source';
 import { createTempDatabase, getTempDatabase } from '../../../regression/initialization';
 import { isArangoDBDisabled } from '../arangodb-test-utils';
-import { ArangoSearchViewProperties } from 'arangojs/view';
+import { ArangoSearchViewProperties, TierConsolidationPolicy } from 'arangojs/view';
 import { Model } from '../../../../src/model';
 
 type GqlDocument = ReturnType<typeof gql>;
@@ -68,6 +68,7 @@ describe('ArangoDB schema migrations (integration)', function () {
                 fields: ['deliveryNumber'],
                 type: 'persistent',
                 unique: true,
+                sparse: true, // unique indices are sparse by default
             }),
         ).to.equal(true);
 
@@ -123,6 +124,45 @@ describe('ArangoDB schema migrations (integration)', function () {
         expect(
             hasIndex(warehouseIndexes, { fields: ['description'], type: 'persistent' }),
         ).to.equal(true);
+    });
+
+    it('handles setting old consolidation policy properties in 3.12.7', async function () {
+        // 3.12.7 soft-removed some properties, so they are ignored when set.
+        // This would mean that the adapter constantly generates a migration to update it to the
+        // intended value. This test ensures that this does not happen.
+
+        const consolidationPolicy: TierConsolidationPolicy = {
+            type: 'tier',
+            minScore: 0,
+            segmentsMin: 3,
+            segmentsMax: 1000,
+            segmentsBytesFloor: 262144,
+            segmentsBytesMax: 536870912,
+        };
+
+        const project = buildProject(gql`
+            type Delivery @rootEntity(flexSearch: true) {
+                deliveryNumber: String @key @flexSearch
+            }
+        `);
+        const model = project.getModel();
+        const adapter = await createDbAndAdapter({
+            arangoSearchConfiguration: {
+                consolidationPolicy,
+            },
+        });
+
+        await runMigrationsAndCheckStable(adapter, model);
+
+        const db = getTempDatabase();
+        const view = (await db
+            .view('flex_view_deliveries')
+            .properties()) as ArangoSearchViewProperties;
+
+        // if we're running this test against ArangoDB 3.12.6 or earlier, make sure it's set
+        if ('minScore' in view.consolidationPolicy) {
+            expect(view.consolidationPolicy).to.deep.equal(consolidationPolicy);
+        }
     });
 });
 
