@@ -3,7 +3,9 @@ import { AnalyzerDescription, CreateAnalyzerOptions } from 'arangojs/analyzer';
 import {
     ArangoSearchViewLink,
     ArangoSearchViewLinkOptions,
+    ArangoSearchViewProperties,
     ArangoSearchViewPropertiesOptions,
+    BytesAccumConsolidationPolicy,
     CreateArangoSearchViewOptions,
     TierConsolidationPolicy,
     View,
@@ -313,10 +315,34 @@ export function isEqualProperties(
             viewProperties.consolidationIntervalMsec,
         ) &&
         isEqual(definitionProperties.cleanupIntervalStep, viewProperties.cleanupIntervalStep) &&
-        // only compare consolidationPolicy if it's configured
-        (!definitionProperties.consolidationPolicy ||
-            isEqual(definitionProperties.consolidationPolicy, viewProperties.consolidationPolicy))
+        consolidationPolicyMatches(
+            definitionProperties.consolidationPolicy,
+            viewProperties.consolidationPolicy,
+        )
     );
+}
+
+function consolidationPolicyMatches(
+    expected: TierConsolidationPolicy | BytesAccumConsolidationPolicy | null | undefined,
+    actual: TierConsolidationPolicy | BytesAccumConsolidationPolicy,
+): boolean {
+    if (!expected) {
+        // if not specified, don't care
+        return true;
+    }
+
+    if (expected.type !== actual.type) {
+        return false;
+    }
+
+    // ArangoDB 3.12.7 removed some properties, including minScore. If you set them they are ignored
+    // and they are never returned when fetching view properties. We need don't want to create an
+    // update migration in that case because it would never complete.
+    if (expected.type === 'tier' && 'minScore' in expected && !('minScore' in actual)) {
+        return true;
+    }
+
+    return isEqual(expected, actual);
 }
 
 function isRecreateRequired(
