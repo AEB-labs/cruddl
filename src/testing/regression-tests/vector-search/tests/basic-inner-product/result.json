@@ -1,0 +1,20 @@
+{
+  "basicInnerProduct": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "_vectorScore": 1
+        },
+        {
+          "title": "Gamma",
+          "_vectorScore": 0.5
+        },
+        {
+          "title": "Beta",
+          "_vectorScore": 0
+        }
+      ]
+    }
+  }
+}

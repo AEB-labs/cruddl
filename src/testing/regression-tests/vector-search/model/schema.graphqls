@@ -1,0 +1,28 @@
+type Article @rootEntity(permissionProfile: "restricted") {
+    title: String
+    category: String @accessField
+    isPublished: Boolean
+    language: String
+    viewCount: Int
+    embedding: [Float]
+        @vectorIndex(
+            dimension: 4
+            nLists: 1
+            defaultNProbe: 10
+            maxNProbe: 50
+            storedValues: ["title", "isPublished"]
+        )
+    imageEmbedding: [Float]
+        @vectorIndex(metric: L2, dimension: 4, nLists: 1, defaultNProbe: 10, maxNProbe: 50)
+    scoreEmbedding: [Float]
+        @vectorIndex(
+            metric: INNER_PRODUCT
+            dimension: 4
+            nLists: 1
+            defaultNProbe: 10
+            maxNProbe: 50
+        )
+    secretEmbedding: [Float]
+        @vectorIndex(metric: COSINE, dimension: 4, nLists: 1, defaultNProbe: 10, maxNProbe: 50)
+        @roles(readWrite: ["admin"])
+}

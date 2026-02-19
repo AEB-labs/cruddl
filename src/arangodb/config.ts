@@ -86,7 +86,67 @@ export interface ArangoDBConfig {
      * "orders".
      */
     readonly collectionNamePrefix?: string;
+
+    /**
+     * Controls automatic nLists drift detection for vector indexes with auto-computed nLists.
+     *
+     * **Background**: ArangoDB vector indexes use the IVF (Inverted File Index) algorithm, which
+     * partitions document embeddings into `nLists` clusters at index-creation time. When the
+     * number of documents grows significantly, the originally chosen `nLists` value may no longer
+     * be optimal - too few clusters reduce recall, too many waste memory and slow down queries.
+     *
+     * When this option is set, cruddl re-computes the recommended `nLists` on every analysis run
+     * using the formula `max(1, min(N, round(15 × √N)))` where N is the current document count.
+     * If the re-computed value differs from the current index's `nLists` by more than the
+     * configured fraction, a recreate migration is generated automatically.
+     *
+     * Example: a value of `0.25` triggers a rebuild when the re-computed nLists would differ by
+     * more than 25 % from the existing index's nLists (e.g. existing 100 -> rebuild if new < 75 or
+     * > 125).
+     *
+     * **Important**: this option only reacts to nLists drift caused by document-count growth. It
+     * does **not** replace a manual rebuild for other scenarios, such as data distribution changes
+     * (cluster skew), changed embedding models, or index corruption. For those cases, call
+     * `recreateVectorIndex()` explicitly.
+     *
+     * If not set, nLists drift never triggers an automatic rebuild.
+     */
+    readonly vectorIndexNListsRebuildThreshold?: number;
+
+    /**
+     * Maximum time in milliseconds to wait for a vector index to finish training before the
+     * migration is considered failed.
+     *
+     * ArangoDB reports a `trainingState` field on vector indexes (3.12.9+). After `ensureIndex`
+     * returns, cruddl polls this field until the index reports `"ready"`. If the index does not
+     * become ready within the configured timeout, the migration throws.
+     *
+     * On ArangoDB versions prior to 3.12.9, `ensureIndex` blocks until training is complete, so
+     * this timeout is not relevant.
+     *
+     * Defaults to 600 000 ms (10 minutes).
+     */
+    readonly vectorIndexTrainingTimeoutMs?: number;
+
+    /**
+     * The maximum value of `skip + first` that is allowed in vectorSearch queries
+     *
+     * ArangoDB versions before 3.12.13 allocate memory for `skip + first` results up front without
+     * accounting for it in the query memory limit, so a single vector search with a large `skip`
+     * can crash the database server with an out-of-memory error (see
+     * https://github.com/arangodb/arangodb/issues/23336). Queries that exceed this value fail with
+     * an ARGUMENT_OUT_OF_RANGE error instead of being sent to the database.
+     *
+     * This applies in addition to ExecutionOptions.maxLimitForRootEntityQueries, which only limits
+     * `first`.
+     *
+     * Defaults to 10 000. Set to `Infinity` to disable the check (only advisable on ArangoDB 3.12.13
+     * or later).
+     */
+    readonly vectorSearchMaxSkipPlusFirst?: number;
 }
+
+export const DEFAULT_VECTOR_SEARCH_MAX_SKIP_PLUS_FIRST = 10_000;
 
 export function initDatabase(config: ArangoDBConfig): Database {
     const arangoJSConfig = config.arangoJSConfig ?? {};

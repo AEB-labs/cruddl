@@ -1,0 +1,18 @@
+{
+  "filterWithOr": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Gamma",
+          "isPublished": false,
+          "_vectorScore": 0.7071067690849304
+        },
+        {
+          "title": "Beta",
+          "isPublished": true,
+          "_vectorScore": 0
+        }
+      ]
+    }
+  }
+}

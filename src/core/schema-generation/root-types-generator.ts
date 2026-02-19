@@ -21,6 +21,7 @@ import { QueryTypeGenerator } from './query-type-generator.js';
 import { RootFieldHelper } from './root-field-helper.js';
 import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator.js';
 import { UpdateInputTypeGenerator } from './update-input-types/generator.js';
+import { VectorSearchGenerator } from './vector-search-generator.js';
 
 export class RootTypesGenerator {
     private readonly enumTypeGenerator: EnumTypeGenerator;
@@ -38,6 +39,7 @@ export class RootTypesGenerator {
     private readonly metaTypeGenerator: MetaTypeGenerator;
     private readonly outputTypeGenerator: OutputTypeGenerator;
     private readonly flexSearchGenerator: FlexSearchGenerator;
+    private readonly vectorSearchGenerator: VectorSearchGenerator;
     private readonly createTypeGenerator: CreateInputTypeGenerator;
     private readonly updateTypeGenerator: UpdateInputTypeGenerator;
     private readonly queryTypeGenerator: QueryTypeGenerator;
@@ -94,6 +96,10 @@ export class RootTypesGenerator {
             this.flexSearchFilterAugmentation,
             this.orderByAugmentation,
         );
+        this.vectorSearchGenerator = new VectorSearchGenerator(
+            this.outputTypeGenerator,
+            this.filterTypeGenerator,
+        );
         this.createTypeGenerator = new CreateInputTypeGenerator(this.enumTypeGenerator);
         this.updateTypeGenerator = new UpdateInputTypeGenerator(
             this.enumTypeGenerator,
@@ -107,6 +113,7 @@ export class RootTypesGenerator {
             this.metaTypeGenerator,
             this.flexSearchGenerator,
             this.uniqueFieldArgumentsGenerator,
+            this.vectorSearchGenerator,
         );
 
         this.billingTypeGenerator = new BillingTypeGenerator(this.outputTypeGenerator);

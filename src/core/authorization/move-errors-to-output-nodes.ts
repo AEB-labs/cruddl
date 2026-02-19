@@ -10,6 +10,7 @@ import { ConditionalQueryNode } from '../query-tree/operators.js';
 import { PreExecQueryParms, WithPreExecutionQueryNode } from '../query-tree/pre-exec.js';
 import { TraversalQueryNode } from '../query-tree/queries.js';
 import { VariableAssignmentQueryNode } from '../query-tree/variables.js';
+import { VectorSearchQueryNode } from '../query-tree/vector-search.js';
 import { visitQueryNode } from '../query-tree/visitor.js';
 import type { VisitResult } from '../utils/visitor.js';
 
@@ -154,6 +155,7 @@ namespace outputNodes {
     add(ConditionalQueryNode, 'expr1', 'expr2');
     add(TransformListQueryNode, 'innerNode');
     add(TraversalQueryNode, 'innerNode');
+    add(VectorSearchQueryNode, 'innerNode');
     addExt(
         WithPreExecutionQueryNode,
         OutputNodeKind.OUTPUT_INTERMEDIATE,

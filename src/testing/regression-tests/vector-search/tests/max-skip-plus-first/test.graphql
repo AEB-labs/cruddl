@@ -1,0 +1,11 @@
+query withinMaxSkipPlusFirst {
+    vectorSearchArticles(field: embedding, vector: [1.0, 0.0, 0.0, 0.0], first: 1, skip: 9999) {
+        title
+    }
+}
+
+query exceedsMaxSkipPlusFirst {
+    vectorSearchArticles(field: embedding, vector: [1.0, 0.0, 0.0, 0.0], first: 2, skip: 9999) {
+        title
+    }
+}

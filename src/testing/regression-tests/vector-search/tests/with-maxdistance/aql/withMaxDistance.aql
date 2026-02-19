@@ -1,0 +1,15 @@
+RETURN {
+  "vectorSearchArticles": (
+    FOR v_article1 IN @@articles
+    LET v_vectorScore1 = APPROX_NEAR_L2(v_article1.`imageEmbedding`, @var1, { nProbe: @var2 })
+    SORT v_vectorScore1
+    LIMIT @var3
+    FILTER v_vectorScore1 <= @var4
+    RETURN {
+      "title": v_article1.`title`,
+      @var5: v_vectorScore1
+    }
+  )
+}
+
+// Peak memory usage: 65536 bytes
