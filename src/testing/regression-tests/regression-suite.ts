@@ -167,6 +167,14 @@ export class RegressionSuite {
             this.testDataEnvironment = { fillTemplateStrings: (s) => s };
         }
 
+        // Some index types (e.g. ArangoDB vector indices) cannot be created on an empty collection
+        // because they require at least one document to be present for their training phase.
+        // When migrateAfterSeed is set in meta.json, we run updateSchema a second time after the
+        // test data has been seeded so that those deferred migrations are picked up and applied.
+        if (this.getMeta().resolveSuiteMeta().migrateAfterSeed) {
+            await initAdapter.updateSchema(initProject.getModel());
+        }
+
         if (this.databaseSpecifier === 'arangodb') {
             const version = await (initAdapter as ArangoDBAdapter).getArangoDBVersion();
             if (version) {

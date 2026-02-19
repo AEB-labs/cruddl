@@ -1,0 +1,59 @@
+{
+  "withFilterIsPublished": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "isPublished": true,
+          "_vectorScore": 1
+        },
+        {
+          "title": "Epsilon",
+          "isPublished": true,
+          "_vectorScore": 0
+        },
+        {
+          "title": "Delta",
+          "isPublished": true,
+          "_vectorScore": 0
+        },
+        {
+          "title": "Beta",
+          "isPublished": true,
+          "_vectorScore": 0
+        }
+      ]
+    }
+  },
+  "withoutFilter": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "isPublished": true,
+          "_vectorScore": 1
+        },
+        {
+          "title": "Gamma",
+          "isPublished": false,
+          "_vectorScore": 0.7071067690849304
+        },
+        {
+          "title": "Epsilon",
+          "isPublished": true,
+          "_vectorScore": 0
+        },
+        {
+          "title": "Delta",
+          "isPublished": true,
+          "_vectorScore": 0
+        },
+        {
+          "title": "Beta",
+          "isPublished": true,
+          "_vectorScore": 0
+        }
+      ]
+    }
+  }
+}

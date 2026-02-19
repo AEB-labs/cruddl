@@ -1,0 +1,22 @@
+{
+  "runtimeErrorNprobeExceedsMax": {
+    "data": {
+      "vectorSearchArticles": null
+    },
+    "errors": [
+      {
+        "extensions": {
+          "code": "ARGUMENT_OUT_OF_RANGE"
+        },
+        "message": "\"nProbe\" (100) exceeds the maximum allowed value of 50 for field \"embedding\"",
+        "locations": [
+          {
+            "line": 2,
+            "column": 5
+          }
+        ],
+        "path": ["vectorSearchArticles"]
+      }
+    ]
+  }
+}
