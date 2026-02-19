@@ -115,6 +115,7 @@ export interface ExecutionOptions {
      * It is applied to the following queries:
      *  - flexSearchAll\<RootEntityPluralName>
      *  - all\<RootEntityPluralName>
+     *  - vectorSearch\<RootEntityPluralName>
      *
      * It is applied to the following mutations:
      *  - updateAll\<RootEntityPluralName>

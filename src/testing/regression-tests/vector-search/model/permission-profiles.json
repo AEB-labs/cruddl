@@ -1,0 +1,34 @@
+{
+  "permissionProfiles": {
+    "default": {
+      "permissions": [
+        {
+          "roles": ["users"],
+          "access": "readWrite"
+        }
+      ]
+    },
+    "restricted": {
+      "permissions": [
+        {
+          "roles": ["admin"],
+          "access": "readWrite"
+        },
+        {
+          "roles": ["users"],
+          "access": "readWrite"
+        },
+        {
+          "roles": ["tech-reader"],
+          "access": "read",
+          "restrictions": [
+            {
+              "field": "category",
+              "value": "tech"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

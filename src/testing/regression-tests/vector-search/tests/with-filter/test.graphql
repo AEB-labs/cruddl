@@ -1,0 +1,21 @@
+query withFilter {
+    vectorSearchArticles(
+        field: embedding
+        vector: [1.0, 0.0, 0.0, 0.0]
+        filter: { isPublished: true }
+        first: 5
+    ) {
+        title
+        isPublished
+        _vectorScore
+    }
+}
+
+# Paired unfiltered query: proves the filter actually removes Gamma (isPublished: false, score ≈ 0.707)
+query withoutFilter {
+    vectorSearchArticles(field: embedding, vector: [1.0, 0.0, 0.0, 0.0], first: 5) {
+        title
+        isPublished
+        _vectorScore
+    }
+}
