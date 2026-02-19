@@ -15,6 +15,7 @@ import {
     FollowEdgeQueryNode,
     TraversalQueryNode,
 } from '../query-tree/queries.js';
+import { VectorSearchQueryNode } from '../query-tree/vector-search.js';
 import type { AuthContext } from './auth-basics.js';
 import { transformAffectedFieldInfoQueryNode } from './transformers/affected-field-info.js';
 import { transformCreateEntitiesQueryNode } from './transformers/create-entities.js';
@@ -31,6 +32,7 @@ import {
     transformDeleteEntitiesQueryNode,
     transformUpdateEntitiesQueryNode,
 } from './transformers/update-delete-entities.js';
+import { transformVectorSearchQueryNode } from './transformers/vector-search.js';
 
 type TransformFunction<T extends QueryNode> = (node: T, authContext: AuthContext) => QueryNode;
 
@@ -55,6 +57,7 @@ addTransformer(DeleteEntitiesQueryNode, transformDeleteEntitiesQueryNode);
 addTransformer(AffectedFieldInfoQueryNode, transformAffectedFieldInfoQueryNode);
 addTransformer(FlexSearchQueryNode, transformFlexSearchQueryNode);
 addTransformer(FieldPathQueryNode, transformFieldPathQueryNode);
+addTransformer(VectorSearchQueryNode, transformVectorSearchQueryNode);
 
 export function transformNode(node: QueryNode, authContext: AuthContext): QueryNode {
     const transformer = map.get(node.constructor);

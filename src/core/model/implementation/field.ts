@@ -47,6 +47,7 @@ import { Relation } from './relation.js';
 import { RolesSpecifier } from './roles-specifier.js';
 import type { ObjectType, Type } from './type.js';
 import type { ValueObjectType } from './value-object-type.js';
+import { VectorIndex } from './vector-index.js';
 
 export interface SystemFieldConfig extends FieldConfig {
     readonly isSystemField?: boolean;
@@ -102,6 +103,7 @@ export class Field implements ModelComponent {
     readonly parentDirectiveAstNode: DirectiveNode | undefined;
     readonly isFlexSearchIndexedAstNode: DirectiveNode | undefined;
     readonly isFlexSearchFullTextIndexedAstNode: DirectiveNode | undefined;
+    readonly vectorIndex: VectorIndex | undefined;
 
     constructor(
         private readonly input: SystemFieldConfig,
@@ -152,6 +154,7 @@ export class Field implements ModelComponent {
         this.parentDirectiveAstNode = input.parentDirectiveNode;
         this.isFlexSearchIndexedAstNode = input.isFlexSearchIndexedASTNode;
         this.isFlexSearchFullTextIndexedAstNode = input.isFlexSearchFulltextIndexedASTNode;
+        this.vectorIndex = input.vectorIndex ? new VectorIndex(input.vectorIndex, this) : undefined;
     }
 
     /**
@@ -396,6 +399,7 @@ export class Field implements ModelComponent {
         this.validateModulesDirective(context);
         this.validateModulesOfKeyField(context);
         this.validateModuleConsistency(context);
+        this.validateVectorIndex(context);
     }
 
     private validateName(context: ValidationContext) {
@@ -2207,6 +2211,42 @@ export class Field implements ModelComponent {
 
     get flexSearchLanguage(): FlexSearchLanguage | undefined {
         return this.input.flexSearchLanguage || this.declaringType.flexSearchLanguage;
+    }
+
+    private validateVectorIndex(context: ValidationContext) {
+        if (!this.vectorIndex) {
+            return;
+        }
+
+        if (!this.declaringType.isRootEntityType) {
+            context.addMessage(
+                ValidationMessage.error(
+                    '@vectorIndex is only allowed in root entity fields.',
+                    this.vectorIndex.astNode,
+                ),
+            );
+            return;
+        }
+
+        if (!this.isList) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Vector indices can only be defined on list fields, but "${this.declaringType.name}.${this.name}" is not a list field.`,
+                    this.vectorIndex.astNode,
+                ),
+            );
+        }
+
+        if (this.type.kind !== TypeKind.SCALAR || this.type.name !== 'Float') {
+            context.addMessage(
+                ValidationMessage.error(
+                    `Vector indices can only be defined on fields of type "[Float]", but the type of "${this.declaringType.name}.${this.name}" is "[${this.type.name}]".`,
+                    this.vectorIndex.astNode,
+                ),
+            );
+        }
+
+        this.vectorIndex.validate(context);
     }
 }
 

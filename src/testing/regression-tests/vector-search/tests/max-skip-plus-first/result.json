@@ -1,0 +1,27 @@
+{
+  "withinMaxSkipPlusFirst": {
+    "data": {
+      "vectorSearchArticles": []
+    }
+  },
+  "exceedsMaxSkipPlusFirst": {
+    "errors": [
+      {
+        "message": "The sum of \"skip\" and \"first\" (10001) exceeds the maximum of 10000 for vector searches.",
+        "locations": [
+          {
+            "line": 8,
+            "column": 5
+          }
+        ],
+        "path": ["vectorSearchArticles"],
+        "extensions": {
+          "code": "ARGUMENT_OUT_OF_RANGE"
+        }
+      }
+    ],
+    "data": {
+      "vectorSearchArticles": null
+    }
+  }
+}

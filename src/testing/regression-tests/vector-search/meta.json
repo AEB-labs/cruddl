@@ -1,0 +1,9 @@
+{
+  "databases": {
+    "in-memory": {
+      "ignore": true
+    }
+  },
+  "migrateAfterSeed": true,
+  "timeoutInMs": 20000
+}
