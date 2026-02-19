@@ -8,14 +8,22 @@ import {
     ERROR_ARANGO_INDEX_NOT_FOUND,
 } from '../error-codes.js';
 import { configureForBackgroundCreation, isEqualProperties } from './arango-search-helpers.js';
+import {
+    getVectorIndexSlot,
+    otherVectorIndexSlot,
+    type PersistentIndexDefinition,
+    vectorIndexSlotName,
+} from './index-helpers.js';
 import type {
     CreateArangoSearchAnalyzerMigration,
     CreateArangoSearchViewMigration,
     CreateDocumentCollectionMigration,
     CreateEdgeCollectionMigration,
     CreateIndexMigration,
+    CreateVectorIndexMigration,
     DropIndexMigration,
     RecreateArangoSearchViewMigration,
+    RecreateVectorIndexMigration,
     SchemaMigration,
     UpdateArangoSearchAnalyzerMigration,
     UpdateArangoSearchViewMigration,
@@ -31,9 +39,12 @@ export class MigrationPerformer {
     async performMigration(migration: SchemaMigration) {
         switch (migration.type) {
             case 'createIndex':
-                return this.createIndex(migration);
+                return this.createPersistentIndex(migration);
             case 'dropIndex':
                 return this.dropIndex(migration);
+            case 'createVectorIndex':
+            case 'recreateVectorIndex':
+                return this.createOrRecreateVectorIndex(migration);
             case 'createDocumentCollection':
                 return this.createDocumentCollection(migration);
             case 'createEdgeCollection':
@@ -55,12 +66,13 @@ export class MigrationPerformer {
         }
     }
 
-    private async createIndex(migration: CreateIndexMigration) {
-        await this.db.collection(migration.index.collectionName).ensureIndex({
+    private async createPersistentIndex(migration: CreateIndexMigration) {
+        const index = migration.index as PersistentIndexDefinition;
+        await this.db.collection(index.collectionName).ensureIndex({
             type: 'persistent',
-            fields: migration.index.fields.slice(),
-            unique: migration.index.unique,
-            sparse: migration.index.sparse,
+            fields: index.fields.slice(),
+            unique: index.unique,
+            sparse: index.sparse,
             inBackground: this.config.createIndicesInBackground,
         });
     }
@@ -74,6 +86,117 @@ export class MigrationPerformer {
                 return;
             }
             throw e;
+        }
+    }
+
+    /**
+     * Creates a new vector index (for first-time creation or recreation from an existing one).
+     *
+     * For first-time creation (`CreateVectorIndexMigration`), the index is always placed in
+     * slot 'a'. For recreation (`RecreateVectorIndexMigration`), the new index is placed in the
+     * slot opposite to the existing one (A/B alternation) for zero-downtime rebuilds, and the
+     * old index is dropped once the new one is fully trained and ready.
+     */
+    private async createOrRecreateVectorIndex(
+        migration: CreateVectorIndexMigration | RecreateVectorIndexMigration,
+    ) {
+        const requiredIndex = migration.requiredIndex;
+        const existingIndex =
+            migration.type === 'recreateVectorIndex' ? migration.existingIndex : undefined;
+        const fieldName = requiredIndex.fields[0];
+        const collectionName = requiredIndex.collectionName;
+
+        // Determine the target slot: for recreation, use the other slot; for new creation use 'a'
+        const existingSlot = existingIndex?.name
+            ? getVectorIndexSlot(existingIndex.name)
+            : undefined;
+        const newSlot = existingSlot ? otherVectorIndexSlot(existingSlot) : 'a';
+        const newName = vectorIndexSlotName(fieldName, newSlot);
+
+        await (this.db.collection(collectionName) as any).ensureIndex({
+            type: 'vector',
+            name: newName,
+            fields: requiredIndex.fields.slice(),
+            sparse: requiredIndex.sparse,
+            params: {
+                metric: requiredIndex.params.metric,
+                dimension: requiredIndex.params.dimension,
+                nLists: requiredIndex.params.nLists,
+                trainingIterations: requiredIndex.params.trainingIterations,
+                factory: requiredIndex.params.factory,
+            },
+            ...(requiredIndex.storedValues?.length
+                ? { storedValues: requiredIndex.storedValues.slice() }
+                : {}),
+            inBackground: true,
+        });
+
+        // Wait for the new index to finish training before dropping the old one.
+        // ArangoDB's ensureIndex returns after the index is created, but vector index
+        // training may still be in progress. Querying the index before training is
+        // complete can return incorrect or empty results.
+        await this.waitForVectorIndexReady(collectionName, newName, {
+            timeoutMs: this.config.vectorIndexTrainingTimeoutMs,
+        });
+
+        // Drop the old index after the new one is available (recreation only)
+        if (existingIndex?.id) {
+            try {
+                await this.db.collection(collectionName).dropIndex(existingIndex.id);
+            } catch (e: any) {
+                if (e.errorNum === ERROR_ARANGO_INDEX_NOT_FOUND) {
+                    return; // already gone — that's fine
+                }
+                throw e;
+            }
+        }
+    }
+
+    /**
+     * Polls the ArangoDB index API until the vector index reports trainingState "ready".
+     *
+     * ArangoDB 3.12.9+ reports a `trainingState` field on vector indexes. While the
+     * index is still being trained, this field is set to a value other than "ready"
+     * (e.g. "training"). We poll at a fixed interval until the index reports "ready"
+     * or the timeout is exceeded.
+     *
+     * If the ArangoDB version does not report trainingState (pre-3.12.9), the method
+     * returns immediately — ensureIndex in those versions blocks until training completes.
+     */
+    async waitForVectorIndexReady(
+        collectionName: string,
+        indexName: string,
+        {
+            pollIntervalMs = 500,
+            timeoutMs = 600_000,
+        }: { pollIntervalMs?: number; timeoutMs?: number } = {},
+    ): Promise<void> {
+        const startTime = Date.now();
+
+        while (true) {
+            const indexes = await this.db.collection(collectionName).indexes();
+            const index = indexes.find((i: any) => i.name === indexName) as any;
+
+            if (!index) {
+                throw new Error(
+                    `Vector index "${indexName}" not found on collection "${collectionName}"`,
+                );
+            }
+
+            // trainingState is available from ArangoDB 3.12.9+
+            // If the field is not present, assume the index is ready (older versions
+            // block in ensureIndex until training is complete).
+            if (!('trainingState' in index) || index.trainingState === 'ready') {
+                return;
+            }
+
+            if (Date.now() - startTime > timeoutMs) {
+                throw new Error(
+                    `Vector index "${indexName}" on collection "${collectionName}" did not become ready within ${timeoutMs}ms (current state: ${index.trainingState})`,
+                );
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
         }
     }
 

@@ -9,6 +9,7 @@ import { checkKeyField } from './check-key-field.js';
 import { checkReference } from './check-reference.js';
 import { checkRelation } from './check-relation.js';
 import { checkRootAndParentDirectives } from './check-root-and-parent-directives.js';
+import { checkVectorIndex } from './check-vector-indices.js';
 
 export function checkField(fieldToCheck: Field, baselineField: Field, context: ValidationContext) {
     checkFieldType(fieldToCheck, baselineField, context);
@@ -20,4 +21,5 @@ export function checkField(fieldToCheck: Field, baselineField: Field, context: V
     checkCalcMutations(fieldToCheck, baselineField, context);
     checkRootAndParentDirectives(fieldToCheck, baselineField, context);
     checkFlexSearchOnField(fieldToCheck, baselineField, context);
+    checkVectorIndex(fieldToCheck, baselineField, context);
 }
