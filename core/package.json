@@ -1,5 +1,5 @@
 {
   "name": "cruddl/core",
-  "typings": "../dist/core-exports.d.ts",
-  "main": "../dist/core-exports.js"
+  "typings": "../dist/cjs/core-exports.d.ts",
+  "main": "../dist/cjs/core-exports.js"
 }
