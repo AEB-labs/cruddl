@@ -59,8 +59,6 @@ reports/
 
 # .npmignore specifics
 spec/
-coverage/
-.nyc_output/
 /src/
 /*.ts
 build.sh
