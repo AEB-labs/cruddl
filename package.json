@@ -3,8 +3,8 @@
   "version": "5.0.0",
   "description": "",
   "license": "MIT",
-  "main": "dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "types": "./dist/cjs/index.d.ts",
   "scripts": {
     "build": "./build.sh",
     "prepublishOnly": "npm run build",
