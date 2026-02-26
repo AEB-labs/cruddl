@@ -1,8 +1,6 @@
-import * as __func2Module from 'ajv/dist/runtime/ucs2length';
-const func2 = __func2Module?.default?.default ?? __func2Module?.default ?? __func2Module;
-('use strict');
-export const validate = validate10;
-export default validate10;
+'use strict';
+module.exports = validate10;
+module.exports.default = validate10;
 const schema11 = {
     $schema: 'http://json-schema.org/draft-07/schema#',
     description: 'Sidecar file for schema definitions',
@@ -262,6 +260,7 @@ const schema17 = {
     required: ['claim'],
     properties: { claim: { type: 'string', minLength: 1 } },
 };
+const func2 = require('ajv/dist/runtime/ucs2length').default;
 function validate13(
     data,
     { instancePath = '', parentData, parentDataProperty, rootData = data } = {},

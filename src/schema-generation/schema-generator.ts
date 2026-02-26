@@ -1,6 +1,5 @@
 import { GraphQLSchema } from 'graphql';
 import { OperationResolver } from '../execution/operation-resolver.js';
-import type { AddOperationBasedResolversParams } from '../graphql/operation-based-resolvers.js';
 import { addOperationBasedResolvers } from '../graphql/operation-based-resolvers.js';
 import type { Model } from '../model/index.js';
 import type { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
@@ -20,8 +19,8 @@ export class SchemaGenerator {
 
     generate(model: Model) {
         const { queryType, mutationType, dumbSchema } = this.generateTypesAndDumbSchema(model);
-        // somehow didn't work when inlined - maybe a ts-node caching issue
-        const options: AddOperationBasedResolversParams = {
+
+        return addOperationBasedResolvers({
             schema: dumbSchema,
             getOperationIdentifier: this.context.getOperationIdentifier,
             operationResolver: async (op) => {
@@ -47,8 +46,7 @@ export class SchemaGenerator {
                 }
                 throw error;
             },
-        };
-        return addOperationBasedResolvers(options);
+        });
     }
 
     generateTypesAndDumbSchema(model: Model) {
