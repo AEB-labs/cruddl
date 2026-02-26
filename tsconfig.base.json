@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "sourceMap": true,
+    "declaration": true,
+    "removeComments": false,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "lib": ["ES2023"],
+    "paths": {
+      "*": ["./src/typings/*"]
+    },
+    "typeRoots": ["./node_modules/@types", "./src/typings"]
+  }
+}
