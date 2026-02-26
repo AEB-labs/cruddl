@@ -8,11 +8,12 @@ jobs:
         arango-image: ['arangodb:3.12', 'arangodb:3.12.6']
         node-version: [20.x, 22.x, 24.x, 25.x]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'npm'
       - run:
           docker run --name arangodb -p 127.0.0.1:8529:8529 -d -e ARANGO_NO_AUTH=1 -e LANG=en_US ${{
           matrix.arango-image }}
@@ -35,6 +36,7 @@ jobs:
         with:
           node-version: '24'
           registry-url: https://registry.npmjs.org/
+          cache: 'npm'
       - run: npm ci
       - run: npm publish --tag next
         env:
