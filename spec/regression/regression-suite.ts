@@ -243,14 +243,15 @@ export class RegressionSuite {
         return readdirSync(resolve(this.path, 'tests'));
     }
 
-    async shouldIgnoreTest(name: string) {
-        if (!this._isSetUpClean) {
-            await this.setUp();
-        }
-        let metaPath = resolve(this.testsPath, name, 'meta.json');
-        if (!existsSync(metaPath)) {
-            metaPath = resolve(this.path, 'meta.json');
-        }
+    shouldIgnoreSuite() {
+        return this.shouldIgnore(resolve(this.path, 'meta.json'));
+    }
+
+    shouldIgnoreTest(name: string) {
+        return this.shouldIgnore(resolve(this.testsPath, name, 'meta.json'));
+    }
+
+    private shouldIgnore(metaPath: string) {
         const meta: MetaOptions | undefined = existsSync(metaPath)
             ? JSON.parse(stripJsonComments(readFileSync(metaPath, 'utf-8')))
             : undefined;

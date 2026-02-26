@@ -41,45 +41,57 @@ describe('regression tests', async () => {
                     database,
                 };
                 const suite = new RegressionSuite(suitePath, options);
+
+                if (suite.shouldIgnoreSuite()) {
+                    // not using test.skip() because we don't want to clutter the list of skipped tests
+                    // with tests that are just not designed for a specific environment
+                    continue;
+                }
+
                 describe(suiteName, async () => {
                     const testNames = suite
                         .getTestNames()
                         .filter((testName) => testNameFilter(`${suiteName}/${testName}`));
 
                     for (const testName of testNames) {
-                        it(testName, async function () {
-                            if (await suite.shouldIgnoreTest(testName)) {
-                                this.skip();
-                            }
+                        if (suite.shouldIgnoreTest(testName)) {
+                            continue;
+                        }
 
-                            const result = await suite.runTest(testName);
-                            expect(result.actualResult).to.deep.equal(result.expectedResult);
+                        it(
+                            testName,
+                            async function () {
+                                const result = await suite.runTest(testName);
+                                expect(result.actualResult).to.deep.equal(result.expectedResult);
 
-                            for (const aqlResult of result.aql) {
-                                const aqlFileName = `regression/${suiteName}/tests/${testName}/aql/${aqlResult.operationName}.aql`;
+                                for (const aqlResult of result.aql) {
+                                    const aqlFileName = `regression/${suiteName}/tests/${testName}/aql/${aqlResult.operationName}.aql`;
 
-                                // "actual" is the generated AQL, expected is the file contents
-                                // the messages just turn "expected" around to say the file (which should contain the expected AQL)
-                                // is *expected* to exist or not, that's why this looks inverted here
-                                if (aqlResult.actual !== null && aqlResult.expected === null) {
-                                    assert.fail(
-                                        `AQL file at "${aqlFileName}" missing (run with --save-actual-as-expected to create it)`,
-                                    );
-                                } else if (
-                                    aqlResult.expected !== null &&
-                                    aqlResult.actual === null
-                                ) {
-                                    assert.fail(
-                                        `AQL file at "${aqlFileName}" should not exist because there is no operation called ${aqlResult.operationName} (or it does not produce AQL)`,
-                                    );
-                                } else {
-                                    expect(aqlResult.actual).to.equal(
-                                        aqlResult.expected,
-                                        `AQL of operation ${aqlResult.operationName} does not match expected AQL in "${aqlFileName}" (run with --save-actual-as-expected to update the file)`,
-                                    );
+                                    // "actual" is the generated AQL, expected is the file contents
+                                    // the messages just turn "expected" around to say the file (which should contain the expected AQL)
+                                    // is *expected* to exist or not, that's why this looks inverted here
+                                    if (aqlResult.actual !== null && aqlResult.expected === null) {
+                                        assert.fail(
+                                            `AQL file at "${aqlFileName}" missing (run with --save-actual-as-expected to create it)`,
+                                        );
+                                    } else if (
+                                        aqlResult.expected !== null &&
+                                        aqlResult.actual === null
+                                    ) {
+                                        assert.fail(
+                                            `AQL file at "${aqlFileName}" should not exist because there is no operation called ${aqlResult.operationName} (or it does not produce AQL)`,
+                                        );
+                                    } else {
+                                        expect(aqlResult.actual).to.equal(
+                                            aqlResult.expected,
+                                            `AQL of operation ${aqlResult.operationName} does not match expected AQL in "${aqlFileName}" (run with --save-actual-as-expected to update the file)`,
+                                        );
+                                    }
                                 }
-                            }
-                        }).timeout(10000); // travis is sometimes on the slower side
+                            },
+                            // @ts-ignore
+                            { timeout: 10_000 }, // for vitest
+                        )?.timeout(10000); // for mocha
                     }
                 });
             }
