@@ -1,5 +1,0 @@
-{
-  "name": "cruddl/arangodb",
-  "typings": "../dist/src/database/arangodb/index.d.ts",
-  "main": "../dist/src/database/arangodb/index.js"
-}

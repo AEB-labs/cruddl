@@ -6,15 +6,9 @@ import { createSimpleModel } from '../../model/model-spec.helper.js';
 import { createTempDatabase, getTempDatabase } from '../../regression/initialization.js';
 import { isArangoDBDisabled } from './arangodb-test-utils.js';
 
-describe('ArangoDBAdapter', () => {
+describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {
     describe('updateSchema', () => {
-        it('it creates and removes indices', async function () {
-            // can't use arrow function because we need the "this"
-            if (isArangoDBDisabled()) {
-                (this as any).skip();
-                return;
-            }
-
+        it('it creates and removes indices', async () => {
             const model = createSimpleModel(gql`
                 type Delivery @rootEntity {
                     deliveryNumber: String @key
@@ -153,13 +147,7 @@ describe('ArangoDBAdapter', () => {
             ]);
         });
 
-        it('it resets arangosearch view parameters to configured values', async function () {
-            // can't use arrow function because we need the "this"
-            if (isArangoDBDisabled()) {
-                (this as any).skip();
-                return;
-            }
-
+        it('it resets arangosearch view parameters to configured values', async () => {
             const model = createSimpleModel(gql`
                 type Delivery
                     @rootEntity(
