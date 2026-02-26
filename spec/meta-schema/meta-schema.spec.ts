@@ -11,7 +11,6 @@ import { prettyPrint } from '../../src/graphql/pretty-print.js';
 import { getMetaSchema } from '../../src/meta-schema/meta-schema.js';
 import { AggregationOperator, Model, TypeKind } from '../../src/model/index.js';
 import type { Project } from '../../src/project/project.js';
-import { stopMetaServer } from '../dev/server.js';
 
 describe('Meta schema API', () => {
     const introQuery = gql`
@@ -1212,9 +1211,5 @@ describe('Meta schema API', () => {
         const actualVersion = description.match(/cruddlVersion: "(.*)"/)![1];
 
         expect(actualVersion).to.deep.equal(expectedVersion);
-    });
-
-    after(function () {
-        return stopMetaServer();
     });
 });

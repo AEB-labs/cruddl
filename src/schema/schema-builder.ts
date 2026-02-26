@@ -1,6 +1,8 @@
 import type { DocumentNode, GraphQLSchema } from 'graphql';
 import { getLocation, GraphQLError, Kind as GraphQLKind, parse } from 'graphql';
+import jsonLint from 'json-lint';
 import { parse as JSONparse } from 'json-source-map';
+import stripJsonComments from 'strip-json-comments';
 import type {
     YAMLAnchorReference,
     YamlMap,
@@ -43,8 +45,6 @@ import {
 import type { SchemaTransformationContext } from './preparation/transformation-pipeline.js';
 import { executePreMergeTransformationPipeline } from './preparation/transformation-pipeline.js';
 import { getLineEndPosition } from './schema-utils.js';
-import jsonLint = require('json-lint');
-import stripJsonComments = require('strip-json-comments');
 
 /**
  * Validates a project and thus determines whether createSchema() would succeed

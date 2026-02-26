@@ -387,7 +387,7 @@ describe('Field', () => {
                 }
             });
 
-            describe('warns if there is an unrelated inverse relation', () => {
+            it('warns if there is an unrelated inverse relation', () => {
                 const field = shipmentType.getFieldOrThrow('delivery');
                 const result = validate(field);
                 expect(result.messages.length, result.toString()).to.equal(1);
