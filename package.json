@@ -10,6 +10,9 @@
     "prepublishOnly": "npm run build",
     "typecheck": "tsc -p tsconfig.test.json --skipLibCheck",
     "test": "rimraf dist && tsc --noEmit --skipLibCheck && mocha './spec/**/*.spec.ts'",
+    "test:mocha": "rimraf dist && tsc --noEmit --skipLibCheck && mocha './spec/**/*.spec.ts'",
+    "test:vitest": "rimraf dist && tsc --noEmit --skipLibCheck && vitest run",
+    "test:vitest:watch": "vitest",
     "test:dropdb": "ts-node ./spec/regression/drop-test-db.ts",
     "test:perf": "node cruddl-bench",
     "test:coverage": "nyc --reporter=text-summary npm test",
@@ -70,7 +73,8 @@
     "rimraf": "^3.0.2",
     "stats-lite": "^2.2.0",
     "ts-node": "^10.8.2",
-    "typescript": "~5.5.4"
+    "typescript": "~5.5.4",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@graphql-tools/schema": "^8.5.0",
