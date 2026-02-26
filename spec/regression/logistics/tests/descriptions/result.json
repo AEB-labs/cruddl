@@ -9494,6 +9494,11 @@
                 "name": "ofType",
                 "description": null,
                 "deprecationReason": null
+              },
+              {
+                "name": "isOneOf",
+                "description": null,
+                "deprecationReason": null
               }
             ],
             "inputFields": null
