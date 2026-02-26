@@ -20,15 +20,8 @@ interface IndexExpectation {
     readonly sparse?: boolean;
 }
 
-describe('ArangoDB schema migrations (integration)', function () {
-    if (isArangoDBDisabled()) {
-        (this as any).skip();
-        return;
-    }
-
-    this.timeout(20000);
-
-    it('creates required resources and remains stable across runs', async function () {
+describe.skipIf(isArangoDBDisabled())('ArangoDB schema migrations (integration)', () => {
+    it('creates required resources and remains stable across runs', async () => {
         const project = buildProject(gql`
             enum DeliveryStatus {
                 CREATED
@@ -62,7 +55,11 @@ describe('ArangoDB schema migrations (integration)', function () {
 
         const deliveryIndexes = await db.collection('deliveries').indexes();
         expect(
-            hasIndex(deliveryIndexes, { fields: ['status'], type: 'persistent', unique: false }),
+            hasIndex(deliveryIndexes, {
+                fields: ['status'],
+                type: 'persistent',
+                unique: false,
+            }),
         ).to.equal(true);
         expect(
             hasIndex(deliveryIndexes, {
@@ -81,7 +78,7 @@ describe('ArangoDB schema migrations (integration)', function () {
         expect(viewProperties.commitIntervalMsec).to.equal(2000);
     });
 
-    it('drops obsolete indices and views when the schema changes', async function () {
+    it('drops obsolete indices and views when the schema changes', async () => {
         const initialProject = buildProject(gql`
             type Warehouse @rootEntity(flexSearch: true) {
                 code: String @key @flexSearch
@@ -127,7 +124,7 @@ describe('ArangoDB schema migrations (integration)', function () {
         ).to.equal(true);
     });
 
-    it('handles setting old consolidation policy properties in 3.12.7', async function () {
+    it('handles setting old consolidation policy properties in 3.12.7', async () => {
         // 3.12.7 soft-removed some properties, so they are ignored when set.
         // This would mean that the adapter constantly generates a migration to update it to the
         // intended value. This test ensures that this does not happen.
