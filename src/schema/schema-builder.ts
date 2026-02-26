@@ -52,8 +52,8 @@ import {
 } from './preparation/transformation-pipeline';
 import { getLineEndPosition } from './schema-utils';
 import { isCommentOnlySource } from '../graphql/is-comment-only-source';
-import jsonLint = require('json-lint');
-import stripJsonComments = require('strip-json-comments');
+import jsonLint from 'json-lint';
+import stripJsonComments from 'strip-json-comments';
 
 /**
  * Validates a project and thus determines whether createSchema() would succeed
