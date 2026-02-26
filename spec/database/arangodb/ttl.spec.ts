@@ -137,13 +137,7 @@ async function setUp(
     };
 }
 
-describe('ArangoDB TTL', async function () {
-    // can't use arrow function because we need the "this"
-    if (isArangoDBDisabled()) {
-        (this as any).skip();
-        return;
-    }
-
+describe.skipIf(isArangoDBDisabled())('ArangoDB TTL', () => {
     it('deletes expired objects', async () => {
         const { project, adapter, getAllKeys } = await setUp([
             {
@@ -180,7 +174,7 @@ describe('ArangoDB TTL', async function () {
         expect(afterKeys).to.deep.equal(['8', '9', 'N']);
     });
 
-    it('informs about expired and overdue objects', async function () {
+    it('informs about expired and overdue objects', async () => {
         const { project, adapter, getAllKeys } = await setUp([
             {
                 key: '1',

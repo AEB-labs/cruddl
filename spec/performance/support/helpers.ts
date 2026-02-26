@@ -10,7 +10,7 @@ import type { Project } from '../../../src/project/project.js';
 import { range } from '../../../src/utils/utils.js';
 import { createTempDatabase } from '../../regression/initialization.js';
 
-const MODEL_PATH = resolve(__dirname, '../../regression/papers/model');
+const MODEL_PATH = resolve(import.meta.dirname, '../../regression/papers/model');
 
 export interface TestEnvironment {
     getDB(): Database;
