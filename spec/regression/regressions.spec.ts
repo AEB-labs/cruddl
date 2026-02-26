@@ -41,17 +41,24 @@ describe('regression tests', async () => {
                     database,
                 };
                 const suite = new RegressionSuite(suitePath, options);
+
+                if (suite.shouldIgnoreSuite()) {
+                    // not using test.skip() because we don't want to clutter the list of skipped tests
+                    // with tests that are just not designed for a specific environment
+                    continue;
+                }
+
                 describe(suiteName, async () => {
                     const testNames = suite
                         .getTestNames()
                         .filter((testName) => testNameFilter(`${suiteName}/${testName}`));
 
                     for (const testName of testNames) {
-                        it(testName, async function () {
-                            if (await suite.shouldIgnoreTest(testName)) {
-                                this.skip();
-                            }
+                        if (suite.shouldIgnoreTest(testName)) {
+                            continue;
+                        }
 
+                        it(testName, { timeout: 10_000 }, async () => {
                             const result = await suite.runTest(testName);
                             expect(result.actualResult).to.deep.equal(result.expectedResult);
 
@@ -79,7 +86,7 @@ describe('regression tests', async () => {
                                     );
                                 }
                             }
-                        }).timeout(10000); // travis is sometimes on the slower side
+                        });
                     }
                 });
             }
