@@ -56,8 +56,6 @@ node_modules
 # Dist
 dist/
 reports/
-.nyc_output
-coverage
 
 db/
 
