@@ -1,9 +1,9 @@
 import { Database } from 'arangojs';
 import { CollectionType } from 'arangojs/collection';
-import { NORM_CI_ANALYZER } from '../../../model/implementation/flex-search';
 import { ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model';
+import { NORM_CI_ANALYZER } from '../../../model/implementation/flex-search';
 import {
     billingCollectionName,
     getCollectionNameForRelation,
@@ -112,7 +112,7 @@ export class SchemaAnalyzer {
         // update indices
         const requiredIndices = getRequiredIndicesFromModel(model);
         const existingIndicesPromises = model.rootEntityTypes.map((rootEntityType) =>
-            this.getPersistentCollectionIndices(rootEntityType),
+            this.getCollectionIndices(rootEntityType),
         );
         let existingIndices: IndexDefinition[] = [];
         await Promise.all(existingIndicesPromises).then((promiseResults) =>
@@ -160,7 +160,7 @@ export class SchemaAnalyzer {
         ];
     }
 
-    async getPersistentCollectionIndices(
+    async getCollectionIndices(
         rootEntityType: RootEntityType,
     ): Promise<ReadonlyArray<IndexDefinition>> {
         const collectionName = getCollectionNameForRootEntity(rootEntityType);
@@ -171,10 +171,10 @@ export class SchemaAnalyzer {
 
         const result = await this.db.collection(collectionName).indexes();
         return result.flatMap((index) =>
-            index.type === 'persistent'
+            index.type === 'persistent' || (index as any).type === 'vector'
                 ? [
                       {
-                          ...index,
+                          ...(index as any),
                           rootEntity: rootEntityType,
                           collectionName,
                       },

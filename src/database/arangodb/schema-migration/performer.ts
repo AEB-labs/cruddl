@@ -13,7 +13,6 @@ import {
     CreateDocumentCollectionMigration,
     CreateEdgeCollectionMigration,
     CreateIndexMigration,
-    DropArangoSearchViewMigration,
     DropIndexMigration,
     RecreateArangoSearchViewMigration,
     SchemaMigration,
@@ -56,13 +55,32 @@ export class MigrationPerformer {
     }
 
     private async createIndex(migration: CreateIndexMigration) {
-        await this.db.collection(migration.index.collectionName).ensureIndex({
-            type: 'persistent',
+        if (migration.index.type === 'persistent') {
+            await this.db.collection(migration.index.collectionName).ensureIndex({
+                type: 'persistent',
+                fields: migration.index.fields.slice(),
+                unique: migration.index.unique,
+                sparse: migration.index.sparse,
+                inBackground: this.config.createIndicesInBackground,
+            });
+            return;
+        }
+
+        await (this.db.collection(migration.index.collectionName) as any).ensureIndex({
+            type: 'vector',
             fields: migration.index.fields.slice(),
-            unique: migration.index.unique,
             sparse: migration.index.sparse,
+            params: {
+                metric: migration.index.params.metric,
+                dimension: migration.index.params.dimension,
+                nLists: migration.index.params.nLists,
+                defaultNProbe: migration.index.params.defaultNProbe,
+                trainingIterations: migration.index.params.trainingIterations,
+                factory: migration.index.params.factory,
+            },
+            storedValues: migration.index.storedValues?.slice(),
             inBackground: this.config.createIndicesInBackground,
-        });
+        } as any);
     }
 
     private async dropIndex(migration: DropIndexMigration) {

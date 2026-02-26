@@ -10,7 +10,9 @@ import { ArangoDBConfig } from '../config';
 
 const DEFAULT_INDEX_TYPE = 'persistent';
 
-export interface IndexDefinition {
+export type ArangoVectorSimilarityMetric = 'cosine' | 'l2' | 'innerProduct';
+
+export interface PersistentIndexDefinition {
     readonly id?: string;
     readonly name?: string;
     readonly rootEntity: RootEntityType;
@@ -21,8 +23,31 @@ export interface IndexDefinition {
     readonly type: 'persistent';
 }
 
+export interface VectorIndexDefinition {
+    readonly id?: string;
+    readonly name?: string;
+    readonly rootEntity: RootEntityType;
+    readonly fields: [string];
+    readonly collectionName: string;
+    readonly sparse: boolean;
+    readonly type: 'vector';
+    readonly params: {
+        readonly metric: ArangoVectorSimilarityMetric;
+        readonly dimension: number;
+        readonly nLists: number;
+        readonly defaultNProbe?: number;
+        readonly trainingIterations?: number;
+        readonly factory?: string;
+    };
+    readonly storedValues?: ReadonlyArray<string>;
+}
+
+export type IndexDefinition = PersistentIndexDefinition | VectorIndexDefinition;
+
 export function describeIndex(index: IndexDefinition) {
-    return `${index.unique ? 'unique ' : ''}${index.sparse ? 'sparse ' : ''}index${
+    const indexTypePrefix = index.type === 'persistent' && index.unique ? 'unique ' : '';
+    const sparsePrefix = index.sparse ? 'sparse ' : '';
+    return `${indexTypePrefix}${sparsePrefix}${index.type} index${
         index.name ? ` "${index.name}"` : index.id ? ' ' + index.id : ''
     } on collection ${index.collectionName} on ${
         index.fields.length > 1 ? 'fields' : 'field'
@@ -34,22 +59,63 @@ export function getIndexDescriptor(index: IndexDefinition) {
         index.id, // contains collection and id separated by slash (missing for indices to be created)
         index.name, // name as specified by user
         `type:${index.type}`,
-        index.unique ? 'unique' : undefined,
+        index.type === 'persistent' && index.unique ? 'unique' : undefined,
         index.sparse ? 'sparse' : undefined,
         `collection:${index.collectionName}`,
         `fields:${index.fields.join(',')}`,
+        ...(index.type === 'vector' ? getVectorIndexDescriptorAdditions(index) : []),
     ]).join('/');
 }
 
+function getVectorIndexDescriptorAdditions(
+    index: VectorIndexDefinition,
+): ReadonlyArray<string | undefined> {
+    return [
+        `metric:${index.params.metric}`,
+        `dimension:${index.params.dimension}`,
+        `nLists:${index.params.nLists}`,
+        index.params.defaultNProbe != undefined
+            ? `defaultNProbe:${index.params.defaultNProbe}`
+            : undefined,
+        index.params.trainingIterations != undefined
+            ? `trainingIterations:${index.params.trainingIterations}`
+            : undefined,
+        index.params.factory != undefined ? `factory:${index.params.factory}` : undefined,
+        index.storedValues?.length ? `storedValues:${index.storedValues.join(',')}` : undefined,
+    ];
+}
+
 function indexDefinitionsEqual(a: IndexDefinition, b: IndexDefinition) {
-    return (
-        a.name === b.name,
-        a.rootEntity === b.rootEntity &&
-            a.fields.join('|') === b.fields.join('|') &&
-            a.unique === b.unique &&
-            a.sparse === b.sparse &&
-            a.type === b.type
-    );
+    if (a.name && b.name && a.name !== b.name) {
+        return false;
+    }
+
+    if (
+        a.rootEntity !== b.rootEntity ||
+        a.fields.join('|') !== b.fields.join('|') ||
+        a.sparse !== b.sparse ||
+        a.type !== b.type
+    ) {
+        return false;
+    }
+
+    if (a.type === 'persistent' && b.type === 'persistent') {
+        return a.unique === b.unique;
+    }
+
+    if (a.type === 'vector' && b.type === 'vector') {
+        return (
+            a.params.metric === b.params.metric &&
+            a.params.dimension === b.params.dimension &&
+            a.params.nLists === b.params.nLists &&
+            a.params.defaultNProbe === b.params.defaultNProbe &&
+            a.params.trainingIterations === b.params.trainingIterations &&
+            a.params.factory === b.params.factory &&
+            (a.storedValues || []).join('|') === (b.storedValues || []).join('|')
+        );
+    }
+
+    return false;
 }
 
 export function getRequiredIndicesFromModel(model: Model): ReadonlyArray<IndexDefinition> {
@@ -57,15 +123,41 @@ export function getRequiredIndicesFromModel(model: Model): ReadonlyArray<IndexDe
 }
 
 function getIndicesForRootEntity(rootEntity: RootEntityType): ReadonlyArray<IndexDefinition> {
-    return rootEntity.indices.map((index) => ({
-        rootEntity,
-        collectionName: getCollectionNameForRootEntity(rootEntity),
-        name: index.name,
-        fields: index.fields.map(getArangoFieldPath),
-        unique: index.unique,
-        type: DEFAULT_INDEX_TYPE,
-        sparse: index.sparse,
-    }));
+    const collectionName = getCollectionNameForRootEntity(rootEntity);
+
+    const persistentIndices: ReadonlyArray<PersistentIndexDefinition> = rootEntity.indices.map(
+        (index) => ({
+            rootEntity,
+            collectionName,
+            name: index.name,
+            fields: index.fields.map(getArangoFieldPath),
+            unique: index.unique,
+            type: DEFAULT_INDEX_TYPE,
+            sparse: index.sparse,
+        }),
+    );
+
+    const vectorIndices: ReadonlyArray<VectorIndexDefinition> = rootEntity.vectorIndices.map(
+        (vectorIndex) => ({
+            rootEntity,
+            collectionName,
+            name: vectorIndex.name,
+            fields: [vectorIndex.field.path.join('.')] as [string],
+            sparse: vectorIndex.sparse,
+            type: 'vector',
+            params: {
+                metric: mapMetricForArango(vectorIndex.metric),
+                dimension: vectorIndex.dimension || 1,
+                nLists: vectorIndex.nLists || 1,
+                defaultNProbe: vectorIndex.defaultNProbe,
+                trainingIterations: vectorIndex.trainingIterations,
+                factory: vectorIndex.factory,
+            },
+            storedValues: vectorIndex.storedValues,
+        }),
+    );
+
+    return [...persistentIndices, ...vectorIndices];
 }
 
 export function calculateRequiredIndexOperations(
@@ -89,8 +181,9 @@ export function calculateRequiredIndexOperations(
             return requiredIndex;
         }),
     );
+    const managedIndexTypes = new Set(requiredIndices.map((index) => index.type));
     indicesToDelete = indicesToDelete
-        .filter((index) => index.type === DEFAULT_INDEX_TYPE) // only remove indexes of types that we also add
+        .filter((index) => managedIndexTypes.has(index.type)) // only remove indexes of types that we also add
         .filter(
             (index) =>
                 !index.name ||
@@ -127,4 +220,16 @@ function getArangoFieldPath(indexField: IndexField): string {
     }
 
     return segments.join('.');
+}
+
+function mapMetricForArango(metric: string): ArangoVectorSimilarityMetric {
+    switch (metric) {
+        case 'L2':
+            return 'l2';
+        case 'INNER_PRODUCT':
+            return 'innerProduct';
+        case 'COSINE':
+        default:
+            return 'cosine';
+    }
 }

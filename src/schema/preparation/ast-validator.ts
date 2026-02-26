@@ -1,4 +1,5 @@
 import { DocumentNode } from 'graphql';
+import { ParsedProjectSource } from '../../config/parsed-project';
 import { Model, ValidationMessage, ValidationResult } from '../../model';
 import { ProjectSource } from '../../project/source';
 import { flatMap } from '../../utils/utils';
@@ -7,10 +8,10 @@ import { KeyFieldValidator } from './ast-validation-modules/key-field-validator'
 import { NoListsOfListsValidator } from './ast-validation-modules/no-lists-of-lists-validator';
 import { NoUnusedNonRootObjectTypesValidator } from './ast-validation-modules/no-unused-non-root-object-types-validator';
 import { RolesOnNonRootEntityTypesValidator } from './ast-validation-modules/roles-on-non-root-entity-types';
+import { VectorIndicesValidator } from './ast-validation-modules/vector-indices-validator';
 import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules';
-import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema';
-import { ParsedProjectSource } from '../../config/parsed-project';
 import { PermissionProfileValidator } from './source-validation-modules/permission-profile-validator';
+import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema';
 
 const sourceValidators: ReadonlyArray<SourceValidator> = [];
 
@@ -26,6 +27,7 @@ const postMergeValidators: ReadonlyArray<ASTValidator> = [
     new NoListsOfListsValidator(),
     new RolesOnNonRootEntityTypesValidator(),
     new IndicesValidator(),
+    new VectorIndicesValidator(),
 ];
 
 export interface ASTValidator {

@@ -77,6 +77,15 @@ import {
     UNIQUE_DIRECTIVE,
     VALUE_ARG,
     VALUE_OBJECT_DIRECTIVE,
+    VECTOR_INDEX_DEFAULT_N_PROBE_ARG,
+    VECTOR_INDEX_DIMENSION_ARG,
+    VECTOR_INDEX_DIRECTIVE,
+    VECTOR_INDEX_FACTORY_ARG,
+    VECTOR_INDEX_METRIC_ARG,
+    VECTOR_INDEX_N_LISTS_ARG,
+    VECTOR_INDEX_NAME_ARG,
+    VECTOR_INDEX_STORED_VALUES_ARG,
+    VECTOR_INDEX_TRAINING_ITERATIONS_ARG,
 } from '../schema/constants';
 import {
     findDirectiveWithName,
@@ -111,6 +120,8 @@ import {
     TypeConfig,
     TypeConfigBase,
     TypeKind,
+    VectorIndexDefinitionConfig,
+    VectorSimilarityMetric,
 } from './config';
 import { BillingConfig } from './config/billing';
 import { ModuleConfig } from './config/module';
@@ -125,7 +136,6 @@ import { parseI18nConfigs } from './parse-i18n';
 import { parseModuleConfigs } from './parse-modules';
 import { parseTTLConfigs } from './parse-ttl';
 import { ValidationContext, ValidationMessage } from './validation';
-import { WarningCode } from './validation/suppress/message-codes';
 
 export function createModel(parsedProject: ParsedProject, options: ModelOptions = {}): Model {
     const validationContext = new ValidationContext();
@@ -283,6 +293,7 @@ function createObjectTypeInput(
                 kind: TypeKind.ROOT_ENTITY,
                 permissions: getPermissions(definition, context),
                 indices: createIndexDefinitionInputs(definition, context),
+                vectorIndices: createVectorIndexDefinitionInputs(definition, context),
                 flexSearchIndexConfig: createFlexSearchDefinitionInputs(definition, context),
                 isBusinessObject: !!businessObjectDirective,
             };
@@ -836,6 +847,114 @@ function createFieldBasedIndices(
     );
 }
 
+function createVectorIndexDefinitionInputs(
+    definition: ObjectTypeDefinitionNode,
+    _context: ValidationContext,
+): ReadonlyArray<VectorIndexDefinitionConfig> {
+    return compact(
+        (definition.fields || []).map((field): VectorIndexDefinitionConfig | undefined => {
+            const vectorIndexDirective = findDirectiveWithName(field, VECTOR_INDEX_DIRECTIVE);
+            if (!vectorIndexDirective) {
+                return undefined;
+            }
+
+            const argumentObjectNode: ObjectValueNode = {
+                kind: Kind.OBJECT,
+                fields: (vectorIndexDirective.arguments || []).map((arg) => ({
+                    kind: Kind.OBJECT_FIELD,
+                    name: arg.name,
+                    value: arg.value,
+                })),
+            };
+
+            const mappedValues = valueFromAST(
+                argumentObjectNode,
+                vectorIndexDirectiveInputObjectType,
+            ) as {
+                name?: string;
+                sparse?: boolean;
+                metric?: VectorSimilarityMetric;
+                dimension?: number;
+                nLists?: number;
+                defaultNProbe?: number;
+                trainingIterations?: number;
+                factory?: string;
+                storedValues?: ReadonlyArray<string>;
+            };
+
+            const nameArgValue = getNodeByName(
+                vectorIndexDirective.arguments,
+                VECTOR_INDEX_NAME_ARG,
+            )?.value;
+            const metricArgValue = getNodeByName(
+                vectorIndexDirective.arguments,
+                VECTOR_INDEX_METRIC_ARG,
+            )?.value;
+            const dimensionArgValue = getNodeByName(
+                vectorIndexDirective.arguments,
+                VECTOR_INDEX_DIMENSION_ARG,
+            )?.value;
+            const nListsArgValue = getNodeByName(
+                vectorIndexDirective.arguments,
+                VECTOR_INDEX_N_LISTS_ARG,
+            )?.value;
+            const defaultNProbeArgValue = getNodeByName(
+                vectorIndexDirective.arguments,
+                VECTOR_INDEX_DEFAULT_N_PROBE_ARG,
+            )?.value;
+            const trainingIterationsArgValue = getNodeByName(
+                vectorIndexDirective.arguments,
+                VECTOR_INDEX_TRAINING_ITERATIONS_ARG,
+            )?.value;
+            const factoryArgValue = getNodeByName(
+                vectorIndexDirective.arguments,
+                VECTOR_INDEX_FACTORY_ARG,
+            )?.value;
+            const storedValuesArgValue = getNodeByName(
+                vectorIndexDirective.arguments,
+                VECTOR_INDEX_STORED_VALUES_ARG,
+            )?.value;
+
+            const storedValuesASTNodes: ReadonlyArray<StringValueNode | undefined> | undefined =
+                storedValuesArgValue?.kind === Kind.LIST
+                    ? storedValuesArgValue.values.map((value) =>
+                          value.kind === Kind.STRING ? value : undefined,
+                      )
+                    : storedValuesArgValue?.kind === Kind.STRING
+                      ? [storedValuesArgValue]
+                      : undefined;
+
+            return {
+                astNode: vectorIndexDirective,
+                field: field.name.value,
+                fieldASTNode: vectorIndexDirective,
+                name: mappedValues.name,
+                nameASTNode: nameArgValue?.kind === Kind.STRING ? nameArgValue : undefined,
+                sparse: mappedValues.sparse,
+                metric: mappedValues.metric,
+                metricASTNode: metricArgValue?.kind === Kind.ENUM ? metricArgValue : undefined,
+                dimension: mappedValues.dimension,
+                dimensionASTNode:
+                    dimensionArgValue?.kind === Kind.INT ? dimensionArgValue : undefined,
+                nLists: mappedValues.nLists,
+                nListsASTNode: nListsArgValue?.kind === Kind.INT ? nListsArgValue : undefined,
+                defaultNProbe: mappedValues.defaultNProbe,
+                defaultNProbeASTNode:
+                    defaultNProbeArgValue?.kind === Kind.INT ? defaultNProbeArgValue : undefined,
+                trainingIterations: mappedValues.trainingIterations,
+                trainingIterationsASTNode:
+                    trainingIterationsArgValue?.kind === Kind.INT
+                        ? trainingIterationsArgValue
+                        : undefined,
+                factory: mappedValues.factory,
+                factoryASTNode: factoryArgValue?.kind === Kind.STRING ? factoryArgValue : undefined,
+                storedValues: mappedValues.storedValues,
+                storedValuesASTNodes,
+            };
+        }),
+    );
+}
+
 function buildIndexDefinitionFromObjectValue(
     indexDefinitionNode: ObjectValueNode,
 ): IndexDefinitionConfig {
@@ -1228,6 +1347,30 @@ const indexDefinitionInputObjectType: GraphQLInputObjectType = new GraphQLInputO
         sparse: { type: GraphQLBoolean },
     },
     name: INDEX_DEFINITION_INPUT_TYPE,
+});
+
+const vectorIndexDirectiveInputObjectType: GraphQLInputObjectType = new GraphQLInputObjectType({
+    name: 'VectorIndexDirectiveInput',
+    fields: {
+        name: { type: GraphQLString },
+        sparse: { type: GraphQLBoolean },
+        metric: {
+            type: new GraphQLEnumType({
+                name: 'VectorSimilarityMetricInput',
+                values: {
+                    COSINE: { value: 'COSINE' },
+                    L2: { value: 'L2' },
+                    INNER_PRODUCT: { value: 'INNER_PRODUCT' },
+                },
+            }),
+        },
+        dimension: { type: GraphQLInt },
+        nLists: { type: GraphQLInt },
+        defaultNProbe: { type: GraphQLInt },
+        trainingIterations: { type: GraphQLInt },
+        factory: { type: GraphQLString },
+        storedValues: { type: new GraphQLList(GraphQLString) },
+    },
 });
 
 const flexSearchOrderInputObjectType: GraphQLInputObjectType = new GraphQLInputObjectType({

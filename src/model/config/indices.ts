@@ -30,6 +30,41 @@ export interface IndexDefinitionConfig {
     readonly astNode?: DirectiveNode | ObjectValueNode;
 }
 
+export type VectorSimilarityMetric = 'COSINE' | 'L2' | 'INNER_PRODUCT';
+
+export interface VectorIndexDefinitionConfig {
+    readonly name?: string;
+    readonly nameASTNode?: StringValueNode;
+
+    readonly field: string;
+    readonly fieldASTNode?: DirectiveNode | StringValueNode;
+
+    readonly sparse?: boolean;
+
+    readonly metric?: VectorSimilarityMetric;
+    readonly metricASTNode?: EnumValueNode;
+
+    readonly dimension?: number;
+    readonly dimensionASTNode?: IntValueNode;
+
+    readonly nLists?: number;
+    readonly nListsASTNode?: IntValueNode;
+
+    readonly defaultNProbe?: number;
+    readonly defaultNProbeASTNode?: IntValueNode;
+
+    readonly trainingIterations?: number;
+    readonly trainingIterationsASTNode?: IntValueNode;
+
+    readonly factory?: string;
+    readonly factoryASTNode?: StringValueNode;
+
+    readonly storedValues?: ReadonlyArray<string>;
+    readonly storedValuesASTNodes?: ReadonlyArray<StringValueNode | undefined>;
+
+    readonly astNode?: DirectiveNode | ObjectValueNode;
+}
+
 export interface FlexSearchPrimarySortClauseConfig {
     readonly field: string;
     readonly direction: OrderDirection;

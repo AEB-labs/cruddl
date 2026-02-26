@@ -10,7 +10,11 @@ import {
 } from 'graphql';
 import { FixedPointDecimalInfo } from '../implementation/scalar-type';
 import { FieldConfig, FlexSearchLanguage } from './field';
-import { FlexSearchIndexConfig, IndexDefinitionConfig } from './indices';
+import {
+    FlexSearchIndexConfig,
+    IndexDefinitionConfig,
+    VectorIndexDefinitionConfig,
+} from './indices';
 import { TypeModuleSpecificationConfig } from './module-specification';
 import { PermissionsConfig } from './permissions';
 
@@ -43,6 +47,7 @@ export interface ObjectTypeConfigBase extends TypeConfigBase {
 export interface RootEntityTypeConfig extends ObjectTypeConfigBase {
     readonly kind: TypeKind.ROOT_ENTITY;
     readonly indices?: ReadonlyArray<IndexDefinitionConfig>;
+    readonly vectorIndices?: ReadonlyArray<VectorIndexDefinitionConfig>;
     readonly keyFieldName?: string;
     readonly keyFieldASTNode?: ASTNode;
     readonly permissions?: PermissionsConfig;

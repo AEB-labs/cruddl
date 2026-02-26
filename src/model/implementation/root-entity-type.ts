@@ -7,7 +7,6 @@ import {
     FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
     FLEX_SEARCH_INDEXED_DIRECTIVE,
     ID_FIELD,
-    MODULES_DIRECTIVE,
     SCALAR_INT,
     SCALAR_STRING,
 } from '../../schema/constants';
@@ -21,13 +20,15 @@ import {
     PermissionsConfig,
     RootEntityTypeConfig,
     TypeKind,
+    VectorIndexDefinitionConfig,
 } from '../config';
-import { QuickFix, ValidationContext, ValidationMessage } from '../validation';
+import { ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
 import { FieldPath } from './field-path';
 import { FlexSearchPrimarySortClause } from './flex-search';
 import { Index } from './indices';
 import { Model } from './model';
+import { EffectiveModuleSpecification } from './modules/effective-module-specification';
 import { ObjectTypeBase } from './object-type-base';
 import { OrderDirection } from './order';
 import { PermissionProfile } from './permission-profile';
@@ -35,8 +36,7 @@ import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { ScalarType } from './scalar-type';
 import { TimeToLiveType } from './time-to-live';
-import { EffectiveModuleSpecification } from './modules/effective-module-specification';
-import { WarningCode } from '../validation/suppress/message-codes';
+import { VectorIndex } from './vector-index';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};
@@ -56,6 +56,7 @@ export class RootEntityType extends ObjectTypeBase {
     readonly flexSearchPrimarySortAstNode: ArgumentNode | undefined;
     readonly flexSearchPerformanceParams: FlexSearchPerformanceParams;
     readonly indexConfigs: ReadonlyArray<IndexDefinitionConfig>;
+    readonly vectorIndexConfigs: ReadonlyArray<VectorIndexDefinitionConfig>;
 
     constructor(
         private readonly input: RootEntityTypeConfig,
@@ -82,6 +83,7 @@ export class RootEntityType extends ObjectTypeBase {
             this.flexSearchPerformanceParams = {};
         }
         this.indexConfigs = input.indices ?? [];
+        this.vectorIndexConfigs = input.vectorIndices ?? [];
     }
 
     @memorize()
@@ -135,6 +137,11 @@ export class RootEntityType extends ObjectTypeBase {
         return indices.filter(
             (index, i1) => !indices.some((other, i2) => i1 < i2 && other.equals(index)),
         );
+    }
+
+    @memorize()
+    get vectorIndices(): ReadonlyArray<VectorIndex> {
+        return this.vectorIndexConfigs.map((config) => new VectorIndex(config, this));
     }
 
     get hasFieldsIncludedInSearch() {
@@ -435,6 +442,11 @@ export class RootEntityType extends ObjectTypeBase {
         for (const indexInput of this.input.indices || []) {
             const index = new Index(indexInput, this);
             index.validate(context);
+        }
+
+        for (const vectorIndexInput of this.input.vectorIndices || []) {
+            const vectorIndex = new VectorIndex(vectorIndexInput, this);
+            vectorIndex.validate(context);
         }
     }
 

@@ -172,7 +172,17 @@ export const NAMESPACE_SEPARATOR = '.';
 export const INDICES_DIRECTIVE = 'indices';
 export const INDEX_DIRECTIVE = 'index'; // for fields
 export const UNIQUE_DIRECTIVE = 'unique'; // for fields
+export const VECTOR_INDEX_DIRECTIVE = 'vectorIndex'; // for fields
 export const INDICES_ARG = INDICES_DIRECTIVE;
 export const INDEX_DEFINITION_INPUT_TYPE = 'IndexDefinition';
+export const VECTOR_INDEX_NAME_ARG = 'name';
+export const VECTOR_INDEX_SPARSE_ARG = 'sparse';
+export const VECTOR_INDEX_METRIC_ARG = 'metric';
+export const VECTOR_INDEX_DIMENSION_ARG = 'dimension';
+export const VECTOR_INDEX_N_LISTS_ARG = 'nLists';
+export const VECTOR_INDEX_DEFAULT_N_PROBE_ARG = 'defaultNProbe';
+export const VECTOR_INDEX_TRAINING_ITERATIONS_ARG = 'trainingIterations';
+export const VECTOR_INDEX_FACTORY_ARG = 'factory';
+export const VECTOR_INDEX_STORED_VALUES_ARG = 'storedValues';
 
 export const BUSINESS_OBJECT_DIRECTIVE = 'businessObject';
