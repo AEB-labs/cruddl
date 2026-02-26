@@ -22,13 +22,7 @@ import { isArangoDBDisabled } from './arangodb-test-utils.js';
 const PARALLELISM = 20;
 
 // this test is disabled because of its probabilistic nature
-xdescribe('ArangoDB retryOnConflict', async function () {
-    // can't use arrow function because we need the "this"
-    if (isArangoDBDisabled()) {
-        (this as any).skip();
-        return;
-    }
-
+describe.skipIf(isArangoDBDisabled()).skip('ArangoDB retryOnConflict', () => {
     it('causes conflicts when retry is disabled', async () => {
         const { adapter, updateQuery } = await prepareAdapter(0);
         const result = await Promise.all(
