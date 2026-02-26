@@ -1,5 +1,0 @@
-{
-  "name": "cruddl/core",
-  "typings": "../dist/core-exports.d.ts",
-  "main": "../dist/core-exports.js"
-}

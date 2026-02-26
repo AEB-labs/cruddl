@@ -4,7 +4,8 @@
     "index.ts!",
     "spec/**/*.spec.ts",
     "spec/**/test-data.ts",
-    "src/project/project-from-fs.ts!"
+    "src/project/project-from-fs.ts!",
+    "spec/dev/*"
   ],
   "project": ["src/**/*.ts!", "spec/**/*.ts"],
   "rules": {
@@ -13,6 +14,6 @@
     "enumMembers": "off",
     "duplicates": "off"
   },
-  "ignoreDependencies": ["@arangodb", "internal", "tslib", "cpy-cli"],
+  "ignoreDependencies": ["@arangodb", "internal", "tslib", "cpy-cli", "@vitest/coverage-v8"],
   "ignoreBinaries": ["arangodb"]
 }
