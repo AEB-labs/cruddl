@@ -7,7 +7,6 @@ import {
     parse,
 } from 'graphql';
 import { parse as JSONparse } from 'json-source-map';
-import { compact } from 'lodash';
 import {
     load,
     YAMLAnchorReference,
@@ -30,6 +29,7 @@ import { DatabaseAdapter } from '../database/database-adapter';
 import { isCommentOnlySource } from '../graphql/is-comment-only-source';
 import {
     createModel,
+    MessageLocation,
     Model,
     Severity,
     SourcePosition,
@@ -37,11 +37,10 @@ import {
     ValidationMessage,
     ValidationResult,
 } from '../model';
-import { MessageLocation } from '../model/';
 import { Project, ProjectOptions } from '../project/project';
 import { ProjectSource, SourceType } from '../project/source';
 import { SchemaGenerator } from '../schema-generation';
-import { flatMap, isReadonlyArray, PlainObject } from '../utils/utils';
+import { compact, flatMap, isReadonlyArray, PlainObject } from '../utils/utils';
 import {
     validateParsedProjectSource,
     validatePostMerge,

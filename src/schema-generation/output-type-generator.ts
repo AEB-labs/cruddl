@@ -1,5 +1,4 @@
 import { GraphQLID, GraphQLNonNull, GraphQLString } from 'graphql';
-import { sortBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { FieldRequest } from '../graphql/query-distiller';
 import { isListTypeIgnoringNonNull } from '../graphql/schema-utils';
@@ -167,7 +166,7 @@ export class OutputTypeGenerator {
                 isAbsoluteOrderRequired: true,
             });
         }
-        const sortedClauses = sortBy(orderByValues, (clause) => clause.name);
+        const sortedClauses = [...orderByValues].sort((a, b) => a.name.localeCompare(b.name));
         const objectNode = new ObjectQueryNode(
             sortedClauses.map(
                 (clause) =>
