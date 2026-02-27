@@ -1,4 +1,3 @@
-import { flatMap } from 'lodash';
 import { Field, Permission, PermissionProfile, RootEntityType } from '../model';
 import { FieldPath } from '../model/implementation/field-path';
 import {
@@ -331,8 +330,7 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
         applicablePermissions: ReadonlyArray<Permission>,
         authContext: AuthContext,
     ) {
-        return flatMap(
-            applicablePermissions,
+        return applicablePermissions.flatMap(
             (permission) => permission.getAllowedAccessGroups(authContext)!,
         );
     }
