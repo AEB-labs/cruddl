@@ -1,5 +1,4 @@
 import { GraphQLEnumType, GraphQLEnumValueConfig } from 'graphql';
-import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Field, ObjectType, Type } from '../model';
 import { OrderClause, OrderDirection, PropertyAccessQueryNode, QueryNode } from '../query-tree';
@@ -41,15 +40,15 @@ export class OrderByEnumType {
     getEnumType(): GraphQLEnumType {
         return new GraphQLEnumType({
             name: this.name,
-            values: chain(this.values)
-                .keyBy((value) => value.name)
-                .mapValues(
-                    (value): GraphQLEnumValueConfig => ({
+            values: Object.fromEntries(
+                this.values.map((value): [string, GraphQLEnumValueConfig] => [
+                    value.name,
+                    {
                         value: value.name,
                         deprecationReason: value.deprecationReason,
-                    }),
-                )
-                .value(),
+                    },
+                ]),
+            ),
         });
     }
 }
