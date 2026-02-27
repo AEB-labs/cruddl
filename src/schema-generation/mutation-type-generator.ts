@@ -1,5 +1,4 @@
 import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
-import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { Namespace, RootEntityType } from '../model';
 import {
@@ -92,7 +91,7 @@ export class MutationTypeGenerator {
                 }),
             );
 
-        const rootEntityFields = flatMap(namespace.rootEntityTypes, (type) =>
+        const rootEntityFields = namespace.rootEntityTypes.flatMap((type) =>
             this.generateFields(type),
         );
         const namespaceDesc = namespace.isRoot
@@ -259,7 +258,7 @@ export class MutationTypeGenerator {
             ids.add(inputID);
         }
 
-        const statements = flatMap(inputs, (input) =>
+        const statements = inputs.flatMap((input) =>
             this.getUpdateStatements(rootEntityType, input, inputType, fieldContext),
         );
         const resultNode = new ListQueryNode(

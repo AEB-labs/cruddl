@@ -1,5 +1,4 @@
 import { ThunkReadonlyArray } from 'graphql/type/definition';
-import { fromPairs, toPairs } from 'lodash';
 import { v4 as uuid } from 'uuid';
 import {
     ChildEntityType,
@@ -52,11 +51,11 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
 
         const properties = [
             ...flatMap(applicableFields, (field) =>
-                toPairs(field.getProperties(value[field.name], context)),
+                Object.entries(field.getProperties(value[field.name], context)),
             ),
-            ...toPairs(this.getAdditionalProperties(value, context)),
+            ...Object.entries(this.getAdditionalProperties(value, context)),
         ];
-        return fromPairs(properties);
+        return Object.fromEntries(properties);
     }
 
     protected getAdditionalProperties(value: PlainObject, context: FieldContext): PlainObject {
