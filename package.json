@@ -5,8 +5,32 @@
   "license": "MIT",
   "main": "dist/cjs/index.js",
   "types": "./dist/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/cjs/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./core": {
+      "types": "./dist/cjs/core-exports.d.ts",
+      "import": "./dist/esm/core-exports.js",
+      "require": "./dist/cjs/core-exports.js"
+    },
+    "./arangodb": {
+      "types": "./dist/cjs/src/database/arangodb/index.d.ts",
+      "import": "./dist/esm/src/database/arangodb/index.js",
+      "require": "./dist/cjs/src/database/arangodb/index.js"
+    },
+    "./inmemory": {
+      "types": "./dist/cjs/src/database/inmemory/index.d.ts",
+      "import": "./dist/esm/src/database/inmemory/index.js",
+      "require": "./dist/cjs/src/database/inmemory/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "build": "./build.sh",
+    "migrate:imports:js": "node ./scripts/migrate-relative-imports-to-js.js",
     "prepublishOnly": "npm run build",
     "typecheck": "tsc -p tsconfig.test.json --skipLibCheck",
     "test": "rimraf dist && tsc --noEmit --skipLibCheck && mocha './spec/**/*.spec.ts'",
