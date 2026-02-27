@@ -3,8 +3,10 @@ import {
     DocumentNode,
     GraphQLError,
     Kind,
+    KnownArgumentNamesRule,
     KnownDirectivesRule,
     Location,
+    ProvidedRequiredArgumentsRule,
     UniqueArgumentNamesRule,
     UniqueDirectivesPerLocationRule,
     UniqueEnumValueNamesRule,
@@ -14,12 +16,13 @@ import {
     VariablesInAllowedPositionRule,
 } from 'graphql';
 import gql from 'graphql-tag';
-import { KnownArgumentNamesOnDirectivesRule } from 'graphql/validation/rules/KnownArgumentNamesRule';
-import { ProvidedRequiredArgumentsOnDirectivesRule } from 'graphql/validation/rules/ProvidedRequiredArgumentsRule';
-import { ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../config/parsed-project';
-import { ValidationMessage } from '../../../model';
-import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base';
-import { ParsedSourceValidator } from '../ast-validator';
+import {
+    ParsedProjectSource,
+    ParsedProjectSourceBaseKind,
+} from '../../../config/parsed-project.js';
+import { ValidationMessage } from '../../../model/index.js';
+import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base.js';
+import { ParsedSourceValidator } from '../ast-validator.js';
 
 // Only include rules that are relevant for schema files
 // there is a non-public export specifiedSDLRules, but we only include those relevant for us. Some rules apply to
@@ -28,10 +31,10 @@ import { ParsedSourceValidator } from '../ast-validator';
 const rules: ReadonlyArray<ValidationRule> = [
     KnownDirectivesRule,
     UniqueDirectivesPerLocationRule,
-    KnownArgumentNamesOnDirectivesRule,
+    KnownArgumentNamesRule, // KnownArgumentNamesRule would be more accurate but it's internal
     UniqueArgumentNamesRule,
     ValuesOfCorrectTypeRule,
-    ProvidedRequiredArgumentsOnDirectivesRule,
+    ProvidedRequiredArgumentsRule, // ProvidedRequiredArgumentsOnDirectivesRule would be more accurate but it's internal
     VariablesInAllowedPositionRule,
 ];
 
