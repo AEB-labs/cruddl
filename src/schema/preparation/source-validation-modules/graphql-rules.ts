@@ -3,8 +3,10 @@ import {
     DocumentNode,
     GraphQLError,
     Kind,
+    KnownArgumentNamesRule,
     KnownDirectivesRule,
     Location,
+    ProvidedRequiredArgumentsRule,
     UniqueArgumentNamesRule,
     UniqueDirectivesPerLocationRule,
     validate,
@@ -13,8 +15,6 @@ import {
     VariablesInAllowedPositionRule,
 } from 'graphql';
 import gql from 'graphql-tag';
-import { KnownArgumentNamesOnDirectivesRule } from 'graphql/validation/rules/KnownArgumentNamesRule';
-import { ProvidedRequiredArgumentsOnDirectivesRule } from 'graphql/validation/rules/ProvidedRequiredArgumentsRule';
 import { ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../config/parsed-project';
 import { ValidationMessage } from '../../../model';
 import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base';
@@ -27,10 +27,10 @@ import { ParsedSourceValidator } from '../ast-validator';
 const rules: ReadonlyArray<ValidationRule> = [
     KnownDirectivesRule,
     UniqueDirectivesPerLocationRule,
-    KnownArgumentNamesOnDirectivesRule,
+    KnownArgumentNamesRule, // KnownArgumentNamesRule would be more accurate but it's internal
     UniqueArgumentNamesRule,
     ValuesOfCorrectTypeRule,
-    ProvidedRequiredArgumentsOnDirectivesRule,
+    ProvidedRequiredArgumentsRule, // ProvidedRequiredArgumentsOnDirectivesRule would be more accurate but it's internal
     VariablesInAllowedPositionRule,
 ];
 
