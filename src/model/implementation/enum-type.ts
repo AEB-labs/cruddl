@@ -26,6 +26,22 @@ export class EnumType extends TypeBase {
 
     validate(context: ValidationContext) {
         super.validate(context);
+
+        // validate unique enum values
+        const valueSet = new Set<string>();
+        for (const value of this.values) {
+            if (valueSet.has(value.value)) {
+                context.addMessage(
+                    ValidationMessage.error(
+                        `Enum value "${this.name}.${value.value}" can only be defined once.`,
+                        value.astNode,
+                    ),
+                );
+            } else {
+                valueSet.add(value.value);
+            }
+        }
+
         for (const value of this.values) {
             value.validate(context);
         }

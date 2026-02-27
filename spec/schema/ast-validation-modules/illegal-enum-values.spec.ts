@@ -1,5 +1,9 @@
 import { gql } from 'graphql-tag';
-import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorWarns } from './helpers';
+import {
+    assertValidatorAcceptsAndDoesNotWarn,
+    assertValidatorRejects,
+    assertValidatorWarns,
+} from './helpers';
 
 describe('enum declaration validation', () => {
     it('accepts regular enums', () => {
@@ -22,5 +26,32 @@ describe('enum declaration validation', () => {
             `,
             'Enum values should be UPPER_CASE.',
         );
+    });
+
+    it('rejects enums with non-unique enum value', () => {
+        assertValidatorRejects(
+            gql`
+                enum Goodness {
+                    GOOD
+                    GOOD
+                    BAD
+                }
+            `,
+            'Enum value "Goodness.GOOD" can only be defined once.',
+        );
+    });
+
+    it('accepts the same enum value in two different enum declarations', () => {
+        assertValidatorAcceptsAndDoesNotWarn(gql`
+            enum ThemeKind {
+                LIGHT
+                DARK
+            }
+
+            enum WeightClass {
+                LIGHT
+                HEAVY
+            }
+        `);
     });
 });

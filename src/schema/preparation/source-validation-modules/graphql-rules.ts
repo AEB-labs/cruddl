@@ -7,7 +7,6 @@ import {
     Location,
     UniqueArgumentNamesRule,
     UniqueDirectivesPerLocationRule,
-    UniqueEnumValueNamesRule,
     validate,
     ValidationRule,
     ValuesOfCorrectTypeRule,
@@ -16,8 +15,6 @@ import {
 import gql from 'graphql-tag';
 import { KnownArgumentNamesOnDirectivesRule } from 'graphql/validation/rules/KnownArgumentNamesRule';
 import { ProvidedRequiredArgumentsOnDirectivesRule } from 'graphql/validation/rules/ProvidedRequiredArgumentsRule';
-import { validateSDL } from 'graphql/validation/validate';
-import { SDLValidationRule } from 'graphql/validation/ValidationContext';
 import { ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../config/parsed-project';
 import { ValidationMessage } from '../../../model';
 import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base';
@@ -37,8 +34,6 @@ const rules: ReadonlyArray<ValidationRule> = [
     VariablesInAllowedPositionRule,
 ];
 
-const sdlRules: ReadonlyArray<SDLValidationRule> = [UniqueEnumValueNamesRule];
-
 export class GraphQLRulesValidator implements ParsedSourceValidator {
     validate(source: ParsedProjectSource): ReadonlyArray<ValidationMessage> {
         if (source.kind != ParsedProjectSourceBaseKind.GRAPHQL) {
@@ -47,11 +42,7 @@ export class GraphQLRulesValidator implements ParsedSourceValidator {
 
         let ast = source.document;
 
-        const results = [
-            ...validate(coreSchema, ast, rules),
-            // TODO validateSDL is internal. Do we need the SDL rule?
-            ...validateSDL(ast, undefined, sdlRules),
-        ];
+        const results = [...validate(coreSchema, ast, rules)];
 
         return results.map((error) =>
             ValidationMessage.error(error.message, getMessageLocation(error)),
