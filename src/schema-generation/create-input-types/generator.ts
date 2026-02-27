@@ -1,5 +1,4 @@
 import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import {
     ChildEntityType,
@@ -54,28 +53,28 @@ export class CreateInputTypeGenerator {
     @memorize()
     generateForRootEntityType(type: RootEntityType): CreateRootEntityInputType {
         return new CreateRootEntityInputType(type, () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
     @memorize()
     generateForChildEntityType(type: ChildEntityType): CreateChildEntityInputType {
         return new CreateChildEntityInputType(type, () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
     @memorize()
     generateForEntityExtensionType(type: EntityExtensionType): CreateObjectInputType {
         return new CreateEntityExtensionInputType(type, () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
     @memorize()
     generateForValueObjectType(type: ValueObjectType): CreateObjectInputType {
         return new ValueObjectInputType(type, () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 

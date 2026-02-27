@@ -1,7 +1,6 @@
-import { groupBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { DEFAULT_PERMISSION_PROFILE } from '../../schema/constants';
-import { capitalize, objectValues } from '../../utils/utils';
+import { capitalize, groupArray } from '../../utils/utils';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { PermissionProfile } from './permission-profile';
@@ -218,8 +217,8 @@ export class Namespace implements ModelComponent {
     }
 
     validate(context: ValidationContext) {
-        const duplicateProfiles = objectValues(
-            groupBy(this.permissionProfiles, (type) => type.name),
+        const duplicateProfiles = Array.from(
+            groupArray(this.permissionProfiles, (type) => type.name).values(),
         ).filter((types) => types.length > 1);
         for (const profiles of duplicateProfiles) {
             for (const profile of profiles) {

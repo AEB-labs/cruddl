@@ -1,6 +1,4 @@
 import { DirectiveNode } from 'graphql/index';
-import { groupBy } from 'lodash';
-import { objectValues } from '../../utils/utils';
 import { FieldConfig, ObjectTypeConfig } from '../config';
 import { ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
@@ -130,9 +128,9 @@ export abstract class ObjectTypeBase extends TypeBase {
     }
 
     private validateDuplicateFields(context: ValidationContext) {
-        const duplicateFields = objectValues(groupBy(this.fields, (field) => field.name)).filter(
-            (fields) => fields.length > 1,
-        );
+        const duplicateFields = Array.from(
+            groupArray(this.fields, (field) => field.name).values(),
+        ).filter((fields) => fields.length > 1);
         for (const fields of duplicateFields) {
             for (const field of fields) {
                 if (field.isSystemField) {
