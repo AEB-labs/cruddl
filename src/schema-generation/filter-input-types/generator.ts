@@ -1,6 +1,5 @@
 import { GraphQLEnumType, GraphQLString, resolveReadonlyArrayThunk } from 'graphql';
 import { ThunkReadonlyArray } from 'graphql/type/definition';
-import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import { EnumType, Field, ScalarType, Type } from '../../model/index';
 import {
@@ -76,7 +75,7 @@ export class FilterTypeGenerator {
             return this.generateFilterType(type.name, this.buildEnumFilterFields(type));
         }
         return this.generateFilterType(type.name, () =>
-            flatMap(type.fields, (field: Field) => this.generateFieldFilterFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFieldFilterFields(field)),
         );
     }
 

@@ -1,5 +1,4 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { flatMap } from 'lodash';
 import memorize from 'memorize-decorator';
 import {
     CalcMutationsOperator,
@@ -70,14 +69,14 @@ export class UpdateInputTypeGenerator {
     @memorize()
     generateForRootEntityType(type: RootEntityType): UpdateRootEntityInputType {
         return new UpdateRootEntityInputType(type, getUpdateInputTypeName(type.name), () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
     @memorize()
     generateUpdateAllRootEntitiesInputType(type: RootEntityType): UpdateRootEntityInputType {
         return new UpdateRootEntityInputType(type, getUpdateAllInputTypeName(type), () =>
-            flatMap(type.fields, (field: Field) =>
+            type.fields.flatMap((field: Field) =>
                 this.generateFields(field, {
                     skipID: true,
                     skipRelations: true, // can't do this properly at the moment because it would need a dynamic number of pre-execs
@@ -89,14 +88,14 @@ export class UpdateInputTypeGenerator {
     @memorize()
     generateForEntityExtensionType(type: EntityExtensionType): UpdateEntityExtensionInputType {
         return new UpdateEntityExtensionInputType(type, getUpdateInputTypeName(type.name), () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
     @memorize()
     generateForChildEntityType(type: ChildEntityType): UpdateChildEntityInputType {
         return new UpdateChildEntityInputType(type, getUpdateInputTypeName(type.name), () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
