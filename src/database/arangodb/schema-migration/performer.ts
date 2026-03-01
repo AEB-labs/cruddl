@@ -1,5 +1,5 @@
 import { Database } from 'arangojs';
-import { CollectionType } from 'arangojs/collection';
+import { CollectionType } from 'arangojs/collection.js';
 import { ArangoDBConfig, initDatabase } from '../config';
 import {
     ERROR_ARANGO_DATA_SOURCE_NOT_FOUND,

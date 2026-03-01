@@ -1,6 +1,6 @@
 import { OffsetDateTime } from '@js-joda/core';
 import { Database } from 'arangojs';
-import { AnalyzerDescription, CreateAnalyzerOptions } from 'arangojs/analyzer';
+import { AnalyzerDescription, CreateAnalyzerOptions } from 'arangojs/analyzer.js';
 import {
     ArangoSearchViewLink,
     ArangoSearchViewLinkOptions,
