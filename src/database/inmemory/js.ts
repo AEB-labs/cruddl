@@ -1,6 +1,5 @@
 import { QueryResultValidator } from '../../query-tree';
 import { cyan, magenta } from '../../utils/colors';
-import { arrayToObject } from '../../utils/utils';
 
 function stringify(val: any) {
     if (val === undefined) {
@@ -77,8 +76,11 @@ export class JSCodeBuildingContext {
     }
 
     getBoundValueMap() {
-        return arrayToObject(this.boundValues, (_, index) =>
-            JSCodeBuildingContext.getBoundValueName(index),
+        return Object.fromEntries(
+            this.boundValues.map((value, index) => [
+                JSCodeBuildingContext.getBoundValueName(index),
+                value,
+            ]),
         );
     }
 
