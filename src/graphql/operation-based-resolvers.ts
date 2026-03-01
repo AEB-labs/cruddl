@@ -8,7 +8,7 @@ import {
     GraphQLSchema,
     OperationDefinitionNode,
 } from 'graphql';
-import { arrayToObject, objectValues } from '../utils/utils';
+import { arrayToObject } from '../utils/utils';
 
 export interface OperationParams {
     readonly schema: GraphQLSchema;
@@ -119,7 +119,7 @@ export function addOperationBasedResolvers({
         mutation: mut ? convertType(mut) : undefined,
         subscription: sub ? convertType(sub) : undefined,
         directives: Array.from(schema.getDirectives()),
-        types: objectValues(schema.getTypeMap()).filter(
+        types: Object.values(schema.getTypeMap()).filter(
             (t) => t != mut && t != sub && t != schema.getQueryType(),
         ),
     });

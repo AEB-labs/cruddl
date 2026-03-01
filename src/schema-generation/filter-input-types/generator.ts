@@ -12,7 +12,7 @@ import {
 import { INPUT_FIELD_EQUAL } from '../../schema/constants';
 import { getFilterTypeName } from '../../schema/names';
 import { GraphQLI18nString, GraphQLStringMap } from '../../schema/scalars/string-map';
-import { AnyValue, objectEntries } from '../../utils/utils';
+import { AnyValue } from '../../utils/utils';
 import { EnumTypeGenerator } from '../enum-type-generator';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { and } from '../utils/input-types';
@@ -56,7 +56,7 @@ export class FilterObjectType extends TypedInputObjectType<FilterField> {
                 NullQueryNode.NULL,
             );
         }
-        const filterNodes = objectEntries(filterValue as any).map(([name, value]) =>
+        const filterNodes = Object.entries(filterValue as any).map(([name, value]) =>
             this.getFieldOrThrow(name).getFilterNode(sourceNode, value),
         );
         return filterNodes.reduce(and, ConstBoolQueryNode.TRUE);
