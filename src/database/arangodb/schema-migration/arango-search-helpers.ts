@@ -11,8 +11,7 @@ import {
     View,
     ViewProperties,
 } from 'arangojs/view';
-import deepEqual from 'deep-equal';
-import { isEqual } from 'lodash';
+import { deepEqual } from 'fast-equals';
 import { Field, Model, RootEntityType } from '../../../model';
 import { FieldPath } from '../../../model/implementation/field-path';
 import { IDENTITY_ANALYZER } from '../../../model/implementation/flex-search';
@@ -306,14 +305,14 @@ export function isEqualProperties(
     }
 
     return (
-        isEqual(definitionProperties.links, viewProperties.links) &&
-        isEqual(definitionProperties.primarySort, viewProperties.primarySort) &&
-        isEqual(definitionProperties.commitIntervalMsec, viewProperties.commitIntervalMsec) &&
-        isEqual(
+        deepEqual(definitionProperties.links, viewProperties.links) &&
+        deepEqual(definitionProperties.primarySort, viewProperties.primarySort) &&
+        deepEqual(definitionProperties.commitIntervalMsec, viewProperties.commitIntervalMsec) &&
+        deepEqual(
             definitionProperties.consolidationIntervalMsec,
             viewProperties.consolidationIntervalMsec,
         ) &&
-        isEqual(definitionProperties.cleanupIntervalStep, viewProperties.cleanupIntervalStep) &&
+        deepEqual(definitionProperties.cleanupIntervalStep, viewProperties.cleanupIntervalStep) &&
         consolidationPolicyMatches(
             definitionProperties.consolidationPolicy,
             viewProperties.consolidationPolicy,
@@ -341,7 +340,7 @@ function consolidationPolicyMatches(
         return true;
     }
 
-    return isEqual(expected, actual);
+    return deepEqual(expected, actual);
 }
 
 function isRecreateRequired(
@@ -353,7 +352,7 @@ function isRecreateRequired(
         return true;
     }
 
-    return !isEqual(definitionProperties.primarySort, viewProperties.primarySort);
+    return !deepEqual(definitionProperties.primarySort, viewProperties.primarySort);
 }
 
 export async function calculateRequiredArangoSearchViewUpdateOperations(
