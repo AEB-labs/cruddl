@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { GraphQLLocalDate } from '../../../src/schema/scalars/local-date';
+import { GraphQLLocalDate } from '../../../src/schema/scalars/local-date.js';
 
 describe('GraphQLLocalDate', () => {
     const validStrings = ['2018-08-21', '2004-02-29'];

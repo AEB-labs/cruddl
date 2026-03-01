@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import gql from 'graphql-tag';
-import { expectToBeValid } from '../implementation/validation-utils';
-import { runCheck } from './utils';
+import { gql } from 'graphql-tag';
+import { expectToBeValid } from '../implementation/validation-utils.js';
+import { runCheck } from './utils.js';
 
 describe('checkModel', () => {
     describe('@root and @parent', () => {

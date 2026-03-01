@@ -1,6 +1,6 @@
 import { resolveReadonlyArrayThunk } from 'graphql';
-import { DefaultClock, UUIDGenerator } from '../../execution/execution-options';
-import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
+import { DefaultClock, UUIDGenerator } from '../../execution/execution-options.js';
+import { FieldRequest, FieldSelection } from '../../graphql/query-distiller.js';
 import {
     BasicType,
     ConditionalQueryNode,
@@ -20,13 +20,13 @@ import {
     VariableAssignmentQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode,
-} from '../../query-tree';
-import { groupByEquivalence } from '../../utils/group-by-equivalence';
-import { RequireAllProperties } from '../../utils/util-types';
-import { decapitalize } from '../../utils/utils';
-import { FieldContext, SelectionToken } from './context';
-import { QueryNodeField, QueryNodeObjectType } from './definition';
-import { extractQueryTreeObjectType, isListTypeIgnoringNonNull } from './utils';
+} from '../../query-tree/index.js';
+import { groupByEquivalence } from '../../utils/group-by-equivalence.js';
+import { RequireAllProperties } from '../../utils/util-types.js';
+import { decapitalize } from '../../utils/utils.js';
+import { FieldContext, SelectionToken } from './context.js';
+import { QueryNodeField, QueryNodeObjectType } from './definition.js';
+import { extractQueryTreeObjectType, isListTypeIgnoringNonNull } from './utils.js';
 
 export function createRootFieldContext(
     options: Partial<

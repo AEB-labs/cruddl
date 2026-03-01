@@ -1,5 +1,5 @@
-import { RootEntityType } from '../model';
-import { FieldPath } from '../model/implementation/field-path';
+import { FieldPath } from '../model/implementation/field-path.js';
+import { RootEntityType } from '../model/index.js';
 import {
     DeleteEntitiesQueryNode,
     DeleteEntitiesResultValue,
@@ -8,9 +8,9 @@ import {
     QueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode,
-} from '../query-tree';
-import { mapToIDNodesUnoptimized } from './utils/map';
-import { getPreEntityRemovalStatements } from './utils/relations';
+} from '../query-tree/index.js';
+import { mapToIDNodesUnoptimized } from './utils/map.js';
+import { getPreEntityRemovalStatements } from './utils/relations.js';
 
 export interface GenerateDeleteAllQueryNodeOptions {
     readonly resultValue?: DeleteEntitiesResultValue;

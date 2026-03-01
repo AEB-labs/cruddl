@@ -1,10 +1,10 @@
 import { ArangoSearchViewProperties } from 'arangojs/view.js';
 import { expect } from 'chai';
-import gql from 'graphql-tag';
-import { ArangoDBAdapter } from '../../../src/database/arangodb';
-import { createSimpleModel } from '../../model/model-spec.helper';
-import { createTempDatabase, getTempDatabase } from '../../regression/initialization';
-import { isArangoDBDisabled } from './arangodb-test-utils';
+import { gql } from 'graphql-tag';
+import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';
+import { createSimpleModel } from '../../model/model-spec.helper.js';
+import { createTempDatabase, getTempDatabase } from '../../regression/initialization.js';
+import { isArangoDBDisabled } from './arangodb-test-utils.js';
 
 describe('ArangoDBAdapter', () => {
     describe('updateSchema', () => {

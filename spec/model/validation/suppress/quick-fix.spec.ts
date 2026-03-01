@@ -1,6 +1,6 @@
-import gql from 'graphql-tag';
-import { Project } from '../../../../src/project/project';
-import { expectQuickFix } from '../../implementation/validation-utils';
+import { gql } from 'graphql-tag';
+import { Project } from '../../../../src/project/project.js';
+import { expectQuickFix } from '../../implementation/validation-utils.js';
 
 describe('@suppress quick fix', () => {
     it('generates a quick fix on type level', () => {

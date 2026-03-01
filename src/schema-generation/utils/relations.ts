@@ -1,12 +1,12 @@
+import { RelationSegment } from '../../model/implementation/collect-path.js';
+import { FieldPath } from '../../model/implementation/field-path.js';
 import {
     Field,
     Multiplicity,
     RelationDeleteAction,
     RelationSide,
     RootEntityType,
-} from '../../model';
-import { RelationSegment } from '../../model/implementation/collect-path';
-import { FieldPath } from '../../model/implementation/field-path';
+} from '../../model/index.js';
 import {
     AddEdgesQueryNode,
     BinaryOperationQueryNode,
@@ -29,11 +29,11 @@ import {
     SetEdgeQueryNode,
     TraversalQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { isDefined, PlainObject } from '../../utils/utils';
-import { CreateRootEntityInputType } from '../create-input-types';
-import { FieldContext } from '../query-node-object-type';
-import { mapToIDNodesWithOptimizations } from './map';
+} from '../../query-tree/index.js';
+import { isDefined, PlainObject } from '../../utils/utils.js';
+import { CreateRootEntityInputType } from '../create-input-types/index.js';
+import { FieldContext } from '../query-node-object-type/index.js';
+import { mapToIDNodesWithOptimizations } from './map.js';
 
 /**
  * Gets a statement that deletes existing outgoing edges and creates a new one, but does not check existing

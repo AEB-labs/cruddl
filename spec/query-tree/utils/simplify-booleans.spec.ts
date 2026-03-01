@@ -7,8 +7,8 @@ import {
     QueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
-} from '../../../src/query-tree';
-import { simplifyBooleans } from '../../../src/query-tree/utils';
+} from '../../../src/query-tree/index.js';
+import { simplifyBooleans } from '../../../src/query-tree/utils/index.js';
 
 describe('query-tree-utils', () => {
     describe('simplifyBooleans', () => {

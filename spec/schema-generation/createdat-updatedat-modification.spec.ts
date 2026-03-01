@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { execute, graphql, parse } from 'graphql';
-import { InMemoryAdapter } from '../../src/database/inmemory';
-import { Project } from '../../src/project/project';
-import { ProjectSource } from '../../src/project/source';
-import { sleep } from '../../src/utils/utils';
+import { InMemoryAdapter } from '../../src/database/inmemory/index.js';
+import { Project } from '../../src/project/project.js';
+import { ProjectSource } from '../../src/project/source.js';
+import { sleep } from '../../src/utils/utils.js';
 
 describe('mutation', () => {
     const astSchema = `

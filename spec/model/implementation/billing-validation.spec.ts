@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 import { Source } from 'graphql';
-import { createModel, ValidationContext } from '../../../src/model';
-import { Project } from '../../../src/project/project';
-import { parseProject } from '../../../src/schema/schema-builder';
+import { createModel, ValidationContext } from '../../../src/model/index.js';
+import { Project } from '../../../src/project/project.js';
+import { parseProject } from '../../../src/schema/schema-builder.js';
 
 const graphql = `
 enum Importance {LOW, MEDIUM, HIGH}

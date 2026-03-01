@@ -1,7 +1,7 @@
 import { GraphQLScalarType } from 'graphql';
-import { ScalarTypeConfig, TypeKind } from '../config';
-import { Model } from './model';
-import { TypeBase } from './type-base';
+import { ScalarTypeConfig, TypeKind } from '../config/index.js';
+import { Model } from './model.js';
+import { TypeBase } from './type-base.js';
 
 export class ScalarType extends TypeBase {
     constructor(input: ScalarTypeConfig, model: Model) {

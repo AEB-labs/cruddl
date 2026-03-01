@@ -6,7 +6,7 @@ import {
     GraphQLSkipDirective,
     SelectionNode,
 } from 'graphql';
-import { getArgumentValues } from './argument-values';
+import { getArgumentValues } from './argument-values.js';
 
 /**
  * Collects all fields selected by the given selection node

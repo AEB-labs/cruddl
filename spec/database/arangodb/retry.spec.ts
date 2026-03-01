@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import gql from 'graphql-tag';
-import { ArangoDBAdapter } from '../../../src/database/arangodb';
+import { gql } from 'graphql-tag';
+import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -13,11 +13,11 @@ import {
     TransformListQueryNode,
     UpdateEntitiesQueryNode,
     VariableQueryNode,
-} from '../../../src/query-tree';
-import { range } from '../../../src/utils/utils';
-import { createSimpleModel } from '../../model/model-spec.helper';
-import { createTempDatabase } from '../../regression/initialization';
-import { isArangoDBDisabled } from './arangodb-test-utils';
+} from '../../../src/query-tree/index.js';
+import { range } from '../../../src/utils/utils.js';
+import { createSimpleModel } from '../../model/model-spec.helper.js';
+import { createTempDatabase } from '../../regression/initialization.js';
+import { isArangoDBDisabled } from './arangodb-test-utils.js';
 
 const PARALLELISM = 20;
 

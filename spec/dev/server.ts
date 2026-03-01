@@ -3,12 +3,12 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import express from 'express';
 import { resolve } from 'path';
-import { ArangoDBAdapter, ExecutionOptions, Project } from '../..';
-import { globalContext } from '../../src/config/global';
-import { InMemoryAdapter } from '../../src/database/inmemory';
-import { getMetaSchema } from '../../src/meta-schema/meta-schema';
-import { loadProjectFromDir } from '../../src/project/project-from-fs';
-import { createFastApp } from './fast-server';
+import { ArangoDBAdapter, ExecutionOptions, Project } from '../../index.js';
+import { globalContext } from '../../src/config/global.js';
+import { InMemoryAdapter } from '../../src/database/inmemory/index.js';
+import { getMetaSchema } from '../../src/meta-schema/meta-schema.js';
+import { loadProjectFromDir } from '../../src/project/project-from-fs.js';
+import { createFastApp } from './fast-server.js';
 
 const port = 3000;
 const databaseName = 'cruddl';

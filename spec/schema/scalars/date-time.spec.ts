@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { GraphQLDateTime } from '../../../src/schema/scalars/date-time';
+import { GraphQLDateTime } from '../../../src/schema/scalars/date-time.js';
 
 describe('GraphQLDateTime', () => {
     const validStrings = [

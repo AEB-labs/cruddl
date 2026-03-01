@@ -9,8 +9,12 @@ import {
     Scalar,
     YAMLMap,
 } from 'yaml';
-import { LocalizationBaseConfig, LocalizationConfig, TypeLocalizationConfig } from '../config';
-import { TypeKind } from '../config/type';
+import {
+    LocalizationBaseConfig,
+    LocalizationConfig,
+    TypeLocalizationConfig,
+} from '../config/index.js';
+import { TypeKind } from '../config/type.js';
 
 export function describeTypeKind(kind: TypeKind) {
     switch (kind) {
