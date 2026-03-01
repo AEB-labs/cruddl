@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { ProjectSource } from '../../../src/project/source';
-import { getMessages } from './source-validation-helper';
+import { ProjectSource } from '../../../src/project/source.js';
+import { getMessages } from './source-validation-helper.js';
 
 describe('check-yaml-syntax validator', () => {
     it('reports syntax errors', () => {

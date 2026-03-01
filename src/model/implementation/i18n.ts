@@ -1,4 +1,4 @@
-import { I18N_GENERIC, I18N_LOCALE } from '../../meta-schema/constants';
+import { I18N_GENERIC, I18N_LOCALE } from '../../meta-schema/constants.js';
 import {
     arrayStartsWith,
     capitalize,
@@ -7,20 +7,20 @@ import {
     isDefined,
     mapFirstDefined,
     mapValues,
-} from '../../utils/utils';
+} from '../../utils/utils.js';
 import {
     LocalizationBaseConfig,
     LocalizationConfig,
     NamespaceLocalizationConfig,
     TypeLocalizationConfig,
-} from '../config';
-import { MessageLocation, ValidationMessage } from '../validation';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { EnumValue } from './enum-type';
-import { Field } from './field';
-import { Model } from './model';
-import { Type } from './type';
-import { TypeBase } from './type-base';
+} from '../config/index.js';
+import { MessageLocation, ValidationMessage } from '../validation/index.js';
+import { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import { EnumValue } from './enum-type.js';
+import { Field } from './field.js';
+import { Model } from './model.js';
+import { TypeBase } from './type-base.js';
+import { Type } from './type.js';
 
 export class ModelI18n implements ModelComponent {
     private readonly languageLocalizationProvidersByLanguage: ReadonlyMap<

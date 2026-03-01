@@ -1,11 +1,11 @@
 import { EnumValueDefinitionNode } from 'graphql';
-import memorize from 'memorize-decorator';
-import { EnumTypeConfig, EnumValueConfig, TypeKind } from '../config';
-import { ValidationContext, ValidationMessage } from '../validation';
-import { ModelComponent } from '../validation/validation-context';
-import { EnumValueLocalization } from './i18n';
-import { Model } from './model';
-import { TypeBase } from './type-base';
+import { memorize } from 'memorize-decorator';
+import { EnumTypeConfig, EnumValueConfig, TypeKind } from '../config/index.js';
+import { ValidationContext, ValidationMessage } from '../validation/index.js';
+import { ModelComponent } from '../validation/validation-context.js';
+import { EnumValueLocalization } from './i18n.js';
+import { Model } from './model.js';
+import { TypeBase } from './type-base.js';
 
 export class EnumType extends TypeBase {
     constructor(input: EnumTypeConfig, model: Model) {

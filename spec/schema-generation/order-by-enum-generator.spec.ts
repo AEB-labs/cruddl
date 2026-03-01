@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { Model, TypeKind, ValueObjectType } from '../../src/model';
-import { OrderByEnumGenerator } from '../../src/schema-generation/order-by-enum-generator';
+import { Model, TypeKind, ValueObjectType } from '../../src/model/index.js';
+import { OrderByEnumGenerator } from '../../src/schema-generation/order-by-enum-generator.js';
 
 describe('OrderByEnumGenerator', () => {
     it('includes scalar fields', () => {

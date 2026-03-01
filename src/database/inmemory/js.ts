@@ -1,6 +1,6 @@
-import { QueryResultValidator } from '../../query-tree';
-import { cyan, magenta } from '../../utils/colors';
-import { isDefined } from '../../utils/utils';
+import { QueryResultValidator } from '../../query-tree/index.js';
+import { cyan, magenta } from '../../utils/colors.js';
+import { isDefined } from '../../utils/utils.js';
 
 function stringify(val: any) {
     if (val === undefined) {

@@ -1,7 +1,7 @@
-import { Project } from '../../project/project';
-import { ProjectSource } from '../../project/source';
-import { getYamlMapAtPath, safeParseDocument } from '../compatibility-check/utils';
-import { ChangeSet, TextChange, YamlAddInMapChange } from './change-set';
+import { Project } from '../../project/project.js';
+import { ProjectSource } from '../../project/source.js';
+import { getYamlMapAtPath, safeParseDocument } from '../compatibility-check/utils.js';
+import { ChangeSet, TextChange, YamlAddInMapChange } from './change-set.js';
 
 export class InvalidChangeSetError extends Error {
     constructor(message: string) {

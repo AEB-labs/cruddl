@@ -1,7 +1,7 @@
-import { Field } from '../model';
-import { FieldPath } from '../model/implementation/field-path';
-import { QueryNode } from '../query-tree';
-import { createFieldNode } from './field-nodes';
+import { FieldPath } from '../model/implementation/field-path.js';
+import { Field } from '../model/index.js';
+import { QueryNode } from '../query-tree/index.js';
+import { createFieldNode } from './field-nodes.js';
 
 export function createFieldPathNode(
     fieldsOrFieldPath: ReadonlyArray<Field> | FieldPath,

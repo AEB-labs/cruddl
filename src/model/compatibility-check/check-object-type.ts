@@ -1,12 +1,17 @@
 import { FieldDefinitionNode } from 'graphql';
-import { prettyPrint } from '../../graphql/pretty-print';
-import { MODULES_DIRECTIVE } from '../../schema/constants';
-import { Change, ChangeSet, TextChange, YamlAddInMapChange } from '../change-set/change-set';
-import { ModelI18n, ObjectType } from '../implementation';
-import { MessageLocation, QuickFix, ValidationContext, ValidationMessage } from '../validation';
-import { checkField } from './check-field';
-import { checkRootEntityType } from './check-root-entity-type';
-import { getRequiredBySuffix } from './describe-module-specification';
+import { prettyPrint } from '../../graphql/pretty-print.js';
+import { MODULES_DIRECTIVE } from '../../schema/constants.js';
+import { Change, ChangeSet, TextChange, YamlAddInMapChange } from '../change-set/change-set.js';
+import { ModelI18n, ObjectType } from '../implementation/index.js';
+import {
+    MessageLocation,
+    QuickFix,
+    ValidationContext,
+    ValidationMessage,
+} from '../validation/index.js';
+import { checkField } from './check-field.js';
+import { checkRootEntityType } from './check-root-entity-type.js';
+import { getRequiredBySuffix } from './describe-module-specification.js';
 import {
     getFieldLocalizationConfigs,
     getFirstMatchingGlobalFieldConfigs,
@@ -15,7 +20,7 @@ import {
     getYamlNodePairAtPathOrThrow,
     patchBeforeCommentFromParentMap,
     safeParseDocument,
-} from './utils';
+} from './utils.js';
 
 export function checkObjectType(
     typeToCheck: ObjectType,

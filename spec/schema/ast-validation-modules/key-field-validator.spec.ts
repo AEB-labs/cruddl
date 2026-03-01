@@ -4,7 +4,7 @@ import {
     assertValidatorRejects,
     assertValidatorWarns,
     validate,
-} from './helpers';
+} from './helpers.js';
 
 describe('key field validator', () => {
     it('finds duplicate key usage', () => {

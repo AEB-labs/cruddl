@@ -1,9 +1,9 @@
 import { expect } from 'chai';
 import { Source } from 'graphql';
-import { createModel, ValidationContext } from '../../../src/model';
-import { Project } from '../../../src/project/project';
-import { validateParsedProjectSource } from '../../../src/schema/preparation/ast-validator';
-import { parseProject } from '../../../src/schema/schema-builder';
+import { createModel, ValidationContext } from '../../../src/model/index.js';
+import { Project } from '../../../src/project/project.js';
+import { validateParsedProjectSource } from '../../../src/schema/preparation/ast-validator.js';
+import { parseProject } from '../../../src/schema/schema-builder.js';
 
 const permissionProfiles = `{
   "permissionProfiles": {

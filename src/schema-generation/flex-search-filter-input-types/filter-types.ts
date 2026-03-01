@@ -1,17 +1,17 @@
 import { ThunkReadonlyArray } from 'graphql';
-import { Field } from '../../model';
+import { Field } from '../../model/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConstBoolQueryNode,
     NullQueryNode,
     QueryNode,
-} from '../../query-tree';
-import { AnyValue } from '../../utils/utils';
-import { QueryNodeResolveInfo } from '../query-node-object-type';
-import { TypedInputObjectType } from '../typed-input-object-type';
-import { and } from '../utils/input-types';
-import { FlexSearchFilterField } from './filter-fields';
+} from '../../query-tree/index.js';
+import { AnyValue } from '../../utils/utils.js';
+import { QueryNodeResolveInfo } from '../query-node-object-type/index.js';
+import { TypedInputObjectType } from '../typed-input-object-type.js';
+import { and } from '../utils/input-types.js';
+import { FlexSearchFilterField } from './filter-fields.js';
 
 export class FlexSearchFilterObjectType extends TypedInputObjectType<FlexSearchFilterField> {
     getFilterNode(

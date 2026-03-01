@@ -1,6 +1,7 @@
 import { GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
-import { ExecutionOptions } from '../execution/execution-options';
-import { Type } from '../model';
+import { ExecutionOptions } from '../execution/execution-options.js';
+import { Type } from '../model/index.js';
+import { FlexSearchQueryNode } from '../query-tree/flex-search.js';
 import {
     ARGUMENT_OUT_OF_RANGE_ERROR,
     BinaryOperationQueryNode,
@@ -23,8 +24,7 @@ import {
     TraversalQueryNodeParams,
     VariableQueryNode,
     WithPreExecutionQueryNode,
-} from '../query-tree';
-import { FlexSearchQueryNode } from '../query-tree/flex-search';
+} from '../query-tree/index.js';
 import {
     AFTER_ARG,
     CURSOR_FIELD,
@@ -36,22 +36,26 @@ import {
     ORDER_BY_ARG,
     ORDER_BY_ASC_SUFFIX,
     SKIP_ARG,
-} from '../schema/constants';
-import { RequireAllProperties } from '../utils/util-types';
-import { decapitalize, isDefined } from '../utils/utils';
+} from '../schema/constants.js';
+import { RequireAllProperties } from '../utils/util-types.js';
+import { decapitalize, isDefined } from '../utils/utils.js';
 import {
     FlexSearchScalarOrEnumFilterField,
     resolveFilterField,
-} from './flex-search-filter-input-types/filter-fields';
-import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
-import { QueryNodeField } from './query-node-object-type';
-import { RootFieldHelper } from './root-field-helper';
+} from './flex-search-filter-input-types/filter-fields.js';
+import {
+    OrderByEnumGenerator,
+    OrderByEnumType,
+    OrderByEnumValue,
+} from './order-by-enum-generator.js';
+import { QueryNodeField } from './query-node-object-type/index.js';
+import { RootFieldHelper } from './root-field-helper.js';
 import {
     getSortClausesForPrimarySort,
     orderArgMatchesPrimarySort,
-} from './utils/flex-search-utils';
-import { and, binaryOp, binaryOpWithAnalyzer } from './utils/input-types';
-import { getOrderByValues } from './utils/pagination';
+} from './utils/flex-search-utils.js';
+import { and, binaryOp, binaryOpWithAnalyzer } from './utils/input-types.js';
+import { getOrderByValues } from './utils/pagination.js';
 
 export enum LimitTypeCheckType {
     RESULT_VALIDATOR = 'RESULT_VALIDATOR',

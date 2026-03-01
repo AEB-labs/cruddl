@@ -6,19 +6,19 @@ import {
     OperationDefinitionNode,
     VariableDefinitionNode,
 } from 'graphql';
-import { globalContext } from '../config/global';
-import { DatabaseAdapter } from '../database/database-adapter';
-import { resolveSelections } from '../graphql/field-collection';
-import { extractOperation } from '../graphql/operations';
-import { InvalidProjectError } from '../project/invalid-project-error';
-import { Project } from '../project/project';
-import { QueryNodeObjectType, SchemaGenerator } from '../schema-generation';
-import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
-import { validateAndPrepareSchema } from '../schema/schema-builder';
+import { globalContext } from '../config/global.js';
+import { DatabaseAdapter } from '../database/database-adapter.js';
+import { resolveSelections } from '../graphql/field-collection.js';
+import { extractOperation } from '../graphql/operations.js';
+import { InvalidProjectError } from '../project/invalid-project-error.js';
+import { Project } from '../project/project.js';
+import { QueryNodeObjectType, SchemaGenerator } from '../schema-generation/index.js';
+import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
+import { validateAndPrepareSchema } from '../schema/schema-builder.js';
 
-import { ExecutionOptions } from './execution-options';
-import { ExecutionResult } from './execution-result';
-import { OperationResolver } from './operation-resolver';
+import { ExecutionOptions } from './execution-options.js';
+import { ExecutionResult } from './execution-result.js';
+import { OperationResolver } from './operation-resolver.js';
 
 type ValidationResult =
     | { readonly canExecute: false; errorMessage: string }

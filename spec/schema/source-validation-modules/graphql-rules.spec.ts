@@ -1,11 +1,11 @@
 import { expect } from 'chai';
-import gql from 'graphql-tag';
-import { ParsedProjectSource } from '../../../src/config/parsed-project';
-import { prettyPrint } from '../../../src/graphql/pretty-print';
-import { ValidationContext } from '../../../src/model/validation';
-import { ProjectSource } from '../../../src/project/source';
-import { GraphQLRulesValidator } from '../../../src/schema/preparation/source-validation-modules/graphql-rules';
-import { parseProjectSource } from '../../../src/schema/schema-builder';
+import { gql } from 'graphql-tag';
+import { ParsedProjectSource } from '../../../src/config/parsed-project.js';
+import { prettyPrint } from '../../../src/graphql/pretty-print.js';
+import { ValidationContext } from '../../../src/model/validation/index.js';
+import { ProjectSource } from '../../../src/project/source.js';
+import { GraphQLRulesValidator } from '../../../src/schema/preparation/source-validation-modules/graphql-rules.js';
+import { parseProjectSource } from '../../../src/schema/schema-builder.js';
 
 describe('graphql-rules validator', () => {
     const validator = new GraphQLRulesValidator();

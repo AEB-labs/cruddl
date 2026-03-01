@@ -12,8 +12,12 @@ import {
     GraphQLString,
     parse,
 } from 'graphql';
-import gql from 'graphql-tag';
-import { DistilledOperation, distillQuery, FieldRequest } from '../../src/graphql/query-distiller';
+import { gql } from 'graphql-tag';
+import {
+    DistilledOperation,
+    distillQuery,
+    FieldRequest,
+} from '../../src/graphql/query-distiller.js';
 
 describe('query-distiller', () => {
     const userType = new GraphQLObjectType({

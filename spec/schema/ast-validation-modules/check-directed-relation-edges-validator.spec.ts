@@ -2,7 +2,7 @@ import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
-} from './helpers';
+} from './helpers.js';
 
 describe('check-directed-relation-edges-validator', () => {
     it('accepts forward only @relation', () => {

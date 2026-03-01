@@ -1,9 +1,9 @@
-import { FlexSearchPrimarySortClauseConfig } from '../config';
-import { Severity, ValidationMessage } from '../validation';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { FieldPath } from './field-path';
-import { OrderDirection } from './order';
-import { RootEntityType } from './root-entity-type';
+import { FlexSearchPrimarySortClauseConfig } from '../config/index.js';
+import { Severity, ValidationMessage } from '../validation/index.js';
+import { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import { FieldPath } from './field-path.js';
+import { OrderDirection } from './order.js';
+import { RootEntityType } from './root-entity-type.js';
 
 export const IDENTITY_ANALYZER = 'identity';
 export const NORM_CI_ANALYZER = 'norm_ci';

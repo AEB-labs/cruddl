@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { moveErrorsToOutputNodes } from '../../src/authorization/move-errors-to-output-nodes';
+import { moveErrorsToOutputNodes } from '../../src/authorization/move-errors-to-output-nodes.js';
 import {
     ConditionalQueryNode,
     ConstBoolQueryNode,
@@ -11,7 +11,7 @@ import {
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     WithPreExecutionQueryNode,
-} from '../../src/query-tree';
+} from '../../src/query-tree/index.js';
 
 describe('move-errors-to-output-nodes', () => {
     it('moves errors in filter up', () => {

@@ -1,15 +1,15 @@
 import { expect } from 'chai';
-import gql from 'graphql-tag';
+import { gql } from 'graphql-tag';
 import { parseDocument } from 'yaml';
-import { prettyPrint } from '../../../src/graphql/pretty-print';
-import { applyChangeSet } from '../../../src/model/change-set/apply-change-set';
-import { Project } from '../../../src/project/project';
-import { ProjectSource } from '../../../src/project/source';
+import { prettyPrint } from '../../../src/graphql/pretty-print.js';
+import { applyChangeSet } from '../../../src/model/change-set/apply-change-set.js';
+import { Project } from '../../../src/project/project.js';
+import { ProjectSource } from '../../../src/project/source.js';
 import {
     expectSingleCompatibilityIssue,
     expectToBeValid,
-} from '../implementation/validation-utils';
-import { runCheck } from './utils';
+} from '../implementation/validation-utils.js';
+import { runCheck } from './utils.js';
 
 describe('checkModel', () => {
     describe('enums', () => {

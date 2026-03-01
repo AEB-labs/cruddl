@@ -8,7 +8,7 @@ import {
     GraphQLSchema,
     OperationDefinitionNode,
 } from 'graphql';
-import { isDefined } from '../utils/utils';
+import { isDefined } from '../utils/utils.js';
 
 export interface OperationParams {
     readonly schema: GraphQLSchema;

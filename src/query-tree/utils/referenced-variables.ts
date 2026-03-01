@@ -1,6 +1,6 @@
-import { QueryNode } from '../base';
-import { VariableQueryNode } from '../variables';
-import { visitQueryNode } from '../visitor';
+import { QueryNode } from '../base.js';
+import { VariableQueryNode } from '../variables.js';
+import { visitQueryNode } from '../visitor.js';
 
 export function getReferencedVariables(node: QueryNode): ReadonlySet<VariableQueryNode> {
     const referenced = new Set<VariableQueryNode>();

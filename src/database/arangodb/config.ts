@@ -1,10 +1,10 @@
 import { Database } from 'arangojs';
 import { CreateCollectionOptions } from 'arangojs/collection.js';
 import { Config } from 'arangojs/connection.js';
-import { ProjectOptions } from '../../config/interfaces';
-import { DEFAULT_LOGGER_PROVIDER, Logger } from '../../config/logging';
-import { CustomDatabase } from './arangojs-instrumentation/custom-database';
-import { ArangoSearchConfiguration } from './schema-migration/arango-search-helpers';
+import { ProjectOptions } from '../../config/interfaces.js';
+import { DEFAULT_LOGGER_PROVIDER, Logger } from '../../config/logging.js';
+import { CustomDatabase } from './arangojs-instrumentation/custom-database.js';
+import { ArangoSearchConfiguration } from './schema-migration/arango-search-helpers.js';
 
 export declare type KeyGeneratorType = 'traditional' | 'autoincrement' | 'uuid' | 'padded';
 

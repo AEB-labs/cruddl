@@ -1,5 +1,5 @@
-import { ProjectOptions } from './interfaces';
-import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from './logging';
+import { ProjectOptions } from './interfaces.js';
+import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from './logging.js';
 
 export namespace globalContext {
     export let loggerProvider: LoggerProvider;
