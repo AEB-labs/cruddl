@@ -28,6 +28,7 @@ import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
 import { GraphQLI18nString } from '../../schema/scalars/string-map';
+import { isDefined } from '../../utils/utils';
 import { describeModuleSpecification } from '../compatibility-check/describe-module-specification';
 import {
     AggregationOperator,
@@ -234,7 +235,7 @@ export class Field implements ModelComponent {
 
     @memorize()
     public get permissionProfile(): PermissionProfile | undefined {
-        if (!this.input.permissions || this.input.permissions.permissionProfileName == undefined) {
+        if (!this.input.permissions || !isDefined(this.input.permissions.permissionProfileName)) {
             return undefined;
         }
         return this.declaringType.namespace.getPermissionProfile(
@@ -247,7 +248,7 @@ export class Field implements ModelComponent {
     }
 
     public get inverseOf(): Field | undefined {
-        if (this.input.inverseOfFieldName == undefined) {
+        if (!isDefined(this.input.inverseOfFieldName)) {
             return undefined;
         }
         const type = this.type;
@@ -541,7 +542,7 @@ export class Field implements ModelComponent {
             return;
         }
 
-        if (this.input.inverseOfFieldName != undefined) {
+        if (isDefined(this.input.inverseOfFieldName)) {
             const inverseOf = this.type.getField(this.input.inverseOfFieldName);
             const inverseFieldDesc = `Field "${this.type.name}.${this.input.inverseOfFieldName}" used as inverse field of "${this.declaringType.name}.${this.name}"`;
             if (!inverseOf) {
@@ -565,7 +566,7 @@ export class Field implements ModelComponent {
                         this.input.inverseOfASTNode || this.astNode,
                     ),
                 );
-            } else if (inverseOf.inverseOf != undefined) {
+            } else if (isDefined(inverseOf.inverseOf)) {
                 context.addMessage(
                     ValidationMessage.error(
                         `${inverseFieldDesc} should not declare inverseOf itself.`,
@@ -592,7 +593,7 @@ export class Field implements ModelComponent {
                         field !== this &&
                         field.isRelation &&
                         field.type === this.declaringType &&
-                        field.input.inverseOfFieldName == undefined,
+                        !isDefined(field.input.inverseOfFieldName),
                 );
                 if (matchingRelation) {
                     context.addMessage(
@@ -1219,7 +1220,7 @@ export class Field implements ModelComponent {
             return;
         }
 
-        if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
+        if (isDefined(permissions.permissionProfileName) && isDefined(permissions.roles)) {
             const message = `Permission profile and explicit role specifiers cannot be combined.`;
             context.addMessage(
                 ValidationMessage.error(
@@ -1233,7 +1234,7 @@ export class Field implements ModelComponent {
         }
 
         if (
-            permissions.permissionProfileName != undefined &&
+            isDefined(permissions.permissionProfileName) &&
             !this.declaringType.namespace.getPermissionProfile(permissions.permissionProfileName)
         ) {
             context.addMessage(
