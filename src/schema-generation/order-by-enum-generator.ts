@@ -1,13 +1,13 @@
 import { GraphQLEnumType, GraphQLEnumValueConfig } from 'graphql';
-import memorize from 'memorize-decorator';
-import { Field, ObjectType } from '../model';
-import { OrderClause, OrderDirection, QueryNode } from '../query-tree';
-import { ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/constants';
-import { getOrderByTypeName } from '../schema/names';
+import { memorize } from 'memorize-decorator';
+import { Field, ObjectType } from '../model/index.js';
+import { OrderClause, OrderDirection, QueryNode } from '../query-tree/index.js';
+import { ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/constants.js';
+import { getOrderByTypeName } from '../schema/names.js';
 
-import { isDefined } from '../utils/utils';
-import { createFieldNode } from './field-nodes';
-import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
+import { isDefined } from '../utils/utils.js';
+import { createFieldNode } from './field-nodes.js';
+import { getScalarFilterValueNode } from './filter-input-types/filter-fields.js';
 
 export class OrderByEnumType {
     constructor(

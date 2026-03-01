@@ -20,7 +20,7 @@ import {
     VariableDefinitionNode,
     visit,
 } from 'graphql';
-import { isDefined } from '../utils/utils';
+import { isDefined } from '../utils/utils.js';
 
 /**
  * Creates a field node with a name and an optional alias

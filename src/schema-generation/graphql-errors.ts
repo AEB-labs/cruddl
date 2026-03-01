@@ -1,6 +1,6 @@
 import { GraphQLError } from 'graphql';
-import { isListTypeIgnoringNonNull } from '../graphql/schema-utils';
-import { FieldContext } from './query-node-object-type';
+import { isListTypeIgnoringNonNull } from '../graphql/schema-utils.js';
+import { FieldContext } from './query-node-object-type/index.js';
 
 export function createGraphQLError(message: string, { selectionStack }: FieldContext) {
     if (!selectionStack.length) {

@@ -1,7 +1,7 @@
 import { GraphQLFieldResolver } from 'graphql';
-import { ExecutionOptions } from '../../execution/execution-options';
-import { extractRuntimeError, isRuntimeErrorValue } from '../../query-tree';
-import { SchemaTransformationContext } from '../../schema/preparation/transformation-pipeline';
+import { ExecutionOptions } from '../../execution/execution-options.js';
+import { extractRuntimeError, isRuntimeErrorValue } from '../../query-tree/index.js';
+import { SchemaTransformationContext } from '../../schema/preparation/transformation-pipeline.js';
 
 /**
  * A GraphQL field resolver for the query node object type framework

@@ -1,28 +1,16 @@
-import { GraphQLString } from 'graphql';
-import { TypeConfig, TypeKind } from '../config';
-import { ChildEntityType } from './child-entity-type';
-import { EntityExtensionType } from './entity-extension-type';
-import { EnumType } from './enum-type';
-import { Model } from './model';
-import { RootEntityType } from './root-entity-type';
-import { ScalarType } from './scalar-type';
-import { ValueObjectType } from './value-object-type';
+import { TypeConfig, TypeKind } from '../config/index.js';
+import { ChildEntityType } from './child-entity-type.js';
+import { EntityExtensionType } from './entity-extension-type.js';
+import { EnumType } from './enum-type.js';
+import { InvalidType } from './invalid-type.js';
+import { Model } from './model.js';
+import { RootEntityType } from './root-entity-type.js';
+import { ScalarType } from './scalar-type.js';
+import { ValueObjectType } from './value-object-type.js';
 
 export type ObjectType = RootEntityType | ChildEntityType | EntityExtensionType | ValueObjectType;
 export type Type = ObjectType | ScalarType | EnumType;
-
-export class InvalidType extends ScalarType {
-    constructor(name: string, model: Model) {
-        super(
-            {
-                kind: TypeKind.SCALAR,
-                name,
-                graphQLScalarType: GraphQLString,
-            },
-            model,
-        );
-    }
-}
+export { InvalidType };
 
 export function createType(typeInput: TypeConfig, model: Model): Type {
     switch (typeInput.kind) {

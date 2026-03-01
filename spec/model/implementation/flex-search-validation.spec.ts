@@ -1,20 +1,20 @@
 import { expect } from 'chai';
 import { DocumentNode } from 'graphql';
-import gql from 'graphql-tag';
-import { Model, RootEntityType, TypeKind } from '../../../core-exports';
-import { FlexSearchLanguage } from '../../../src/model';
+import { gql } from 'graphql-tag';
+import { Model, RootEntityType, TypeKind } from '../../../core-exports.js';
+import { FlexSearchLanguage } from '../../../src/model/index.js';
 import {
     FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT,
     FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
-} from '../../../src/schema/constants';
+} from '../../../src/schema/constants.js';
 import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
     validate,
-} from '../../schema/ast-validation-modules/helpers';
-import { createSimpleModel } from '../model-spec.helper';
-import { expectSingleError } from './validation-utils';
+} from '../../schema/ast-validation-modules/helpers.js';
+import { createSimpleModel } from '../model-spec.helper.js';
+import { expectSingleError } from './validation-utils.js';
 
 describe('FlexSearch', () => {
     it('rejects flexSearch on relation', () => {

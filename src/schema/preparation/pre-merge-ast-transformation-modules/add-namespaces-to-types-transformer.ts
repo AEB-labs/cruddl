@@ -4,9 +4,9 @@ import {
     NAMESPACE_NAME_ARG,
     NAMESPACE_SEPARATOR,
     ROOT_ENTITY_DIRECTIVE,
-} from '../../constants';
-import { buildNameNode, hasDirectiveWithName } from '../../schema-utils';
-import { ASTTransformationContext, ASTTransformer } from '../transformation-pipeline';
+} from '../../constants.js';
+import { buildNameNode, hasDirectiveWithName } from '../../schema-utils.js';
+import { ASTTransformationContext, ASTTransformer } from '../transformation-pipeline.js';
 
 export class AddNamespacesToTypesTransformer implements ASTTransformer {
     transform(ast: DocumentNode, context: ASTTransformationContext): DocumentNode {

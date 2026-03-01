@@ -1,7 +1,7 @@
-import { indent, isDefined } from '../utils/utils';
-import { QueryNode } from './base';
-import { QueryResultValidator } from './validation';
-import { VariableQueryNode } from './variables';
+import { indent, isDefined } from '../utils/utils.js';
+import { QueryNode } from './base.js';
+import { QueryResultValidator } from './validation.js';
+import { VariableQueryNode } from './variables.js';
 
 export class PreExecQueryParms extends QueryNode {
     constructor(params: {

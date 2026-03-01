@@ -1,4 +1,4 @@
-import { ValidationMessage, ValidationResult } from './index';
+import { ValidationMessage, ValidationResult } from './index.js';
 
 export class ValidationContext {
     private readonly _validationMessages: ValidationMessage[] = [];

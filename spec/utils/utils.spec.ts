@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { joinWithAnd } from '../../src/utils/utils';
+import { joinWithAnd } from '../../src/utils/utils.js';
 
 describe('utils', () => {
     describe('joinWithAnd', () => {

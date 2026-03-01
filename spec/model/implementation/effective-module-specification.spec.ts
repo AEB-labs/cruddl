@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import {
     EffectiveModuleSpecification,
     EffectiveModuleSpecificationClause,
-} from '../../../src/model/implementation/modules/effective-module-specification';
+} from '../../../src/model/implementation/modules/effective-module-specification.js';
 
 describe('EffectiveModuleSpecification', () => {
     describe('simplify()', () => {

@@ -1,4 +1,5 @@
-import { ObjectQueryNode, QueryNode } from '..';
+import { QueryNode } from '../base.js';
+import { ObjectQueryNode } from '../objects.js';
 
 export interface StaticEvaluationResult {
     canEvaluateStatically: boolean;

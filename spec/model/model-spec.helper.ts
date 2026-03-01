@@ -3,13 +3,13 @@ import {
     ParsedProject,
     ParsedProjectSource,
     ParsedProjectSourceBaseKind,
-} from '../../src/config/parsed-project';
+} from '../../src/config/parsed-project.js';
 import {
     createModel,
     Model,
     NamespaceLocalizationConfig,
     PermissionProfileConfigMap,
-} from '../../src/model';
+} from '../../src/model/index.js';
 
 export function createSimpleModel(
     document: DocumentNode,

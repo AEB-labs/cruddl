@@ -1,11 +1,17 @@
 import { expect } from 'chai';
-import { CalcMutationsOperator, Field, Model, Severity, TypeKind } from '../../../src/model';
+import {
+    CalcMutationsOperator,
+    Field,
+    Model,
+    Severity,
+    TypeKind,
+} from '../../../src/model/index.js';
 import {
     expectSingleError,
     expectSingleWarning,
     expectToBeValid,
     validate,
-} from './validation-utils';
+} from './validation-utils.js';
 
 describe('Field', () => {
     const model = new Model({

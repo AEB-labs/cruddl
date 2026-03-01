@@ -1,8 +1,8 @@
 import { Kind, ObjectFieldNode, ObjectValueNode, print, StringValueNode } from 'graphql';
-import { INDICES_ARG } from '../../schema/constants';
-import { IndexDefinitionConfig } from '../config';
-import { RootEntityType } from '../implementation';
-import { ValidationContext, ValidationMessage } from '../validation';
+import { INDICES_ARG } from '../../schema/constants.js';
+import { IndexDefinitionConfig } from '../config/index.js';
+import { RootEntityType } from '../implementation/index.js';
+import { ValidationContext, ValidationMessage } from '../validation/index.js';
 
 export function checkIndices(
     typeToCheck: RootEntityType,

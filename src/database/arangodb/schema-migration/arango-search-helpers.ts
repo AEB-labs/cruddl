@@ -10,26 +10,26 @@ import {
     TierConsolidationPolicy,
     View,
     ViewProperties,
-} from 'arangojs/view';
+} from 'arangojs/view.js';
 import { deepEqual } from 'fast-equals';
-import { Field, Model, RootEntityType } from '../../../model';
-import { FieldPath } from '../../../model/implementation/field-path';
-import { IDENTITY_ANALYZER } from '../../../model/implementation/flex-search';
-import { OrderDirection } from '../../../model/implementation/order';
-import { ID_FIELD } from '../../../schema/constants';
+import { FieldPath } from '../../../model/implementation/field-path.js';
+import { IDENTITY_ANALYZER } from '../../../model/implementation/flex-search.js';
+import { OrderDirection } from '../../../model/implementation/order.js';
+import { Field, Model, RootEntityType } from '../../../model/index.js';
+import { ID_FIELD } from '../../../schema/constants.js';
 import {
     GraphQLOffsetDateTime,
     TIMESTAMP_PROPERTY,
-} from '../../../schema/scalars/offset-date-time';
-import { GraphQLI18nString } from '../../../schema/scalars/string-map';
-import { getCollectionNameForRootEntity } from '../arango-basics';
+} from '../../../schema/scalars/offset-date-time.js';
+import { GraphQLI18nString } from '../../../schema/scalars/string-map.js';
+import { getCollectionNameForRootEntity } from '../arango-basics.js';
 import {
     CreateArangoSearchViewMigration,
     DropArangoSearchViewMigration,
     RecreateArangoSearchViewMigration,
     SchemaMigration,
     UpdateArangoSearchViewMigration,
-} from './migrations';
+} from './migrations.js';
 
 export const FLEX_SEARCH_VIEW_PREFIX = 'flex_view_';
 

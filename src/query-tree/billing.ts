@@ -1,4 +1,4 @@
-import { QueryNode } from './base';
+import { QueryNode } from './base.js';
 
 /**
  * A QueryNode that creates a Billing entry, or updates it if it already exists.

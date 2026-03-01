@@ -1,5 +1,5 @@
 import { ArgumentNode, GraphQLID, GraphQLString } from 'graphql';
-import memorize from 'memorize-decorator';
+import { memorize } from 'memorize-decorator';
 import {
     ACCESS_FIELD_DIRECTIVE,
     ACCESS_GROUP_FIELD,
@@ -9,10 +9,10 @@ import {
     ID_FIELD,
     SCALAR_INT,
     SCALAR_STRING,
-} from '../../schema/constants';
-import { GraphQLInt53 } from '../../schema/scalars/int53';
-import { GraphQLLocalDate } from '../../schema/scalars/local-date';
-import { isDefined } from '../../utils/utils';
+} from '../../schema/constants.js';
+import { GraphQLInt53 } from '../../schema/scalars/int53.js';
+import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
+import { isDefined } from '../../utils/utils.js';
 import {
     FlexSearchPerformanceParams,
     FlexSearchPrimarySortClauseConfig,
@@ -20,21 +20,21 @@ import {
     PermissionsConfig,
     RootEntityTypeConfig,
     TypeKind,
-} from '../config';
-import { ValidationContext, ValidationMessage } from '../validation';
-import { Field, SystemFieldConfig } from './field';
-import { FieldPath } from './field-path';
-import { FlexSearchPrimarySortClause } from './flex-search';
-import { Index } from './indices';
-import { Model } from './model';
-import { EffectiveModuleSpecification } from './modules/effective-module-specification';
-import { ObjectTypeBase } from './object-type-base';
-import { OrderDirection } from './order';
-import { PermissionProfile } from './permission-profile';
-import { Relation, RelationSide } from './relation';
-import { RolesSpecifier } from './roles-specifier';
-import { ScalarType } from './scalar-type';
-import { TimeToLiveType } from './time-to-live';
+} from '../config/index.js';
+import { ValidationContext, ValidationMessage } from '../validation/index.js';
+import { FieldPath } from './field-path.js';
+import { Field, SystemFieldConfig } from './field.js';
+import { FlexSearchPrimarySortClause } from './flex-search.js';
+import { Index } from './indices.js';
+import { Model } from './model.js';
+import { EffectiveModuleSpecification } from './modules/effective-module-specification.js';
+import { ObjectTypeBase } from './object-type-base.js';
+import { OrderDirection } from './order.js';
+import { PermissionProfile } from './permission-profile.js';
+import { Relation, RelationSide } from './relation.js';
+import { RolesSpecifier } from './roles-specifier.js';
+import { ScalarType } from './scalar-type.js';
+import { TimeToLiveType } from './time-to-live.js';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};

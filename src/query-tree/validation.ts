@@ -1,6 +1,6 @@
-import { RelationSide, RootEntityType } from '../model';
-import { QueryNode } from './base';
-import { TOO_MANY_OBJECTS_ERROR } from './errors';
+import { RelationSide, RootEntityType } from '../model/index.js';
+import { QueryNode } from './base.js';
+import { TOO_MANY_OBJECTS_ERROR } from './errors.js';
 
 export interface QueryResultValidatorFunctionProvider {
     /**

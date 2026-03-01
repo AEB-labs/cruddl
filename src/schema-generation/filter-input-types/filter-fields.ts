@@ -6,7 +6,7 @@ import {
     GraphQLList,
     GraphQLNonNull,
 } from 'graphql';
-import { EnumType, Field, ScalarType, Type, TypeKind } from '../../model';
+import { EnumType, Field, ScalarType, Type, TypeKind } from '../../model/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -19,20 +19,29 @@ import {
     PropertyAccessQueryNode,
     QueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { QuantifierFilterNode } from '../../query-tree/quantifiers';
+} from '../../query-tree/index.js';
+import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
 import {
     AND_FILTER_FIELD,
     FILTER_FIELD_PREFIX_SEPARATOR,
     INPUT_FIELD_EQUAL,
     OR_FILTER_FIELD,
-} from '../../schema/constants';
-import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../schema/scalars/offset-date-time';
-import { AnyValue, decapitalize, isDefined, isReadonlyArray, PlainObject } from '../../utils/utils';
-import { createFieldNode } from '../field-nodes';
-import { TypedInputFieldBase } from '../typed-input-object-type';
-import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants';
-import { FilterObjectType } from './generator';
+} from '../../schema/constants.js';
+import {
+    GraphQLOffsetDateTime,
+    TIMESTAMP_PROPERTY,
+} from '../../schema/scalars/offset-date-time.js';
+import {
+    AnyValue,
+    decapitalize,
+    isDefined,
+    isReadonlyArray,
+    PlainObject,
+} from '../../utils/utils.js';
+import { createFieldNode } from '../field-nodes.js';
+import { TypedInputFieldBase } from '../typed-input-object-type.js';
+import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants.js';
+import { FilterObjectType } from './generator.js';
 
 export interface FilterField extends TypedInputFieldBase<FilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode;

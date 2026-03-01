@@ -8,11 +8,11 @@ import {
     RuntimeErrorQueryNode,
     SetEdgeQueryNode,
     UpdateEntitiesQueryNode,
-} from '../query-tree';
-import { visitQueryNode } from '../query-tree/visitor';
-import { AuthContext } from './auth-basics';
-import { moveErrorsToOutputNodes } from './move-errors-to-output-nodes';
-import { transformNode } from './transformers';
+} from '../query-tree/index.js';
+import { visitQueryNode } from '../query-tree/visitor.js';
+import { AuthContext } from './auth-basics.js';
+import { moveErrorsToOutputNodes } from './move-errors-to-output-nodes.js';
+import { transformNode } from './transformers/index.js';
 
 const MUTATIONS: ReadonlyArray<Function> = [
     CreateEntityQueryNode,

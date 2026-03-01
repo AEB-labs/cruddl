@@ -1,17 +1,17 @@
-export { QueryNode } from './base';
-export * from './billing';
-export * from './child-entities';
-export * from './errors';
-export { FlexSearchStartsWithQueryNode } from './flex-search';
-export * from './lists';
-export * from './literals';
-export * from './mutations';
-export * from './objects';
-export * from './operators';
-export * from './pre-exec';
-export * from './queries';
-export * from './type-check';
-export * from './validation';
-export * from './variables';
+export { QueryNode } from './base.js';
+export * from './billing.js';
+export * from './child-entities.js';
+export * from './errors.js';
+export { FlexSearchStartsWithQueryNode } from './flex-search.js';
+export * from './lists.js';
+export * from './literals.js';
+export * from './mutations.js';
+export * from './objects.js';
+export * from './operators.js';
+export * from './pre-exec.js';
+export * from './queries.js';
+export * from './type-check.js';
+export * from './validation.js';
+export * from './variables.js';
 
 // visitor is intentionally not re-exported as it can be seen as an 'add-on'
