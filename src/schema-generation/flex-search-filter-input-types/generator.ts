@@ -25,7 +25,7 @@ import {
 } from '../../schema/constants';
 import { getFlexSearchFilterTypeName } from '../../schema/names';
 import { GraphQLI18nString } from '../../schema/scalars/string-map';
-import { flatMap } from '../../utils/utils';
+
 import { EnumTypeGenerator } from '../enum-type-generator';
 import {
     ENUM_FILTER_FIELDS,
@@ -67,13 +67,13 @@ export class FlexSearchFilterTypeGenerator {
         const flexSearchFilterObjectType = this.generateFlexSearchFilterType(
             type,
             () => {
-                return flatMap(
-                    type.fields.filter(
+                return type.fields
+                    .filter(
                         (value) => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed,
-                    ),
-                    (field: Field) =>
+                    )
+                    .flatMap((field: Field) =>
                         this.generateFieldFlexSearchFilterFields(field, isAggregation),
-                );
+                    );
             },
             isAggregation,
         );

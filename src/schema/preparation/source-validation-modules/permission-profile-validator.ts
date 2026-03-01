@@ -8,7 +8,7 @@ import {
     createRoleSpecifierEntry,
     InvalidRoleSpecifierError,
 } from '../../../model/implementation/permission-profile';
-import { flatMap, isReadonlyArray } from '../../../utils/utils';
+import { isReadonlyArray } from '../../../utils/utils';
 import { ParsedSourceValidator } from '../ast-validator';
 
 export class PermissionProfileValidator implements ParsedSourceValidator {
@@ -28,7 +28,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
             return [];
         }
 
-        return flatMap(Object.entries(data.permissionProfiles as any), ([name, profile]) =>
+        return Object.entries(data.permissionProfiles as any).flatMap(([name, profile]) =>
             this.validatePermissionProfile({
                 profile,
                 name,
@@ -50,7 +50,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
             return [];
         }
 
-        return flatMap(Object.entries(profile.permissions), ([index, permission]) =>
+        return Object.entries(profile.permissions).flatMap(([index, permission]) =>
             this.validatePermission({ permission, name, pathLocationMap, index }),
         );
     }
