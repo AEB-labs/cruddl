@@ -26,7 +26,7 @@ describe('ArangoDB schema migrations (integration)', function () {
         return;
     }
 
-    this.timeout(20000);
+    this?.timeout(20000);
 
     it('creates required resources and remains stable across runs', async function () {
         const project = buildProject(gql`
