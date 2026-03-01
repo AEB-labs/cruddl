@@ -20,7 +20,7 @@ import {
     VariableDefinitionNode,
     visit,
 } from 'graphql';
-import { compact } from '../utils/utils';
+import { isDefined } from '../utils/utils';
 
 /**
  * Creates a field node with a name and an optional alias
@@ -417,7 +417,9 @@ export function collectFieldNodesInPath(
         if (!matchingFieldNodes.length) {
             throw new Error(`Field ${alias} expected but not found`);
         }
-        currentSelectionSets = compact(matchingFieldNodes.map((node) => node.selectionSet));
+        currentSelectionSets = matchingFieldNodes
+            .map((node) => node.selectionSet)
+            .filter(isDefined);
         // those matching nodes all need to be compatible - except their selection sets (which will be merged)
         // As the consumer probably does not care about the selection set (this function here is there to process them, after all), this is probably ok
         fieldNodesInPath.push(matchingFieldNodes[0]);

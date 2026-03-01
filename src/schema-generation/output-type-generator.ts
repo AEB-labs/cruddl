@@ -19,7 +19,7 @@ import {
     REVISION_FIELD,
 } from '../schema/constants';
 import { getMetaFieldName } from '../schema/names';
-import { compact } from '../utils/utils';
+import { isDefined } from '../utils/utils';
 import { EnumTypeGenerator } from './enum-type-generator';
 import { createFieldNode } from './field-nodes';
 import { FilterAugmentation } from './filter-augmentation';
@@ -106,13 +106,12 @@ export class OutputTypeGenerator {
 
         return [
             ...fields,
-            ...compact([
-                // include cursor fields in all types that could occur in lists and that can be ordered (unorderable types can't use cursor-based navigation)
-                this.createCursorField(objectType),
 
-                this.createRevisionField(objectType),
-            ]),
-        ];
+            // include cursor fields in all types that could occur in lists and that can be ordered (unorderable types can't use cursor-based navigation)
+            this.createCursorField(objectType),
+
+            this.createRevisionField(objectType),
+        ].filter(isDefined);
     }
 
     private createCursorField(objectType: ObjectType): QueryNodeField | undefined {
