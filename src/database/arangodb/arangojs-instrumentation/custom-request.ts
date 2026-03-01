@@ -4,10 +4,10 @@
  * Originally licensed under Apache License 2.0
  */
 
-import { SystemError } from 'arangojs/error';
-import { Errback } from 'arangojs/lib/errback';
-import { joinPath } from 'arangojs/lib/joinPath';
-import { omit } from 'arangojs/lib/omit';
+import { SystemError } from 'arangojs/error.js';
+import { Errback } from 'arangojs/lib/errback.js';
+import { joinPath } from 'arangojs/lib/joinPath.js';
+import { omit } from 'arangojs/lib/omit.js';
 import { RequestOptions as ArangoRequestOptions } from 'arangojs/lib/request.node';
 import {
     ClientRequest,
