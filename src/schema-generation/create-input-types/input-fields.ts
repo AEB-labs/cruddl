@@ -1,15 +1,17 @@
 import { ZonedDateTime } from '@js-joda/core';
-import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { Field } from '../../model/index.js';
+import type { GraphQLInputType } from 'graphql';
+import { GraphQLList, GraphQLNonNull } from 'graphql';
+import type { Field } from '../../model/index.js';
 import {
     GraphQLOffsetDateTime,
     serializeForStorage,
 } from '../../schema/scalars/offset-date-time.js';
-import { AnyValue, isDefined, isReadonlyArray, PlainObject } from '../../utils/utils.js';
+import type { AnyValue, PlainObject } from '../../utils/utils.js';
+import { isDefined, isReadonlyArray } from '../../utils/utils.js';
 import { createGraphQLError } from '../graphql-errors.js';
-import { FieldContext } from '../query-node-object-type/index.js';
-import { TypedInputFieldBase, TypedInputObjectType } from '../typed-input-object-type.js';
-import { CreateObjectInputType } from './input-types.js';
+import type { FieldContext } from '../query-node-object-type/index.js';
+import type { TypedInputFieldBase, TypedInputObjectType } from '../typed-input-object-type.js';
+import type { CreateObjectInputType } from './input-types.js';
 
 export interface FieldValidationContext extends FieldContext {
     readonly objectValue: PlainObject;

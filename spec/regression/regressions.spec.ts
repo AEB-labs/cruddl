@@ -3,7 +3,8 @@ import { readdirSync, statSync } from 'fs';
 import { getLogger } from 'log4js';
 import { resolve } from 'path';
 import { likePatternToRegExp } from '../../src/database/like-helpers.js';
-import { RegressionSuite, RegressionSuiteOptions } from './regression-suite.js';
+import type { RegressionSuiteOptions } from './regression-suite.js';
+import { RegressionSuite } from './regression-suite.js';
 
 const regressionRootDir = __dirname;
 

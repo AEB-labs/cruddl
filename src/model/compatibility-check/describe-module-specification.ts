@@ -1,5 +1,5 @@
-import { Field, Type } from '../implementation/index.js';
-import { EffectiveModuleSpecification } from '../implementation/modules/effective-module-specification.js';
+import type { Field, Type } from '../implementation/index.js';
+import type { EffectiveModuleSpecification } from '../implementation/modules/effective-module-specification.js';
 
 export function getRequiredBySuffix(component: Type | Field) {
     const desc = describeModuleSpecification(component.effectiveModuleSpecification, {

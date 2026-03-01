@@ -1,15 +1,12 @@
-import { Kind, TypeDefinitionNode } from 'graphql';
+import type { TypeDefinitionNode } from 'graphql';
+import { Kind } from 'graphql';
 import { prettyPrint } from '../../graphql/pretty-print.js';
 import { MODULES_DIRECTIVE } from '../../schema/constants.js';
 import { AppendChange, ChangeSet, YamlAddInMapChange } from '../change-set/change-set.js';
 import { TypeKind } from '../config/index.js';
-import { Model, ModelI18n, Type } from '../implementation/index.js';
-import {
-    QuickFix,
-    ValidationContext,
-    ValidationMessage,
-    ValidationResult,
-} from '../validation/index.js';
+import type { Model, ModelI18n, Type } from '../implementation/index.js';
+import type { ValidationResult } from '../validation/index.js';
+import { QuickFix, ValidationContext, ValidationMessage } from '../validation/index.js';
 import { generateYamlAddInMapChangesForEnumValueI18n } from './check-enum-type.js';
 import { generateYamlAddInMapChangesForFieldI18n } from './check-object-type.js';
 import { checkType } from './check-type.js';

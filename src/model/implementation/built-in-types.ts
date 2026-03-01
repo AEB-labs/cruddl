@@ -1,11 +1,5 @@
-import {
-    GraphQLBoolean,
-    GraphQLFloat,
-    GraphQLID,
-    GraphQLInt,
-    GraphQLScalarType,
-    GraphQLString,
-} from 'graphql';
+import type { GraphQLScalarType } from 'graphql';
+import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import { GraphQLJSON, GraphQLJSONObject } from 'graphql-type-json';
 import { GraphQLDateTime } from '../../schema/scalars/date-time.js';
 import {
@@ -19,10 +13,10 @@ import { GraphQLLocalTime } from '../../schema/scalars/local-time.js';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js';
 import { GraphQLI18nString, GraphQLStringMap } from '../../schema/scalars/string-map.js';
 import { TypeKind } from '../config/index.js';
-import { ModuleSpecificationClauseConfig } from '../config/module-specification.js';
-import { Model } from './model.js';
+import type { ModuleSpecificationClauseConfig } from '../config/module-specification.js';
+import type { Model } from './model.js';
 import { ScalarType } from './scalar-type.js';
-import { Type } from './type.js';
+import type { Type } from './type.js';
 
 const graphQLTypes: ReadonlyArray<GraphQLScalarType> = [
     GraphQLID,

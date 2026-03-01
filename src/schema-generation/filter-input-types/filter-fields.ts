@@ -1,12 +1,9 @@
 import { ZonedDateTime } from '@js-joda/core';
-import {
-    getNamedType,
-    GraphQLBoolean,
-    GraphQLInputType,
-    GraphQLList,
-    GraphQLNonNull,
-} from 'graphql';
-import { EnumType, Field, ScalarType, Type, TypeKind } from '../../model/index.js';
+import type { GraphQLInputType } from 'graphql';
+import { getNamedType, GraphQLBoolean, GraphQLList, GraphQLNonNull } from 'graphql';
+import type { EnumType, Field, ScalarType, Type } from '../../model/index.js';
+import { TypeKind } from '../../model/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -17,7 +14,6 @@ import {
     LiteralQueryNode,
     ObjectEntriesQueryNode,
     PropertyAccessQueryNode,
-    QueryNode,
     VariableQueryNode,
 } from '../../query-tree/index.js';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
@@ -31,17 +27,13 @@ import {
     GraphQLOffsetDateTime,
     TIMESTAMP_PROPERTY,
 } from '../../schema/scalars/offset-date-time.js';
-import {
-    AnyValue,
-    decapitalize,
-    isDefined,
-    isReadonlyArray,
-    PlainObject,
-} from '../../utils/utils.js';
+import type { AnyValue, PlainObject } from '../../utils/utils.js';
+import { decapitalize, isDefined, isReadonlyArray } from '../../utils/utils.js';
 import { createFieldNode } from '../field-nodes.js';
-import { TypedInputFieldBase } from '../typed-input-object-type.js';
-import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants.js';
-import { FilterObjectType } from './generator.js';
+import type { TypedInputFieldBase } from '../typed-input-object-type.js';
+import type { Quantifier } from './constants.js';
+import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND } from './constants.js';
+import type { FilterObjectType } from './generator.js';
 
 export interface FilterField extends TypedInputFieldBase<FilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode;

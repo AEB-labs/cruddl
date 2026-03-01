@@ -1,18 +1,19 @@
 import { expect } from 'chai';
-import { AccessOperation, AuthContext } from '../../src/authorization/auth-basics.js';
+import type { AuthContext } from '../../src/authorization/auth-basics.js';
+import { AccessOperation } from '../../src/authorization/auth-basics.js';
 import {
     PermissionDescriptor,
     PermissionResult,
     ProfileBasedPermissionDescriptor,
 } from '../../src/authorization/permission-descriptors.js';
 import { Model, PermissionProfile, TypeKind } from '../../src/model/index.js';
+import type { QueryNode } from '../../src/query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConstBoolQueryNode,
     FieldQueryNode,
     LiteralQueryNode,
-    QueryNode,
     VariableQueryNode,
 } from '../../src/query-tree/index.js';
 import { ACCESS_GROUP_FIELD } from '../../src/schema/constants.js';
