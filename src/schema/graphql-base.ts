@@ -1,9 +1,10 @@
-import { DocumentNode, EnumTypeDefinitionNode, EnumValueDefinitionNode, Kind } from 'graphql';
+import type { DocumentNode, EnumTypeDefinitionNode, EnumValueDefinitionNode } from 'graphql';
+import { Kind } from 'graphql';
 import { gql } from 'graphql-tag';
+import type { MessageCodes } from '../model/validation/suppress/message-codes.js';
 import {
     COMPATIBILITY_ISSUE_CODES,
     INFO_CODES,
-    MessageCodes,
     WARNING_CODES,
 } from '../model/validation/suppress/message-codes.js';
 

@@ -1,19 +1,19 @@
 import { print } from 'graphql';
 import { applyAuthorizationToQueryTree } from '../authorization/execution.js';
 import { globalContext } from '../config/global.js';
-import { RequestProfile } from '../config/interfaces.js';
-import {
+import type { RequestProfile } from '../config/interfaces.js';
+import type {
     DatabaseAdapter,
     ExecutionPlan,
     FlexSearchTokenizable,
     TransactionStats,
 } from '../database/database-adapter.js';
-import { OperationParams } from '../graphql/operation-based-resolvers.js';
+import type { OperationParams } from '../graphql/operation-based-resolvers.js';
 import { distillOperation } from '../graphql/query-distiller.js';
+import type { FlexSearchTokenization } from '../query-tree/flex-search.js';
 import {
     FlexSearchComplexOperatorQueryNode,
     FlexSearchQueryNode,
-    FlexSearchTokenization,
 } from '../query-tree/flex-search.js';
 import {
     BinaryOperator,
@@ -24,17 +24,20 @@ import {
     WithPreExecutionQueryNode,
 } from '../query-tree/index.js';
 import { evaluateQueryStatically } from '../query-tree/utils/index.js';
-import {
-    buildConditionalObjectQueryNode,
+import type {
     FieldContext,
     QueryNodeObjectType,
+} from '../schema-generation/query-node-object-type/index.js';
+import {
+    buildConditionalObjectQueryNode,
     SelectionToken,
 } from '../schema-generation/query-node-object-type/index.js';
-import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
+import type { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
 import { isDefined } from '../utils/utils.js';
 import { getPreciseTime, Watch } from '../utils/watch.js';
-import { DefaultClock, ExecutionOptions, UUIDGenerator } from './execution-options.js';
-import { ExecutionResult } from './execution-result.js';
+import type { ExecutionOptions } from './execution-options.js';
+import { DefaultClock, UUIDGenerator } from './execution-options.js';
+import type { ExecutionResult } from './execution-result.js';
 
 export class OperationResolver {
     constructor(private context: SchemaTransformationContext) {}

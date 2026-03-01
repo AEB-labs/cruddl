@@ -1,13 +1,14 @@
 import { ZonedDateTime } from '@js-joda/core';
-import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { CalcMutationsOperator, Field } from '../../model/index.js';
+import type { GraphQLInputType } from 'graphql';
+import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
+import type { CalcMutationsOperator, Field } from '../../model/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     LiteralQueryNode,
     MergeObjectsQueryNode,
     ObjectQueryNode,
-    QueryNode,
     SetFieldQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
@@ -22,12 +23,16 @@ import {
     GraphQLOffsetDateTime,
     serializeForStorage,
 } from '../../schema/scalars/offset-date-time.js';
-import { AnyValue, isDefined, isReadonlyArray, PlainObject } from '../../utils/utils.js';
-import { CreateChildEntityInputType, CreateObjectInputType } from '../create-input-types/index.js';
+import type { AnyValue, PlainObject } from '../../utils/utils.js';
+import { isDefined, isReadonlyArray } from '../../utils/utils.js';
+import type {
+    CreateChildEntityInputType,
+    CreateObjectInputType,
+} from '../create-input-types/index.js';
 import { createFieldNode } from '../field-nodes.js';
-import { FieldContext } from '../query-node-object-type/index.js';
-import { TypedInputFieldBase, TypedInputObjectType } from '../typed-input-object-type.js';
-import {
+import type { FieldContext } from '../query-node-object-type/index.js';
+import type { TypedInputFieldBase, TypedInputObjectType } from '../typed-input-object-type.js';
+import type {
     UpdateChildEntityInputType,
     UpdateEntityExtensionInputType,
     UpdateObjectInputType,

@@ -1,5 +1,6 @@
 import { expect } from 'chai';
-import { ValidationContext, ValidationMessage } from '../../../src/model/validation/index.js';
+import type { ValidationMessage } from '../../../src/model/validation/index.js';
+import { ValidationContext } from '../../../src/model/validation/index.js';
 import { ProjectSource } from '../../../src/project/source.js';
 import { PermissionProfileValidator } from '../../../src/schema/preparation/source-validation-modules/permission-profile-validator.js';
 import { parseProjectSource } from '../../../src/schema/schema-builder.js';

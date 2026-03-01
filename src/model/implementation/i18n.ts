@@ -8,19 +8,20 @@ import {
     mapFirstDefined,
     mapValues,
 } from '../../utils/utils.js';
-import {
+import type {
     LocalizationBaseConfig,
     LocalizationConfig,
     NamespaceLocalizationConfig,
     TypeLocalizationConfig,
 } from '../config/index.js';
-import { MessageLocation, ValidationMessage } from '../validation/index.js';
-import { ModelComponent, ValidationContext } from '../validation/validation-context.js';
-import { EnumValue } from './enum-type.js';
-import { Field } from './field.js';
-import { Model } from './model.js';
-import { TypeBase } from './type-base.js';
-import { Type } from './type.js';
+import type { MessageLocation } from '../validation/index.js';
+import { ValidationMessage } from '../validation/index.js';
+import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import type { EnumValue } from './enum-type.js';
+import type { Field } from './field.js';
+import type { Model } from './model.js';
+import type { TypeBase } from './type-base.js';
+import type { Type } from './type.js';
 
 export class ModelI18n implements ModelComponent {
     private readonly languageLocalizationProvidersByLanguage: ReadonlyMap<

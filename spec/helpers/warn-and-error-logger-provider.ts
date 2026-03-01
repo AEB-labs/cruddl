@@ -1,4 +1,4 @@
-import { Logger, LoggerProvider } from '../../src/config/logging.js';
+import type { Logger, LoggerProvider } from '../../src/config/logging.js';
 
 export class WarnAndErrorLoggerProvider implements LoggerProvider {
     getLogger(category: string): Logger {

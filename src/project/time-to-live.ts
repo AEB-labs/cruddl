@@ -1,7 +1,9 @@
-import { DateTimeFormatter, Instant, ZonedDateTime, ZoneId } from '@js-joda/core';
-import { Clock } from '../execution/execution-options.js';
-import { TimeToLiveType } from '../model/implementation/time-to-live.js';
-import { Field, ScalarType } from '../model/index.js';
+import type { ZonedDateTime } from '@js-joda/core';
+import { DateTimeFormatter, Instant, ZoneId } from '@js-joda/core';
+import type { Clock } from '../execution/execution-options.js';
+import type { TimeToLiveType } from '../model/implementation/time-to-live.js';
+import type { Field, ScalarType } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -13,7 +15,6 @@ import {
     NullQueryNode,
     ObjectQueryNode,
     PropertySpecification,
-    QueryNode,
     TransformListQueryNode,
     VariableQueryNode,
 } from '../query-tree/index.js';

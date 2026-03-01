@@ -1,26 +1,23 @@
 import { deepEqual } from 'fast-equals';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs';
-import { graphql, GraphQLSchema, OperationDefinitionNode, OperationTypeNode, parse } from 'graphql';
+import type { GraphQLSchema, OperationDefinitionNode } from 'graphql';
+import { graphql, OperationTypeNode, parse } from 'graphql';
 import { unlinkSync } from 'node:fs';
 import { resolve } from 'path';
 import stripJsonComments from 'strip-json-comments';
-import { RequestProfile } from '../../src/config/interfaces.js';
+import type { RequestProfile } from '../../src/config/interfaces.js';
 import { ArangoDBAdapter } from '../../src/database/arangodb/index.js';
-import { DatabaseAdapter } from '../../src/database/database-adapter.js';
+import type { DatabaseAdapter } from '../../src/database/database-adapter.js';
 import { InMemoryAdapter, InMemoryDB } from '../../src/database/inmemory/index.js';
-import { IDGenerationInfo, IDGenerator } from '../../src/execution/execution-options.js';
+import type { IDGenerationInfo, IDGenerator } from '../../src/execution/execution-options.js';
 import { loadProjectFromDir } from '../../src/project/project-from-fs.js';
-import { ProjectOptions } from '../../src/project/project.js';
+import type { ProjectOptions } from '../../src/project/project.js';
 import { ErrorWithCause } from '../../src/utils/error-with-cause.js';
 import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider.js';
 import { WarnAndErrorLoggerProvider } from '../helpers/warn-and-error-logger-provider.js';
 import { InitTestDataContext } from './init-test-data-context.js';
-import {
-    createTempDatabase,
-    initTestData,
-    TEMP_DATABASE_CONFIG,
-    TestDataEnvironment,
-} from './initialization.js';
+import type { TestDataEnvironment } from './initialization.js';
+import { createTempDatabase, initTestData, TEMP_DATABASE_CONFIG } from './initialization.js';
 
 interface TestResult {
     readonly actualResult: any;

@@ -1,12 +1,13 @@
-import { ASTNode } from 'graphql';
+import type { ASTNode } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import {
+import type {
     BaseModuleSpecificationConfig,
     ModuleSpecificationClauseConfig,
 } from '../../config/module-specification.js';
 import { ValidationMessage, locationWithinStringArgument } from '../../validation/index.js';
-import { ModelComponent, ValidationContext } from '../../validation/validation-context.js';
-import { Model } from '../model.js';
+import type { ModelComponent } from '../../validation/validation-context.js';
+import { ValidationContext } from '../../validation/validation-context.js';
+import type { Model } from '../model.js';
 import { parseModuleSpecificationExpression } from './expression-parser.js';
 
 export abstract class BaseModuleSpecification implements ModelComponent {

@@ -1,23 +1,22 @@
-import {
+import type {
     DirectiveNode,
     FieldDefinitionNode,
-    isTypeDefinitionNode,
-    Kind,
     ListValueNode,
     Location,
     ObjectValueNode,
-    print,
     StringValueNode,
     TypeDefinitionNode,
 } from 'graphql';
-import {
+import { isTypeDefinitionNode, Kind, print } from 'graphql';
+import type {
     ParsedGraphQLProjectSource,
     ParsedObjectProjectSource,
-    ParsedProjectSourceBaseKind,
 } from '../config/parsed-project.js';
+import { ParsedProjectSourceBaseKind } from '../config/parsed-project.js';
 import { isCommentOnlySource } from '../graphql/is-comment-only-source.js';
 import { parseModuleSpecificationExpression } from '../model/implementation/modules/expression-parser.js';
-import { IndexField, Model, RootEntityType, ValidationMessage } from '../model/index.js';
+import type { Model, RootEntityType } from '../model/index.js';
+import { IndexField, ValidationMessage } from '../model/index.js';
 import { ValidationContext } from '../model/validation/validation-context.js';
 import {
     INDICES_ARG,
@@ -28,7 +27,8 @@ import {
 import { parseProjectSource } from '../schema/schema-builder.js';
 import { findDirectiveWithName } from '../schema/schema-utils.js';
 import { isReadonlyArray } from '../utils/utils.js';
-import { Project, ProjectOptions } from './project.js';
+import type { ProjectOptions } from './project.js';
+import { Project } from './project.js';
 import { ProjectSource } from './source.js';
 
 export interface ModuleSelectionOptions {

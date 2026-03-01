@@ -1,4 +1,5 @@
-import { ASTNode, GraphQLScalarType, Kind } from 'graphql';
+import type { ASTNode } from 'graphql';
+import { GraphQLScalarType, Kind } from 'graphql';
 import { isDefined, isReadonlyArray } from '../../utils/utils.js';
 
 function ensureStringMap(value: any) {

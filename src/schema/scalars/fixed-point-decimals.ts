@@ -1,4 +1,5 @@
-import { GraphQLError, GraphQLScalarType, Kind, print, ValueNode } from 'graphql';
+import type { ValueNode } from 'graphql';
+import { GraphQLError, GraphQLScalarType, Kind, print } from 'graphql';
 
 function createFixedPointDecimalType(decimals: number) {
     const typeName = `Decimal${decimals}`;

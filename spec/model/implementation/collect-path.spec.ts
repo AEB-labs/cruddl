@@ -1,11 +1,6 @@
 import { expect } from 'chai';
-import {
-    CollectPath,
-    CollectPathSegment,
-    Model,
-    TypeKind,
-    ValidationContext,
-} from '../../../src/model/index.js';
+import type { CollectPathSegment } from '../../../src/model/index.js';
+import { CollectPath, Model, TypeKind, ValidationContext } from '../../../src/model/index.js';
 
 describe('CollectPath', () => {
     const model = new Model({

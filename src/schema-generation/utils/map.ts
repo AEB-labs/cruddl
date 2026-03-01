@@ -1,11 +1,11 @@
-import { RootEntityType } from '../../model/implementation/index.js';
+import type { RootEntityType } from '../../model/implementation/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     EntityFromIdQueryNode,
     ListQueryNode,
     LiteralQueryNode,
-    QueryNode,
     RootEntityIDQueryNode,
     TransformListQueryNode,
     VariableQueryNode,

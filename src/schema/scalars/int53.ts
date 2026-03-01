@@ -1,4 +1,5 @@
-import { GraphQLError, GraphQLScalarType, Kind, print, ValueNode } from 'graphql';
+import type { ValueNode } from 'graphql';
+import { GraphQLError, GraphQLScalarType, Kind, print } from 'graphql';
 
 function coerceInt53(value: unknown) {
     if (typeof value !== 'number' || !Number.isInteger(value)) {

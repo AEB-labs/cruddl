@@ -1,18 +1,23 @@
-import {
-    Clock,
-    DefaultClock,
-    IDGenerator,
-    UUIDGenerator,
-} from '../../execution/execution-options.js';
-import { FieldSegment } from '../../model/implementation/collect-path.js';
+import type { Clock, IDGenerator } from '../../execution/execution-options.js';
+import { DefaultClock, UUIDGenerator } from '../../execution/execution-options.js';
+import type { FieldSegment } from '../../model/implementation/collect-path.js';
 import { IDENTITY_ANALYZER } from '../../model/implementation/flex-search.js';
-import { AggregationOperator, Field, Relation, RootEntityType } from '../../model/index.js';
+import type { Field, Relation, RootEntityType } from '../../model/index.js';
+import { AggregationOperator } from '../../model/index.js';
 import {
     FlexSearchComplexOperatorQueryNode,
     FlexSearchFieldExistsQueryNode,
     FlexSearchQueryNode,
     FlexSearchStartsWithQueryNode,
 } from '../../query-tree/flex-search.js';
+import type {
+    EdgeIdentifier,
+    OrderSpecification,
+    PartialEdgeIdentifier,
+    QueryNode,
+    QueryResultValidator,
+    SetFieldQueryNode,
+} from '../../query-tree/index.js';
 import {
     AddEdgesQueryNode,
     AggregationQueryNode,
@@ -32,7 +37,6 @@ import {
     DeleteEntitiesQueryNode,
     DeleteEntitiesResultValue,
     DynamicPropertyAccessQueryNode,
-    EdgeIdentifier,
     EntitiesIdentifierKind,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
@@ -50,11 +54,7 @@ import {
     ObjectQueryNode,
     OperatorWithAnalyzerQueryNode,
     OrderDirection,
-    OrderSpecification,
-    PartialEdgeIdentifier,
     PropertyAccessQueryNode,
-    QueryNode,
-    QueryResultValidator,
     RemoveEdgesQueryNode,
     RevisionQueryNode,
     RootEntityIDQueryNode,
@@ -63,7 +63,6 @@ import {
     RuntimeErrorQueryNode,
     SafeListQueryNode,
     SetEdgeQueryNode,
-    SetFieldQueryNode,
     TransformListQueryNode,
     TraversalQueryNode,
     TypeCheckQueryNode,
@@ -75,21 +74,23 @@ import {
     VariableQueryNode,
     WithPreExecutionQueryNode,
 } from '../../query-tree/index.js';
-import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers.js';
+import type { Quantifier } from '../../query-tree/quantifiers.js';
+import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
 import {
     extractVariableAssignments,
     getReferencedVariables,
     simplifyBooleans,
 } from '../../query-tree/utils/index.js';
 import { not } from '../../schema-generation/utils/input-types.js';
-import { Constructor, decapitalize, isDefined, isReadonlyArray } from '../../utils/utils.js';
-import { FlexSearchTokenizable } from '../database-adapter.js';
+import type { Constructor } from '../../utils/utils.js';
+import { decapitalize, isDefined, isReadonlyArray } from '../../utils/utils.js';
+import type { FlexSearchTokenizable } from '../database-adapter.js';
 import { analyzeLikePatternPrefix } from '../like-helpers.js';
+import type { AQLFragment } from './aql.js';
 import {
     aql,
     AQLCollection,
     AQLCompoundQuery,
-    AQLFragment,
     AQLQueryResultVariable,
     AQLVariable,
 } from './aql.js';
