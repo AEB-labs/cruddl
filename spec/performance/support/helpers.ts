@@ -1,4 +1,4 @@
-import { Database } from 'arangojs';
+import { aql, Database } from 'arangojs';
 import type { GraphQLSchema } from 'graphql';
 import { graphql } from 'graphql';
 import { resolve } from 'path';
@@ -9,10 +9,6 @@ import type { Project } from '../../../src/project/project.js';
 import { range } from '../../../src/utils/utils.js';
 import { WarnAndErrorLoggerProvider } from '../../helpers/warn-and-error-logger-provider.js';
 import { createTempDatabase } from '../../regression/initialization.js';
-
-// arangojs typings for this are completely broken
-export const aql: (template: TemplateStringsArray, ...args: ReadonlyArray<any>) => any =
-    require('arangojs').aql;
 
 const MODEL_PATH = resolve(__dirname, '../../regression/papers/model');
 
