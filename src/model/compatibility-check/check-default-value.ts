@@ -1,4 +1,4 @@
-import deepEqual from 'deep-equal';
+import { deepEqual } from 'fast-equals';
 import { print } from 'graphql';
 import { createValueNodeFromValue } from '../../graphql/value-to-ast';
 import { Field } from '../implementation';
