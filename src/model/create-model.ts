@@ -86,7 +86,7 @@ import {
     getTypeNameIgnoringNonNullAndList,
     hasDirectiveWithName,
 } from '../schema/schema-utils';
-import { compact, flatMap, mapValues } from '../utils/utils';
+import { compact, mapValues } from '../utils/utils';
 import {
     AggregationOperator,
     CalcMutationsOperator,
@@ -168,7 +168,7 @@ function createTypeInputs(
     const graphQLSchemaParts = parsedProject.sources.filter(
         (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.GRAPHQL,
     ) as ReadonlyArray<ParsedGraphQLProjectSource>;
-    return flatMap(graphQLSchemaParts, (schemaPart) =>
+    return graphQLSchemaParts.flatMap((schemaPart) =>
         compact(
             schemaPart.document.definitions.map((definition) => {
                 // Only look at object types and enums (scalars are not supported yet, they need to be implemented somehow, e.g. via regex check)
@@ -1174,7 +1174,7 @@ function extractI18n(parsedProject: ParsedProject): ReadonlyArray<LocalizationCo
     const objectSchemaParts = parsedProject.sources.filter(
         (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT,
     ) as ReadonlyArray<ParsedObjectProjectSource>;
-    return flatMap(objectSchemaParts, (source) => parseI18nConfigs(source));
+    return objectSchemaParts.flatMap((source) => parseI18nConfigs(source));
 }
 
 function extractBilling(parsedProject: ParsedProject): BillingConfig {

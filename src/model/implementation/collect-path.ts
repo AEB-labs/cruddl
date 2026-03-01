@@ -1,7 +1,7 @@
 import { StringValueNode } from 'graphql';
 import memorize from 'memorize-decorator';
 import { QueryNode, VariableQueryNode } from '../../query-tree';
-import { flatMap } from '../../utils/utils';
+
 import { CollectFieldConfig } from '../config';
 import { Field } from './field';
 import {
@@ -82,7 +82,7 @@ export class CollectPath {
     }
 
     getFlatSegments(): ReadonlyArray<FieldSegment | RelationSegment> {
-        return flatMap(this.segments, (seg) =>
+        return this.segments.flatMap((seg) =>
             seg.kind === 'collect' ? seg.path.getFlatSegments() : [seg],
         );
     }

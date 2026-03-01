@@ -1,6 +1,6 @@
 import { blue, cyan, magenta } from '../../utils/colors';
 import { QueryResultValidator } from '../../query-tree';
-import { arrayToObject, flatMap } from '../../utils/utils';
+import { arrayToObject } from '../../utils/utils';
 
 function stringify(val: any) {
     if (val === undefined) {
@@ -450,7 +450,7 @@ export class AQLCompoundQuery extends AQLFragment {
     private getExecutableQueriesRecursive(
         resultVarToNameMap: Map<AQLQueryResultVariable, string>,
     ): ReadonlyArray<AQLExecutableQuery> {
-        const executableQueries = flatMap(this.preExecQueries, (aqlQuery) =>
+        const executableQueries = this.preExecQueries.flatMap((aqlQuery) =>
             aqlQuery.getExecutableQueriesRecursive(resultVarToNameMap),
         );
 
