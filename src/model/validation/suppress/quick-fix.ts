@@ -1,4 +1,4 @@
-import { ArgumentNode, ASTNode, DirectiveNode, Kind, ListValueNode, print } from 'graphql/index';
+import { ArgumentNode, ASTNode, DirectiveNode, Kind, ListValueNode, print } from 'graphql';
 import { SUPPRESS_DIRECTIVE } from '../../../schema/constants';
 import { ChangeSet, TextChange } from '../../change-set/change-set';
 import { MessageLocation } from '../location';
