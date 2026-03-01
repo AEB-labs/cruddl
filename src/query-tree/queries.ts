@@ -5,7 +5,7 @@ import {
     RelationSegment,
 } from '../model/implementation/collect-path';
 import { blue } from '../utils/colors';
-import { indent } from '../utils/utils';
+import { indent, isDefined } from '../utils/utils';
 import { QueryNode } from './base';
 import { OrderSpecification } from './lists';
 import { EntitiesIdentifierKind } from './mutations';
@@ -349,7 +349,7 @@ export class TraversalQueryNode extends QueryNode {
                     (this.filterNode ? `\nwith filter: ${this.filterNode.describe()}` : '') +
                     (!this.orderBy.isUnordered() ? `\norder by: ${this.orderBy.describe()}` : '') +
                     (this.skip != 0 ? `skip ${this.skip}\n` : '') +
-                    (this.maxCount != undefined ? `limit ${this.maxCount}\n` : '') +
+                    (isDefined(this.maxCount) ? `limit ${this.maxCount}\n` : '') +
                     (this.preserveNullValues ? `preserving null values\n` : '') +
                     (this.innerNode ? `\nas ${this.innerNode.describe()}` : ''),
             ) +

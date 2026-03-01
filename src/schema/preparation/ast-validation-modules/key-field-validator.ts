@@ -1,5 +1,6 @@
 import { DocumentNode } from 'graphql';
 import { ValidationMessage } from '../../../model';
+import { isDefined } from '../../../utils/utils';
 import { KEY_FIELD_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../constants';
 import { getObjectTypes } from '../../schema-utils';
 import { ASTValidator } from '../ast-validator';
@@ -15,7 +16,7 @@ export class KeyFieldValidator implements ASTValidator {
             const keyFields = (objectTypeDefinition.fields || [])
                 .filter(
                     (field) =>
-                        field.directives != undefined &&
+                        isDefined(field.directives) &&
                         field.directives.some(
                             (directive) => directive.name.value === KEY_FIELD_DIRECTIVE,
                         ),
@@ -23,7 +24,7 @@ export class KeyFieldValidator implements ASTValidator {
                 .forEach((keyField) => {
                     counter++;
                     if (
-                        objectTypeDefinition.directives != undefined &&
+                        isDefined(objectTypeDefinition.directives) &&
                         !objectTypeDefinition.directives.some(
                             (directive) => directive.name.value === ROOT_ENTITY_DIRECTIVE,
                         )

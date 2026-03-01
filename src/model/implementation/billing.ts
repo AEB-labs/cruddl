@@ -1,6 +1,7 @@
 import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import memorize from 'memorize-decorator';
 import { GraphQLInt53 } from '../../schema/scalars/int53';
+import { isDefined } from '../../utils/utils';
 import { BillingEntityCategoryMappingConfig, BillingEntityConfig } from '../config/billing';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
@@ -128,8 +129,8 @@ export class BillingEntityType implements ModelComponent {
             return;
         }
 
-        if (this.input.category != undefined) {
-            if (this.input.categoryMapping != undefined) {
+        if (isDefined(this.input.category)) {
+            if (isDefined(this.input.categoryMapping)) {
                 context.addMessage(
                     ValidationMessage.error(
                         `"category" and "categoryMapping" cannot be combined.`,
@@ -146,7 +147,7 @@ export class BillingEntityType implements ModelComponent {
             return;
         }
 
-        if (this.input.categoryMapping == undefined || !this.categoryMappingFieldPath) {
+        if (!isDefined(this.input.categoryMapping) || !this.categoryMappingFieldPath) {
             return;
         }
 

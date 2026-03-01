@@ -1,5 +1,6 @@
 import { QueryResultValidator } from '../../query-tree';
 import { cyan, magenta } from '../../utils/colors';
+import { isDefined } from '../../utils/utils';
 
 function stringify(val: any) {
     if (val === undefined) {
@@ -61,7 +62,7 @@ export class JSCodeBuildingContext {
 
     getOrAddVariable(token: JSVariable): string {
         const existingBinding = this.variableBindings.get(token);
-        if (existingBinding != undefined) {
+        if (isDefined(existingBinding)) {
             return existingBinding;
         }
         const safeLabel = JSCodeBuildingContext.getSafeLabel(token.label);

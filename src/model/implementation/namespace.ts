@@ -1,6 +1,6 @@
 import memorize from 'memorize-decorator';
 import { DEFAULT_PERMISSION_PROFILE } from '../../schema/constants';
-import { capitalize, groupArray } from '../../utils/utils';
+import { capitalize, groupArray, isDefined } from '../../utils/utils';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { PermissionProfile } from './permission-profile';
@@ -43,7 +43,7 @@ export class Namespace implements ModelComponent {
         const childNamespaceNames = new Set(
             allPaths
                 .map((path) => path[this.path.length]) // extract next segment
-                .filter((name) => name != undefined),
+                .filter((name) => isDefined(name)),
         );
         const childNamespaceMap = new Map<string, Namespace>();
         for (const childName of childNamespaceNames.values()) {
@@ -132,7 +132,7 @@ export class Namespace implements ModelComponent {
     }
 
     get isRoot(): boolean {
-        return this.parent == undefined;
+        return !isDefined(this.parent);
     }
 
     private extractNextSegment(type: Type) {
@@ -194,7 +194,7 @@ export class Namespace implements ModelComponent {
 
     getPermissionProfileOrThrow(name: string): PermissionProfile {
         const profile = this.getPermissionProfile(name);
-        if (profile == undefined) {
+        if (!isDefined(profile)) {
             throw new Error(
                 `Permission profile "${name}" does not exist in namespace ${this.dotSeparatedPath}`,
             );

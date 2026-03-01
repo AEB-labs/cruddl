@@ -36,7 +36,7 @@ import {
     INPUT_FIELD_STARTS_WITH,
     OR_FILTER_FIELD,
 } from '../../schema/constants';
-import { AnyValue, isReadonlyArray, PlainObject } from '../../utils/utils';
+import { AnyValue, isDefined, isReadonlyArray, PlainObject } from '../../utils/utils';
 import {
     FilterField,
     getScalarFilterLiteralValue,
@@ -111,7 +111,7 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
             operator: operatorSuffix,
             fieldName: field.name,
             typeName: field.type.name,
-            isAggregation: this.operatorSuffix != undefined,
+            isAggregation: isDefined(this.operatorSuffix),
         });
 
         if (this.field.description) {
@@ -256,7 +256,7 @@ export class FlexSearchNestedObjectFilterField implements FlexSearchFilterField 
                 `Recursive filters can only be defined for ${recursionDepth} level of recursion.`,
             );
         }
-        if (filterValue == null) {
+        if (!isDefined(filterValue)) {
             const valueNode = new FieldQueryNode(sourceNode, this.field);
             const literalNode = new NullQueryNode();
             const node = new BinaryOperationQueryNode(
@@ -302,7 +302,7 @@ export class FlexSearchEntityExtensionFilterField implements FlexSearchFilterFie
         path: ReadonlyArray<Field>,
         info: QueryNodeResolveInfo,
     ): QueryNode {
-        if (filterValue == undefined) {
+        if (!isDefined(filterValue)) {
             // entity extensions can't ever be null, and null is always coerced to {}, so this filter just shouldn't have any effect
             return ConstBoolQueryNode.TRUE;
         }
@@ -328,7 +328,7 @@ export class FlexSearchEmptyListFilterField implements FlexSearchFilterField {
         path: ReadonlyArray<Field>,
         info: QueryNodeResolveInfo,
     ): QueryNode {
-        if (filterValue == undefined) {
+        if (!isDefined(filterValue)) {
             // null means do not filter
             return ConstBoolQueryNode.TRUE;
         }
@@ -436,7 +436,7 @@ export class FlexSearchI18nStringLocalizedFilterField implements FlexSearchFilte
         path: ReadonlyArray<Field>,
         info: QueryNodeResolveInfo,
     ): QueryNode {
-        if (filterValue == undefined) {
+        if (!isDefined(filterValue)) {
             // does not really make sense because language is required
             return ConstBoolQueryNode.TRUE;
         }
@@ -481,7 +481,7 @@ export function resolveFilterField(
 ): QueryNode {
     if (
         FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND.includes(filterField.operatorName) &&
-        filterValue == null
+        !isDefined(filterValue)
     ) {
         return new ConstBoolQueryNode(true);
     }
@@ -490,7 +490,7 @@ export function resolveFilterField(
     if (
         (filterField.operatorName === INPUT_FIELD_EQUAL ||
             filterField.operatorName === INPUT_FIELD_LTE) &&
-        filterValue == null
+        !isDefined(filterValue)
     ) {
         return new BinaryOperationQueryNode(
             new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, NullQueryNode.NULL),
@@ -502,7 +502,7 @@ export function resolveFilterField(
     if (
         (filterField.operatorName === INPUT_FIELD_LT ||
             filterField.operatorName === INPUT_FIELD_LTE) &&
-        filterValue != null
+        isDefined(filterValue)
     ) {
         const isNull = new BinaryOperationQueryNode(
             new BinaryOperationQueryNode(valueNode, BinaryOperator.EQUAL, NullQueryNode.NULL),
@@ -529,7 +529,7 @@ export function resolveFilterField(
     if (
         (filterField.operatorName == INPUT_FIELD_NOT ||
             filterField.operatorName === INPUT_FIELD_GT) &&
-        filterValue == null
+        !isDefined(filterValue)
     ) {
         return new BinaryOperationQueryNode(
             new BinaryOperationQueryNode(valueNode, BinaryOperator.UNEQUAL, NullQueryNode.NULL),
@@ -566,7 +566,7 @@ export function resolveFilterField(
             STRING_TEXT_ANALYZER_FILTER_FIELDS.some(
                 (value) => filterField.operatorName === value,
             )) &&
-        (filterValue == null || filterValue === '')
+        (!isDefined(filterValue) || filterValue === '')
     ) {
         return new ConstBoolQueryNode(true);
     }
