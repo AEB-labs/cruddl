@@ -1,4 +1,4 @@
-import { Kind } from 'graphql/index';
+import { Kind } from 'graphql';
 import { SUPPRESS_DIRECTIVE } from '../../../schema/constants';
 import { AstNodeWithDirectives, Severity } from '../message';
 import { MessageCode } from './message-codes';
