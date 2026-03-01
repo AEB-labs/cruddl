@@ -11,6 +11,7 @@ import {
     VariableQueryNode,
 } from '../../query-tree';
 
+import { isDefined } from '../../utils/utils';
 import { createFieldPathNode } from '../field-path-node';
 import { equal } from './input-types';
 
@@ -18,7 +19,7 @@ export function createBillingEntityCategoryNode(
     billingEntityConfig: BillingEntityType,
     entityNode: QueryNode,
 ) {
-    if (billingEntityConfig.category != undefined) {
+    if (isDefined(billingEntityConfig.category)) {
         return new LiteralQueryNode(billingEntityConfig.category);
     }
     if (

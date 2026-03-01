@@ -8,7 +8,7 @@ import {
     VariableQueryNode,
 } from '../../query-tree';
 import { ID_FIELD } from '../../schema/constants';
-import { decapitalize } from '../../utils/utils';
+import { decapitalize, isDefined } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { createGraphQLError } from '../graphql-errors';
 import { FieldContext } from '../query-node-object-type';
@@ -24,8 +24,8 @@ export function getEntitiesByUniqueFieldQuery(
         const id = args[ID_FIELD];
         const key = args[rootEntityType.keyField.name];
 
-        if (id != undefined) {
-            if (key != undefined) {
+        if (isDefined(id)) {
+            if (isDefined(key)) {
                 throw createGraphQLError(
                     `Only one of the arguments "${ID_FIELD}" and "${rootEntityType.keyField.name}" may be specified`,
                     context,
@@ -34,7 +34,7 @@ export function getEntitiesByUniqueFieldQuery(
             fieldName = ID_FIELD;
             value = id;
         } else {
-            if (key == undefined) {
+            if (!isDefined(key)) {
                 throw createGraphQLError(
                     `One of the arguments "${ID_FIELD}" and "${rootEntityType.keyField.name}" is required`,
                     context,
@@ -45,7 +45,7 @@ export function getEntitiesByUniqueFieldQuery(
         }
     } else {
         const id = args[ID_FIELD];
-        if (id == undefined) {
+        if (!isDefined(id)) {
             throw createGraphQLError(`Argument "${ID_FIELD}" is required`, context);
         }
         fieldName = ID_FIELD;

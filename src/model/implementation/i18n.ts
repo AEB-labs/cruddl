@@ -600,7 +600,7 @@ class GenericLocalizationProvider implements LocalizationProvider {
 }
 
 function generateGenericName(name: string | undefined): string | undefined {
-    if (name == undefined) {
+    if (!isDefined(name)) {
         return undefined;
     }
     return capitalize(

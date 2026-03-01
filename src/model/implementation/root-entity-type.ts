@@ -183,8 +183,8 @@ export class RootEntityType extends ObjectTypeBase {
     }
 
     get permissionProfile(): PermissionProfile | undefined {
-        if (this.permissions.permissionProfileName == undefined) {
-            if (this.permissions.roles != undefined) {
+        if (!isDefined(this.permissions.permissionProfileName)) {
+            if (isDefined(this.permissions.roles)) {
                 // if @roles is specified, this root entity explicitly does not have a permission profile
                 return undefined;
             }
@@ -246,7 +246,7 @@ export class RootEntityType extends ObjectTypeBase {
     }
 
     private validateKeyField(context: ValidationContext) {
-        if (this.input.keyFieldName == undefined) {
+        if (!isDefined(this.input.keyFieldName)) {
             return;
         }
         const astNode = this.input.keyFieldASTNode || this.astNode;
@@ -292,7 +292,7 @@ export class RootEntityType extends ObjectTypeBase {
 
     private validatePermissions(context: ValidationContext) {
         const permissions = this.permissions;
-        if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
+        if (isDefined(permissions.permissionProfileName) && isDefined(permissions.roles)) {
             const message = `Permission profile and explicit role specifiers cannot be combined.`;
             context.addMessage(
                 ValidationMessage.error(
@@ -306,7 +306,7 @@ export class RootEntityType extends ObjectTypeBase {
         }
 
         if (
-            permissions.permissionProfileName != undefined &&
+            isDefined(permissions.permissionProfileName) &&
             !this.namespace.getPermissionProfile(permissions.permissionProfileName)
         ) {
             context.addMessage(
