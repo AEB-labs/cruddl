@@ -11,7 +11,7 @@ import {
     RootTypesGenerator,
 } from '../../src/schema-generation';
 import { createRootFieldContext } from '../../src/schema-generation/query-node-object-type';
-import { compact } from '../../src/utils/utils';
+import { isDefined } from '../../src/utils/utils';
 import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
 import { createTestProject } from './support/helpers';
 
@@ -150,13 +150,15 @@ function testQueryPipeline(params: {
     auth: boolean;
     aql: boolean;
 }): BenchmarkConfig {
-    const optionsStr = compact([
+    const optionsStr = [
         params.parser ? 'parser' : undefined,
         params.queryDistiller ? 'query-distiller' : undefined,
         params.queryTree ? 'query-tree' : undefined,
         params.aql ? 'aql' : undefined,
         params.auth ? 'auth' : undefined,
-    ]).join(', ');
+    ]
+        .filter(isDefined)
+        .join(', ');
 
     let schema: GraphQLSchema;
     let model: Model;
