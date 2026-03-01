@@ -1,8 +1,7 @@
 import { Kind, ObjectFieldNode, ValueNode } from 'graphql';
-import { isDefined } from '../utils/utils';
 
 export function createValueNodeFromValue(value: unknown): ValueNode {
-    if (!isDefined(value)) {
+    if (value === null || value === undefined) {
         return {
             kind: Kind.NULL,
         };
