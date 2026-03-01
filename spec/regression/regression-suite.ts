@@ -20,7 +20,7 @@ import { InitTestDataContext } from './init-test-data-context';
 import { WarnAndErrorLoggerProvider } from '../helpers/warn-and-error-logger-provider';
 import { RequestProfile } from '../../src/config/interfaces';
 import { unlinkSync } from 'node:fs';
-import deepEqual = require('deep-equal');
+import { deepEqual } from 'fast-equals';
 
 interface TestResult {
     readonly actualResult: any;

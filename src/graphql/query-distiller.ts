@@ -14,7 +14,6 @@ import {
     SelectionNode,
     TypeNameMetaFieldDef,
 } from 'graphql';
-import { isEqual } from 'lodash';
 import { blue, cyan, green } from '../utils/colors';
 import { arrayToObject, flatMap, groupArray, indent, INDENTATION } from '../utils/utils';
 import { getArgumentValues } from './argument-values';
@@ -22,6 +21,7 @@ import { resolveSelections } from './field-collection';
 import { getAliasOrName } from './language-utils';
 import { extractOperation } from './operations';
 import { getOperationRootType } from './schema-utils';
+import { deepEqual } from 'fast-equals';
 
 interface FieldRequestParams {
     readonly field: GraphQLField<unknown, unknown>;
@@ -62,7 +62,7 @@ export class FieldRequest {
             this.parentType !== other.parentType ||
             this.schema !== other.schema ||
             this.selectionSet.length !== other.selectionSet.length ||
-            !isEqual(this.args, other.args)
+            !deepEqual(this.args, other.args)
         ) {
             return false;
         }
