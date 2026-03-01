@@ -38,7 +38,7 @@ import {
     getUpdateEntitiesFieldName,
     getUpdateEntityFieldName,
 } from '../schema/names';
-import { PlainObject, compact, decapitalize } from '../utils/utils';
+import { PlainObject, decapitalize, isDefined } from '../utils/utils';
 import { BillingTypeGenerator } from './billing-type-generator';
 import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';
 import { generateDeleteAllQueryNode } from './delete-all-generator';
@@ -108,7 +108,7 @@ export class MutationTypeGenerator {
     private generateFields(rootEntityType: RootEntityType): ReadonlyArray<QueryNodeField> {
         const canCreatePluralFields = rootEntityType.name !== rootEntityType.pluralName;
 
-        return compact([
+        return [
             this.generateCreateField(rootEntityType),
             canCreatePluralFields ? this.generateCreateManyField(rootEntityType) : undefined,
             this.generateUpdateField(rootEntityType),
@@ -118,7 +118,7 @@ export class MutationTypeGenerator {
             canCreatePluralFields ? this.generateDeleteManyField(rootEntityType) : undefined,
             this.generateDeleteAllField(rootEntityType),
             this.billingTypeGenerator.getMutationField(rootEntityType),
-        ]);
+        ].filter(isDefined);
     }
 
     private generateCreateField(rootEntityType: RootEntityType): QueryNodeField {

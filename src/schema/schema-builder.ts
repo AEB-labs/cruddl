@@ -42,7 +42,7 @@ import {
 import { Project, ProjectOptions } from '../project/project';
 import { ProjectSource, SourceType } from '../project/source';
 import { SchemaGenerator } from '../schema-generation';
-import { compact, isReadonlyArray, PlainObject } from '../utils/utils';
+import { isDefined, isReadonlyArray, PlainObject } from '../utils/utils';
 import {
     validateParsedProjectSource,
     validatePostMerge,
@@ -159,7 +159,7 @@ function mergeSchemaDefinition(parsedProject: ParsedProject): DocumentNode {
             return undefined;
         }
     });
-    return compact(graphqlDocuments).reduce(mergeAST, emptyDocument);
+    return graphqlDocuments.filter(isDefined).reduce(mergeAST, emptyDocument);
 }
 
 /**
@@ -183,11 +183,9 @@ export function parseProject(
     validationContext: ValidationContext,
 ): ParsedProject {
     return {
-        sources: compact(
-            project.sources.map((source) =>
-                parseProjectSource(source, project.options, validationContext),
-            ),
-        ),
+        sources: project.sources
+            .map((source) => parseProjectSource(source, project.options, validationContext))
+            .filter(isDefined),
     };
 }
 
