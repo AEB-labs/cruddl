@@ -1,6 +1,7 @@
+import { DEFAULT_LOGGER_PROVIDER } from '../../config/console-logger';
 import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
-import { DEFAULT_LOGGER_PROVIDER, Logger } from '../../config/logging';
+import { Logger } from '../../config/logging';
 import { DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';

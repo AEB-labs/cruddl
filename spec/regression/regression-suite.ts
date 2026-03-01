@@ -4,6 +4,7 @@ import { graphql, GraphQLSchema, OperationDefinitionNode, OperationTypeNode, par
 import { unlinkSync } from 'node:fs';
 import { resolve } from 'path';
 import stripJsonComments from 'strip-json-comments';
+import { ConsoleLoggerProvider } from '../../src/config/console-logger';
 import { RequestProfile } from '../../src/config/interfaces';
 import { ArangoDBAdapter } from '../../src/database/arangodb';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
@@ -12,8 +13,6 @@ import { IDGenerationInfo, IDGenerator } from '../../src/execution/execution-opt
 import { ProjectOptions } from '../../src/project/project';
 import { loadProjectFromDir } from '../../src/project/project-from-fs';
 import { ErrorWithCause } from '../../src/utils/error-with-cause';
-import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider';
-import { WarnAndErrorLoggerProvider } from '../helpers/warn-and-error-logger-provider';
 import { InitTestDataContext } from './init-test-data-context';
 import {
     createTempDatabase,
@@ -31,6 +30,7 @@ type DatabaseSpecifier = 'arangodb' | 'in-memory';
 
 export interface RegressionSuiteOptions {
     readonly saveActualAsExpected?: boolean;
+    readonly trace?: boolean;
     readonly database?: DatabaseSpecifier;
 }
 
@@ -123,24 +123,35 @@ export class RegressionSuite {
             ...options,
             getOperationIdentifier: ({ info }) => info.operation,
         };
-        const warnLevelOptions = {
+        const reducedLoggingOptions = {
             ...generalOptions,
-            loggerProvider: new WarnAndErrorLoggerProvider(),
+            loggerProvider: new ConsoleLoggerProvider({ defaultLevel: 'warn' }),
         };
-        const debugLevelOptions = {
-            ...generalOptions,
-            loggerProvider: new Log4jsLoggerProvider(),
-        };
+        const regularOptions = this.options.trace
+            ? {
+                  ...generalOptions,
+                  loggerProvider: new ConsoleLoggerProvider({
+                      levels: {
+                          ArangoDBAdapter: 'trace',
+                          InMemoryAdapter: 'trace',
+                          'query-resolvers': 'trace',
+                      },
+                  }),
+              }
+            : reducedLoggingOptions;
 
         // use a schema that logs less for initTestData and for schema migrations
         // the init db adapter also has a higher query memory limit
-        const initProject = await loadProjectFromDir(resolve(this.path, 'model'), warnLevelOptions);
-        const initAdapter = await this.createAdapter(warnLevelOptions, { isInitSchema: true });
+        const initProject = await loadProjectFromDir(
+            resolve(this.path, 'model'),
+            reducedLoggingOptions,
+        );
+        const initAdapter = await this.createAdapter(reducedLoggingOptions, { isInitSchema: true });
         const initSchema = initProject.createSchema(initAdapter);
         const initTestDataContext = new InitTestDataContext(initSchema);
 
-        const project = await loadProjectFromDir(resolve(this.path, 'model'), debugLevelOptions);
-        const adapter = await this.createAdapter(debugLevelOptions);
+        const project = await loadProjectFromDir(resolve(this.path, 'model'), regularOptions);
+        const adapter = await this.createAdapter(regularOptions);
         this.schema = project.createSchema(adapter);
 
         await this.clearDatabase();
