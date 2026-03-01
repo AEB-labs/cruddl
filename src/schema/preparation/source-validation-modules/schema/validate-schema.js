@@ -1,4 +1,5 @@
-'use strict';
+import func2 from 'ajv/dist/runtime/ucs2length';
+('use strict');
 export const validate = validate10;
 export default validate10;
 const schema11 = {
@@ -260,7 +261,6 @@ const schema17 = {
     required: ['claim'],
     properties: { claim: { type: 'string', minLength: 1 } },
 };
-const func2 = require('ajv/dist/runtime/ucs2length').default;
 function validate13(
     data,
     { instancePath = '', parentData, parentDataProperty, rootData = data } = {},
