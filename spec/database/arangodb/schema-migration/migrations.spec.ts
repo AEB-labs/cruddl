@@ -1,6 +1,6 @@
 import { ArangoSearchViewProperties, TierConsolidationPolicy } from 'arangojs/view';
 import { expect } from 'chai';
-import deepEqual from 'deep-equal';
+import { deepEqual } from 'fast-equals';
 import gql from 'graphql-tag';
 import { ArangoDBAdapter, ArangoDBConfig } from '../../../../src/database/arangodb';
 import { prettyPrint } from '../../../../src/graphql/pretty-print';
