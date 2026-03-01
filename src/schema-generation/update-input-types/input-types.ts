@@ -37,14 +37,7 @@ import {
     getReplaceChildEntitiesFieldName,
     getUpdateChildEntitiesFieldName,
 } from '../../schema/names';
-import {
-    AnyValue,
-    decapitalize,
-    flatMap,
-    joinWithAnd,
-    objectEntries,
-    PlainObject,
-} from '../../utils/utils';
+import { AnyValue, decapitalize, joinWithAnd, objectEntries, PlainObject } from '../../utils/utils';
 import { createGraphQLError } from '../graphql-errors';
 import { FieldContext } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
@@ -85,10 +78,8 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
     ): ReadonlyArray<SetFieldQueryNode> {
         const applicableFields = this.getApplicableInputFields(value);
         const regularProperties = [
-            ...flatMap(applicableFields, (field) =>
-                field.getProperties(value[field.name], context),
-            ),
-            ...flatMap(this.childEntityFields, (field) =>
+            ...applicableFields.flatMap((field) => field.getProperties(value[field.name], context)),
+            ...this.childEntityFields.flatMap((field) =>
                 this.getChildEntityProperties(value, field, context),
             ),
         ];
@@ -353,7 +344,7 @@ export class UpdateRootEntityInputType extends UpdateObjectInputType {
         const relationFields = this.fields
             .filter(isRelationUpdateField)
             .filter((field) => field.appliesToMissingFields() || field.name in input);
-        return flatMap(relationFields, (field) =>
+        return relationFields.flatMap((field) =>
             field.getStatements(input[field.name], idNode, context),
         );
     }

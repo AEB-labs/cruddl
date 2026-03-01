@@ -2,15 +2,6 @@ export type PlainObject = { [key: string]: AnyValue };
 export type AnyValue = unknown;
 export type Constructor<T> = { new (...args: ReadonlyArray<any>): T };
 
-export function flatMap<TOut, TIn>(
-    arr: ReadonlyArray<TIn>,
-    f: (t: TIn) => ReadonlyArray<TOut>,
-): ReadonlyArray<TOut> {
-    return arr.reduce((ys: any, x: any) => {
-        return ys.concat(f.call(null, x));
-    }, []);
-}
-
 /**
  * Maps an array and returns the first defined result. Undefined elements in array will be ignored.
  * @param {ReadonlyArray<TIn>} array.
@@ -31,12 +22,6 @@ export function mapFirstDefined<TIn, TOut>(
         }
     }
     return undefined;
-}
-
-export function flatten<T>(arr: ReadonlyArray<ReadonlyArray<T>>): ReadonlyArray<T> {
-    return arr.reduce((ys: any, x: any) => {
-        return ys.concat(x);
-    }, []);
 }
 
 /**

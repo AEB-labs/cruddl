@@ -4,7 +4,7 @@ import { Field, ObjectType } from '../model';
 import { OrderClause, OrderDirection, QueryNode } from '../query-tree';
 import { ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/constants';
 import { getOrderByTypeName } from '../schema/names';
-import { flatMap } from '../utils/utils';
+
 import { createFieldNode } from './field-nodes';
 import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
 
@@ -131,7 +131,7 @@ export class OrderByEnumGenerator {
         type: ObjectType,
         options?: RecursionOptions,
     ): ReadonlyArray<OrderByEnumValue> {
-        return flatMap(type.fields, (field) => this.getValuesForField(field, options));
+        return type.fields.flatMap((field) => this.getValuesForField(field, options));
     }
 
     private getValuesForField(

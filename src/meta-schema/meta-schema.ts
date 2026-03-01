@@ -14,7 +14,7 @@ import { EnumValue, Field, RootEntityType, Type, TypeKind } from '../model';
 import { OrderDirection } from '../model/implementation/order';
 import { Project } from '../project/project';
 import { GraphQLI18nString } from '../schema/scalars/string-map';
-import { compact, flatMap } from '../utils/utils';
+import { compact } from '../utils/utils';
 import { I18N_GENERIC, I18N_LOCALE } from './constants';
 
 const resolutionOrderDescription = JSON.stringify(
@@ -684,7 +684,7 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         }
         // replace _LOCALE
         return compact(
-            flatMap(resolutionOrder, (l) =>
+            resolutionOrder.flatMap((l) =>
                 l === I18N_LOCALE ? getLocaleFromContext(contextArgs) : [l],
             ),
         );
