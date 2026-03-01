@@ -1,4 +1,4 @@
-import { RequestProfile } from '../config/interfaces';
+import { RequestProfile } from '../config/interfaces.js';
 
 export interface ExecutionResult {
     readonly data?: any;

@@ -1,4 +1,4 @@
-import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorWarns } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorWarns } from './helpers.js';
 
 describe('unused object validator', () => {
     it('warns about unused objects', () => {

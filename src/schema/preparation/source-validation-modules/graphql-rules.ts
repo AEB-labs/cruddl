@@ -14,11 +14,14 @@ import {
     ValuesOfCorrectTypeRule,
     VariablesInAllowedPositionRule,
 } from 'graphql';
-import gql from 'graphql-tag';
-import { ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../config/parsed-project';
-import { ValidationMessage } from '../../../model/index';
-import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base';
-import { ParsedSourceValidator } from '../ast-validator';
+import { gql } from 'graphql-tag';
+import {
+    ParsedProjectSource,
+    ParsedProjectSourceBaseKind,
+} from '../../../config/parsed-project.js';
+import { ValidationMessage } from '../../../model/index.js';
+import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base.js';
+import { ParsedSourceValidator } from '../ast-validator.js';
 
 // Only include rules that are relevant for schema files
 // there is a non-public export specifiedSDLRules, but we only include those relevant for us. Some rules apply to

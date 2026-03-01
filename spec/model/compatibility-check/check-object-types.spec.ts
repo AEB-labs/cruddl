@@ -1,11 +1,14 @@
 import { expect } from 'chai';
-import gql from 'graphql-tag';
+import { gql } from 'graphql-tag';
 import { parseDocument } from 'yaml';
-import { applyChangeSet } from '../../../core-exports';
-import { Project } from '../../../src/project/project';
-import { ProjectSource } from '../../../src/project/source';
-import { expectQuickFix, expectSingleCompatibilityIssue } from '../implementation/validation-utils';
-import { runCheck } from './utils';
+import { applyChangeSet } from '../../../core-exports.js';
+import { Project } from '../../../src/project/project.js';
+import { ProjectSource } from '../../../src/project/source.js';
+import {
+    expectQuickFix,
+    expectSingleCompatibilityIssue,
+} from '../implementation/validation-utils.js';
+import { runCheck } from './utils.js';
 
 describe('checkModel', () => {
     describe('object types', () => {

@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { DocumentNode } from 'graphql';
-import gql from 'graphql-tag';
-import { Project, ProjectSource } from '../../core-exports';
-import { Severity, ValidationContext, createModel } from '../../src/model';
-import { parseProject } from '../../src/schema/schema-builder';
-import { expectSingleError, expectToBeValid } from './implementation/validation-utils';
-import { createSimpleModel } from './model-spec.helper';
+import { gql } from 'graphql-tag';
+import { Project, ProjectSource } from '../../core-exports.js';
+import { Severity, ValidationContext, createModel } from '../../src/model/index.js';
+import { parseProject } from '../../src/schema/schema-builder.js';
+import { expectSingleError, expectToBeValid } from './implementation/validation-utils.js';
+import { createSimpleModel } from './model-spec.helper.js';
 
 describe('createModel', () => {
     it('translates _key: String @key properly', () => {

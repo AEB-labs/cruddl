@@ -1,9 +1,9 @@
-import gql from 'graphql-tag';
+import { gql } from 'graphql-tag';
 import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
-} from './helpers';
+} from './helpers.js';
 
 describe('module consistency validator', () => {
     describe('consistency check for field types', () => {

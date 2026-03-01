@@ -1,5 +1,5 @@
 import { GraphQLBoolean } from 'graphql';
-import { BillingEntityType } from '../../model';
+import { BillingEntityType } from '../../model/index.js';
 import {
     ConditionalQueryNode,
     ConstBoolQueryNode,
@@ -9,11 +9,11 @@ import {
     QueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
+} from '../../query-tree/index.js';
 
-import { isDefined } from '../../utils/utils';
-import { createFieldPathNode } from '../field-path-node';
-import { equal } from './input-types';
+import { isDefined } from '../../utils/utils.js';
+import { createFieldPathNode } from '../field-path-node.js';
+import { equal } from './input-types.js';
 
 export function createBillingEntityCategoryNode(
     billingEntityConfig: BillingEntityType,

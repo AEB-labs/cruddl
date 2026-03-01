@@ -1,11 +1,11 @@
 import { isDocumentNode } from '@graphql-tools/utils';
 import { DocumentNode } from 'graphql';
-import { prettyPrint } from '../../../src/graphql/pretty-print';
-import { ValidationResult } from '../../../src/model/validation/result';
-import { Project } from '../../../src/project/project';
-import { ProjectSource } from '../../../src/project/source';
-import { isReadonlyArray } from '../../../src/utils/utils';
-import { expectNoErrors, expectToBeValid } from '../implementation/validation-utils';
+import { prettyPrint } from '../../../src/graphql/pretty-print.js';
+import { ValidationResult } from '../../../src/model/validation/result.js';
+import { Project } from '../../../src/project/project.js';
+import { ProjectSource } from '../../../src/project/source.js';
+import { isReadonlyArray } from '../../../src/utils/utils.js';
+import { expectNoErrors, expectToBeValid } from '../implementation/validation-utils.js';
 
 interface RunOptions {
     allowWarningsAndInfosInProjectToCheck?: boolean;

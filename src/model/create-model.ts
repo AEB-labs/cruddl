@@ -20,14 +20,14 @@ import {
     valueFromAST,
     ValueNode,
 } from 'graphql';
-import { ModelOptions } from '../config/interfaces';
+import { ModelOptions } from '../config/interfaces.js';
 import {
     ParsedGraphQLProjectSource,
     ParsedObjectProjectSource,
     ParsedProject,
     ParsedProjectSourceBaseKind,
-} from '../config/parsed-project';
-import { getValueFromAST } from '../graphql/value-from-ast';
+} from '../config/parsed-project.js';
+import { getValueFromAST } from '../graphql/value-from-ast.js';
 import {
     ACCESS_FIELD_DIRECTIVE,
     BUSINESS_OBJECT_DIRECTIVE,
@@ -77,7 +77,7 @@ import {
     UNIQUE_DIRECTIVE,
     VALUE_ARG,
     VALUE_OBJECT_DIRECTIVE,
-} from '../schema/constants';
+} from '../schema/constants.js';
 import {
     findDirectiveWithName,
     getDeprecationReason,
@@ -85,8 +85,9 @@ import {
     getNodeByName,
     getTypeNameIgnoringNonNullAndList,
     hasDirectiveWithName,
-} from '../schema/schema-utils';
-import { isDefined, mapValues } from '../utils/utils';
+} from '../schema/schema-utils.js';
+import { isDefined, mapValues } from '../utils/utils.js';
+import { BillingConfig } from './config/billing.js';
 import {
     AggregationOperator,
     CalcMutationsOperator,
@@ -111,20 +112,19 @@ import {
     TypeConfig,
     TypeConfigBase,
     TypeKind,
-} from './config';
-import { BillingConfig } from './config/billing';
-import { ModuleConfig } from './config/module';
+} from './config/index.js';
 import {
     FieldModuleSpecificationConfig,
     TypeModuleSpecificationConfig,
-} from './config/module-specification';
-import { Model } from './implementation';
-import { OrderDirection } from './implementation/order';
-import { parseBillingConfigs } from './parse-billing';
-import { parseI18nConfigs } from './parse-i18n';
-import { parseModuleConfigs } from './parse-modules';
-import { parseTTLConfigs } from './parse-ttl';
-import { ValidationContext, ValidationMessage } from './validation';
+} from './config/module-specification.js';
+import { ModuleConfig } from './config/module.js';
+import { Model } from './implementation/index.js';
+import { OrderDirection } from './implementation/order.js';
+import { parseBillingConfigs } from './parse-billing.js';
+import { parseI18nConfigs } from './parse-i18n.js';
+import { parseModuleConfigs } from './parse-modules.js';
+import { parseTTLConfigs } from './parse-ttl.js';
+import { ValidationContext, ValidationMessage } from './validation/index.js';
 
 export function createModel(parsedProject: ParsedProject, options: ModelOptions = {}): Model {
     const validationContext = new ValidationContext();

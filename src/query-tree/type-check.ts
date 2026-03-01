@@ -1,4 +1,4 @@
-import { QueryNode } from './base';
+import { QueryNode } from './base.js';
 
 /**
  * A query that evaluates to true if a value is of a certain type, or false otherwise

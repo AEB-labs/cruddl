@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { Kind } from 'graphql';
-import { GraphQLStringMap } from '../../../src/schema/scalars/string-map';
+import { GraphQLStringMap } from '../../../src/schema/scalars/string-map.js';
 
 describe('GraphQLStringMap', () => {
     describe('parseLiteral', () => {

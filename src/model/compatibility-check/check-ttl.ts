@@ -1,5 +1,5 @@
-import { RootEntityType } from '../implementation';
-import { ValidationContext, ValidationMessage } from '../validation';
+import { RootEntityType } from '../implementation/index.js';
+import { ValidationContext, ValidationMessage } from '../validation/index.js';
 
 export function checkTtl(
     typeToCheck: RootEntityType,

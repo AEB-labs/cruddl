@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { PermissionProfileConfig } from '../../../src/model';
-import { assertValidatorRejects, validate } from './helpers';
+import { PermissionProfileConfig } from '../../../src/model/index.js';
+import { assertValidatorRejects, validate } from './helpers.js';
 
 const modelWithRootEntityWithPermissionProfile = `
             type Stuff @rootEntity(permissionProfile: "test") {

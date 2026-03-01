@@ -1,11 +1,11 @@
 import { GraphQLFieldConfigArgumentMap } from 'graphql';
-import { Type } from '../model';
-import { RuntimeErrorQueryNode } from '../query-tree';
-import { FILTER_ARG, POST_FILTER_ARG } from '../schema/constants';
-import { FilterTypeGenerator } from './filter-input-types';
-import { QueryNodeField } from './query-node-object-type';
-import { RootFieldHelper } from './root-field-helper';
-import { buildFilteredListNode } from './utils/filtering';
+import { Type } from '../model/index.js';
+import { RuntimeErrorQueryNode } from '../query-tree/index.js';
+import { FILTER_ARG, POST_FILTER_ARG } from '../schema/constants.js';
+import { FilterTypeGenerator } from './filter-input-types/index.js';
+import { QueryNodeField } from './query-node-object-type/index.js';
+import { RootFieldHelper } from './root-field-helper.js';
+import { buildFilteredListNode } from './utils/filtering.js';
 
 export interface FlexSearchPostFilterAugmentationOptions {
     /**

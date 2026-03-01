@@ -1,5 +1,5 @@
 import { ASTNode } from 'graphql';
-import { MessageLocation } from '../validation';
+import { MessageLocation } from '../validation/index.js';
 
 export interface PermissionsConfig {
     readonly permissionProfileNameAstNode?: ASTNode;

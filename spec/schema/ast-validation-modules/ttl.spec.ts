@@ -1,9 +1,9 @@
-import gql from 'graphql-tag';
+import { gql } from 'graphql-tag';
 import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
-} from './helpers';
+} from './helpers.js';
 
 describe('timeToLive config', () => {
     it('accepts simple case', () => {

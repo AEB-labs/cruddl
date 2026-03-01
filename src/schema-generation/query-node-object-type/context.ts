@@ -1,6 +1,6 @@
-import type { ExecutionOptions } from '../../execution/execution-options';
-import { Clock, IDGenerator } from '../../execution/execution-options';
-import { FieldSelection } from '../../graphql/query-distiller';
+import type { ExecutionOptions } from '../../execution/execution-options.js';
+import { Clock, IDGenerator } from '../../execution/execution-options.js';
+import { FieldSelection } from '../../graphql/query-distiller.js';
 
 /**
  * A token that corresponds to a FieldSelection but is local to one execution

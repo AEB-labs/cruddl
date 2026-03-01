@@ -1,8 +1,8 @@
 import { GraphQLID, GraphQLNonNull, GraphQLString } from 'graphql';
-import memorize from 'memorize-decorator';
-import { FieldRequest } from '../graphql/query-distiller';
-import { isListTypeIgnoringNonNull } from '../graphql/schema-utils';
-import { Field, ObjectType, Type, TypeKind } from '../model';
+import { memorize } from 'memorize-decorator';
+import { FieldRequest } from '../graphql/query-distiller.js';
+import { isListTypeIgnoringNonNull } from '../graphql/schema-utils.js';
+import { Field, ObjectType, Type, TypeKind } from '../model/index.js';
 import {
     NullQueryNode,
     ObjectQueryNode,
@@ -11,34 +11,38 @@ import {
     RevisionQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
-} from '../query-tree';
+} from '../query-tree/index.js';
 import {
     CURSOR_FIELD,
     FLEX_SEARCH_ENTITIES_FIELD_PREFIX,
     ORDER_BY_ARG,
     REVISION_FIELD,
-} from '../schema/constants';
-import { getMetaFieldName } from '../schema/names';
-import { isDefined } from '../utils/utils';
-import { EnumTypeGenerator } from './enum-type-generator';
-import { createFieldNode } from './field-nodes';
-import { FilterAugmentation } from './filter-augmentation';
-import { ListAugmentation } from './list-augmentation';
-import { MetaTypeGenerator } from './meta-type-generator';
-import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
+} from '../schema/constants.js';
+import { getMetaFieldName } from '../schema/names.js';
+import { isDefined } from '../utils/utils.js';
+import { EnumTypeGenerator } from './enum-type-generator.js';
+import { createFieldNode } from './field-nodes.js';
+import { FilterAugmentation } from './filter-augmentation.js';
+import { ListAugmentation } from './list-augmentation.js';
+import { MetaTypeGenerator } from './meta-type-generator.js';
+import {
+    OrderByEnumGenerator,
+    OrderByEnumType,
+    OrderByEnumValue,
+} from './order-by-enum-generator.js';
 import {
     FieldContext,
     QueryNodeField,
     QueryNodeListType,
     QueryNodeNonNullType,
     QueryNodeOutputType,
-} from './query-node-object-type';
-import { RootFieldHelper } from './root-field-helper';
+} from './query-node-object-type/index.js';
+import { RootFieldHelper } from './root-field-helper.js';
 import {
     getSortClausesForPrimarySort,
     orderArgMatchesPrimarySort,
-} from './utils/flex-search-utils';
-import { getOrderByValues } from './utils/pagination';
+} from './utils/flex-search-utils.js';
+import { getOrderByValues } from './utils/pagination.js';
 
 export class OutputTypeGenerator {
     constructor(
