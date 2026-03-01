@@ -4,8 +4,8 @@ import {
     GraphQLInputObjectType,
     GraphQLInputType,
     resolveReadonlyArrayThunk,
+    ThunkReadonlyArray,
 } from 'graphql';
-import { ThunkReadonlyArray } from 'graphql/type/definition';
 import memorize from 'memorize-decorator';
 import { Constructor } from '../utils/utils';
 

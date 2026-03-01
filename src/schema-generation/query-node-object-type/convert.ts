@@ -6,8 +6,8 @@ import {
     GraphQLObjectType,
     GraphQLOutputType,
     resolveReadonlyArrayThunk,
+    ThunkReadonlyArray,
 } from 'graphql';
-import { ThunkReadonlyArray } from 'graphql/type/definition';
 import memorize from 'memorize-decorator';
 import { SchemaTransformationContext } from '../../schema/preparation/transformation-pipeline';
 import {
