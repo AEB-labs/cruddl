@@ -22,7 +22,7 @@ import {
 } from '../../query-tree';
 import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
 import { getCreateInputTypeName, getValueObjectInputTypeName } from '../../schema/names';
-import { flatMap, PlainObject } from '../../utils/utils';
+import { PlainObject } from '../../utils/utils';
 import { FieldContext } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import {
@@ -49,7 +49,7 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
         }
 
         const properties = [
-            ...flatMap(applicableFields, (field) =>
+            ...applicableFields.flatMap((field) =>
                 Object.entries(field.getProperties(value[field.name], context)),
             ),
             ...Object.entries(this.getAdditionalProperties(value, context)),
@@ -162,7 +162,7 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
         const relationFields = this.fields
             .filter(isRelationCreateField)
             .filter((field) => field.appliesToMissingFields() || field.name in input);
-        return flatMap(relationFields, (field) =>
+        return relationFields.flatMap((field) =>
             field.getStatements(input[field.name], idNode, context),
         );
     }

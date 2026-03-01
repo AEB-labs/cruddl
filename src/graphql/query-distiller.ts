@@ -16,7 +16,7 @@ import {
     TypeNameMetaFieldDef,
 } from 'graphql';
 import { blue, cyan, green } from '../utils/colors';
-import { arrayToObject, flatMap, groupArray, indent, INDENTATION } from '../utils/utils';
+import { arrayToObject, groupArray, indent, INDENTATION } from '../utils/utils';
 import { getArgumentValues } from './argument-values';
 import { resolveSelections } from './field-collection';
 import { getAliasOrName } from './language-utils';
@@ -260,7 +260,7 @@ function buildFieldRequest(
     let selections: ReadonlyArray<FieldSelection> = [];
     const compositeFieldType = unwrapToCompositeType(fieldDef.type);
     if (compositeFieldType) {
-        const childFieldNodes = flatMap(fieldNodes, (node) =>
+        const childFieldNodes = fieldNodes.flatMap((node) =>
             node.selectionSet ? node.selectionSet.selections : [],
         );
         selections = distillSelections(childFieldNodes, compositeFieldType, context);
