@@ -1,6 +1,5 @@
 import { GraphQLID, GraphQLInputFieldConfigMap } from 'graphql';
 import { ThunkReadonlyArray } from 'graphql/type/definition';
-import { groupBy } from 'lodash';
 import {
     ChildEntityType,
     EntityExtensionType,
@@ -37,7 +36,7 @@ import {
     getReplaceChildEntitiesFieldName,
     getUpdateChildEntitiesFieldName,
 } from '../../schema/names';
-import { AnyValue, decapitalize, joinWithAnd, PlainObject } from '../../utils/utils';
+import { AnyValue, decapitalize, groupArray, joinWithAnd, PlainObject } from '../../utils/utils';
 import { createGraphQLError } from '../graphql-errors';
 import { FieldContext } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
@@ -92,7 +91,7 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
     check(value: PlainObject, context: FieldContext): RuntimeErrorQueryNode | undefined {
         const applicableFields = this.getApplicableInputFields(value);
         const fields = applicableFields.filter((f) => f.field.type.isScalarType);
-        const groups = Object.entries(groupBy(fields, (f) => f.field.name));
+        const groups = [...groupArray(fields, (f) => f.field.name).entries()];
         const duplicateGroups = groups.filter(([key, value]) => value.length > 1);
         const firstDuplicateGroup: [string, ReadonlyArray<UpdateInputField>] = duplicateGroups[0];
         if (!firstDuplicateGroup) {
