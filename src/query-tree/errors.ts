@@ -1,5 +1,5 @@
-import { red } from '../utils/colors';
-import { QueryNode } from './base';
+import { red } from '../utils/colors.js';
+import { QueryNode } from './base.js';
 
 /**
  * A node which can never evaluate to any value and thus prevents a query from being executed

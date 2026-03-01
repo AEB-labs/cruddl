@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { aql, aqlConfig, AQLVariable } from '../../../src/database/arangodb/aql';
+import { aql, aqlConfig, AQLVariable } from '../../../src/database/arangodb/aql.js';
 
 describe('aql', () => {
     it('works with plain code', () => {

@@ -1,6 +1,6 @@
-import { AccessOperation, AuthContext } from '../../authorization/auth-basics';
-import { WILDCARD_CHARACTER } from '../../schema/constants';
-import { escapeRegExp, isReadonlyArray } from '../../utils/utils';
+import { AccessOperation, AuthContext } from '../../authorization/auth-basics.js';
+import { WILDCARD_CHARACTER } from '../../schema/constants.js';
+import { escapeRegExp, isReadonlyArray } from '../../utils/utils.js';
 import {
     MessageLocation,
     PermissionAccessKind,
@@ -8,8 +8,8 @@ import {
     PermissionProfileConfig,
     PermissionRestrictionConfig,
     ValidationMessage,
-} from '../index';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
+} from '../index.js';
+import { ModelComponent, ValidationContext } from '../validation/validation-context.js';
 
 export class PermissionProfile implements ModelComponent {
     readonly permissions: ReadonlyArray<Permission>;

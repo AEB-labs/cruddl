@@ -4,7 +4,7 @@ import {
     assertValidatorRejects,
     assertValidatorWarns,
     validate,
-} from './helpers';
+} from './helpers.js';
 
 describe('references with key field', () => {
     it('accepts proper configuration', () => {

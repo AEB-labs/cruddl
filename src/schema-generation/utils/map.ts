@@ -1,4 +1,4 @@
-import { RootEntityType } from '../../model/implementation';
+import { RootEntityType } from '../../model/implementation/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -9,8 +9,8 @@ import {
     RootEntityIDQueryNode,
     TransformListQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { isDefined, isReadonlyArray } from '../../utils/utils';
+} from '../../query-tree/index.js';
+import { isDefined, isReadonlyArray } from '../../utils/utils.js';
 
 export function getMapNode(listNode: QueryNode, projection: (itemNode: QueryNode) => QueryNode) {
     if (listNode instanceof ListQueryNode) {

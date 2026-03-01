@@ -2,9 +2,9 @@ import {
     FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
     FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
     FLEX_SEARCH_INDEXED_DIRECTIVE,
-} from '../../schema/constants';
-import { Field } from '../implementation';
-import { ValidationContext, ValidationMessage } from '../validation';
+} from '../../schema/constants.js';
+import { Field } from '../implementation/index.js';
+import { ValidationContext, ValidationMessage } from '../validation/index.js';
 
 export function checkFlexSearchOnField(
     fieldToCheck: Field,

@@ -1,5 +1,5 @@
-import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
-import { addNumberedPapersWithAQL, initEnvironment, TestEnvironment } from './support/helpers';
+import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench.js';
+import { addNumberedPapersWithAQL, initEnvironment, TestEnvironment } from './support/helpers.js';
 
 function testFilter(config: { rootEntitiesInDB: number; filterSuffix: string }): BenchmarkConfig {
     let env: TestEnvironment;

@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { EnumType, Model, TypeKind } from '../../src/model';
-import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator';
+import { EnumType, Model, TypeKind } from '../../src/model/index.js';
+import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator.js';
 
 describe('EnumTypeGenerator', () => {
     const model = new Model({ types: [] });

@@ -4,7 +4,7 @@ import {
     assertValidatorRejects,
     assertValidatorWarns,
     validate,
-} from './helpers';
+} from './helpers.js';
 
 describe('@parent directive', () => {
     it('accepts direct embedding in root entity', () => {

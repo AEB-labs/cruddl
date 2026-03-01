@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { assertValidatorAcceptsAndDoesNotWarn, validate } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, validate } from './helpers.js';
 
 describe('no-permission-profile validator', () => {
     it('rejects @roles and permissionProfile', () => {

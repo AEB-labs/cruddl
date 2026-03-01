@@ -1,5 +1,9 @@
 import { expect } from 'chai';
-import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects, validate } from './helpers';
+import {
+    assertValidatorAcceptsAndDoesNotWarn,
+    assertValidatorRejects,
+    validate,
+} from './helpers.js';
 
 describe('@root directive', () => {
     it('accepts direct embedding in root entity', () => {

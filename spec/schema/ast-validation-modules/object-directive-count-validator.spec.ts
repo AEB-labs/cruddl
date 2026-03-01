@@ -1,5 +1,9 @@
 import { expect } from 'chai';
-import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects, validate } from './helpers';
+import {
+    assertValidatorAcceptsAndDoesNotWarn,
+    assertValidatorRejects,
+    validate,
+} from './helpers.js';
 
 const modelWithTypeWithoutDirective = `
             type Stuff {

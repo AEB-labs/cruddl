@@ -1,6 +1,6 @@
 import { Database } from 'arangojs';
 import { Config } from 'arangojs/connection.js';
-import { CustomConnection } from './custom-connection';
+import { CustomConnection } from './custom-connection.js';
 
 export class CustomDatabase extends Database {
     constructor(config?: Config) {

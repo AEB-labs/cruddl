@@ -1,21 +1,21 @@
 import { GraphQLSchema } from 'graphql';
-import memorize from 'memorize-decorator';
-import { ProjectOptions } from '../config/interfaces';
-import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
-import { DatabaseAdapter } from '../database/database-adapter';
-import { DefaultClock, ExecutionOptions } from '../execution/execution-options';
-import { TransactionTimeoutError } from '../execution/runtime-errors';
-import { SchemaExecutor } from '../execution/schema-executor';
-import { TransactionError } from '../execution/transaction-error';
-import { getMetaSchema } from '../meta-schema/meta-schema';
-import { Model, TimeToLiveType, ValidationResult } from '../model';
-import { checkModel } from '../model/compatibility-check/check-model';
-import { ListQueryNode, QueryNode } from '../query-tree';
-import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
-import { isReadonlyArray } from '../utils/utils';
-import { ModuleSelectionOptions, selectModulesInProject } from './select-modules-in-sources';
-import { ProjectSource, SourceLike, SourceType } from './source';
-import { TTLInfo, getQueryNodeForTTLType, getTTLInfoQueryNode } from './time-to-live';
+import { memorize } from 'memorize-decorator';
+import { ProjectOptions } from '../config/interfaces.js';
+import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging.js';
+import { DatabaseAdapter } from '../database/database-adapter.js';
+import { DefaultClock, ExecutionOptions } from '../execution/execution-options.js';
+import { TransactionTimeoutError } from '../execution/runtime-errors.js';
+import { SchemaExecutor } from '../execution/schema-executor.js';
+import { TransactionError } from '../execution/transaction-error.js';
+import { getMetaSchema } from '../meta-schema/meta-schema.js';
+import { checkModel } from '../model/compatibility-check/check-model.js';
+import { Model, TimeToLiveType, ValidationResult } from '../model/index.js';
+import { ListQueryNode, QueryNode } from '../query-tree/index.js';
+import { createSchema, getModel, validateSchema } from '../schema/schema-builder.js';
+import { isReadonlyArray } from '../utils/utils.js';
+import { ModuleSelectionOptions, selectModulesInProject } from './select-modules-in-sources.js';
+import { ProjectSource, SourceLike, SourceType } from './source.js';
+import { TTLInfo, getQueryNodeForTTLType, getTTLInfoQueryNode } from './time-to-live.js';
 
 export { ProjectOptions };
 

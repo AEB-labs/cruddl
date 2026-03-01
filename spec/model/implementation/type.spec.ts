@@ -1,6 +1,6 @@
 import { GraphQLString } from 'graphql';
-import { Model, ScalarType, TypeKind } from '../../../src/model';
-import { expectSingleError, expectSingleWarning, expectToBeValid } from './validation-utils';
+import { Model, ScalarType, TypeKind } from '../../../src/model/index.js';
+import { expectSingleError, expectSingleWarning, expectToBeValid } from './validation-utils.js';
 
 // This test uses a ScalarType because that is a concrete class without much addition to TypeBase
 describe('Type', () => {

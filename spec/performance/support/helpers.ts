@@ -1,13 +1,13 @@
 import { Database } from 'arangojs';
 import { graphql, GraphQLSchema } from 'graphql';
 import { resolve } from 'path';
-import { ProjectOptions } from '../../../src/config/interfaces';
-import { ArangoDBAdapter } from '../../../src/database/arangodb';
-import { Project } from '../../../src/project/project';
-import { loadProjectFromDir } from '../../../src/project/project-from-fs';
-import { range } from '../../../src/utils/utils';
-import { WarnAndErrorLoggerProvider } from '../../helpers/warn-and-error-logger-provider';
-import { createTempDatabase } from '../../regression/initialization';
+import { ProjectOptions } from '../../../src/config/interfaces.js';
+import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';
+import { loadProjectFromDir } from '../../../src/project/project-from-fs.js';
+import { Project } from '../../../src/project/project.js';
+import { range } from '../../../src/utils/utils.js';
+import { WarnAndErrorLoggerProvider } from '../../helpers/warn-and-error-logger-provider.js';
+import { createTempDatabase } from '../../regression/initialization.js';
 
 // arangojs typings for this are completely broken
 export const aql: (template: TemplateStringsArray, ...args: ReadonlyArray<any>) => any =

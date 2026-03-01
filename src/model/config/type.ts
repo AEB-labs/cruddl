@@ -8,11 +8,11 @@ import {
     ScalarTypeDefinitionNode,
     TypeDefinitionNode,
 } from 'graphql';
-import { FixedPointDecimalInfo } from '../implementation/scalar-type';
-import { FieldConfig, FlexSearchLanguage } from './field';
-import { FlexSearchIndexConfig, IndexDefinitionConfig } from './indices';
-import { TypeModuleSpecificationConfig } from './module-specification';
-import { PermissionsConfig } from './permissions';
+import { FixedPointDecimalInfo } from '../implementation/scalar-type.js';
+import { FieldConfig, FlexSearchLanguage } from './field.js';
+import { FlexSearchIndexConfig, IndexDefinitionConfig } from './indices.js';
+import { TypeModuleSpecificationConfig } from './module-specification.js';
+import { PermissionsConfig } from './permissions.js';
 
 export enum TypeKind {
     SCALAR = 'SCALAR',

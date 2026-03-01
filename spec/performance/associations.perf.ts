@@ -1,5 +1,5 @@
-import { takeRandomSample } from '../../src/utils/utils';
-import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
+import { takeRandomSample } from '../../src/utils/utils.js';
+import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench.js';
 import {
     addManyPapersWithAQL,
     addManyUsersWithAQL,
@@ -9,7 +9,7 @@ import {
     getRandomPaperIDsWithAQL,
     initEnvironment,
     TestEnvironment,
-} from './support/helpers';
+} from './support/helpers.js';
 
 async function setUpPapersAndReaders(
     environment: TestEnvironment,

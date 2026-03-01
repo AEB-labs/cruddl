@@ -1,21 +1,24 @@
 import { Database } from 'arangojs';
 import { v4 as uuid } from 'uuid';
-import { globalContext } from '../../config/global';
-import { ProjectOptions } from '../../config/interfaces';
-import { Logger } from '../../config/logging';
-import { ExecutionOptions } from '../../execution/execution-options';
+import { globalContext } from '../../config/global.js';
+import { ProjectOptions } from '../../config/interfaces.js';
+import { Logger } from '../../config/logging.js';
+import { ExecutionOptions } from '../../execution/execution-options.js';
 import {
     ConflictRetriesExhaustedError,
     TransactionCancelledError,
     TransactionTimeoutError,
-} from '../../execution/runtime-errors';
-import { TransactionError } from '../../execution/transaction-error';
-import { Model } from '../../model';
-import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
-import { FlexSearchTokenization } from '../../query-tree/flex-search';
-import { Mutable } from '../../utils/util-types';
-import { isDefined, sleep, sleepInterruptible } from '../../utils/utils';
-import { getPreciseTime, Watch } from '../../utils/watch';
+} from '../../execution/runtime-errors.js';
+import { TransactionError } from '../../execution/transaction-error.js';
+import { Model } from '../../model/index.js';
+import { FlexSearchTokenization } from '../../query-tree/flex-search.js';
+import {
+    ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS,
+    QueryNode,
+} from '../../query-tree/index.js';
+import { Mutable } from '../../utils/util-types.js';
+import { isDefined, sleep, sleepInterruptible } from '../../utils/utils.js';
+import { getPreciseTime, Watch } from '../../utils/watch.js';
 import {
     DatabaseAdapter,
     DatabaseAdapterTimings,
@@ -24,27 +27,27 @@ import {
     ExecutionResult,
     FlexSearchTokenizable,
     TransactionStats,
-} from '../database-adapter';
-import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery } from './aql';
-import { generateTokenizationQuery, getAQLQuery } from './aql-generator';
+} from '../database-adapter.js';
+import { generateTokenizationQuery, getAQLQuery } from './aql-generator.js';
+import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery } from './aql.js';
 import {
     RequestInstrumentation,
     RequestInstrumentationPhase,
-} from './arangojs-instrumentation/config';
-import { CancellationManager } from './cancellation-manager';
+} from './arangojs-instrumentation/config.js';
+import { CancellationManager } from './cancellation-manager.js';
 import {
     ArangoDBConfig,
     DEFAULT_RETRY_DELAY_BASE_MS,
     getArangoDBLogger,
     initDatabase,
     RETRY_DELAY_RANDOM_FRACTION,
-} from './config';
-import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes';
-import { hasRevisionAssertions } from './revision-helper';
-import { SchemaAnalyzer } from './schema-migration/analyzer';
-import { SchemaMigration } from './schema-migration/migrations';
-import { MigrationPerformer } from './schema-migration/performer';
-import { ArangoDBVersion, ArangoDBVersionHelper } from './version-helper';
+} from './config.js';
+import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes.js';
+import { hasRevisionAssertions } from './revision-helper.js';
+import { SchemaAnalyzer } from './schema-migration/analyzer.js';
+import { SchemaMigration } from './schema-migration/migrations.js';
+import { MigrationPerformer } from './schema-migration/performer.js';
+import { ArangoDBVersion, ArangoDBVersionHelper } from './version-helper.js';
 
 const requestInstrumentationBodyKey = 'cruddlRequestInstrumentation';
 

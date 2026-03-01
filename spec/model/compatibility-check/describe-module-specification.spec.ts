@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { describeModuleSpecification } from '../../../src/model/compatibility-check/describe-module-specification';
-import { EffectiveModuleSpecification } from '../../../src/model/implementation/modules/effective-module-specification';
+import { describeModuleSpecification } from '../../../src/model/compatibility-check/describe-module-specification.js';
+import { EffectiveModuleSpecification } from '../../../src/model/implementation/modules/effective-module-specification.js';
 
 describe('describeModuleSpecification', () => {
     it('describes empty spec', () => {

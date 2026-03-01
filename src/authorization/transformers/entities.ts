@@ -1,3 +1,4 @@
+import { FlexSearchQueryNode } from '../../query-tree/flex-search.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -10,11 +11,10 @@ import {
     TransformListQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { FlexSearchQueryNode } from '../../query-tree/flex-search';
-import { AccessOperation, AuthContext } from '../auth-basics';
-import { PermissionResult } from '../permission-descriptors';
-import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';
+} from '../../query-tree/index.js';
+import { AccessOperation, AuthContext } from '../auth-basics.js';
+import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model.js';
+import { PermissionResult } from '../permission-descriptors.js';
 
 export function transformEntitiesQueryNode(node: EntitiesQueryNode, authContext: AuthContext) {
     const permissionDescriptor = getPermissionDescriptorOfRootEntityType(node.rootEntityType);

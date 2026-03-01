@@ -1,8 +1,8 @@
-import { ModelOptions } from '../config/interfaces';
-import { ParsedObjectProjectSource } from '../config/parsed-project';
-import { isReadonlyArray } from '../utils/utils';
-import { ModuleConfig } from './config/module';
-import { ValidationContext, ValidationMessage } from './validation';
+import { ModelOptions } from '../config/interfaces.js';
+import { ParsedObjectProjectSource } from '../config/parsed-project.js';
+import { isReadonlyArray } from '../utils/utils.js';
+import { ModuleConfig } from './config/module.js';
+import { ValidationContext, ValidationMessage } from './validation/index.js';
 
 export function parseModuleConfigs(
     source: ParsedObjectProjectSource,

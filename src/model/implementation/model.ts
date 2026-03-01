@@ -1,26 +1,26 @@
-import memorize from 'memorize-decorator';
-import { ModelOptions } from '../../config/interfaces';
-import { groupArray, isDefined, uniqBy } from '../../utils/utils';
+import { memorize } from 'memorize-decorator';
+import { ModelOptions } from '../../config/interfaces.js';
+import { groupArray, isDefined, uniqBy } from '../../utils/utils.js';
 
-import { ModelConfig, TypeKind } from '../config';
-import { NamespacedPermissionProfileConfigMap } from '../index';
-import { ValidationMessage, ValidationResult } from '../validation';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { BillingEntityType } from './billing';
-import { builtInTypeNames, createBuiltInTypes } from './built-in-types';
-import { ChildEntityType } from './child-entity-type';
-import { EntityExtensionType } from './entity-extension-type';
-import { EnumType } from './enum-type';
-import { ModelI18n } from './i18n';
-import { ModuleDeclaration } from './modules/module-declaration';
-import { Namespace } from './namespace';
-import { PermissionProfile } from './permission-profile';
-import { Relation } from './relation';
-import { RootEntityType } from './root-entity-type';
-import { ScalarType } from './scalar-type';
-import { TimeToLiveType } from './time-to-live';
-import { createType, InvalidType, ObjectType, Type } from './type';
-import { ValueObjectType } from './value-object-type';
+import { ModelConfig, TypeKind } from '../config/index.js';
+import { NamespacedPermissionProfileConfigMap } from '../index.js';
+import { ValidationMessage, ValidationResult } from '../validation/index.js';
+import { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import { BillingEntityType } from './billing.js';
+import { builtInTypeNames, createBuiltInTypes } from './built-in-types.js';
+import { ChildEntityType } from './child-entity-type.js';
+import { EntityExtensionType } from './entity-extension-type.js';
+import { EnumType } from './enum-type.js';
+import { ModelI18n } from './i18n.js';
+import { ModuleDeclaration } from './modules/module-declaration.js';
+import { Namespace } from './namespace.js';
+import { PermissionProfile } from './permission-profile.js';
+import { Relation } from './relation.js';
+import { RootEntityType } from './root-entity-type.js';
+import { ScalarType } from './scalar-type.js';
+import { TimeToLiveType } from './time-to-live.js';
+import { createType, InvalidType, ObjectType, Type } from './type.js';
+import { ValueObjectType } from './value-object-type.js';
 
 export class Model implements ModelComponent {
     private readonly typeMap: ReadonlyMap<string, Type>;

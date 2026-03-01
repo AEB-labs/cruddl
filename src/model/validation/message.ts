@@ -1,14 +1,14 @@
 import { EnumValueDefinitionNode, FieldDefinitionNode, TypeDefinitionNode } from 'graphql';
-import { LocationLike, MessageLocation } from './location';
-import { QuickFix } from './quick-fix';
-import { isSuppressed } from './suppress/is-suppressed';
+import { LocationLike, MessageLocation } from './location.js';
+import { QuickFix } from './quick-fix.js';
+import { isSuppressed } from './suppress/is-suppressed.js';
 import {
     CompatibilityIssueCode,
     InfoCode,
     MessageCode,
     WarningCode,
-} from './suppress/message-codes';
-import { createSuppressQuickFix } from './suppress/quick-fix';
+} from './suppress/message-codes.js';
+import { createSuppressQuickFix } from './suppress/quick-fix.js';
 
 export enum Severity {
     ERROR = 'ERROR',

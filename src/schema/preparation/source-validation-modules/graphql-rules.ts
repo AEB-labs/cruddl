@@ -14,7 +14,7 @@ import {
     ValuesOfCorrectTypeRule,
     VariablesInAllowedPositionRule,
 } from 'graphql';
-import gql from 'graphql-tag';
+import { gql } from 'graphql-tag';
 import {
     ParsedProjectSource,
     ParsedProjectSourceBaseKind,

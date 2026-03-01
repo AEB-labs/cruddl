@@ -2,10 +2,10 @@ import { Database } from 'arangojs';
 import { existsSync, readFileSync } from 'fs';
 import { ExecutionResult } from 'graphql';
 import stripJsonComments from 'strip-json-comments';
-import { ArangoDBConfig } from '../../src/database/arangodb';
-import { isDefined } from '../../src/utils/utils';
-import { generateRandomString } from '../helpers/generate-random-string';
-import { InitTestDataContext } from './init-test-data-context';
+import { ArangoDBConfig } from '../../src/database/arangodb/index.js';
+import { isDefined } from '../../src/utils/utils.js';
+import { generateRandomString } from '../helpers/generate-random-string.js';
+import { InitTestDataContext } from './init-test-data-context.js';
 
 const DATABASE_NAME = 'cruddl-test-temp';
 // arangodb only listens on ipv4, but localhost may resolve to ::1, so explicitly state 127.0.0.1
