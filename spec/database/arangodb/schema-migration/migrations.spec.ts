@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import deepEqual from 'deep-equal';
 import gql from 'graphql-tag';
 import { ArangoDBAdapter, ArangoDBConfig } from '../../../../src/database/arangodb';
 import { prettyPrint } from '../../../../src/graphql/pretty-print';
@@ -9,6 +8,7 @@ import { createTempDatabase, getTempDatabase } from '../../../regression/initial
 import { isArangoDBDisabled } from '../arangodb-test-utils';
 import { ArangoSearchViewProperties, TierConsolidationPolicy } from 'arangojs/view';
 import { Model } from '../../../../src/model';
+import { deepEqual } from 'fast-equals';
 
 type GqlDocument = ReturnType<typeof gql>;
 
