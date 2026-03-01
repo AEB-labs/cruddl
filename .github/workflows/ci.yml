@@ -22,6 +22,7 @@ jobs:
       - run: npm ci
       - run: npm run knip
       - run: npm run knip:prod
+      - run: npm run typecheck
       - run: npm test
   deploy:
     if: startsWith(github.ref, 'refs/tags/v')

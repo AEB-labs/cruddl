@@ -36,7 +36,7 @@ export async function start() {
         );
     }
 
-    const project = await loadProjectFromDir(resolve(__dirname, './model'), {
+    const project = await loadProjectFromDir(resolve(import.meta.dirname, './model'), {
         profileConsumer: (profile) => {
             logger.info(
                 `${profile.operation.operation} ${
@@ -59,10 +59,10 @@ export async function start() {
                 maxLimitForRootEntityQueries: 1500,
             };
         },
-        /*processError(error: Error) {
+        processError(error: Error) {
             console.error(`Internal error: ${error.stack}`);
             return new Error(`Internal error`);
-        },*/
+        },
         loggerProvider,
     });
     const schema = project.createSchema(db);
