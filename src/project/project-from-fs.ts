@@ -1,6 +1,5 @@
 import { readdir, readFile, stat } from 'fs/promises';
 import { resolve } from 'path';
-import { flatten } from '../utils/utils';
 import { Project, ProjectOptions } from './project';
 import { ProjectSource } from './source';
 
@@ -23,7 +22,7 @@ async function loadSourcesFromDir(
     parentSourcePath: string = '',
 ): Promise<ReadonlyArray<ProjectSource>> {
     const fileNames: ReadonlyArray<string> = await readdir(dirPath);
-    return flatten(await Promise.all(fileNames.map(processFile)));
+    return (await Promise.all(fileNames.map(processFile))).flat();
 
     async function processFile(fileName: string): Promise<ReadonlyArray<ProjectSource>> {
         const sourcePath = concatSourcePaths(parentSourcePath, fileName);

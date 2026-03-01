@@ -2,7 +2,7 @@ import { DocumentNode } from 'graphql';
 import { ParsedProjectSource } from '../../config/parsed-project';
 import { Model, ValidationMessage, ValidationResult } from '../../model';
 import { ProjectSource } from '../../project/source';
-import { flatMap } from '../../utils/utils';
+
 import { IndicesValidator } from './ast-validation-modules/indices-validator';
 import { KeyFieldValidator } from './ast-validation-modules/key-field-validator';
 import { NoListsOfListsValidator } from './ast-validation-modules/no-lists-of-lists-validator';
@@ -42,19 +42,19 @@ export interface SourceValidator {
 
 export function validateSource(source: ProjectSource): ValidationResult {
     return new ValidationResult(
-        flatMap(sourceValidators, (validator) => validator.validate(source)),
+        sourceValidators.flatMap((validator) => validator.validate(source)),
     );
 }
 
 export function validateParsedProjectSource(source: ParsedProjectSource): ValidationResult {
     return new ValidationResult(
-        flatMap(parsedProjectSourceValidators, (validator) => validator.validate(source)),
+        parsedProjectSourceValidators.flatMap((validator) => validator.validate(source)),
     );
 }
 
 export function validatePostMerge(ast: DocumentNode, model: Model): ValidationResult {
     return new ValidationResult(
-        flatMap(postMergeValidators, (validator) => {
+        postMergeValidators.flatMap((validator) => {
             // All validators rely on a valid model except for the things they test.
             // That's why they allow them to throw errors due to a bad model.
             // To keep the validators simple, we just ignore these errors and

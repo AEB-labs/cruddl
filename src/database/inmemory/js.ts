@@ -1,6 +1,6 @@
 import { QueryResultValidator } from '../../query-tree';
 import { cyan, magenta } from '../../utils/colors';
-import { arrayToObject, flatMap } from '../../utils/utils';
+import { arrayToObject } from '../../utils/utils';
 
 function stringify(val: any) {
     if (val === undefined) {
@@ -374,7 +374,7 @@ export class JSCompoundQuery extends JSFragment {
     private getExecutableQueriesRecursive(
         resultVarToNameMap: Map<JSQueryResultVariable, string>,
     ): ReadonlyArray<JSExecutableQuery> {
-        const executableQueries = flatMap(this.preExecQueries, (JSQuery) =>
+        const executableQueries = this.preExecQueries.flatMap((JSQuery) =>
             JSQuery.getExecutableQueriesRecursive(resultVarToNameMap),
         );
 
