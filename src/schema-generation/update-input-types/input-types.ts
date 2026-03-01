@@ -1,5 +1,4 @@
-import { GraphQLID, GraphQLInputFieldConfigMap } from 'graphql';
-import { ThunkReadonlyArray } from 'graphql/type/definition';
+import { GraphQLID, GraphQLInputFieldConfigMap, ThunkReadonlyArray } from 'graphql';
 import {
     ChildEntityType,
     EntityExtensionType,
