@@ -4,7 +4,7 @@ import {
     GraphQLOffsetDateTime,
     TIMESTAMP_PROPERTY,
 } from '../../../schema/scalars/offset-date-time';
-import { compact } from '../../../utils/utils';
+import { isDefined } from '../../../utils/utils';
 import { getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBConfig } from '../config';
 
@@ -30,7 +30,7 @@ export function describeIndex(index: IndexDefinition) {
 }
 
 export function getIndexDescriptor(index: IndexDefinition) {
-    return compact([
+    return [
         index.id, // contains collection and id separated by slash (missing for indices to be created)
         index.name, // name as specified by user
         `type:${index.type}`,
@@ -38,7 +38,9 @@ export function getIndexDescriptor(index: IndexDefinition) {
         index.sparse ? 'sparse' : undefined,
         `collection:${index.collectionName}`,
         `fields:${index.fields.join(',')}`,
-    ]).join('/');
+    ]
+        .filter(isDefined)
+        .join('/');
 }
 
 function indexDefinitionsEqual(a: IndexDefinition, b: IndexDefinition) {
@@ -77,8 +79,8 @@ export function calculateRequiredIndexOperations(
     indicesToCreate: ReadonlyArray<IndexDefinition>;
 } {
     let indicesToDelete = [...existingIndices];
-    const indicesToCreate = compact(
-        requiredIndices.map((requiredIndex) => {
+    const indicesToCreate = requiredIndices
+        .map((requiredIndex) => {
             const existingIndex = existingIndices.find((index) =>
                 indexDefinitionsEqual(index, requiredIndex),
             );
@@ -87,8 +89,8 @@ export function calculateRequiredIndexOperations(
                 return undefined;
             }
             return requiredIndex;
-        }),
-    );
+        })
+        .filter(isDefined);
     indicesToDelete = indicesToDelete
         .filter((index) => index.type === DEFAULT_INDEX_TYPE) // only remove indexes of types that we also add
         .filter(

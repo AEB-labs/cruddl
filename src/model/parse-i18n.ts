@@ -1,5 +1,5 @@
 import { ParsedObjectProjectSource } from '../config/parsed-project';
-import { compact, mapValues } from '../utils/utils';
+import { isDefined, mapValues } from '../utils/utils';
 import {
     LocalizationBaseConfig,
     LocalizationConfig,
@@ -68,8 +68,8 @@ export function parseI18nConfigs(
     }
 
     const i18n = source.object.i18n as { [language: string]: NamespaceLocalizationConfig };
-    return compact(
-        Object.keys(i18n).map((key: string): LocalizationConfig | undefined => {
+    return Object.keys(i18n)
+        .map((key: string): LocalizationConfig | undefined => {
             const namespace = i18n[key];
             if (typeof namespace !== 'object') {
                 return undefined;
@@ -94,6 +94,6 @@ export function parseI18nConfigs(
                 types: normalizedTypes,
                 loc: source.pathLocationMap[curYamlPath],
             };
-        }),
-    );
+        })
+        .filter(isDefined);
 }
