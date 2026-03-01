@@ -2,8 +2,6 @@ import type { Logger, LoggerProvider } from '../../src/config/logging.js';
 
 export class WarnAndErrorLoggerProvider implements LoggerProvider {
     getLogger(category: string): Logger {
-        // note: can't use log4js's getLogger because we can't set a log level on a logger
-        // (setting .level on a logger actually changes the level globally for that category)
         return new WarnAndErrorLogger(category);
     }
 }
