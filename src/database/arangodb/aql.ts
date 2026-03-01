@@ -1,5 +1,6 @@
 import { QueryResultValidator } from '../../query-tree';
 import { blue, cyan, magenta } from '../../utils/colors';
+import { isDefined } from '../../utils/utils';
 
 function stringify(val: any) {
     if (val === undefined) {
@@ -73,7 +74,7 @@ export class AQLCodeBuildingContext {
 
     getOrAddVariable(token: AQLVariable): string {
         const existingBinding = this.variableBindings.get(token);
-        if (existingBinding != undefined) {
+        if (isDefined(existingBinding)) {
             return existingBinding;
         }
         const safeLabel = AQLCodeBuildingContext.getSafeLabel(token.label);

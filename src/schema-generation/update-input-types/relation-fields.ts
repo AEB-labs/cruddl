@@ -6,7 +6,7 @@ import {
     getCreateRelatedEntityFieldName,
     getRemoveRelationFieldName,
 } from '../../schema/names';
-import { AnyValue, isReadonlyArray, PlainObject } from '../../utils/utils';
+import { AnyValue, isDefined, isReadonlyArray, PlainObject } from '../../utils/utils';
 import { CreateRootEntityInputType } from '../create-input-types';
 import { FieldContext } from '../query-node-object-type';
 import {
@@ -86,7 +86,7 @@ export class AddEdgesInputField extends AbstractRelationUpdateInputField {
     }
 
     getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return [];
         }
         if (!isReadonlyArray(value)) {
@@ -111,7 +111,7 @@ export class RemoveEdgesInputField extends AbstractRelationUpdateInputField {
     }
 
     getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return [];
         }
         if (!isReadonlyArray(value)) {
@@ -144,7 +144,7 @@ export class CreateAndAddEdgesInputField extends AbstractRelationUpdateInputFiel
         sourceIDNode: QueryNode,
         context: FieldContext,
     ): ReadonlyArray<PreExecQueryParms> {
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return [];
         }
         if (!isReadonlyArray(value)) {
@@ -184,7 +184,7 @@ export class CreateAndSetEdgeInputField extends AbstractRelationUpdateInputField
         sourceIDNode: QueryNode,
         context: FieldContext,
     ): ReadonlyArray<PreExecQueryParms> {
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return [];
         }
         if (isReadonlyArray(value)) {
