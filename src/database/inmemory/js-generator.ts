@@ -414,7 +414,7 @@ function getPaginationFrag({
     readonly maxCount?: number;
     readonly skip?: number;
 }): JSFragment {
-    if (maxCount != undefined) {
+    if (isDefined(maxCount)) {
         return js`.slice(${skip}, ${skip + maxCount})`;
     }
     if (skip > 0) {

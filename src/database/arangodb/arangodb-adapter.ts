@@ -14,7 +14,7 @@ import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { FlexSearchTokenization } from '../../query-tree/flex-search';
 import { Mutable } from '../../utils/util-types';
-import { sleep, sleepInterruptible } from '../../utils/utils';
+import { isDefined, sleep, sleepInterruptible } from '../../utils/utils';
 import { getPreciseTime, Watch } from '../../utils/watch';
 import {
     DatabaseAdapter,
@@ -607,7 +607,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         let requestSentCallback: (() => void) | undefined;
         let requestSentPromise = new Promise<void>((resolve) => (requestSentCallback = resolve));
         let timeout: any | undefined;
-        if (options.transactionTimeoutMs != undefined) {
+        if (isDefined(options.transactionTimeoutMs)) {
             const ms = options.transactionTimeoutMs;
             // transactionTimeout is a timeout that should only be started when the request is actually sent to ArangoDB
             const timeoutPromise = requestSentPromise

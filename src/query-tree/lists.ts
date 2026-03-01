@@ -1,6 +1,6 @@
 import { AggregationOperator } from '../model/config';
 import { OrderDirection } from '../model/implementation/order';
-import { indent } from '../utils/utils';
+import { indent, isDefined } from '../utils/utils';
 import { QueryNode } from './base';
 import { ConstBoolQueryNode } from './literals';
 import { VariableQueryNode } from './variables';
@@ -67,7 +67,7 @@ export class TransformListQueryNode extends QueryNode {
                         : `where ${this.filterNode.describe()}\n`) +
                     (this.orderBy.isUnordered() ? '' : `order by ${this.orderBy.describe()}\n`) +
                     (this.skip != 0 ? `skip ${this.skip}\n` : '') +
-                    (this.maxCount != undefined ? `limit ${this.maxCount}\n` : '') +
+                    (isDefined(this.maxCount) ? `limit ${this.maxCount}\n` : '') +
                     `as ${this.innerNode.describe()}`,
             )
         );

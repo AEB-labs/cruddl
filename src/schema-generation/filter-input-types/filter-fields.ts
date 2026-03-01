@@ -23,7 +23,7 @@ import {
     OR_FILTER_FIELD,
 } from '../../schema/constants';
 import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../schema/scalars/offset-date-time';
-import { AnyValue, decapitalize, isReadonlyArray, PlainObject } from '../../utils/utils';
+import { AnyValue, decapitalize, isDefined, isReadonlyArray, PlainObject } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants';
@@ -94,7 +94,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
     }
 
     get name() {
-        if (this.operatorPrefix == undefined) {
+        if (!isDefined(this.operatorPrefix)) {
             return this.field.name;
         }
         return this.field.name + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorPrefix;
@@ -104,7 +104,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         if (
             this.operatorPrefix &&
             OPERATORS_WITH_LIST_OPERAND.includes(this.operatorPrefix) &&
-            filterValue == null
+            !isDefined(filterValue)
         ) {
             return new ConstBoolQueryNode(true);
         }
@@ -141,7 +141,7 @@ export class StringMapEntryFilterField implements FilterField {
     }
 
     get name() {
-        if (this.operatorPrefix == undefined) {
+        if (!isDefined(this.operatorPrefix)) {
             return this.fieldName;
         }
         return this.fieldName + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorPrefix;
@@ -151,7 +151,7 @@ export class StringMapEntryFilterField implements FilterField {
         if (
             this.operatorPrefix &&
             OPERATORS_WITH_LIST_OPERAND.includes(this.operatorPrefix) &&
-            filterValue == null
+            !isDefined(filterValue)
         ) {
             return new ConstBoolQueryNode(true);
         }
@@ -250,7 +250,7 @@ export class EmptyListFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        if (filterValue == undefined) {
+        if (!isDefined(filterValue)) {
             // null means do not filter
             return ConstBoolQueryNode.TRUE;
         }
@@ -320,7 +320,7 @@ export class EntityExtensionFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        if (filterValue == undefined) {
+        if (!isDefined(filterValue)) {
             // entity extensions can't ever be null, and null is always coerced to {}, so this filter just shouldn't have any effect
             return ConstBoolQueryNode.TRUE;
         }

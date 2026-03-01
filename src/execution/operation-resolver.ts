@@ -31,6 +31,7 @@ import {
     SelectionToken,
 } from '../schema-generation/query-node-object-type';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
+import { isDefined } from '../utils/utils';
 import { getPreciseTime, Watch } from '../utils/watch';
 import { DefaultClock, ExecutionOptions, UUIDGenerator } from './execution-options';
 import { ExecutionResult } from './execution-result';
@@ -181,7 +182,7 @@ export class OperationResolver {
             logger.trace('Result: ' + JSON.stringify(data, undefined, '  '));
         }
         let profile: RequestProfile | undefined;
-        if (watch && topLevelWatch && start != undefined) {
+        if (watch && topLevelWatch && isDefined(start)) {
             // equivalent to (profileConsumer || options.recordPlan || options.recordTimings) but pleases typescript
             const preparation = {
                 ...(dbAdapterTimings ? dbAdapterTimings.preparation : {}),

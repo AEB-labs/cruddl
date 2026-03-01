@@ -1,6 +1,7 @@
 import { StringValueNode } from 'graphql';
 import memorize from 'memorize-decorator';
 import { QueryNode, VariableQueryNode } from '../../query-tree';
+import { isDefined } from '../../utils/utils';
 
 import { CollectFieldConfig } from '../config';
 import {
@@ -337,7 +338,7 @@ export class CollectPath {
                     return [];
                 }
 
-                if (minDepth != undefined) {
+                if (isDefined(minDepth)) {
                     if (field.type !== currentType) {
                         addMessage(
                             ValidationMessage.error(
@@ -347,7 +348,7 @@ export class CollectPath {
                         );
                         return [];
                     }
-                    if (maxDepth == undefined) {
+                    if (!isDefined(maxDepth)) {
                         maxDepth = minDepth;
                     } else if (maxDepth < minDepth) {
                         addMessage(
@@ -409,7 +410,7 @@ export class CollectPath {
                     location: segmentLocation,
                 });
             } else {
-                if (minDepth != undefined) {
+                if (isDefined(minDepth)) {
                     addMessage(
                         ValidationMessage.error(
                             `A depth specifier is only valid for relation fields, and field "${currentType.name}.${field.name}" is not a relation.`,
@@ -454,8 +455,8 @@ function parseSegmentSpecifier(
     const [, /* field{1,2} */ fieldName /* {1,2} */, , minDepth /* ,2 */, , maxDepth] = matches;
     return {
         fieldName,
-        minDepth: minDepth != undefined ? Number(minDepth) : undefined,
-        maxDepth: maxDepth != undefined ? Number(maxDepth) : undefined,
+        minDepth: isDefined(minDepth) ? Number(minDepth) : undefined,
+        maxDepth: isDefined(maxDepth) ? Number(maxDepth) : undefined,
     };
 }
 

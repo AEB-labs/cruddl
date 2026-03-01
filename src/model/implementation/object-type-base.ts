@@ -1,4 +1,5 @@
 import { DirectiveNode } from 'graphql/index';
+import { groupArray, isDefined } from '../../utils/utils';
 import { FieldConfig, ObjectTypeConfig } from '../config';
 import { ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
@@ -154,7 +155,7 @@ export abstract class ObjectTypeBase extends TypeBase {
 
     getFieldOrThrow(name: string): Field {
         const field = this.getField(name);
-        if (field == undefined) {
+        if (!isDefined(field)) {
             throw new Error(`Field "${this.name}.${name}" is not declared`);
         }
         return field;

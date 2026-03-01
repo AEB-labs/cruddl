@@ -1,6 +1,7 @@
 import { DirectiveNode, ObjectValueNode, StringValueNode } from 'graphql';
 import memorize from 'memorize-decorator';
 import { SCALAR_JSON } from '../../schema/constants';
+import { isDefined } from '../../utils/utils';
 import { IndexDefinitionConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
@@ -184,7 +185,7 @@ export class Index implements ModelComponent {
     ) {
         this.name = input.name;
         this.unique = input.unique || false;
-        this.sparse = input.sparse != undefined ? input.sparse : this.unique;
+        this.sparse = isDefined(input.sparse) ? input.sparse : this.unique;
         this.fields = (input.fields || []).map(
             (fieldPath, index) =>
                 new IndexField(

@@ -38,7 +38,7 @@ import {
     SKIP_ARG,
 } from '../schema/constants';
 import { RequireAllProperties } from '../utils/util-types';
-import { decapitalize } from '../utils/utils';
+import { decapitalize, isDefined } from '../utils/utils';
 import {
     FlexSearchScalarOrEnumFilterField,
     resolveFilterField,
@@ -188,7 +188,7 @@ export class OrderByAndPaginationAugmentation {
                     listNode.orderBy.isUnordered() &&
                     // TODO aql-perf it's probably better to throw instead of checking because two LIMITs in a row is probably bad
                     listNode.skip === 0 &&
-                    listNode.maxCount == undefined &&
+                    !isDefined(listNode.maxCount) &&
                     // TODO aql-perf why is this condition necessary?
                     listNode.innerNode === listNode.itemVariable
                 ) {
@@ -308,7 +308,7 @@ export class OrderByAndPaginationAugmentation {
 
                 if (
                     orderBy.isUnordered() &&
-                    maxCount == undefined &&
+                    !isDefined(maxCount) &&
                     (!paginationFilter || paginationFilter === ConstBoolQueryNode.TRUE)
                 ) {
                     return originalListNode;
@@ -318,7 +318,7 @@ export class OrderByAndPaginationAugmentation {
                     !(listNode instanceof FlexSearchQueryNode) &&
                     !(listNode instanceof TraversalQueryNode) && // does not make use of indices for sorting
                     !skip &&
-                    maxCount != undefined &&
+                    isDefined(maxCount) &&
                     orderBy.clauses.length > 1 &&
                     afterArg &&
                     type.isRootEntityType &&
