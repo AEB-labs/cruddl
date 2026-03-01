@@ -10,7 +10,7 @@ import {
     VariableAssignmentQueryNode,
     VariableQueryNode,
 } from '../../query-tree';
-import { objectEntries } from '../../utils/utils';
+
 import { createFieldPathNode } from '../field-path-node';
 import { equal } from './input-types';
 
@@ -32,7 +32,7 @@ export function createBillingEntityCategoryNode(
     const valueNode = createFieldPathNode(billingEntityConfig.categoryMappingFieldPath, entityNode);
     const valueVar = new VariableQueryNode('categoryMappingSource');
     let node: QueryNode = new LiteralQueryNode(billingEntityConfig.categoryMapping.defaultValue);
-    for (const [key, value] of objectEntries(billingEntityConfig.categoryMapping.values)) {
+    for (const [key, value] of Object.entries(billingEntityConfig.categoryMapping.values)) {
         let keyNode: QueryNode = new LiteralQueryNode(key);
         if (billingEntityConfig.categoryMappingFieldPath.type.name === GraphQLBoolean.name) {
             if (key === 'true') {

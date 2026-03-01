@@ -127,14 +127,6 @@ export function compact<T>(arr: ReadonlyArray<T | undefined | null>): ReadonlyAr
     return arr.filter((a) => a != undefined) as ReadonlyArray<T>;
 }
 
-export function objectValues<T>(obj: { [name: string]: T }): ReadonlyArray<T> {
-    return Object.keys(obj).map((i) => obj[i]);
-}
-
-export function objectEntries<T>(obj: { [name: string]: T }): [string, T][] {
-    return Object.keys(obj).map((k): [string, T] => [k, obj[k]]);
-}
-
 export function mapValues<TIn, TOut>(
     obj: { [key: string]: TIn },
     fn: (value: TIn, key: string) => TOut,
