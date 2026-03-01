@@ -1,8 +1,8 @@
 import { assert, expect } from 'chai';
 import { readdirSync, statSync } from 'fs';
-import { getLogger } from 'log4js';
 import { resolve } from 'path';
 import { likePatternToRegExp } from '../../src/database/like-helpers.js';
+import { CategoryLoggerProvider } from '../helpers/category-logger-provider.js';
 import type { RegressionSuiteOptions } from './regression-suite.js';
 import { RegressionSuite } from './regression-suite.js';
 
@@ -30,10 +30,10 @@ describe('regression tests', async () => {
         testNameFilter = (name) => !!name.match(regex);
     }
 
-    // log levels can only bet set globally in log4js, so we're doing it here
     const trace = process.argv.includes('--log-trace');
+    const traceLoggerProvider = new CategoryLoggerProvider();
     const traceLogNames = ['ArangoDBAdapter', 'InMemoryAdapter', 'query-resolvers'];
-    const traceLoggers = traceLogNames.map((name) => getLogger(name));
+    const traceLoggers = traceLogNames.map((name) => traceLoggerProvider.getLogger(name));
     const previousLevels = traceLoggers.map((logger) => logger.level);
     beforeEach(async () => {
         if (trace) {

@@ -13,7 +13,7 @@ import type { IDGenerationInfo, IDGenerator } from '../../src/execution/executio
 import { loadProjectFromDir } from '../../src/project/project-from-fs.js';
 import type { ProjectOptions } from '../../src/project/project.js';
 import { ErrorWithCause } from '../../src/utils/error-with-cause.js';
-import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider.js';
+import { CategoryLoggerProvider } from '../helpers/category-logger-provider.js';
 import { WarnAndErrorLoggerProvider } from '../helpers/warn-and-error-logger-provider.js';
 import { InitTestDataContext } from './init-test-data-context.js';
 import type { TestDataEnvironment } from './initialization.js';
@@ -126,7 +126,7 @@ export class RegressionSuite {
         };
         const debugLevelOptions = {
             ...generalOptions,
-            loggerProvider: new Log4jsLoggerProvider(),
+            loggerProvider: new CategoryLoggerProvider(),
         };
 
         // use a schema that logs less for initTestData and for schema migrations

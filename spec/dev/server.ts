@@ -9,7 +9,7 @@ import { globalContext } from '../../src/config/global.js';
 import { InMemoryAdapter } from '../../src/database/inmemory/index.js';
 import { getMetaSchema } from '../../src/meta-schema/meta-schema.js';
 import { loadProjectFromDir } from '../../src/project/project-from-fs.js';
-import { Log4jsLoggerProvider } from '../helpers/log4js-logger-provider.js';
+import { CategoryLoggerProvider } from '../helpers/category-logger-provider.js';
 import { createFastApp } from './fast-server.js';
 
 const port = 3000;
@@ -19,7 +19,7 @@ const databaseURL = 'http://root:@localhost:8529';
 // const databaseURL = 'http://root:@localhost:7050';
 
 export async function start() {
-    const loggerProvider = new Log4jsLoggerProvider();
+    const loggerProvider = new CategoryLoggerProvider();
 
     let db;
     if (process.argv.includes('--db=in-memory')) {
