@@ -1,5 +1,9 @@
-import { GraphQLEnumType, GraphQLString, resolveReadonlyArrayThunk } from 'graphql';
-import { ThunkReadonlyArray } from 'graphql/type/definition';
+import {
+    GraphQLEnumType,
+    GraphQLString,
+    resolveReadonlyArrayThunk,
+    ThunkReadonlyArray,
+} from 'graphql';
 import memorize from 'memorize-decorator';
 import { EnumType, Field, ScalarType, Type } from '../../model/index';
 import {
