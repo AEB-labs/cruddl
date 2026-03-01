@@ -1,13 +1,13 @@
+import { expect } from 'chai';
+import { graphql, GraphQLSchema } from 'graphql';
 import gql from 'graphql-tag';
+import { ArangoDBAdapter } from '../../../src/database/arangodb';
+import { prettyPrint } from '../../../src/graphql/pretty-print';
+import { TimeToLiveConfig } from '../../../src/model';
 import { Project } from '../../../src/project/project';
 import { ProjectSource } from '../../../src/project/source';
-import { graphql, GraphQLSchema } from 'graphql';
-import { ArangoDBAdapter } from '../../../src/database/arangodb';
-import { isArangoDBDisabled } from './arangodb-test-utils';
 import { createTempDatabase } from '../../regression/initialization';
-import { expect } from 'chai';
-import { TimeToLiveConfig } from '../../../src/model';
-import { prettyPrint } from '../../../src/graphql/pretty-print';
+import { isArangoDBDisabled } from './arangodb-test-utils';
 
 interface Setup {
     readonly schema: GraphQLSchema;

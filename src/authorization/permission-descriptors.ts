@@ -12,8 +12,8 @@ import {
 import { simplifyBooleans } from '../query-tree/utils';
 import { createFieldPathNode } from '../schema-generation/field-path-node';
 import { ACCESS_GROUP_FIELD } from '../schema/constants';
-import { AccessOperation, AuthContext } from './auth-basics';
 import { isReadonlyArray } from '../utils/utils';
+import { AccessOperation, AuthContext } from './auth-basics';
 
 export enum ConditionExplanationContext {
     BEFORE_WRITE,

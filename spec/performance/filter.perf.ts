@@ -1,16 +1,5 @@
 import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
-import { takeRandomSample } from '../../src/utils/utils';
-import {
-    addManyPapersWithAQL,
-    addNumberedPapersWithAQL,
-    addPaper,
-    createLargePaper,
-    formatBytes,
-    getRandomPaperIDsWithAQL,
-    getSizeFactorForJSONLength,
-    initEnvironment,
-    TestEnvironment,
-} from './support/helpers';
+import { addNumberedPapersWithAQL, initEnvironment, TestEnvironment } from './support/helpers';
 
 function testFilter(config: { rootEntitiesInDB: number; filterSuffix: string }): BenchmarkConfig {
     let env: TestEnvironment;

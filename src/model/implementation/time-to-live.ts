@@ -6,12 +6,11 @@ import { RelationDeleteAction, TimeToLiveConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
+import { FieldPath } from './field-path';
 import { Model } from './model';
 import { RootEntityType } from './root-entity-type';
 import { ScalarType } from './scalar-type';
 import { Type } from './type';
-import { FieldPath } from './field-path';
-import { WarningCode } from '../validation/suppress/message-codes';
 
 export class TimeToLiveType implements ModelComponent {
     readonly cascadeFields: ReadonlyArray<FieldPath> = [];

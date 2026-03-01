@@ -125,7 +125,6 @@ import { parseI18nConfigs } from './parse-i18n';
 import { parseModuleConfigs } from './parse-modules';
 import { parseTTLConfigs } from './parse-ttl';
 import { ValidationContext, ValidationMessage } from './validation';
-import { WarningCode } from './validation/suppress/message-codes';
 
 export function createModel(parsedProject: ParsedProject, options: ModelOptions = {}): Model {
     const validationContext = new ValidationContext();

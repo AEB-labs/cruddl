@@ -1,9 +1,9 @@
 import { Config, Connection, RequestOptions } from 'arangojs/connection';
 import { normalizeUrl } from 'arangojs/lib/normalizeUrl';
 import { ArangojsResponse } from 'arangojs/lib/request';
+import { isReadonlyArray } from '../../../utils/utils';
 import { RequestInstrumentation, requestInstrumentationBodyKey } from './config';
 import { createRequest, RequestOptions as CustomRequestOptions } from './custom-request';
-import { isReadonlyArray } from '../../../utils/utils';
 
 /**
  * @internal

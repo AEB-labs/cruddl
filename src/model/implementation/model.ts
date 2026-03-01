@@ -12,6 +12,7 @@ import { ChildEntityType } from './child-entity-type';
 import { EntityExtensionType } from './entity-extension-type';
 import { EnumType } from './enum-type';
 import { ModelI18n } from './i18n';
+import { ModuleDeclaration } from './modules/module-declaration';
 import { Namespace } from './namespace';
 import { PermissionProfile } from './permission-profile';
 import { Relation } from './relation';
@@ -20,7 +21,6 @@ import { ScalarType } from './scalar-type';
 import { TimeToLiveType } from './time-to-live';
 import { createType, InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
-import { ModuleDeclaration } from './modules/module-declaration';
 
 export class Model implements ModelComponent {
     private readonly typeMap: ReadonlyMap<string, Type>;

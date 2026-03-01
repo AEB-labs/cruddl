@@ -1,5 +1,4 @@
-import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
-import { FlexSearchLanguage } from '../../model/config';
+import { GraphQLBoolean, GraphQLID, GraphQLString } from 'graphql';
 import { BinaryOperator, BinaryOperatorWithAnalyzer, QueryNode } from '../../query-tree';
 import {
     INPUT_FIELD_CONTAINS_ALL_PREFIXES,
@@ -7,7 +6,6 @@ import {
     INPUT_FIELD_CONTAINS_ANY_PREFIX,
     INPUT_FIELD_CONTAINS_ANY_WORD,
     INPUT_FIELD_CONTAINS_PHRASE,
-    INPUT_FIELD_ENDS_WITH,
     INPUT_FIELD_EQUAL,
     INPUT_FIELD_GT,
     INPUT_FIELD_GTE,
@@ -20,7 +18,6 @@ import {
     INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX,
     INPUT_FIELD_NOT_CONTAINS_ANY_WORD,
     INPUT_FIELD_NOT_CONTAINS_PHRASE,
-    INPUT_FIELD_NOT_ENDS_WITH,
     INPUT_FIELD_NOT_IN,
     INPUT_FIELD_NOT_STARTS_WITH,
     INPUT_FIELD_STARTS_WITH,
@@ -28,6 +25,7 @@ import {
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
+import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
 import { NUMERIC_FILTER_FIELDS } from '../filter-input-types/constants';
 import {
     binaryNotOp,
@@ -37,7 +35,6 @@ import {
     notStartsWithOp,
     startsWithOp,
 } from '../utils/input-types';
-import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
 
 export const SOME_PREFIX = 'some';
 

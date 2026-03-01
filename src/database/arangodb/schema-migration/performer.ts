@@ -13,7 +13,6 @@ import {
     CreateDocumentCollectionMigration,
     CreateEdgeCollectionMigration,
     CreateIndexMigration,
-    DropArangoSearchViewMigration,
     DropIndexMigration,
     RecreateArangoSearchViewMigration,
     SchemaMigration,

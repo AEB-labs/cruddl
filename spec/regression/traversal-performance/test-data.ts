@@ -1,6 +1,6 @@
-import { InitTestDataContext } from '../init-test-data-context';
 import gql from 'graphql-tag';
 import { generateRandomString } from '../../helpers/generate-random-string';
+import { InitTestDataContext } from '../init-test-data-context';
 
 export default async function init(context: InitTestDataContext) {
     await context.executeGraphql(
