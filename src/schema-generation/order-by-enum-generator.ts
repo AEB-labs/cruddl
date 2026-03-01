@@ -5,6 +5,7 @@ import { OrderClause, OrderDirection, QueryNode } from '../query-tree';
 import { ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/constants';
 import { getOrderByTypeName } from '../schema/names';
 
+import { isDefined } from '../utils/utils';
 import { createFieldNode } from './field-nodes';
 import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
 
@@ -158,7 +159,7 @@ export class OrderByEnumGenerator {
                 ? rootEntityDepth + 1
                 : rootEntityDepth;
             if (
-                this.config.maxRootEntityDepth != undefined &&
+                isDefined(this.config.maxRootEntityDepth) &&
                 newRootEntityDepth > this.config.maxRootEntityDepth
             ) {
                 return [];

@@ -5,7 +5,7 @@ import { DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execut
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { FlexSearchTokenization } from '../../query-tree/flex-search';
-import { isReadonlyArray } from '../../utils/utils';
+import { isDefined, isReadonlyArray } from '../../utils/utils';
 import {
     DatabaseAdapter,
     ExecutionArgs,
@@ -56,13 +56,13 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 lhs: string | boolean | number | null | undefined | any,
                 rhs: string | boolean | number | null | undefined | any,
             ): number {
-                if (lhs == undefined) {
-                    if (rhs == undefined) {
+                if (!isDefined(lhs)) {
+                    if (!isDefined(rhs)) {
                         return 0;
                     }
                     return -1;
                 }
-                if (rhs == undefined) {
+                if (!isDefined(rhs)) {
                     return 1;
                 }
 

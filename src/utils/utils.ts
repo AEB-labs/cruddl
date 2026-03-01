@@ -13,11 +13,11 @@ export function mapFirstDefined<TIn, TOut>(
     fn: (t: TIn) => TOut,
 ) {
     for (const i of array) {
-        if (i == undefined) {
+        if (!isDefined(i)) {
             continue;
         }
         const out = fn(i);
-        if (out != undefined) {
+        if (isDefined(out)) {
             return out;
         }
     }
