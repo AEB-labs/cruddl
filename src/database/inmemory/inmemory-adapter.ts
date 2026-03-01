@@ -1,7 +1,7 @@
+import { DEFAULT_LOGGER_PROVIDER } from '../../config/console-logger.js';
 import { globalContext } from '../../config/global.js';
 import type { ProjectOptions } from '../../config/interfaces.js';
 import type { Logger } from '../../config/logging.js';
-import { DEFAULT_LOGGER_PROVIDER } from '../../config/logging.js';
 import type { IDGenerator } from '../../execution/execution-options.js';
 import { DefaultClock, UUIDGenerator } from '../../execution/execution-options.js';
 import type { Model } from '../../model/index.js';

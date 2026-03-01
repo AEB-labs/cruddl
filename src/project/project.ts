@@ -1,8 +1,8 @@
 import type { GraphQLSchema } from 'graphql';
 import { memorize } from 'memorize-decorator';
+import { DEFAULT_LOGGER_PROVIDER } from '../config/console-logger.js';
 import type { ProjectOptions } from '../config/interfaces.js';
 import type { LoggerProvider } from '../config/logging.js';
-import { DEFAULT_LOGGER_PROVIDER } from '../config/logging.js';
 import type { DatabaseAdapter } from '../database/database-adapter.js';
 import type { ExecutionOptions } from '../execution/execution-options.js';
 import { DefaultClock } from '../execution/execution-options.js';
