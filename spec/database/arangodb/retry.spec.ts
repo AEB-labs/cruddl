@@ -21,6 +21,10 @@ import { isArangoDBDisabled } from './arangodb-test-utils.js';
 
 const PARALLELISM = 20;
 
+if (!globalThis.xdescribe) {
+    globalThis.xdescribe = describe.skip;
+}
+
 // this test is disabled because of its probabilistic nature
 xdescribe('ArangoDB retryOnConflict', async function () {
     // can't use arrow function because we need the "this"
