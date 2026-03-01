@@ -1,7 +1,6 @@
-import { groupBy, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { ModelOptions } from '../../config/interfaces';
-import { isDefined } from '../../utils/utils';
+import { groupArray, isDefined, uniqBy } from '../../utils/utils';
 
 import { ModelConfig, TypeKind } from '../config';
 import { NamespacedPermissionProfileConfigMap } from '../index';
@@ -104,7 +103,7 @@ export class Model implements ModelComponent {
     }
 
     private validateDuplicateTypes(context: ValidationContext) {
-        const duplicateTypes = Object.values(groupBy(this.types, (type) => type.name)).filter(
+        const duplicateTypes = [...groupArray(this.types, (type) => type.name).values()].filter(
             (types) => types.length > 1,
         );
         for (const types of duplicateTypes) {
@@ -135,7 +134,7 @@ export class Model implements ModelComponent {
     }
 
     private validateDuplicateModules(context: ValidationContext) {
-        const duplicateModules = Object.values(groupBy(this.modules, (type) => type.name)).filter(
+        const duplicateModules = [...groupArray(this.modules, (type) => type.name).values()].filter(
             (types) => types.length > 1,
         );
         for (const modules of duplicateModules) {

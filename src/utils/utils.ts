@@ -72,6 +72,29 @@ export function groupArray<TItem, TKey>(
     return map;
 }
 
+/**
+ * Returns a deduplicated array based on a key function, preserving the first occurrence of each unique key
+ * @param items the input items
+ * @param keyFn a function that computes the key value of an item
+ * @returns {ReadonlyArray<TItem>} an array containing only the first occurrence of each unique key
+ */
+export function uniqBy<TItem, TKey>(
+    items: ReadonlyArray<TItem>,
+    keyFn: (item: TItem) => TKey,
+): ReadonlyArray<TItem> {
+    const seen = new Set<TKey>();
+    const result: TItem[] = [];
+    for (const item of items) {
+        const key = keyFn(item);
+        if (seen.has(key)) {
+            continue;
+        }
+        seen.add(key);
+        result.push(item);
+    }
+    return result;
+}
+
 export const INDENTATION = '  ';
 
 /**
