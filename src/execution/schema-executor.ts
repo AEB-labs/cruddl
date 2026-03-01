@@ -15,7 +15,7 @@ import { Project } from '../project/project';
 import { QueryNodeObjectType, SchemaGenerator } from '../schema-generation';
 import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
 import { validateAndPrepareSchema } from '../schema/schema-builder';
-import { arrayToObject } from '../utils/utils';
+
 import { ExecutionOptions } from './execution-options';
 import { ExecutionResult } from './execution-result';
 import { OperationResolver } from './operation-resolver';
@@ -140,7 +140,7 @@ export class SchemaExecutor {
         const fragments = args.document.definitions.filter(
             (def) => def.kind === 'FragmentDefinition',
         ) as ReadonlyArray<FragmentDefinitionNode>;
-        const fragmentMap = arrayToObject(fragments, (fr) => fr.name.value);
+        const fragmentMap = Object.fromEntries(fragments.map((fr) => [fr.name.value, fr]));
         const rootSelections = resolveSelections(operation.selectionSet.selections, {
             fragments: fragmentMap,
             variableValues: args.variableValues || {},

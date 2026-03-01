@@ -112,17 +112,6 @@ export function takeRandomSample<T>(arr: ReadonlyArray<T>): T | undefined {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export function arrayToObject<TValue>(
-    array: ReadonlyArray<TValue>,
-    keyFn: (item: TValue, index: number) => string,
-): { [name: string]: TValue } {
-    const result: { [name: string]: TValue } = {};
-    for (let i = 0; i < array.length; i++) {
-        result[keyFn(array[i], i)] = array[i];
-    }
-    return result;
-}
-
 export function compact<T>(arr: ReadonlyArray<T | undefined | null>): ReadonlyArray<T> {
     return arr.filter((a) => a != undefined) as ReadonlyArray<T>;
 }

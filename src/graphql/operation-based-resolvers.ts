@@ -8,7 +8,6 @@ import {
     GraphQLSchema,
     OperationDefinitionNode,
 } from 'graphql';
-import { arrayToObject } from '../utils/utils';
 
 export interface OperationParams {
     readonly schema: GraphQLSchema;
@@ -93,7 +92,7 @@ export function addOperationBasedResolvers({
                 type: field.type,
                 description: field.description,
                 deprecationReason: field.deprecationReason,
-                args: arrayToObject(field.args, (arg) => arg.name),
+                args: Object.fromEntries(field.args.map((arg) => [arg.name, arg])),
                 resolve: async (oldSource, args, context, info) => {
                     const newSource = await resolveOp(oldSource, args, context, info);
                     if (newSource == undefined) {

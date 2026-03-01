@@ -16,7 +16,7 @@ import {
     TypeNameMetaFieldDef,
 } from 'graphql';
 import { blue, cyan, green } from '../utils/colors';
-import { arrayToObject, groupArray, indent, INDENTATION } from '../utils/utils';
+import { groupArray, indent, INDENTATION } from '../utils/utils';
 import { getArgumentValues } from './argument-values';
 import { resolveSelections } from './field-collection';
 import { getAliasOrName } from './language-utils';
@@ -182,11 +182,12 @@ export function distillQuery(
     return distillOperation({
         schema,
         operation: extractOperation(document, operationName),
-        fragments: arrayToObject(
-            document.definitions.filter(
-                (def) => def.kind == 'FragmentDefinition',
-            ) as ReadonlyArray<FragmentDefinitionNode>,
-            (def) => def.name.value,
+        fragments: Object.fromEntries(
+            (
+                document.definitions.filter(
+                    (def) => def.kind == 'FragmentDefinition',
+                ) as ReadonlyArray<FragmentDefinitionNode>
+            ).map((def) => [def.name.value, def]),
         ),
         variableValues,
     });
