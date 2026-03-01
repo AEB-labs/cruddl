@@ -1,3 +1,4 @@
+import { deepEqual } from 'fast-equals';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs';
 import { graphql, GraphQLSchema, OperationDefinitionNode, OperationTypeNode, parse } from 'graphql';
 import { unlinkSync } from 'node:fs';
@@ -20,7 +21,6 @@ import {
     TEMP_DATABASE_CONFIG,
     TestDataEnvironment,
 } from './initialization';
-import deepEqual = require('deep-equal');
 
 interface TestResult {
     readonly actualResult: any;
