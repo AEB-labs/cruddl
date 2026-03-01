@@ -1,5 +1,5 @@
 import { Database } from 'arangojs';
-import { CollectionType } from 'arangojs/collection';
+import { CollectionType } from 'arangojs/collection.js';
 import { ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model';
