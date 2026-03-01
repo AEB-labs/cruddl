@@ -19,7 +19,7 @@ import {
     REVISION_FIELD,
 } from '../schema/constants';
 import { getMetaFieldName } from '../schema/names';
-import { compact, flatMap } from '../utils/utils';
+import { compact } from '../utils/utils';
 import { EnumTypeGenerator } from './enum-type-generator';
 import { createFieldNode } from './field-nodes';
 import { FilterAugmentation } from './filter-augmentation';
@@ -85,7 +85,7 @@ export class OutputTypeGenerator {
         const origFields = [...objectType.fields];
         origFields.filter((field) => field.isReference);
 
-        const fields = flatMap(objectType.fields, (field) => {
+        const fields = objectType.fields.flatMap((field) => {
             const nodeFields = this.createFields(field);
             if (field.isReference) {
                 const type = field.type;

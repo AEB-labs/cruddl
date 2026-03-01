@@ -4,7 +4,7 @@ import {
     GraphQLOffsetDateTime,
     TIMESTAMP_PROPERTY,
 } from '../../../schema/scalars/offset-date-time';
-import { compact, flatMap } from '../../../utils/utils';
+import { compact } from '../../../utils/utils';
 import { getCollectionNameForRootEntity } from '../arango-basics';
 import { ArangoDBConfig } from '../config';
 
@@ -53,7 +53,7 @@ function indexDefinitionsEqual(a: IndexDefinition, b: IndexDefinition) {
 }
 
 export function getRequiredIndicesFromModel(model: Model): ReadonlyArray<IndexDefinition> {
-    return flatMap(model.rootEntityTypes, (rootEntity) => getIndicesForRootEntity(rootEntity));
+    return model.rootEntityTypes.flatMap((rootEntity) => getIndicesForRootEntity(rootEntity));
 }
 
 function getIndicesForRootEntity(rootEntity: RootEntityType): ReadonlyArray<IndexDefinition> {

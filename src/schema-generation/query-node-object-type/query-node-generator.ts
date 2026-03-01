@@ -23,7 +23,7 @@ import {
 } from '../../query-tree';
 import { groupByEquivalence } from '../../utils/group-by-equivalence';
 import { RequireAllProperties } from '../../utils/util-types';
-import { decapitalize, flatMap } from '../../utils/utils';
+import { decapitalize } from '../../utils/utils';
 import { FieldContext, SelectionToken } from './context';
 import { QueryNodeField, QueryNodeObjectType } from './definition';
 import { extractQueryTreeObjectType, isListTypeIgnoringNonNull } from './utils';
@@ -112,7 +112,7 @@ function buildObjectQueryNode(
     });
     const variableAssignments: [VariableQueryNode, QueryNode][] = [];
     let resultNode: QueryNode = new ObjectQueryNode(
-        flatMap(distinctFieldRequests, (selections) => {
+        distinctFieldRequests.flatMap((selections) => {
             const fieldRequest = selections[0].fieldRequest;
             if (fieldRequest.fieldName === '__typename') {
                 return selections.map(

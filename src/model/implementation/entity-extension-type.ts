@@ -1,4 +1,3 @@
-import { flatMap } from '../../utils/utils';
 import { ValidationContext, ValidationMessage } from '../validation';
 import { Field } from './field';
 import { ObjectTypeBase } from './object-type-base';

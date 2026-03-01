@@ -1,7 +1,7 @@
 import { groupBy, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { ModelOptions } from '../../config/interfaces';
-import { flatMap, objectEntries, objectValues } from '../../utils/utils';
+import { objectEntries, objectValues } from '../../utils/utils';
 import { ModelConfig, TypeKind } from '../config';
 import { NamespacedPermissionProfileConfigMap } from '../index';
 import { ValidationMessage, ValidationResult } from '../validation';
@@ -48,7 +48,9 @@ export class Model implements ModelComponent {
             ...this.builtInTypes,
             ...input.types.map((typeInput) => createType(typeInput, this)),
         ];
-        this.permissionProfiles = flatMap(input.permissionProfiles || [], createPermissionProfiles);
+        this.permissionProfiles = (input.permissionProfiles || []).flatMap(
+            createPermissionProfiles,
+        );
         this.rootNamespace = new Namespace({
             parent: undefined,
             path: [],
@@ -291,7 +293,7 @@ export class Model implements ModelComponent {
      */
     @memorize()
     get relations(): ReadonlyArray<Relation> {
-        const withDuplicates = flatMap(this.rootEntityTypes, (entity) => entity.explicitRelations);
+        const withDuplicates = this.rootEntityTypes.flatMap((entity) => entity.explicitRelations);
         return uniqBy(withDuplicates, (rel) => rel.identifier);
     }
 
