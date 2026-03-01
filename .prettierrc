@@ -1,5 +1,6 @@
 {
     "singleQuote": true,
     "trailingComma": "all",
-    "proseWrap": "always"
+    "proseWrap": "always",
+    "plugins": ["prettier-plugin-organize-imports"]
 }
