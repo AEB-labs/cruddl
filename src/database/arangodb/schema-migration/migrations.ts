@@ -1,7 +1,7 @@
 import { CreateAnalyzerOptions } from 'arangojs/analyzer.js';
 import { ArangoSearchViewPropertiesOptions, CreateArangoSearchViewOptions } from 'arangojs/view.js';
-import { Relation } from '../../../model/implementation';
-import { describeIndex, getIndexDescriptor, IndexDefinition } from './index-helpers';
+import { Relation } from '../../../model/implementation/index.js';
+import { describeIndex, getIndexDescriptor, IndexDefinition } from './index-helpers.js';
 
 export type SchemaMigration =
     | CreateIndexMigration

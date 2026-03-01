@@ -1,7 +1,7 @@
-import { ExecutionOptions } from '../execution/execution-options';
-import { Model } from '../model';
-import { QueryNode } from '../query-tree';
-import { FlexSearchTokenization } from '../query-tree/flex-search';
+import { ExecutionOptions } from '../execution/execution-options.js';
+import { Model } from '../model/index.js';
+import { FlexSearchTokenization } from '../query-tree/flex-search.js';
+import { QueryNode } from '../query-tree/index.js';
 
 /**
  * Times (in seconds) spent on specific parts of execution

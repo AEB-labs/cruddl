@@ -1,14 +1,14 @@
 import { expect } from 'chai';
-import gql from 'graphql-tag';
+import { gql } from 'graphql-tag';
 import { parseDocument } from 'yaml';
-import { applyChangeSet, Project, ProjectSource } from '../../../core-exports';
-import { prettyPrint } from '../../../src/graphql/pretty-print';
+import { applyChangeSet, Project, ProjectSource } from '../../../core-exports.js';
+import { prettyPrint } from '../../../src/graphql/pretty-print.js';
 import {
     expectQuickFix,
     expectSingleCompatibilityIssue,
     expectToBeValid,
-} from '../implementation/validation-utils';
-import { runCheck } from './utils';
+} from '../implementation/validation-utils.js';
+import { runCheck } from './utils.js';
 
 describe('checkModel', () => {
     describe('basics', () => {

@@ -1,8 +1,8 @@
 import { assert, expect } from 'chai';
 import { readdirSync, statSync } from 'fs';
 import { resolve } from 'path';
-import { likePatternToRegExp } from '../../src/database/like-helpers';
-import { RegressionSuite, RegressionSuiteOptions } from './regression-suite';
+import { likePatternToRegExp } from '../../src/database/like-helpers.js';
+import { RegressionSuite, RegressionSuiteOptions } from './regression-suite.js';
 
 const regressionRootDir = __dirname;
 

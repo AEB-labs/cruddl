@@ -1,9 +1,9 @@
-import { Model } from '..';
-import { MODULES_ALL_ARG, MODULES_IN_ARG } from '../../../schema/constants';
-import { FieldModuleSpecificationConfig } from '../../config/module-specification';
-import { ValidationMessage } from '../../validation';
-import { ValidationContext } from '../../validation/validation-context';
-import { BaseModuleSpecification } from './base-module-specification';
+import { MODULES_ALL_ARG, MODULES_IN_ARG } from '../../../schema/constants.js';
+import { FieldModuleSpecificationConfig } from '../../config/module-specification.js';
+import { ValidationMessage } from '../../validation/index.js';
+import { ValidationContext } from '../../validation/validation-context.js';
+import { Model } from '../model.js';
+import { BaseModuleSpecification } from './base-module-specification.js';
 
 export class FieldModuleSpecification extends BaseModuleSpecification {
     readonly all: boolean;

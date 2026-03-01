@@ -3,10 +3,10 @@ import {
     DatabaseAdapterTimings,
     ExecutionPlan,
     TransactionStats,
-} from '../database/database-adapter';
-import { ExecutionOptions, ExecutionOptionsCallbackArgs } from '../execution/execution-options';
-import { FieldResolverParameters } from '../graphql/operation-based-resolvers';
-import { LoggerProvider } from './logging';
+} from '../database/database-adapter.js';
+import { ExecutionOptions, ExecutionOptionsCallbackArgs } from '../execution/execution-options.js';
+import { FieldResolverParameters } from '../graphql/operation-based-resolvers.js';
+import { LoggerProvider } from './logging.js';
 
 export interface RequestContext {
     readonly operation: OperationDefinitionNode;

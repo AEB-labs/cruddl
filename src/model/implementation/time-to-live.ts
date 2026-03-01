@@ -1,16 +1,16 @@
-import memorize from 'memorize-decorator';
-import { GraphQLDateTime } from '../../schema/scalars/date-time';
-import { GraphQLLocalDate } from '../../schema/scalars/local-date';
-import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
-import { RelationDeleteAction, TimeToLiveConfig, TypeKind } from '../config';
-import { ValidationMessage } from '../validation';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { Field } from './field';
-import { FieldPath } from './field-path';
-import { Model } from './model';
-import { RootEntityType } from './root-entity-type';
-import { ScalarType } from './scalar-type';
-import { Type } from './type';
+import { memorize } from 'memorize-decorator';
+import { GraphQLDateTime } from '../../schema/scalars/date-time.js';
+import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
+import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js';
+import { RelationDeleteAction, TimeToLiveConfig, TypeKind } from '../config/index.js';
+import { ValidationMessage } from '../validation/index.js';
+import { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import { FieldPath } from './field-path.js';
+import { Field } from './field.js';
+import { Model } from './model.js';
+import { RootEntityType } from './root-entity-type.js';
+import { ScalarType } from './scalar-type.js';
+import { Type } from './type.js';
 
 export class TimeToLiveType implements ModelComponent {
     readonly cascadeFields: ReadonlyArray<FieldPath> = [];

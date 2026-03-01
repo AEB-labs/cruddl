@@ -1,15 +1,15 @@
 import { Database } from 'arangojs';
 import { CollectionType } from 'arangojs/collection.js';
-import { ProjectOptions } from '../../../config/interfaces';
-import { Logger } from '../../../config/logging';
-import { Model, RootEntityType } from '../../../model';
-import { NORM_CI_ANALYZER } from '../../../model/implementation/flex-search';
+import { ProjectOptions } from '../../../config/interfaces.js';
+import { Logger } from '../../../config/logging.js';
+import { NORM_CI_ANALYZER } from '../../../model/implementation/flex-search.js';
+import { Model, RootEntityType } from '../../../model/index.js';
 import {
     billingCollectionName,
     getCollectionNameForRelation,
     getCollectionNameForRootEntity,
-} from '../arango-basics';
-import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
+} from '../arango-basics.js';
+import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config.js';
 import {
     areAnalyzersEqual,
     calculateRequiredArangoSearchViewCreateOperations,
@@ -17,12 +17,12 @@ import {
     calculateRequiredArangoSearchViewUpdateOperations,
     getFlexSearchViewNameForRootEntity,
     getRequiredViewsFromModel,
-} from './arango-search-helpers';
+} from './arango-search-helpers.js';
 import {
     calculateRequiredIndexOperations,
     getRequiredIndicesFromModel,
     IndexDefinition,
-} from './index-helpers';
+} from './index-helpers.js';
 import {
     CreateArangoSearchAnalyzerMigration,
     CreateArangoSearchAnalyzerMigrationConfig,
@@ -32,7 +32,7 @@ import {
     DropIndexMigration,
     SchemaMigration,
     UpdateArangoSearchAnalyzerMigration,
-} from './migrations';
+} from './migrations.js';
 
 export class SchemaAnalyzer {
     private readonly db: Database;

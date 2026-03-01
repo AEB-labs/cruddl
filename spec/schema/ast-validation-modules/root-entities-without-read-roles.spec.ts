@@ -1,4 +1,4 @@
-import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorWarns } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorWarns } from './helpers.js';
 
 describe('root-entities-without-read-roles validator', () => {
     it('rejects @roles without read or readWrite', () => {

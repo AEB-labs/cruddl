@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import { graphql } from 'graphql';
-import gql from 'graphql-tag';
-import { Logger, LoggerProvider } from '../../src/config/logging';
-import { DatabaseAdapter, FlexSearchTokenizable } from '../../src/database/database-adapter';
-import { Model } from '../../src/model';
-import { Project } from '../../src/project/project';
-import { ProjectSource } from '../../src/project/source';
-import { QueryNode } from '../../src/query-tree';
-import { FlexSearchTokenization } from '../../src/query-tree/flex-search';
-import { expectSingleError, expectToBeValid } from '../model/implementation/validation-utils';
+import { gql } from 'graphql-tag';
+import { Logger, LoggerProvider } from '../../src/config/logging.js';
+import { DatabaseAdapter, FlexSearchTokenizable } from '../../src/database/database-adapter.js';
+import { Model } from '../../src/model/index.js';
+import { Project } from '../../src/project/project.js';
+import { ProjectSource } from '../../src/project/source.js';
+import { FlexSearchTokenization } from '../../src/query-tree/flex-search.js';
+import { QueryNode } from '../../src/query-tree/index.js';
+import { expectSingleError, expectToBeValid } from '../model/implementation/validation-utils.js';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {

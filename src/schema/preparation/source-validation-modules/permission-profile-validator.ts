@@ -2,14 +2,14 @@ import {
     ParsedProjectSource,
     ParsedProjectSourceBaseKind,
     PathLocationMap,
-} from '../../../config/parsed-project';
-import { ValidationMessage } from '../../../model';
+} from '../../../config/parsed-project.js';
 import {
     createRoleSpecifierEntry,
     InvalidRoleSpecifierError,
-} from '../../../model/implementation/permission-profile';
-import { isReadonlyArray } from '../../../utils/utils';
-import { ParsedSourceValidator } from '../ast-validator';
+} from '../../../model/implementation/permission-profile.js';
+import { ValidationMessage } from '../../../model/index.js';
+import { isReadonlyArray } from '../../../utils/utils.js';
+import { ParsedSourceValidator } from '../ast-validator.js';
 
 export class PermissionProfileValidator implements ParsedSourceValidator {
     validate(source: ParsedProjectSource): ReadonlyArray<ValidationMessage> {

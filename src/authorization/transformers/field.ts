@@ -4,10 +4,10 @@ import {
     PERMISSION_DENIED_ERROR,
     QueryNode,
     RuntimeErrorQueryNode,
-} from '../../query-tree';
-import { AccessOperation, AuthContext } from '../auth-basics';
-import { PermissionResult } from '../permission-descriptors';
-import { getPermissionDescriptorOfField } from '../permission-descriptors-in-model';
+} from '../../query-tree/index.js';
+import { AccessOperation, AuthContext } from '../auth-basics.js';
+import { getPermissionDescriptorOfField } from '../permission-descriptors-in-model.js';
+import { PermissionResult } from '../permission-descriptors.js';
 
 export function transformFieldQueryNode(node: FieldQueryNode, authContext: AuthContext): QueryNode {
     const permissionDescriptor = getPermissionDescriptorOfField(node.field);

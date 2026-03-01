@@ -8,7 +8,7 @@ import { SystemError } from 'arangojs/error.js';
 import { Errback } from 'arangojs/lib/errback.js';
 import { joinPath } from 'arangojs/lib/joinPath.js';
 import { omit } from 'arangojs/lib/omit.js';
-import { RequestOptions as ArangoRequestOptions } from 'arangojs/lib/request.node';
+import { RequestOptions as ArangoRequestOptions } from 'arangojs/lib/request.node.js';
 import {
     ClientRequest,
     ClientRequestArgs,
@@ -19,7 +19,7 @@ import {
 import { Agent as HttpsAgent, request as httpsRequest } from 'https';
 import { Socket } from 'net';
 import { parse as parseUrl, UrlWithStringQuery } from 'url';
-import { RequestInstrumentation, RequestInstrumentationPhase } from './config';
+import { RequestInstrumentation, RequestInstrumentationPhase } from './config.js';
 
 /**
  * @internal

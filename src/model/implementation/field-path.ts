@@ -1,13 +1,13 @@
-import memorize from 'memorize-decorator';
+import { memorize } from 'memorize-decorator';
 import {
     LocationLike,
     locationWithinStringArgument,
     MessageLocation,
     ValidationMessage,
-} from '../validation';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { Field } from './field';
-import { ObjectType, Type } from './type';
+} from '../validation/index.js';
+import { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import { Field } from './field.js';
+import { ObjectType, Type } from './type.js';
 
 export interface FieldPathConfig extends Partial<FieldPathOptions> {
     readonly path: string;

@@ -1,14 +1,14 @@
 import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
-import memorize from 'memorize-decorator';
-import { GraphQLInt53 } from '../../schema/scalars/int53';
-import { isDefined } from '../../utils/utils';
-import { BillingEntityCategoryMappingConfig, BillingEntityConfig } from '../config/billing';
-import { ValidationMessage } from '../validation';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { Field } from './field';
-import { FieldPath } from './field-path';
-import { Model } from './model';
-import { RootEntityType } from './root-entity-type';
+import { memorize } from 'memorize-decorator';
+import { GraphQLInt53 } from '../../schema/scalars/int53.js';
+import { isDefined } from '../../utils/utils.js';
+import { BillingEntityCategoryMappingConfig, BillingEntityConfig } from '../config/billing.js';
+import { ValidationMessage } from '../validation/index.js';
+import { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import { FieldPath } from './field-path.js';
+import { Field } from './field.js';
+import { Model } from './model.js';
+import { RootEntityType } from './root-entity-type.js';
 
 export class BillingEntityType implements ModelComponent {
     readonly quantityFieldPath: FieldPath | undefined;

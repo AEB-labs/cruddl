@@ -1,16 +1,16 @@
 import { expect } from 'chai';
 import { DocumentNode, graphql } from 'graphql';
-import gql from 'graphql-tag';
-import { CRUDDL_VERSION } from '../../src/cruddl-version';
+import { gql } from 'graphql-tag';
+import { CRUDDL_VERSION } from '../../src/cruddl-version.js';
 import {
     ExecutionOptions,
     ExecutionOptionsCallbackArgs,
-} from '../../src/execution/execution-options';
-import { prettyPrint } from '../../src/graphql/pretty-print';
-import { getMetaSchema } from '../../src/meta-schema/meta-schema';
-import { AggregationOperator, Model, TypeKind } from '../../src/model';
-import { Project } from '../../src/project/project';
-import { stopMetaServer } from '../dev/server';
+} from '../../src/execution/execution-options.js';
+import { prettyPrint } from '../../src/graphql/pretty-print.js';
+import { getMetaSchema } from '../../src/meta-schema/meta-schema.js';
+import { AggregationOperator, Model, TypeKind } from '../../src/model/index.js';
+import { Project } from '../../src/project/project.js';
+import { stopMetaServer } from '../dev/server.js';
 
 describe('Meta schema API', () => {
     const introQuery = gql`

@@ -1,6 +1,6 @@
 import { DocumentNode } from 'graphql';
-import { MessageLocation } from '../model/validation/location';
-import { PlainObject } from '../utils/utils';
+import { MessageLocation } from '../model/validation/location.js';
+import { PlainObject } from '../utils/utils.js';
 
 export interface ParsedProject {
     readonly sources: ReadonlyArray<ParsedProjectSource>;

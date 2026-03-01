@@ -1,16 +1,15 @@
 import { DocumentNode } from 'graphql';
-import { ParsedProjectSource } from '../../config/parsed-project';
-import { Model, ValidationMessage, ValidationResult } from '../../model';
-import { ProjectSource } from '../../project/source';
-
-import { IndicesValidator } from './ast-validation-modules/indices-validator';
-import { KeyFieldValidator } from './ast-validation-modules/key-field-validator';
-import { NoListsOfListsValidator } from './ast-validation-modules/no-lists-of-lists-validator';
-import { NoUnusedNonRootObjectTypesValidator } from './ast-validation-modules/no-unused-non-root-object-types-validator';
-import { RolesOnNonRootEntityTypesValidator } from './ast-validation-modules/roles-on-non-root-entity-types';
-import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules';
-import { PermissionProfileValidator } from './source-validation-modules/permission-profile-validator';
-import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema';
+import { ParsedProjectSource } from '../../config/parsed-project.js';
+import { Model, ValidationMessage, ValidationResult } from '../../model/index.js';
+import { ProjectSource } from '../../project/source.js';
+import { IndicesValidator } from './ast-validation-modules/indices-validator.js';
+import { KeyFieldValidator } from './ast-validation-modules/key-field-validator.js';
+import { NoListsOfListsValidator } from './ast-validation-modules/no-lists-of-lists-validator.js';
+import { NoUnusedNonRootObjectTypesValidator } from './ast-validation-modules/no-unused-non-root-object-types-validator.js';
+import { RolesOnNonRootEntityTypesValidator } from './ast-validation-modules/roles-on-non-root-entity-types.js';
+import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules.js';
+import { PermissionProfileValidator } from './source-validation-modules/permission-profile-validator.js';
+import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema.js';
 
 const sourceValidators: ReadonlyArray<SourceValidator> = [];
 

@@ -1,5 +1,5 @@
 import { ASTNode, GraphQLScalarType, Kind } from 'graphql';
-import { isDefined, isReadonlyArray } from '../../utils/utils';
+import { isDefined, isReadonlyArray } from '../../utils/utils.js';
 
 function ensureStringMap(value: any) {
     if (typeof value !== 'object' || value === null || isReadonlyArray(value)) {
