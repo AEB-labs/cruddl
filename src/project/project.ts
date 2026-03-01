@@ -1,7 +1,8 @@
 import { GraphQLSchema } from 'graphql';
 import memorize from 'memorize-decorator';
+import { DEFAULT_LOGGER_PROVIDER } from '../config/console-logger';
 import { ProjectOptions } from '../config/interfaces';
-import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
+import { LoggerProvider } from '../config/logging';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { DefaultClock, ExecutionOptions } from '../execution/execution-options';
 import { TransactionTimeoutError } from '../execution/runtime-errors';
