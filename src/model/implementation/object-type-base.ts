@@ -1,4 +1,4 @@
-import { DirectiveNode } from 'graphql/index';
+import { DirectiveNode } from 'graphql';
 import { groupArray, isDefined } from '../../utils/utils';
 import { FieldConfig, ObjectTypeConfig } from '../config';
 import { ValidationContext, ValidationMessage } from '../validation';
