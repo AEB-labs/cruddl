@@ -16,7 +16,6 @@ import {
     print,
     valueFromAST,
 } from 'graphql';
-import { arrayToObject } from '../utils/utils';
 
 export function getArgumentValues(
     def: GraphQLField<any, any> | GraphQLDirective,
@@ -29,7 +28,7 @@ export function getArgumentValues(
     if (!argDefs || !argNodes) {
         return coercedValues;
     }
-    const argNodeMap = arrayToObject(argNodes, (arg) => arg.name.value);
+    const argNodeMap = Object.fromEntries(argNodes.map((arg) => [arg.name.value, arg]));
     for (let i = 0; i < argDefs.length; i++) {
         const argDef = argDefs[i];
         const name = argDef.name;
