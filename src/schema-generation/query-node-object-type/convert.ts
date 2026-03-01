@@ -8,17 +8,17 @@ import {
     resolveReadonlyArrayThunk,
     ThunkReadonlyArray,
 } from 'graphql';
-import memorize from 'memorize-decorator';
-import { SchemaTransformationContext } from '../../schema/preparation/transformation-pipeline';
+import { memorize } from 'memorize-decorator';
+import { SchemaTransformationContext } from '../../schema/preparation/transformation-pipeline.js';
 import {
     QueryNodeField,
     QueryNodeListType,
     QueryNodeNonNullType,
     QueryNodeObjectType,
     QueryNodeOutputType,
-} from './definition';
-import { getFieldResolver } from './field-resolver';
-import { isGraphQLOutputType } from './utils';
+} from './definition.js';
+import { getFieldResolver } from './field-resolver.js';
+import { isGraphQLOutputType } from './utils.js';
 
 export class QueryNodeObjectTypeConverter {
     constructor(private readonly context: SchemaTransformationContext) {}

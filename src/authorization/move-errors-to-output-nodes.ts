@@ -12,9 +12,9 @@ import {
     TraversalQueryNode,
     VariableAssignmentQueryNode,
     WithPreExecutionQueryNode,
-} from '../query-tree';
-import { visitQueryNode } from '../query-tree/visitor';
-import { VisitResult } from '../utils/visitor';
+} from '../query-tree/index.js';
+import { visitQueryNode } from '../query-tree/visitor.js';
+import { VisitResult } from '../utils/visitor.js';
 
 /**
  * Moves RuntimeErrorQueryNodes up to its their deepest ancestor that is an output node, i.e., its value directly occurs

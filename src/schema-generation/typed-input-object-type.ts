@@ -6,8 +6,8 @@ import {
     resolveReadonlyArrayThunk,
     ThunkReadonlyArray,
 } from 'graphql';
-import memorize from 'memorize-decorator';
-import { Constructor } from '../utils/utils';
+import { memorize } from 'memorize-decorator';
+import { Constructor } from '../utils/utils.js';
 
 export interface TypedInputFieldBase<TField extends TypedInputFieldBase<TField>> {
     readonly name: string;

@@ -1,9 +1,9 @@
-import { RootEntityType } from '../implementation';
-import { ValidationContext } from '../validation';
-import { checkBusinessObject } from './check-business-object';
-import { checkFlexSearchOnType } from './check-flex-search-on-type';
-import { checkIndices } from './check-indices';
-import { checkTtl } from './check-ttl';
+import { RootEntityType } from '../implementation/index.js';
+import { ValidationContext } from '../validation/index.js';
+import { checkBusinessObject } from './check-business-object.js';
+import { checkFlexSearchOnType } from './check-flex-search-on-type.js';
+import { checkIndices } from './check-indices.js';
+import { checkTtl } from './check-ttl.js';
 
 export function checkRootEntityType(
     typeToCheck: RootEntityType,

@@ -1,4 +1,4 @@
-import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers.js';
 
 describe('relations only in root entities validator', () => {
     it('rejects @relation in non-@rootEntity', () => {

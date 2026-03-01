@@ -1,9 +1,9 @@
 import { ArgumentNode, Kind, ListValueNode, ObjectValueNode, print } from 'graphql';
-import { FLEX_SEARCH_ORDER_ARGUMENT } from '../../schema/constants';
-import { RootEntityType } from '../implementation';
-import { FlexSearchPrimarySortClause } from '../implementation/flex-search';
-import { OrderDirection } from '../implementation/order';
-import { ValidationContext, ValidationMessage } from '../validation';
+import { FLEX_SEARCH_ORDER_ARGUMENT } from '../../schema/constants.js';
+import { FlexSearchPrimarySortClause } from '../implementation/flex-search.js';
+import { RootEntityType } from '../implementation/index.js';
+import { OrderDirection } from '../implementation/order.js';
+import { ValidationContext, ValidationMessage } from '../validation/index.js';
 
 export function checkFlexSearchOnType(
     typeToCheck: RootEntityType,

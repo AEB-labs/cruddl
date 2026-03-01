@@ -14,15 +14,15 @@ import {
     TypeDefinitionNode,
     TypeNode,
 } from 'graphql';
-import { SourcePosition } from '../model/validation';
-import { ProjectSource } from '../project/source';
+import { SourcePosition } from '../model/validation/index.js';
+import { ProjectSource } from '../project/source.js';
 import {
     CHILD_ENTITY_DIRECTIVE,
     ENTITY_EXTENSION_DIRECTIVE,
     ROOT_ENTITY_DIRECTIVE,
     VALUE_OBJECT_DIRECTIVE,
-} from './constants';
-import { CORE_SCALARS } from './graphql-base';
+} from './constants.js';
+import { CORE_SCALARS } from './graphql-base.js';
 
 /**
  * Get all @link ObjectTypeDefinitionNode a model.

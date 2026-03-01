@@ -1,4 +1,4 @@
-import { RootEntityType } from '../../model';
+import { RootEntityType } from '../../model/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -6,12 +6,12 @@ import {
     LiteralQueryNode,
     TransformListQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { ID_FIELD } from '../../schema/constants';
-import { decapitalize, isDefined } from '../../utils/utils';
-import { createFieldNode } from '../field-nodes';
-import { createGraphQLError } from '../graphql-errors';
-import { FieldContext } from '../query-node-object-type';
+} from '../../query-tree/index.js';
+import { ID_FIELD } from '../../schema/constants.js';
+import { decapitalize, isDefined } from '../../utils/utils.js';
+import { createFieldNode } from '../field-nodes.js';
+import { createGraphQLError } from '../graphql-errors.js';
+import { FieldContext } from '../query-node-object-type/index.js';
 
 export function getEntitiesByUniqueFieldQuery(
     rootEntityType: RootEntityType,

@@ -1,4 +1,4 @@
-import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorWarns } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorWarns } from './helpers.js';
 
 describe('@suppress', () => {
     it('warns on type level if @suppress is not used', () => {

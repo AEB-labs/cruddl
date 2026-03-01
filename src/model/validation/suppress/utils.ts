@@ -2,8 +2,8 @@ import {
     SUPPRESS_COMPATIBILITY_ISSUES_ARG,
     SUPPRESS_INFOS_ARG,
     SUPPRESS_WARNINGS_ARG,
-} from '../../../schema/constants';
-import { Severity } from '../message';
+} from '../../../schema/constants.js';
+import { Severity } from '../message.js';
 
 export function getSuppressArgName(severity: Severity) {
     switch (severity) {

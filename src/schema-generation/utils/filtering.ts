@@ -1,4 +1,4 @@
-import { Type } from '../../model';
+import { Type } from '../../model/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -8,11 +8,11 @@ import {
     TraversalQueryNode,
     TraversalQueryNodeParams,
     VariableQueryNode,
-} from '../../query-tree';
-import { simplifyBooleans } from '../../query-tree/utils';
-import { RequireAllProperties } from '../../utils/util-types';
-import { decapitalize } from '../../utils/utils';
-import { FilterObjectType } from '../filter-input-types';
+} from '../../query-tree/index.js';
+import { simplifyBooleans } from '../../query-tree/utils/index.js';
+import { RequireAllProperties } from '../../utils/util-types.js';
+import { decapitalize } from '../../utils/utils.js';
+import { FilterObjectType } from '../filter-input-types/index.js';
 
 interface BuildFilteredListNodeParams {
     readonly listNode: QueryNode;

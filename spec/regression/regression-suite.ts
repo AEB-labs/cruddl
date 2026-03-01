@@ -4,22 +4,22 @@ import { graphql, GraphQLSchema, OperationDefinitionNode, OperationTypeNode, par
 import { unlinkSync } from 'node:fs';
 import { resolve } from 'path';
 import stripJsonComments from 'strip-json-comments';
-import { ConsoleLoggerProvider } from '../../src/config/console-logger';
-import { RequestProfile } from '../../src/config/interfaces';
-import { ArangoDBAdapter } from '../../src/database/arangodb';
-import { DatabaseAdapter } from '../../src/database/database-adapter';
-import { InMemoryAdapter, InMemoryDB } from '../../src/database/inmemory';
-import { IDGenerationInfo, IDGenerator } from '../../src/execution/execution-options';
-import { ProjectOptions } from '../../src/project/project';
-import { loadProjectFromDir } from '../../src/project/project-from-fs';
-import { ErrorWithCause } from '../../src/utils/error-with-cause';
-import { InitTestDataContext } from './init-test-data-context';
+import { ConsoleLoggerProvider } from '../../src/config/console-logger.js';
+import { RequestProfile } from '../../src/config/interfaces.js';
+import { ArangoDBAdapter } from '../../src/database/arangodb/index.js';
+import { DatabaseAdapter } from '../../src/database/database-adapter.js';
+import { InMemoryAdapter, InMemoryDB } from '../../src/database/inmemory/index.js';
+import { IDGenerationInfo, IDGenerator } from '../../src/execution/execution-options.js';
+import { loadProjectFromDir } from '../../src/project/project-from-fs.js';
+import { ProjectOptions } from '../../src/project/project.js';
+import { ErrorWithCause } from '../../src/utils/error-with-cause.js';
+import { InitTestDataContext } from './init-test-data-context.js';
 import {
     createTempDatabase,
     initTestData,
     TEMP_DATABASE_CONFIG,
     TestDataEnvironment,
-} from './initialization';
+} from './initialization.js';
 
 interface TestResult {
     readonly actualResult: any;

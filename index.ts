@@ -1,3 +1,3 @@
-export * from './core-exports';
-export * from './src/database/arangodb';
-export * from './src/database/inmemory';
+export * from './core-exports.js';
+export * from './src/database/arangodb/index.js';
+export * from './src/database/inmemory/index.js';

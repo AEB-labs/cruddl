@@ -1,6 +1,16 @@
-import { Clock, DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
-import { AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
-import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../model/implementation/flex-search';
+import {
+    Clock,
+    DefaultClock,
+    IDGenerator,
+    UUIDGenerator,
+} from '../../execution/execution-options.js';
+import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../model/implementation/flex-search.js';
+import { AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model/index.js';
+import {
+    FlexSearchComplexOperatorQueryNode,
+    FlexSearchFieldExistsQueryNode,
+    FlexSearchQueryNode,
+} from '../../query-tree/flex-search.js';
 import {
     AddEdgesQueryNode,
     AggregationQueryNode,
@@ -59,19 +69,14 @@ import {
     VariableAssignmentQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode,
-} from '../../query-tree';
-import {
-    FlexSearchComplexOperatorQueryNode,
-    FlexSearchFieldExistsQueryNode,
-    FlexSearchQueryNode,
-} from '../../query-tree/flex-search';
-import { QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { createFieldPathNode } from '../../schema-generation/field-path-node';
-import { not } from '../../schema-generation/utils/input-types';
-import { Constructor, decapitalize, isDefined } from '../../utils/utils';
-import { likePatternToRegExp } from '../like-helpers';
-import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
-import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
+} from '../../query-tree/index.js';
+import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
+import { createFieldPathNode } from '../../schema-generation/field-path-node.js';
+import { not } from '../../schema-generation/utils/input-types.js';
+import { Constructor, decapitalize, isDefined } from '../../utils/utils.js';
+import { likePatternToRegExp } from '../like-helpers.js';
+import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics.js';
+import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js.js';
 
 const ID_FIELD_NAME = 'id';
 

@@ -1,17 +1,17 @@
 import { expect } from 'chai';
 import { Pair, parseDocument } from 'yaml';
-import { MessageLocation } from '../../../src/model';
 import {
     applyChangeSet,
     InvalidChangeSetError,
-} from '../../../src/model/change-set/apply-change-set';
+} from '../../../src/model/change-set/apply-change-set.js';
 import {
     ChangeSet,
     TextChange,
     YamlAddInMapChange,
-} from '../../../src/model/change-set/change-set';
-import { Project } from '../../../src/project/project';
-import { ProjectSource } from '../../../src/project/source';
+} from '../../../src/model/change-set/change-set.js';
+import { MessageLocation } from '../../../src/model/index.js';
+import { Project } from '../../../src/project/project.js';
+import { ProjectSource } from '../../../src/project/source.js';
 
 describe('applyChangeSet', () => {
     it('applies a change set with a single change', () => {

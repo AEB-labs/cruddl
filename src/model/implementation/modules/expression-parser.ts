@@ -1,4 +1,4 @@
-import { IDENTIFIER_CHAR_PATTERN } from './patterns';
+import { IDENTIFIER_CHAR_PATTERN } from './patterns.js';
 
 enum ParserState {
     EXPECT_IDENTIFIER,

@@ -1,22 +1,22 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { Field, Multiplicity } from '../../model';
-import { PreExecQueryParms, QueryNode, SetFieldQueryNode } from '../../query-tree';
+import { Field, Multiplicity } from '../../model/index.js';
+import { PreExecQueryParms, QueryNode, SetFieldQueryNode } from '../../query-tree/index.js';
 import {
     getAddRelationFieldName,
     getCreateRelatedEntityFieldName,
     getRemoveRelationFieldName,
-} from '../../schema/names';
-import { AnyValue, isDefined, isReadonlyArray, PlainObject } from '../../utils/utils';
-import { CreateRootEntityInputType } from '../create-input-types';
-import { FieldContext } from '../query-node-object-type';
+} from '../../schema/names.js';
+import { AnyValue, isDefined, isReadonlyArray, PlainObject } from '../../utils/utils.js';
+import { CreateRootEntityInputType } from '../create-input-types/index.js';
+import { FieldContext } from '../query-node-object-type/index.js';
 import {
     getAddEdgesStatements,
     getCreateAndAddEdgesStatements,
     getCreateAndSetEdgeStatements,
     getRemoveEdgesStatements,
     getSetEdgeStatements,
-} from '../utils/relations';
-import { UpdateInputField } from './input-fields';
+} from '../utils/relations.js';
+import { UpdateInputField } from './input-fields.js';
 
 export abstract class AbstractRelationUpdateInputField implements UpdateInputField {
     readonly description: string;

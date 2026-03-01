@@ -6,7 +6,7 @@ import {
     StringValueNode,
     ValueNode,
 } from 'graphql';
-import { OrderDirection } from '../implementation/order';
+import { OrderDirection } from '../implementation/order.js';
 
 export interface IndexDefinitionConfig {
     readonly name?: string;

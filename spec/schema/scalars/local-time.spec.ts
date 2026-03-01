@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { GraphQLLocalTime } from '../../../src/schema/scalars/local-time';
+import { GraphQLLocalTime } from '../../../src/schema/scalars/local-time.js';
 
 describe('GraphQLLocalTime', () => {
     const validStrings = [
