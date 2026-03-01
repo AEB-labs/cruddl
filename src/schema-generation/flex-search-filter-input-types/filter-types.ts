@@ -7,7 +7,7 @@ import {
     NullQueryNode,
     QueryNode,
 } from '../../query-tree';
-import { AnyValue, objectEntries } from '../../utils/utils';
+import { AnyValue } from '../../utils/utils';
 import { QueryNodeResolveInfo } from '../query-node-object-type';
 import { TypedInputObjectType } from '../typed-input-object-type';
 import { and } from '../utils/input-types';
@@ -27,7 +27,7 @@ export class FlexSearchFilterObjectType extends TypedInputObjectType<FlexSearchF
                 NullQueryNode.NULL,
             );
         }
-        const filterNodes = objectEntries(filterValue as any).map(([name, value]) =>
+        const filterNodes = Object.entries(filterValue as any).map(([name, value]) =>
             this.getFieldOrThrow(name).getFilterNode(sourceNode, value, path, info),
         );
         return filterNodes.reduce(and, ConstBoolQueryNode.TRUE);

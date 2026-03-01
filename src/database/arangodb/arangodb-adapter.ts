@@ -14,7 +14,7 @@ import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { FlexSearchTokenization } from '../../query-tree/flex-search';
 import { Mutable } from '../../utils/util-types';
-import { objectValues, sleep, sleepInterruptible } from '../../utils/utils';
+import { sleep, sleepInterruptible } from '../../utils/utils';
 import { getPreciseTime, Watch } from '../../utils/watch';
 import {
     DatabaseAdapter,
@@ -735,7 +735,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 connecting -
                 receiving -
                 waiting;
-            const dbInternalTotal = objectValues<number>(databaseReportedTimings).reduce(
+            const dbInternalTotal = Object.values<number>(databaseReportedTimings).reduce(
                 (a, b) => a + b,
                 0,
             );
