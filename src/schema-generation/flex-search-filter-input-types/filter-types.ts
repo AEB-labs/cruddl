@@ -1,4 +1,4 @@
-import { ThunkReadonlyArray } from 'graphql/type/definition';
+import { ThunkReadonlyArray } from 'graphql';
 import { Field } from '../../model';
 import {
     BinaryOperationQueryNode,

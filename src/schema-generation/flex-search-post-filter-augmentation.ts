@@ -1,4 +1,4 @@
-import { GraphQLFieldConfigArgumentMap } from 'graphql/index';
+import { GraphQLFieldConfigArgumentMap } from 'graphql';
 import { Type } from '../model';
 import { RuntimeErrorQueryNode } from '../query-tree';
 import { FILTER_ARG, POST_FILTER_ARG } from '../schema/constants';

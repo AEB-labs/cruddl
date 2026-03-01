@@ -1,5 +1,4 @@
-import { Source } from 'graphql';
-import { GraphQLError, Lexer, TokenKind } from 'graphql/index';
+import { GraphQLError, Lexer, Source, TokenKind } from 'graphql';
 
 /**
  * Checks if the given graphql source string only contains comments and whitespace

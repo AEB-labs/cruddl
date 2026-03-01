@@ -1,5 +1,4 @@
-import { DocumentNode, ExecutionResult, GraphQLSchema } from 'graphql';
-import { graphql, print } from 'graphql/index';
+import { DocumentNode, ExecutionResult, graphql, GraphQLSchema, print } from 'graphql';
 
 export interface ExecuteGraphqlOptions {
     readonly variables?: { readonly [variable: string]: unknown };

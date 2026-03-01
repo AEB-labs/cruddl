@@ -1,11 +1,11 @@
 import {
     DocumentNode,
     FragmentDefinitionNode,
+    getVariableValues,
     GraphQLSchema,
     OperationDefinitionNode,
     VariableDefinitionNode,
 } from 'graphql';
-import { getVariableValues } from 'graphql/execution/values';
 import { globalContext } from '../config/global';
 import { DatabaseAdapter } from '../database/database-adapter';
 import { resolveSelections } from '../graphql/field-collection';
