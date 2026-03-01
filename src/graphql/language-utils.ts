@@ -20,7 +20,7 @@ import {
     VariableDefinitionNode,
     visit,
 } from 'graphql';
-import { compact, flatMap } from '../utils/utils';
+import { compact } from '../utils/utils';
 
 /**
  * Creates a field node with a name and an optional alias
@@ -327,7 +327,7 @@ export function expandSelections(
         }
     }
 
-    return flatMap(selections, expandSelection);
+    return selections.flatMap(expandSelection);
 }
 
 /*
@@ -411,7 +411,7 @@ export function collectFieldNodesInPath(
                 } to have sub-selection but it does not`,
             );
         }
-        const matchingFieldNodes = flatMap(currentSelectionSets, (selSet) =>
+        const matchingFieldNodes = currentSelectionSets.flatMap((selSet) =>
             findNodesByAliasInSelections(selSet.selections, alias, fragments),
         );
         if (!matchingFieldNodes.length) {

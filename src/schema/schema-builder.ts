@@ -40,7 +40,7 @@ import {
 import { Project, ProjectOptions } from '../project/project';
 import { ProjectSource, SourceType } from '../project/source';
 import { SchemaGenerator } from '../schema-generation';
-import { compact, flatMap, isReadonlyArray, PlainObject } from '../utils/utils';
+import { compact, isReadonlyArray, PlainObject } from '../utils/utils';
 import {
     validateParsedProjectSource,
     validatePostMerge,
@@ -72,7 +72,7 @@ export function validateAndPrepareSchema(project: Project): {
 } {
     const validationContext: ValidationContext = new ValidationContext();
 
-    const sources = flatMap(project.sources, (source) => {
+    const sources = project.sources.flatMap((source) => {
         const sourceResult = validateSource(source);
         validationContext.addMessage(...sourceResult.messages);
         if (sourceResult.hasErrors()) {
@@ -86,7 +86,7 @@ export function validateAndPrepareSchema(project: Project): {
         validationContext,
     );
 
-    const validParsedSources = flatMap(parsedSources, (parsedSource) => {
+    const validParsedSources = parsedSources.flatMap((parsedSource) => {
         const sourceResult = validateParsedProjectSource(parsedSource);
         validationContext.addMessage(...sourceResult.messages);
         if (sourceResult.hasErrors()) {

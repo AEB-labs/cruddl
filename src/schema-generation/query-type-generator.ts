@@ -3,7 +3,7 @@ import { Namespace, RootEntityType } from '../model';
 import { EntitiesQueryNode, FirstOfListQueryNode, ObjectQueryNode, QueryNode } from '../query-tree';
 import { QUERY_TYPE } from '../schema/constants';
 import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names';
-import { flatMap } from '../utils/utils';
+
 import { FilterAugmentation } from './filter-augmentation';
 import { FlexSearchGenerator } from './flex-search-generator';
 import { MetaFirstAugmentation } from './limit-augmentation';
@@ -44,7 +44,7 @@ export class QueryTypeGenerator {
 
         const fields = [
             ...namespaceFields,
-            ...flatMap(namespace.rootEntityTypes, (type) => this.getFields(type)),
+            ...namespace.rootEntityTypes.flatMap((type) => this.getFields(type)),
         ];
 
         return {
