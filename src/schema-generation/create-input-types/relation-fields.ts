@@ -2,7 +2,7 @@ import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphq
 import { Field, Multiplicity } from '../../model';
 import { PreExecQueryParms, QueryNode } from '../../query-tree';
 import { getCreateRelatedEntityFieldName } from '../../schema/names';
-import { AnyValue, isReadonlyArray, PlainObject } from '../../utils/utils';
+import { AnyValue, isDefined, isReadonlyArray, PlainObject } from '../../utils/utils';
 import { FieldContext } from '../query-node-object-type';
 import {
     getAddEdgesStatements,
@@ -62,7 +62,7 @@ export class SetEdgeCreateInputField extends AbstractRelationCreateInputField {
     }
 
     getStatements(targetID: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
-        if (targetID == undefined) {
+        if (!isDefined(targetID)) {
             return [];
         }
 
@@ -85,7 +85,7 @@ export class AddEdgesCreateInputField extends AbstractRelationCreateInputField {
     }
 
     getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return [];
         }
         if (!isReadonlyArray(value)) {
@@ -119,7 +119,7 @@ export class CreateAndAddEdgesCreateInputField extends AbstractRelationCreateInp
         sourceIDNode: QueryNode,
         context: FieldContext,
     ): ReadonlyArray<PreExecQueryParms> {
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return [];
         }
         if (!isReadonlyArray(value)) {
@@ -159,7 +159,7 @@ export class CreateAndSetEdgeCreateInputField extends AbstractRelationCreateInpu
         sourceIDNode: QueryNode,
         context: FieldContext,
     ): ReadonlyArray<PreExecQueryParms> {
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return [];
         }
         if (isReadonlyArray(value)) {

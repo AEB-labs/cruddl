@@ -30,7 +30,7 @@ import {
     TraversalQueryNode,
     VariableQueryNode,
 } from '../../query-tree';
-import { PlainObject } from '../../utils/utils';
+import { isDefined, PlainObject } from '../../utils/utils';
 import { CreateRootEntityInputType } from '../create-input-types';
 import { FieldContext } from '../query-node-object-type';
 import { mapToIDNodesWithOptimizations } from './map';
@@ -71,7 +71,7 @@ export function getSetEdgeStatements(
 ): ReadonlyArray<PreExecQueryParms> {
     const relationSide = sourceField.getRelationSideOrThrow();
 
-    if (targetID == undefined) {
+    if (!isDefined(targetID)) {
         // remove edge
         return [
             new PreExecQueryParms({

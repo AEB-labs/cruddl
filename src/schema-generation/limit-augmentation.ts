@@ -1,6 +1,7 @@
 import { GraphQLInt } from 'graphql';
 import { TransformListQueryNode, VariableQueryNode } from '../query-tree';
 import { FIRST_ARG } from '../schema/constants';
+import { isDefined } from '../utils/utils';
 import { QueryNodeField } from './query-node-object-type';
 
 /**
@@ -20,7 +21,7 @@ export class MetaFirstAugmentation {
             resolve: (sourceNode, args, info) => {
                 const listNode = schemaField.resolve(sourceNode, args, info);
                 const maxCount: number | undefined = args[FIRST_ARG];
-                if (maxCount == undefined) {
+                if (!isDefined(maxCount)) {
                     return listNode;
                 }
 

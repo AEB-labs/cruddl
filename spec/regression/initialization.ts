@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'fs';
 import { ExecutionResult } from 'graphql';
 import stripJsonComments from 'strip-json-comments';
 import { ArangoDBConfig } from '../../src/database/arangodb';
+import { isDefined } from '../../src/utils/utils';
 import { generateRandomString } from '../helpers/generate-random-string';
 import { InitTestDataContext } from './init-test-data-context';
 
@@ -68,7 +69,7 @@ export async function initTestData(
             for (const expr of exprs) {
                 result = result.replace(expr, (_, collection, localID) => {
                     const id = ids.get(collection + '/' + localID);
-                    if (id == null) {
+                    if (!isDefined(id)) {
                         throw new Error(
                             `ID ${collection}/${localID} was referenced but does not exist`,
                         );

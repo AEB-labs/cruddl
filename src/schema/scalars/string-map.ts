@@ -1,5 +1,5 @@
 import { ASTNode, GraphQLScalarType, Kind } from 'graphql';
-import { isReadonlyArray } from '../../utils/utils';
+import { isDefined, isReadonlyArray } from '../../utils/utils';
 
 function ensureStringMap(value: any) {
     if (typeof value !== 'object' || value === null || isReadonlyArray(value)) {
@@ -8,7 +8,7 @@ function ensureStringMap(value: any) {
     let hasClonedValue = false;
     for (const propKey of Object.keys(value)) {
         const propVal = value[propKey];
-        if (propVal == null) {
+        if (!isDefined(propVal)) {
             if (!hasClonedValue) {
                 value = { ...value };
                 hasClonedValue = true;
@@ -37,7 +37,7 @@ function parseStringMap(ast: ASTNode, variables: { [key: string]: unknown } | nu
                 break;
             case 'Variable':
                 const variableValue = variables ? variables[field.value.name.value] : undefined;
-                if (variableValue == null) {
+                if (!isDefined(variableValue)) {
                     break;
                 }
                 if (typeof variableValue !== 'string') {

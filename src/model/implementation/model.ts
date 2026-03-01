@@ -1,6 +1,7 @@
 import { groupBy, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { ModelOptions } from '../../config/interfaces';
+import { isDefined } from '../../utils/utils';
 
 import { ModelConfig, TypeKind } from '../config';
 import { NamespacedPermissionProfileConfigMap } from '../index';
@@ -282,7 +283,7 @@ export class Model implements ModelComponent {
 
     getNamespaceByPathOrThrow(path: ReadonlyArray<string>): Namespace {
         const result = this.getNamespaceByPath(path);
-        if (result == undefined) {
+        if (!isDefined(result)) {
             throw new Error(`Namespace ` + path.join('.') + ` does not exist`);
         }
         return result;
