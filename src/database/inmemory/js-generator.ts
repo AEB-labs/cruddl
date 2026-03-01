@@ -1,4 +1,3 @@
-import { compact } from 'lodash';
 import { Clock, DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
 import { AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
 import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../model/implementation/flex-search';
@@ -69,7 +68,7 @@ import {
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { createFieldPathNode } from '../../schema-generation/field-path-node';
 import { not } from '../../schema-generation/utils/input-types';
-import { Constructor, decapitalize } from '../../utils/utils';
+import { Constructor, decapitalize, isDefined } from '../../utils/utils';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
@@ -1104,10 +1103,10 @@ register(RemoveEdgesQueryNode, (node, context) => {
     const toIDs = node.edgeFilter.toIDsNode
         ? processNode(node.edgeFilter.toIDsNode, context)
         : undefined;
-    const edgeRemovalCriteria = compact([
+    const edgeRemovalCriteria = [
         fromIDs ? js`${fromIDs}.includes(${edgeVar}._from)` : undefined,
         toIDs ? js`${toIDs}.includes(${edgeVar}._to)` : undefined,
-    ]);
+    ].filter(isDefined);
     const edgeShouldStay = js`!(${js.join(edgeRemovalCriteria, js` && `)})`;
 
     return jsExt.executingFunction(
@@ -1301,14 +1300,14 @@ register(ConfirmForBillingQueryNode, (node, context) => {
 register(SetEdgeQueryNode, (node, context) => {
     const coll = getCollectionForRelation(node.relation, context);
     const edgeVar = js.variable('edge');
-    const edgeRemovalCriteria = compact([
+    const edgeRemovalCriteria = [
         node.existingEdge.fromIDNode
             ? js`${edgeVar}._from == ${processNode(node.existingEdge.fromIDNode, context)}`
             : undefined,
         node.existingEdge.toIDNode
             ? js`${edgeVar}._to == ${processNode(node.existingEdge.toIDNode, context)}`
             : undefined,
-    ]);
+    ].filter(isDefined);
     const edgeShouldStay = js`!(${js.join(edgeRemovalCriteria, js` && `)})`;
 
     return jsExt.executingFunction(
