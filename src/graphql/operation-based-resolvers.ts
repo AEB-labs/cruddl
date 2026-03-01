@@ -8,6 +8,7 @@ import {
     GraphQLSchema,
     OperationDefinitionNode,
 } from 'graphql';
+import { isDefined } from '../utils/utils';
 
 export interface OperationParams {
     readonly schema: GraphQLSchema;
@@ -95,7 +96,7 @@ export function addOperationBasedResolvers({
                 args: Object.fromEntries(field.args.map((arg) => [arg.name, arg])),
                 resolve: async (oldSource, args, context, info) => {
                     const newSource = await resolveOp(oldSource, args, context, info);
-                    if (newSource == undefined) {
+                    if (!isDefined(newSource)) {
                         return newSource;
                     }
                     return oldResolver(newSource, args, context, info);

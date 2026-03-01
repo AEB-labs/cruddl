@@ -78,7 +78,7 @@ import {
 } from '../../query-tree/utils';
 import { not } from '../../schema-generation/utils/input-types';
 import { isStringCaseInsensitive } from '../../utils/string-utils';
-import { Constructor, decapitalize, isReadonlyArray } from '../../utils/utils';
+import { Constructor, decapitalize, isDefined, isReadonlyArray } from '../../utils/utils';
 import { FlexSearchTokenizable } from '../database-adapter';
 import { analyzeLikePatternPrefix } from '../like-helpers';
 import {
@@ -690,7 +690,7 @@ interface LimitClauseArgs {
 function generateLimitClause({ skip = 0, maxCount }: LimitClauseArgs): AQLFragment | undefined {
     // Todo use something like aql.integer() which validates the number is an integer and within range
     // (that way, we don't have so many bound parameters)
-    if (maxCount != undefined) {
+    if (isDefined(maxCount)) {
         if (skip === 0) {
             return aql`LIMIT ${maxCount}`;
         } else {
@@ -975,7 +975,7 @@ register(BinaryOperationQueryNode, (node, context) => {
     if (
         node.operator === BinaryOperator.UNEQUAL &&
         (node.rhs instanceof NullQueryNode ||
-            (node.rhs instanceof LiteralQueryNode && node.rhs.value == undefined)) &&
+            (node.rhs instanceof LiteralQueryNode && !isDefined(node.rhs.value))) &&
         !context.getExtension(inFlexSearchFilterSymbol)
     ) {
         return aql`(${lhs} > NULL)`;
