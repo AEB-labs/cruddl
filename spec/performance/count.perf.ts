@@ -1,5 +1,5 @@
-import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
-import { aql, initEnvironment, TestEnvironment } from './support/helpers';
+import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench.js';
+import { aql, initEnvironment, TestEnvironment } from './support/helpers.js';
 
 export async function addManyPapersWithAQL(environment: TestEnvironment, count: number) {
     await environment

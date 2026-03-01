@@ -1,8 +1,8 @@
-import { Field, Relation, RootEntityType } from '../model';
-import { indent } from '../utils/utils';
-import { QueryNode } from './base';
-import { PropertySpecification } from './objects';
-import { VariableQueryNode } from './variables';
+import { Field, Relation, RootEntityType } from '../model/index.js';
+import { indent } from '../utils/utils.js';
+import { QueryNode } from './base.js';
+import { PropertySpecification } from './objects.js';
+import { VariableQueryNode } from './variables.js';
 
 /**
  * A node that creates a new entity and evaluates to that new entity object

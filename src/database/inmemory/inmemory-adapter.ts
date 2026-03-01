@@ -1,21 +1,24 @@
-import { globalContext } from '../../config/global';
-import { ProjectOptions } from '../../config/interfaces';
-import { DEFAULT_LOGGER_PROVIDER, Logger } from '../../config/logging';
-import { DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
-import { Model } from '../../model';
-import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
-import { FlexSearchTokenization } from '../../query-tree/flex-search';
-import { isDefined, isReadonlyArray } from '../../utils/utils';
+import { globalContext } from '../../config/global.js';
+import { ProjectOptions } from '../../config/interfaces.js';
+import { DEFAULT_LOGGER_PROVIDER, Logger } from '../../config/logging.js';
+import { DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options.js';
+import { Model } from '../../model/index.js';
+import { FlexSearchTokenization } from '../../query-tree/flex-search.js';
+import {
+    ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS,
+    QueryNode,
+} from '../../query-tree/index.js';
+import { isDefined, isReadonlyArray } from '../../utils/utils.js';
 import {
     DatabaseAdapter,
     ExecutionArgs,
     ExecutionResult,
     FlexSearchTokenizable,
-} from '../database-adapter';
-import { likePatternToRegExp } from '../like-helpers';
-import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
-import { JSCompoundQuery, JSExecutableQuery } from './js';
-import { getJSQuery } from './js-generator';
+} from '../database-adapter.js';
+import { likePatternToRegExp } from '../like-helpers.js';
+import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics.js';
+import { getJSQuery } from './js-generator.js';
+import { JSCompoundQuery, JSExecutableQuery } from './js.js';
 
 export class InMemoryDB {
     collections: { [name: string]: ReadonlyArray<any> } = {};

@@ -1,5 +1,5 @@
-import { visitObject, Visitor, VisitResult } from '../utils/visitor';
-import { QueryNode } from './base';
+import { visitObject, Visitor, VisitResult } from '../utils/visitor.js';
+import { QueryNode } from './base.js';
 
 export function visitQueryNode(node: QueryNode, visitor: Visitor<QueryNode>): QueryNode {
     return visitObject(node, {

@@ -1,7 +1,7 @@
 /**
  * Is thrown if the transactionTimeoutMs is exceeded
  */
-import { ErrorWithCause } from '../utils/error-with-cause';
+import { ErrorWithCause } from '../utils/error-with-cause.js';
 
 export class TransactionTimeoutError extends Error {
     readonly timeoutMs: number | undefined;

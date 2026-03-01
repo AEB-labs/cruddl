@@ -1,11 +1,11 @@
 import { DirectiveNode } from 'graphql';
-import { groupArray, isDefined } from '../../utils/utils';
-import { FieldConfig, ObjectTypeConfig } from '../config';
-import { ValidationContext, ValidationMessage } from '../validation';
-import { Field, SystemFieldConfig } from './field';
-import { Model } from './model';
-import { ObjectType } from './type';
-import { TypeBase } from './type-base';
+import { groupArray, isDefined } from '../../utils/utils.js';
+import { FieldConfig, ObjectTypeConfig } from '../config/index.js';
+import { ValidationContext, ValidationMessage } from '../validation/index.js';
+import { Field, SystemFieldConfig } from './field.js';
+import { Model } from './model.js';
+import { TypeBase } from './type-base.js';
+import { ObjectType } from './type.js';
 
 export abstract class ObjectTypeBase extends TypeBase {
     readonly fields: ReadonlyArray<Field>;

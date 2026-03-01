@@ -1,6 +1,6 @@
-import { magenta } from '../utils/colors';
-import { indent } from '../utils/utils';
-import { QueryNode } from './base';
+import { magenta } from '../utils/colors.js';
+import { indent } from '../utils/utils.js';
+import { QueryNode } from './base.js';
 
 namespace varIndices {
     let nextIndex = 1;

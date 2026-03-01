@@ -1,13 +1,13 @@
 import { DirectiveNode, ObjectValueNode, StringValueNode } from 'graphql';
-import memorize from 'memorize-decorator';
-import { SCALAR_JSON } from '../../schema/constants';
-import { isDefined } from '../../utils/utils';
-import { IndexDefinitionConfig, TypeKind } from '../config';
-import { ValidationMessage } from '../validation';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { Field } from './field';
-import { RootEntityType } from './root-entity-type';
-import { Type } from './type';
+import { memorize } from 'memorize-decorator';
+import { SCALAR_JSON } from '../../schema/constants.js';
+import { isDefined } from '../../utils/utils.js';
+import { IndexDefinitionConfig, TypeKind } from '../config/index.js';
+import { ValidationMessage } from '../validation/index.js';
+import { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import { Field } from './field.js';
+import { RootEntityType } from './root-entity-type.js';
+import { Type } from './type.js';
 
 export class IndexField implements ModelComponent {
     readonly path: ReadonlyArray<string>;

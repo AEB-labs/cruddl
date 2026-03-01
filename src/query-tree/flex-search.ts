@@ -1,16 +1,16 @@
-import { RootEntityType } from '../model';
-import { IDENTITY_ANALYZER } from '../model/implementation/flex-search';
-import { binaryOp } from '../schema-generation/utils/input-types';
-import { decapitalize, indent } from '../utils/utils';
-import { QueryNode } from './base';
-import { ConstBoolQueryNode, LiteralQueryNode } from './literals';
+import { IDENTITY_ANALYZER } from '../model/implementation/flex-search.js';
+import { RootEntityType } from '../model/index.js';
+import { binaryOp } from '../schema-generation/utils/input-types.js';
+import { decapitalize, indent } from '../utils/utils.js';
+import { QueryNode } from './base.js';
+import { ConstBoolQueryNode, LiteralQueryNode } from './literals.js';
 import {
     BinaryOperator,
     BinaryOperatorWithAnalyzer,
     OperatorWithAnalyzerQueryNode,
-} from './operators';
-import { simplifyBooleans } from './utils';
-import { VariableQueryNode } from './variables';
+} from './operators.js';
+import { simplifyBooleans } from './utils/index.js';
+import { VariableQueryNode } from './variables.js';
 
 /**
  * A QueryNode that represents a FlexSearch Query on a RootEntity Type

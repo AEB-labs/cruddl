@@ -1,4 +1,4 @@
-import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers.js';
 
 describe('roles-on-non-root-entity-types validator', () => {
     it('rejects value objects with @roles', () => {

@@ -5,7 +5,7 @@ import {
     Field,
     ObjectType,
     RootEntityType,
-} from '../../model';
+} from '../../model/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -27,26 +27,26 @@ import {
     UnaryOperator,
     UpdateChildEntitiesQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { ENTITY_UPDATED_AT, ID_FIELD, REVISION_FIELD } from '../../schema/constants';
+} from '../../query-tree/index.js';
+import { ENTITY_UPDATED_AT, ID_FIELD, REVISION_FIELD } from '../../schema/constants.js';
 import {
     getAddChildEntitiesFieldName,
     getRemoveChildEntitiesFieldName,
     getReplaceChildEntitiesFieldName,
     getUpdateChildEntitiesFieldName,
-} from '../../schema/names';
-import { AnyValue, decapitalize, groupArray, joinWithAnd, PlainObject } from '../../utils/utils';
-import { createGraphQLError } from '../graphql-errors';
-import { FieldContext } from '../query-node-object-type';
-import { TypedInputObjectType } from '../typed-input-object-type';
+} from '../../schema/names.js';
+import { AnyValue, decapitalize, groupArray, joinWithAnd, PlainObject } from '../../utils/utils.js';
+import { createGraphQLError } from '../graphql-errors.js';
+import { FieldContext } from '../query-node-object-type/index.js';
+import { TypedInputObjectType } from '../typed-input-object-type.js';
 import {
     AddChildEntitiesInputField,
     ReplaceChildEntitiesInputField,
     UpdateChildEntitiesInputField,
     UpdateInputField,
     UpdateInputFieldContext,
-} from './input-fields';
-import { isRelationUpdateField } from './relation-fields';
+} from './input-fields.js';
+import { isRelationUpdateField } from './relation-fields.js';
 
 function getCurrentISODate() {
     return new Date().toISOString();

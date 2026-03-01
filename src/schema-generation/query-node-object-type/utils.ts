@@ -15,8 +15,8 @@ import {
     QueryNodeNonNullType,
     QueryNodeObjectType,
     QueryNodeOutputType,
-} from './definition';
-import { QueryNodeNullableType } from './index';
+} from './definition.js';
+import { QueryNodeNullableType } from './index.js';
 
 export function isGraphQLOutputType(type: {}): type is GraphQLOutputType {
     return (

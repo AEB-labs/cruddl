@@ -1,6 +1,6 @@
-import { RelationDeleteAction } from '../config/field';
-import { Field } from '../implementation';
-import { ValidationContext, ValidationMessage } from '../validation';
+import { RelationDeleteAction } from '../config/field.js';
+import { Field } from '../implementation/index.js';
+import { ValidationContext, ValidationMessage } from '../validation/index.js';
 
 /**
  * Checks whether the @relation directive on the field and on the baseline field match

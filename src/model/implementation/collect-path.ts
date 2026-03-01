@@ -1,19 +1,19 @@
 import { StringValueNode } from 'graphql';
-import memorize from 'memorize-decorator';
-import { QueryNode, VariableQueryNode } from '../../query-tree';
-import { isDefined } from '../../utils/utils';
+import { memorize } from 'memorize-decorator';
+import { QueryNode, VariableQueryNode } from '../../query-tree/index.js';
+import { isDefined } from '../../utils/utils.js';
 
-import { CollectFieldConfig } from '../config';
+import { CollectFieldConfig } from '../config/index.js';
 import {
     locationWithinStringArgument,
     MessageLocation,
     ValidationContext,
     ValidationMessage,
-} from '../validation';
-import { Field } from './field';
-import { Multiplicity, RelationSide } from './relation';
-import { RootEntityType } from './root-entity-type';
-import { ObjectType, Type } from './type';
+} from '../validation/index.js';
+import { Field } from './field.js';
+import { Multiplicity, RelationSide } from './relation.js';
+import { RootEntityType } from './root-entity-type.js';
+import { ObjectType, Type } from './type.js';
 
 interface PathSegmentBase {
     readonly kind: 'field' | 'relation' | 'collect';

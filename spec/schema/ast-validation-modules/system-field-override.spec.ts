@@ -1,10 +1,10 @@
-import gql from 'graphql-tag';
-import { prettyPrint } from '../../../src/graphql/pretty-print';
+import { gql } from 'graphql-tag';
+import { prettyPrint } from '../../../src/graphql/pretty-print.js';
 import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
-} from './helpers';
+} from './helpers.js';
 
 describe('system field override validation', () => {
     it('is valid on non redundant system fields', () => {

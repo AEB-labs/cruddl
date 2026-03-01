@@ -1,9 +1,9 @@
 import { DocumentNode } from 'graphql';
-import { ValidationMessage } from '../../../model';
-import { isDefined } from '../../../utils/utils';
-import { KEY_FIELD_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../constants';
-import { getObjectTypes } from '../../schema-utils';
-import { ASTValidator } from '../ast-validator';
+import { ValidationMessage } from '../../../model/index.js';
+import { isDefined } from '../../../utils/utils.js';
+import { KEY_FIELD_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../constants.js';
+import { getObjectTypes } from '../../schema-utils.js';
+import { ASTValidator } from '../ast-validator.js';
 
 export const VALIDATION_ERROR_INVALID_OBJECT_TYPE =
     'A @key field can only be declared on root entities.';

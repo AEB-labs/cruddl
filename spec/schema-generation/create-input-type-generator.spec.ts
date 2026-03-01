@@ -6,13 +6,13 @@ import {
     GraphQLNonNull,
     GraphQLString,
 } from 'graphql';
-import { ChildEntityType, Model, RootEntityType, TypeKind } from '../../src/model';
+import { ChildEntityType, Model, RootEntityType, TypeKind } from '../../src/model/index.js';
 import {
     CreateInputTypeGenerator,
     CreateObjectInputField,
-} from '../../src/schema-generation/create-input-types';
-import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator';
-import { createRootFieldContext } from '../../src/schema-generation/query-node-object-type';
+} from '../../src/schema-generation/create-input-types/index.js';
+import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator.js';
+import { createRootFieldContext } from '../../src/schema-generation/query-node-object-type/index.js';
 
 describe('CreateInputTypeGenerator', () => {
     const model = new Model({ types: [] });

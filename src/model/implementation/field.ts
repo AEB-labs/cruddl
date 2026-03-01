@@ -7,7 +7,7 @@ import {
     GraphQLInt,
     GraphQLString,
 } from 'graphql';
-import memorize from 'memorize-decorator';
+import { memorize } from 'memorize-decorator';
 import {
     ACCESS_GROUP_FIELD,
     CALC_MUTATIONS_OPERATORS,
@@ -22,14 +22,14 @@ import {
     REFERENCE_DIRECTIVE,
     RELATION_DIRECTIVE,
     ROOT_DIRECTIVE,
-} from '../../schema/constants';
-import { GraphQLDateTime } from '../../schema/scalars/date-time';
-import { GraphQLLocalDate } from '../../schema/scalars/local-date';
-import { GraphQLLocalTime } from '../../schema/scalars/local-time';
-import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
-import { GraphQLI18nString } from '../../schema/scalars/string-map';
-import { isDefined } from '../../utils/utils';
-import { describeModuleSpecification } from '../compatibility-check/describe-module-specification';
+} from '../../schema/constants.js';
+import { GraphQLDateTime } from '../../schema/scalars/date-time.js';
+import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
+import { GraphQLLocalTime } from '../../schema/scalars/local-time.js';
+import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js';
+import { GraphQLI18nString } from '../../schema/scalars/string-map.js';
+import { isDefined } from '../../utils/utils.js';
+import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
 import {
     AggregationOperator,
     CalcMutationsOperator,
@@ -37,26 +37,27 @@ import {
     FlexSearchLanguage,
     RelationDeleteAction,
     TypeKind,
-} from '../config';
+} from '../config/index.js';
 import {
     collectEmbeddingEntityTypes,
     collectEmbeddingRootEntityTypes,
-} from '../utils/emedding-entity-types';
-import { findRecursiveCascadePath } from '../utils/recursive-cascade';
-import { ValidationMessage } from '../validation';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { numberTypeNames } from './built-in-types';
-import { CollectPath } from './collect-path';
-import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from './flex-search';
-import { FieldLocalization } from './i18n';
-import { Model } from './model';
-import { EffectiveModuleSpecification } from './modules/effective-module-specification';
-import { FieldModuleSpecification } from './modules/field-module-specification';
-import { PermissionProfile } from './permission-profile';
-import { Relation, RelationSide } from './relation';
-import { RolesSpecifier } from './roles-specifier';
-import { InvalidType, ObjectType, Type } from './type';
-import { ValueObjectType } from './value-object-type';
+} from '../utils/emedding-entity-types.js';
+import { findRecursiveCascadePath } from '../utils/recursive-cascade.js';
+import { ValidationMessage } from '../validation/index.js';
+import { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import { numberTypeNames } from './built-in-types.js';
+import { CollectPath } from './collect-path.js';
+import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from './flex-search.js';
+import { FieldLocalization } from './i18n.js';
+import { InvalidType } from './invalid-type.js';
+import { Model } from './model.js';
+import { EffectiveModuleSpecification } from './modules/effective-module-specification.js';
+import { FieldModuleSpecification } from './modules/field-module-specification.js';
+import { PermissionProfile } from './permission-profile.js';
+import { Relation, RelationSide } from './relation.js';
+import { RolesSpecifier } from './roles-specifier.js';
+import type { ObjectType, Type } from './type.js';
+import { ValueObjectType } from './value-object-type.js';
 
 export interface SystemFieldConfig extends FieldConfig {
     readonly isSystemField?: boolean;
