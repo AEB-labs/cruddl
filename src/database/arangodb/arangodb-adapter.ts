@@ -144,8 +144,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
             const startTime = enableProfiling ? getPreciseTime() : 0;
 
+            // will be replaced with the validators (keep the exact syntax)
             let validators: { [name: string]: (validationData: any, result: any) => void } = {};
-            //inject_validators_here
 
             let timings: { [key: string]: number } | undefined = enableProfiling ? {} : undefined;
             let timingsTotal = 0;
@@ -310,13 +310,14 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 )}`,
         );
 
-        const allValidatorFunctionsObjectString = `validators = {${validatorProviders.join(
-            ',\n',
-        )}}`;
-
-        return String(arangoExecutionFunction).replace(
-            '//inject_validators_here',
-            allValidatorFunctionsObjectString,
+        return (
+            String(arangoExecutionFunction)
+                .replace(
+                    'let validators = {}',
+                    `let validators = {${validatorProviders.join(',\n')}}`,
+                )
+                // when running cruddl with tsx in this repo, esbuild is used, which emits __name() calls. This is not available in arangodb
+                .replace(/__name\([^)]*\);\s*/g, '')
         );
     }
 
