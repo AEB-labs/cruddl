@@ -2,9 +2,9 @@ import { I18N_GENERIC, I18N_LOCALE } from '../../meta-schema/constants';
 import {
     arrayStartsWith,
     capitalize,
-    compact,
     decapitalize,
     groupArray,
+    isDefined,
     mapFirstDefined,
     mapValues,
 } from '../../utils/utils';
@@ -119,16 +119,16 @@ export class ModelI18n implements ModelComponent {
     private getResolutionProviders(
         resolutionOrder: ReadonlyArray<string>,
     ): ReadonlyArray<LocalizationProvider> {
-        return compact(
-            resolutionOrder.map((providerName) => {
+        return resolutionOrder
+            .map((providerName) => {
                 switch (providerName) {
                     case I18N_GENERIC:
                         return new GenericLocalizationProvider();
                     default:
                         return this.languageLocalizationProvidersByLanguage.get(providerName);
                 }
-            }),
-        );
+            })
+            .filter(isDefined);
     }
 
     /**
@@ -287,9 +287,9 @@ class ModelLocalizationProvider implements LocalizationProvider {
 
     localizeType(type: TypeBase): TypeLocalization {
         const matchingNamespaces = this.getMatchingNamespaces(type.namespacePath);
-        const matchingTypeLocalizations = compact(
-            matchingNamespaces.map((ns) => ns.getTypeLocalization(type.name)),
-        );
+        const matchingTypeLocalizations = matchingNamespaces
+            .map((ns) => ns.getTypeLocalization(type.name))
+            .filter(isDefined);
         return {
             label: mapFirstDefined(matchingTypeLocalizations, (t) => t.label),
             labelPlural: mapFirstDefined(matchingTypeLocalizations, (t) => t.labelPlural),
