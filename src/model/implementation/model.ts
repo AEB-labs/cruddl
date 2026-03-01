@@ -1,7 +1,7 @@
 import { groupBy, uniqBy } from 'lodash';
 import memorize from 'memorize-decorator';
 import { ModelOptions } from '../../config/interfaces';
-import { objectEntries, objectValues } from '../../utils/utils';
+
 import { ModelConfig, TypeKind } from '../config';
 import { NamespacedPermissionProfileConfigMap } from '../index';
 import { ValidationMessage, ValidationResult } from '../validation';
@@ -103,7 +103,7 @@ export class Model implements ModelComponent {
     }
 
     private validateDuplicateTypes(context: ValidationContext) {
-        const duplicateTypes = objectValues(groupBy(this.types, (type) => type.name)).filter(
+        const duplicateTypes = Object.values(groupBy(this.types, (type) => type.name)).filter(
             (types) => types.length > 1,
         );
         for (const types of duplicateTypes) {
@@ -134,7 +134,7 @@ export class Model implements ModelComponent {
     }
 
     private validateDuplicateModules(context: ValidationContext) {
-        const duplicateModules = objectValues(groupBy(this.modules, (type) => type.name)).filter(
+        const duplicateModules = Object.values(groupBy(this.modules, (type) => type.name)).filter(
             (types) => types.length > 1,
         );
         for (const modules of duplicateModules) {
@@ -308,7 +308,7 @@ export class Model implements ModelComponent {
 function createPermissionProfiles(
     map: NamespacedPermissionProfileConfigMap,
 ): ReadonlyArray<PermissionProfile> {
-    return objectEntries(map.profiles).map(
+    return Object.entries(map.profiles).map(
         ([name, profile]) => new PermissionProfile(name, map.namespacePath || [], profile),
     );
 }
