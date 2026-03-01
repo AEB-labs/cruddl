@@ -112,8 +112,11 @@ export function takeRandomSample<T>(arr: ReadonlyArray<T>): T | undefined {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export function compact<T>(arr: ReadonlyArray<T | undefined | null>): ReadonlyArray<T> {
-    return arr.filter((a) => a != undefined) as ReadonlyArray<T>;
+/**
+ * Checks whether a value is neither null nor undefined
+ */
+export function isDefined<T>(value?: T | undefined | null): value is T {
+    return value !== null && value !== undefined;
 }
 
 export function mapValues<TIn, TOut>(

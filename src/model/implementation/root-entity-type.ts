@@ -12,7 +12,7 @@ import {
 } from '../../schema/constants';
 import { GraphQLInt53 } from '../../schema/scalars/int53';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
-import { compact } from '../../utils/utils';
+import { isDefined } from '../../utils/utils';
 import {
     FlexSearchPerformanceParams,
     FlexSearchPrimarySortClauseConfig,
@@ -199,7 +199,7 @@ export class RootEntityType extends ObjectTypeBase {
      * (as opposed to the relation only existing because a different type has a relation field to this root entity)
      */
     get explicitRelations(): ReadonlyArray<Relation> {
-        return compact(this.fields.map((field) => field.relation));
+        return this.fields.map((field) => field.relation).filter(isDefined);
     }
 
     /**
