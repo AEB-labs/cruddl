@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
     "importHelpers": true,
     "sourceMap": true,
     "declaration": true,
@@ -14,6 +16,7 @@
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "lib": ["ES2023"],
     "paths": {
       "*": ["./src/typings/*"]

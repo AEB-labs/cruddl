@@ -30,7 +30,7 @@ export async function start() {
         });
     }
 
-    const project = await loadProjectFromDir(resolve(__dirname, './model'), {
+    const project = await loadProjectFromDir(resolve(import.meta.dirname, './model'), {
         profileConsumer: (profile) => {
             logger.info(
                 `${profile.operation.operation} ${
