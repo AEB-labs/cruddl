@@ -2,12 +2,12 @@ import { Database } from 'arangojs';
 import type { GraphQLSchema } from 'graphql';
 import { graphql } from 'graphql';
 import { resolve } from 'path';
+import { ConsoleLoggerProvider } from '../../../src/config/console-logger.js';
 import type { ProjectOptions } from '../../../src/config/interfaces.js';
 import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';
 import { loadProjectFromDir } from '../../../src/project/project-from-fs.js';
 import type { Project } from '../../../src/project/project.js';
 import { range } from '../../../src/utils/utils.js';
-import { WarnAndErrorLoggerProvider } from '../../helpers/warn-and-error-logger-provider.js';
 import { createTempDatabase } from '../../regression/initialization.js';
 
 // arangojs typings for this are completely broken
@@ -23,7 +23,7 @@ export interface TestEnvironment {
 }
 
 const schemaContext: ProjectOptions = {
-    loggerProvider: new WarnAndErrorLoggerProvider(),
+    loggerProvider: new ConsoleLoggerProvider({ defaultLevel: 'warn' }),
     getExecutionOptions: ({}) => ({ authContext: { authRoles: ['admin'] } }),
 };
 

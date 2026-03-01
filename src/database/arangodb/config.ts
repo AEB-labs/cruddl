@@ -1,9 +1,9 @@
 import type { Database } from 'arangojs';
 import type { CreateCollectionOptions } from 'arangojs/collection.js';
 import type { Config } from 'arangojs/connection.js';
+import { DEFAULT_LOGGER_PROVIDER } from '../../config/console-logger.js';
 import type { ProjectOptions } from '../../config/interfaces.js';
 import type { Logger } from '../../config/logging.js';
-import { DEFAULT_LOGGER_PROVIDER } from '../../config/logging.js';
 import { CustomDatabase } from './arangojs-instrumentation/custom-database.js';
 import type { ArangoSearchConfiguration } from './schema-migration/arango-search-helpers.js';
 
