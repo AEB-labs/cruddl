@@ -1,4 +1,5 @@
 import { RootEntityType } from '../model';
+import { FieldPath } from '../model/implementation/field-path';
 import {
     DeleteEntitiesQueryNode,
     DeleteEntitiesResultValue,
@@ -10,7 +11,6 @@ import {
 } from '../query-tree';
 import { mapToIDNodesUnoptimized } from './utils/map';
 import { getPreEntityRemovalStatements } from './utils/relations';
-import { FieldPath } from '../model/implementation/field-path';
 
 export interface GenerateDeleteAllQueryNodeOptions {
     readonly resultValue?: DeleteEntitiesResultValue;

@@ -2,15 +2,17 @@ import {
     DocumentNode,
     getLocation,
     GraphQLError,
-    GraphQLSchema,
     Kind as GraphQLKind,
+    GraphQLSchema,
     parse,
 } from 'graphql';
+import jsonLint from 'json-lint';
 import { parse as JSONparse } from 'json-source-map';
+import stripJsonComments from 'strip-json-comments';
 import {
-    Kind as YAMLKind,
     load,
     YAMLAnchorReference,
+    Kind as YAMLKind,
     YamlMap,
     YAMLMapping,
     YAMLNode,
@@ -26,6 +28,7 @@ import {
     ParsedProjectSourceBaseKind,
 } from '../config/parsed-project';
 import { DatabaseAdapter } from '../database/database-adapter';
+import { isCommentOnlySource } from '../graphql/is-comment-only-source';
 import {
     createModel,
     MessageLocation,
@@ -50,9 +53,6 @@ import {
     SchemaTransformationContext,
 } from './preparation/transformation-pipeline';
 import { getLineEndPosition } from './schema-utils';
-import { isCommentOnlySource } from '../graphql/is-comment-only-source';
-import jsonLint from 'json-lint';
-import stripJsonComments from 'strip-json-comments';
 
 /**
  * Validates a project and thus determines whether createSchema() would succeed

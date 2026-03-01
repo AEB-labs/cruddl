@@ -1,6 +1,5 @@
-import { blue, cyan, magenta } from '../../utils/colors';
 import { QueryResultValidator } from '../../query-tree';
-import { arrayToObject } from '../../utils/utils';
+import { blue, cyan, magenta } from '../../utils/colors';
 
 function stringify(val: any) {
     if (val === undefined) {

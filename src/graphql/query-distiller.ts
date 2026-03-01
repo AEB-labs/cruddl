@@ -1,3 +1,4 @@
+import { deepEqual } from 'fast-equals';
 import {
     DocumentNode,
     FieldNode,
@@ -21,7 +22,6 @@ import { resolveSelections } from './field-collection';
 import { getAliasOrName } from './language-utils';
 import { extractOperation } from './operations';
 import { getOperationRootType } from './schema-utils';
-import { deepEqual } from 'fast-equals';
 
 interface FieldRequestParams {
     readonly field: GraphQLField<unknown, unknown>;

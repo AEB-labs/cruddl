@@ -9,7 +9,6 @@ import {
     ProvidedRequiredArgumentsRule,
     UniqueArgumentNamesRule,
     UniqueDirectivesPerLocationRule,
-    UniqueEnumValueNamesRule,
     validate,
     ValidationRule,
     ValuesOfCorrectTypeRule,

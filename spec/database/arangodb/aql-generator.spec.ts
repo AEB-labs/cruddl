@@ -1,6 +1,6 @@
+import { expect } from 'chai';
 import { getAQLQuery } from '../../../src/database/arangodb/aql-generator';
 import { LiteralQueryNode, ObjectQueryNode, PropertySpecification } from '../../../src/query-tree';
-import { expect } from 'chai';
 
 describe('getAQLForQuery', () => {
     it('supports LiteralQuery', () => {

@@ -1,5 +1,5 @@
-import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
 import { takeRandomSample } from '../../src/utils/utils';
+import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
 import {
     addManyPapersWithAQL,
     addPaper,

@@ -1,10 +1,9 @@
+import { FlexSearchPrimarySortClauseConfig } from '../config';
+import { Severity, ValidationMessage } from '../validation';
+import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { FieldPath } from './field-path';
 import { OrderDirection } from './order';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { FlexSearchPrimarySortClauseConfig } from '../config';
 import { RootEntityType } from './root-entity-type';
-import { Severity, ValidationMessage } from '../validation';
-import { WarningCode } from '../validation/suppress/message-codes';
 
 export const IDENTITY_ANALYZER = 'identity';
 export const NORM_CI_ANALYZER = 'norm_ci';

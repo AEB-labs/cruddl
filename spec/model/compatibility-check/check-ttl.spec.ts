@@ -1,11 +1,9 @@
 import gql from 'graphql-tag';
+import { Project } from '../../../src/project/project';
 import {
     expectSingleCompatibilityIssue,
     expectToBeValid,
 } from '../implementation/validation-utils';
-import { runCheck } from './utils';
-import { Project } from '../../../src/project/project';
-import { assertValidatorAcceptsAndDoesNotWarn } from '../../schema/ast-validation-modules/helpers';
 
 describe('checkModel', () => {
     describe('ttl', () => {

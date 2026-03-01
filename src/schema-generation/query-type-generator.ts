@@ -9,6 +9,7 @@ import { FlexSearchGenerator } from './flex-search-generator';
 import { MetaFirstAugmentation } from './limit-augmentation';
 import { ListAugmentation } from './list-augmentation';
 import { MetaTypeGenerator } from './meta-type-generator';
+import { LimitTypeCheckType } from './order-by-and-pagination-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
 import {
     FieldContext,
@@ -19,7 +20,6 @@ import {
 } from './query-node-object-type';
 import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator';
 import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
-import { LimitTypeCheckType } from './order-by-and-pagination-augmentation';
 
 export class QueryTypeGenerator {
     constructor(

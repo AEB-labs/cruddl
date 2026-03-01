@@ -12,11 +12,7 @@ import {
     CreateObjectInputField,
 } from '../../src/schema-generation/create-input-types';
 import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator';
-import {
-    createRootFieldContext,
-    FieldContext,
-    SelectionToken,
-} from '../../src/schema-generation/query-node-object-type';
+import { createRootFieldContext } from '../../src/schema-generation/query-node-object-type';
 
 describe('CreateInputTypeGenerator', () => {
     const model = new Model({ types: [] });

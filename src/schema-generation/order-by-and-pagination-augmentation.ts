@@ -37,6 +37,7 @@ import {
     ORDER_BY_ASC_SUFFIX,
     SKIP_ARG,
 } from '../schema/constants';
+import { RequireAllProperties } from '../utils/util-types';
 import { decapitalize } from '../utils/utils';
 import {
     FlexSearchScalarOrEnumFilterField,
@@ -45,13 +46,12 @@ import {
 import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
 import { QueryNodeField } from './query-node-object-type';
 import { RootFieldHelper } from './root-field-helper';
-import { and, binaryOp, binaryOpWithAnalyzer } from './utils/input-types';
-import { getOrderByValues } from './utils/pagination';
 import {
     getSortClausesForPrimarySort,
     orderArgMatchesPrimarySort,
 } from './utils/flex-search-utils';
-import { RequireAllProperties } from '../utils/util-types';
+import { and, binaryOp, binaryOpWithAnalyzer } from './utils/input-types';
+import { getOrderByValues } from './utils/pagination';
 
 export enum LimitTypeCheckType {
     RESULT_VALIDATOR = 'RESULT_VALIDATOR',

@@ -1,10 +1,10 @@
+import { expect } from 'chai';
 import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
     validate,
 } from './helpers';
-import { expect } from 'chai';
 
 describe('@parent directive', () => {
     it('accepts direct embedding in root entity', () => {

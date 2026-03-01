@@ -11,9 +11,9 @@ import {
     VariableAssignmentQueryNode,
     VariableQueryNode,
 } from '../../query-tree';
+import { FlexSearchQueryNode } from '../../query-tree/flex-search';
 import { visitQueryNode } from '../../query-tree/visitor';
 import { VisitResult } from '../../utils/visitor';
-import { FlexSearchQueryNode } from '../../query-tree/flex-search';
 
 interface SupportedAsArrayExpansionOptions {
     /**

@@ -1,9 +1,9 @@
+import { OffsetDateTime } from '@js-joda/core';
 import { Database } from 'arangojs';
 import { AnalyzerDescription, CreateAnalyzerOptions } from 'arangojs/analyzer';
 import {
     ArangoSearchViewLink,
     ArangoSearchViewLinkOptions,
-    ArangoSearchViewProperties,
     ArangoSearchViewPropertiesOptions,
     BytesAccumConsolidationPolicy,
     CreateArangoSearchViewOptions,
@@ -11,10 +11,16 @@ import {
     View,
     ViewProperties,
 } from 'arangojs/view';
+import { deepEqual } from 'fast-equals';
 import { Field, Model, RootEntityType } from '../../../model';
+import { FieldPath } from '../../../model/implementation/field-path';
 import { IDENTITY_ANALYZER } from '../../../model/implementation/flex-search';
 import { OrderDirection } from '../../../model/implementation/order';
 import { ID_FIELD } from '../../../schema/constants';
+import {
+    GraphQLOffsetDateTime,
+    TIMESTAMP_PROPERTY,
+} from '../../../schema/scalars/offset-date-time';
 import { GraphQLI18nString } from '../../../schema/scalars/string-map';
 import { getCollectionNameForRootEntity } from '../arango-basics';
 import {
@@ -24,13 +30,6 @@ import {
     SchemaMigration,
     UpdateArangoSearchViewMigration,
 } from './migrations';
-import {
-    GraphQLOffsetDateTime,
-    TIMESTAMP_PROPERTY,
-} from '../../../schema/scalars/offset-date-time';
-import { FieldPath } from '../../../model/implementation/field-path';
-import { OffsetDateTime } from '@js-joda/core';
-import { deepEqual } from 'fast-equals';
 
 export const FLEX_SEARCH_VIEW_PREFIX = 'flex_view_';
 

@@ -3,13 +3,13 @@ import memorize from 'memorize-decorator';
 import { QueryNode, VariableQueryNode } from '../../query-tree';
 
 import { CollectFieldConfig } from '../config';
-import { Field } from './field';
 import {
     locationWithinStringArgument,
     MessageLocation,
     ValidationContext,
     ValidationMessage,
 } from '../validation';
+import { Field } from './field';
 import { Multiplicity, RelationSide } from './relation';
 import { RootEntityType } from './root-entity-type';
 import { ObjectType, Type } from './type';
