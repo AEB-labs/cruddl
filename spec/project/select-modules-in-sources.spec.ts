@@ -1,8 +1,8 @@
 import { expect } from 'chai';
-import { DocumentNode } from 'graphql';
+import type { DocumentNode } from 'graphql';
 import { gql } from 'graphql-tag';
 import { Project, ProjectSource } from '../../core-exports.js';
-import { ModuleSelectionOptions } from '../../src/project/select-modules-in-sources.js';
+import type { ModuleSelectionOptions } from '../../src/project/select-modules-in-sources.js';
 import { expectToBeValid } from '../model/implementation/validation-utils.js';
 
 describe('selectModulesInProjectSource', () => {

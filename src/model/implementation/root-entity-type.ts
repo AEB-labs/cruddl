@@ -1,4 +1,5 @@
-import { ArgumentNode, GraphQLID, GraphQLString } from 'graphql';
+import type { ArgumentNode } from 'graphql';
+import { GraphQLID, GraphQLString } from 'graphql';
 import { memorize } from 'memorize-decorator';
 import {
     ACCESS_FIELD_DIRECTIVE,
@@ -13,28 +14,28 @@ import {
 import { GraphQLInt53 } from '../../schema/scalars/int53.js';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
 import { isDefined } from '../../utils/utils.js';
-import {
+import type {
     FlexSearchPerformanceParams,
     FlexSearchPrimarySortClauseConfig,
     IndexDefinitionConfig,
     PermissionsConfig,
     RootEntityTypeConfig,
-    TypeKind,
 } from '../config/index.js';
+import { TypeKind } from '../config/index.js';
 import { ValidationContext, ValidationMessage } from '../validation/index.js';
 import { FieldPath } from './field-path.js';
-import { Field, SystemFieldConfig } from './field.js';
+import type { Field, SystemFieldConfig } from './field.js';
 import { FlexSearchPrimarySortClause } from './flex-search.js';
 import { Index } from './indices.js';
-import { Model } from './model.js';
+import type { Model } from './model.js';
 import { EffectiveModuleSpecification } from './modules/effective-module-specification.js';
 import { ObjectTypeBase } from './object-type-base.js';
 import { OrderDirection } from './order.js';
-import { PermissionProfile } from './permission-profile.js';
-import { Relation, RelationSide } from './relation.js';
+import type { PermissionProfile } from './permission-profile.js';
+import type { Relation, RelationSide } from './relation.js';
 import { RolesSpecifier } from './roles-specifier.js';
-import { ScalarType } from './scalar-type.js';
-import { TimeToLiveType } from './time-to-live.js';
+import type { ScalarType } from './scalar-type.js';
+import type { TimeToLiveType } from './time-to-live.js';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};

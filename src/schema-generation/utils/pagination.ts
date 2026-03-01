@@ -1,6 +1,7 @@
 import { OrderDirection } from '../../query-tree/index.js';
 import { ORDER_BY_ARG } from '../../schema/constants.js';
-import { OrderByEnumType, OrderByEnumValue } from '../order-by-enum-generator.js';
+import type { OrderByEnumType } from '../order-by-enum-generator.js';
+import { OrderByEnumValue } from '../order-by-enum-generator.js';
 
 export function getOrderByValues(
     args: any,

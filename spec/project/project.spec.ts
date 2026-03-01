@@ -1,13 +1,16 @@
 import { expect } from 'chai';
 import { graphql } from 'graphql';
 import { gql } from 'graphql-tag';
-import { Logger, LoggerProvider } from '../../src/config/logging.js';
-import { DatabaseAdapter, FlexSearchTokenizable } from '../../src/database/database-adapter.js';
-import { Model } from '../../src/model/index.js';
+import type { Logger, LoggerProvider } from '../../src/config/logging.js';
+import type {
+    DatabaseAdapter,
+    FlexSearchTokenizable,
+} from '../../src/database/database-adapter.js';
+import type { Model } from '../../src/model/index.js';
 import { Project } from '../../src/project/project.js';
 import { ProjectSource } from '../../src/project/source.js';
-import { FlexSearchTokenization } from '../../src/query-tree/flex-search.js';
-import { QueryNode } from '../../src/query-tree/index.js';
+import type { FlexSearchTokenization } from '../../src/query-tree/flex-search.js';
+import type { QueryNode } from '../../src/query-tree/index.js';
 import { expectSingleError, expectToBeValid } from '../model/implementation/validation-utils.js';
 
 class FakeDBAdatper implements DatabaseAdapter {

@@ -1,5 +1,5 @@
 import { getLogger } from 'log4js';
-import { Logger, LoggerProvider } from '../../src/config/logging.js';
+import type { Logger, LoggerProvider } from '../../src/config/logging.js';
 
 export class Log4jsLoggerProvider implements LoggerProvider {
     getLogger(category: string): Logger {

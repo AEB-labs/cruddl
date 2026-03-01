@@ -1,6 +1,8 @@
 import { getEffectiveCollectSegments } from '../model/implementation/collect-path.js';
-import { Field } from '../model/implementation/index.js';
-import { AggregationOperator, RootEntityType } from '../model/index.js';
+import type { Field } from '../model/implementation/index.js';
+import type { RootEntityType } from '../model/index.js';
+import { AggregationOperator } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     AggregationQueryNode,
     BasicType,
@@ -13,7 +15,6 @@ import {
     FollowEdgeQueryNode,
     NullQueryNode,
     ObjectQueryNode,
-    QueryNode,
     RootEntityIDQueryNode,
     SafeListQueryNode,
     TransformListQueryNode,

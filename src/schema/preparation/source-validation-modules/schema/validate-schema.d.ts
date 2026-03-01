@@ -1,4 +1,4 @@
-import { ValidateFunction } from 'ajv';
+import type { ValidateFunction } from 'ajv';
 
 declare const validate10: ValidateFunction;
 

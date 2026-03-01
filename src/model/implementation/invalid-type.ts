@@ -1,6 +1,6 @@
 import { GraphQLString } from 'graphql';
 import { TypeKind } from '../config/index.js';
-import { Model } from './model.js';
+import type { Model } from './model.js';
 import { ScalarType } from './scalar-type.js';
 
 export class InvalidType extends ScalarType {

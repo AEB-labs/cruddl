@@ -1,13 +1,13 @@
+import type { CreateEntityQueryNode, QueryNode } from '../../query-tree/index.js';
 import {
-    CreateEntityQueryNode,
     ErrorIfNotTruthyResultValidator,
     PERMISSION_DENIED_ERROR,
     PreExecQueryParms,
-    QueryNode,
     RuntimeErrorQueryNode,
     WithPreExecutionQueryNode,
 } from '../../query-tree/index.js';
-import { AccessOperation, AuthContext } from '../auth-basics.js';
+import type { AuthContext } from '../auth-basics.js';
+import { AccessOperation } from '../auth-basics.js';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model.js';
 import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors.js';
 

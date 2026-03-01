@@ -1,16 +1,14 @@
-import {
-    Clock,
-    DefaultClock,
-    IDGenerator,
-    UUIDGenerator,
-} from '../../execution/execution-options.js';
+import type { Clock, IDGenerator } from '../../execution/execution-options.js';
+import { DefaultClock, UUIDGenerator } from '../../execution/execution-options.js';
 import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../model/implementation/flex-search.js';
-import { AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model/index.js';
+import type { Relation, RelationSide, RootEntityType } from '../../model/index.js';
+import { AggregationOperator } from '../../model/index.js';
 import {
     FlexSearchComplexOperatorQueryNode,
     FlexSearchFieldExistsQueryNode,
     FlexSearchQueryNode,
 } from '../../query-tree/flex-search.js';
+import type { QueryNode, QueryResultValidator } from '../../query-tree/index.js';
 import {
     AddEdgesQueryNode,
     AggregationQueryNode,
@@ -50,8 +48,6 @@ import {
     OrderDirection,
     OrderSpecification,
     PropertyAccessQueryNode,
-    QueryNode,
-    QueryResultValidator,
     RemoveEdgesQueryNode,
     RootEntityIDQueryNode,
     RUNTIME_ERROR_CODE_PROPERTY,
@@ -73,10 +69,12 @@ import {
 import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
 import { createFieldPathNode } from '../../schema-generation/field-path-node.js';
 import { not } from '../../schema-generation/utils/input-types.js';
-import { Constructor, decapitalize, isDefined } from '../../utils/utils.js';
+import type { Constructor } from '../../utils/utils.js';
+import { decapitalize, isDefined } from '../../utils/utils.js';
 import { likePatternToRegExp } from '../like-helpers.js';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics.js';
-import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js.js';
+import type { JSFragment } from './js.js';
+import { js, JSCompoundQuery, JSQueryResultVariable, JSVariable } from './js.js';
 
 const ID_FIELD_NAME = 'id';
 
