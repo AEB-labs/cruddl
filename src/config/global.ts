@@ -1,5 +1,6 @@
+import { DEFAULT_LOGGER_PROVIDER } from './console-logger';
 import { ProjectOptions } from './interfaces';
-import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from './logging';
+import { LoggerProvider } from './logging';
 
 export namespace globalContext {
     export let loggerProvider: LoggerProvider;
