@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { validate } from './helpers';
+import { validate } from './helpers.js';
 
 const modelWithoutForbiddenTypes = `
             type Stuff @rootEntity {

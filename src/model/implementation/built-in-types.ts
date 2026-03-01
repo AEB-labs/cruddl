@@ -6,24 +6,24 @@ import {
     GraphQLScalarType,
     GraphQLString,
 } from 'graphql';
-import { GraphQLDateTime } from '../../schema/scalars/date-time';
+import { GraphQLDateTime } from '../../schema/scalars/date-time.js';
 import {
     GraphQLDecimal1,
     GraphQLDecimal2,
     GraphQLDecimal3,
-} from '../../schema/scalars/fixed-point-decimals';
-import { GraphQLInt53 } from '../../schema/scalars/int53';
-import { GraphQLJSON } from '../../schema/scalars/json';
-import { GraphQLJSONObject } from '../../schema/scalars/json-object';
-import { GraphQLLocalDate } from '../../schema/scalars/local-date';
-import { GraphQLLocalTime } from '../../schema/scalars/local-time';
-import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
-import { GraphQLI18nString, GraphQLStringMap } from '../../schema/scalars/string-map';
-import { TypeKind } from '../config';
-import { ModuleSpecificationClauseConfig } from '../config/module-specification';
-import { Model } from './model';
-import { ScalarType } from './scalar-type';
-import { Type } from './type';
+} from '../../schema/scalars/fixed-point-decimals.js';
+import { GraphQLInt53 } from '../../schema/scalars/int53.js';
+import { GraphQLJSONObject } from '../../schema/scalars/json-object.js';
+import { GraphQLJSON } from '../../schema/scalars/json.js';
+import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
+import { GraphQLLocalTime } from '../../schema/scalars/local-time.js';
+import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js';
+import { GraphQLI18nString, GraphQLStringMap } from '../../schema/scalars/string-map.js';
+import { TypeKind } from '../config/index.js';
+import { ModuleSpecificationClauseConfig } from '../config/module-specification.js';
+import { Model } from './model.js';
+import { ScalarType } from './scalar-type.js';
+import { Type } from './type.js';
 
 const graphQLTypes: ReadonlyArray<GraphQLScalarType> = [
     GraphQLID,

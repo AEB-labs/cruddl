@@ -1,13 +1,13 @@
 import { ASTNode } from 'graphql';
-import memorize from 'memorize-decorator';
-import { Model } from '..';
+import { memorize } from 'memorize-decorator';
 import {
     BaseModuleSpecificationConfig,
     ModuleSpecificationClauseConfig,
-} from '../../config/module-specification';
-import { ValidationMessage, locationWithinStringArgument } from '../../validation';
-import { ModelComponent, ValidationContext } from '../../validation/validation-context';
-import { parseModuleSpecificationExpression } from './expression-parser';
+} from '../../config/module-specification.js';
+import { ValidationMessage, locationWithinStringArgument } from '../../validation/index.js';
+import { ModelComponent, ValidationContext } from '../../validation/validation-context.js';
+import { Model } from '../model.js';
+import { parseModuleSpecificationExpression } from './expression-parser.js';
 
 export abstract class BaseModuleSpecification implements ModelComponent {
     private readonly clausesIncludingInvalidOnes: ReadonlyArray<ModuleSpecificationClause> | null;

@@ -1,7 +1,7 @@
 import { aql } from 'arangojs';
-import { takeRandomSample } from '../../src/utils/utils';
-import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
-import { getRandomPaperIDsWithAQL, initEnvironment, TestEnvironment } from './support/helpers';
+import { takeRandomSample } from '../../src/utils/utils.js';
+import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench.js';
+import { getRandomPaperIDsWithAQL, initEnvironment, TestEnvironment } from './support/helpers.js';
 
 async function setUpPapers(
     environment: TestEnvironment,

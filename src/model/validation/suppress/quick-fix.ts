@@ -1,11 +1,11 @@
 import { ArgumentNode, ASTNode, DirectiveNode, Kind, ListValueNode, print } from 'graphql';
-import { SUPPRESS_DIRECTIVE } from '../../../schema/constants';
-import { ChangeSet, TextChange } from '../../change-set/change-set';
-import { MessageLocation } from '../location';
-import { AstNodeWithDirectives, Severity } from '../message';
-import { QuickFix } from '../quick-fix';
-import { MessageCode } from './message-codes';
-import { getSuppressArgName } from './utils';
+import { SUPPRESS_DIRECTIVE } from '../../../schema/constants.js';
+import { ChangeSet, TextChange } from '../../change-set/change-set.js';
+import { MessageLocation } from '../location.js';
+import { AstNodeWithDirectives, Severity } from '../message.js';
+import { QuickFix } from '../quick-fix.js';
+import { MessageCode } from './message-codes.js';
+import { getSuppressArgName } from './utils.js';
 
 export function createSuppressQuickFix(
     severity: Severity,

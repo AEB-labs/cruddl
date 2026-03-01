@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { Permission, RoleSpecifier } from '../../src/model';
-import { InvalidRoleSpecifierError } from '../../src/model/implementation/permission-profile';
+import { InvalidRoleSpecifierError } from '../../src/model/implementation/permission-profile.js';
+import { Permission, RoleSpecifier } from '../../src/model/index.js';
 
 describe('Permission', () => {
     describe('getAllowedAccessGroups', () => {

@@ -1,3 +1,4 @@
+import { FlexSearchQueryNode } from '../../query-tree/flex-search.js';
 import {
     AggregationQueryNode,
     CountQueryNode,
@@ -10,12 +11,11 @@ import {
     TraversalQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { FlexSearchQueryNode } from '../../query-tree/flex-search';
-import { QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { visitQueryNode } from '../../query-tree/visitor';
-import { VisitResult } from '../../utils/visitor';
-import { canUseArrayExpansionOperatorForQuantifierFilter } from './quantifier-filter-helpers';
+} from '../../query-tree/index.js';
+import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
+import { visitQueryNode } from '../../query-tree/visitor.js';
+import { VisitResult } from '../../utils/visitor.js';
+import { canUseArrayExpansionOperatorForQuantifierFilter } from './quantifier-filter-helpers.js';
 
 interface SupportedAsArrayExpansionOptions {
     /**

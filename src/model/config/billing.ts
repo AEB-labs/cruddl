@@ -1,4 +1,4 @@
-import { MessageLocation } from '../validation';
+import { MessageLocation } from '../validation/index.js';
 
 export interface BillingConfig {
     readonly billingEntities: ReadonlyArray<BillingEntityConfig>;

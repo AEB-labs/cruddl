@@ -5,7 +5,7 @@ import {
     Model,
     TypeKind,
     ValidationContext,
-} from '../../../src/model';
+} from '../../../src/model/index.js';
 
 describe('CollectPath', () => {
     const model = new Model({

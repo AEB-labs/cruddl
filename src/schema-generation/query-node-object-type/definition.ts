@@ -8,9 +8,9 @@ import {
     GraphQLScalarType,
     ThunkReadonlyArray,
 } from 'graphql';
-import { ExecutionOptions } from '../../execution/execution-options';
-import { QueryNode } from '../../query-tree';
-import { FieldContext } from './context';
+import { ExecutionOptions } from '../../execution/execution-options.js';
+import { QueryNode } from '../../query-tree/index.js';
+import { FieldContext } from './context.js';
 
 export interface QueryNodeResolveInfo extends FieldContext {}
 

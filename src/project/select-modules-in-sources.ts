@@ -14,22 +14,22 @@ import {
     ParsedGraphQLProjectSource,
     ParsedObjectProjectSource,
     ParsedProjectSourceBaseKind,
-} from '../config/parsed-project';
-import { isCommentOnlySource } from '../graphql/is-comment-only-source';
-import { IndexField, Model, RootEntityType, ValidationMessage } from '../model';
-import { parseModuleSpecificationExpression } from '../model/implementation/modules/expression-parser';
-import { ValidationContext } from '../model/validation/validation-context';
+} from '../config/parsed-project.js';
+import { isCommentOnlySource } from '../graphql/is-comment-only-source.js';
+import { parseModuleSpecificationExpression } from '../model/implementation/modules/expression-parser.js';
+import { IndexField, Model, RootEntityType, ValidationMessage } from '../model/index.js';
+import { ValidationContext } from '../model/validation/validation-context.js';
 import {
     INDICES_ARG,
     MODULES_DIRECTIVE,
     MODULES_IN_ARG,
     ROOT_ENTITY_DIRECTIVE,
-} from '../schema/constants';
-import { parseProjectSource } from '../schema/schema-builder';
-import { findDirectiveWithName } from '../schema/schema-utils';
-import { isReadonlyArray } from '../utils/utils';
-import { Project, ProjectOptions } from './project';
-import { ProjectSource } from './source';
+} from '../schema/constants.js';
+import { parseProjectSource } from '../schema/schema-builder.js';
+import { findDirectiveWithName } from '../schema/schema-utils.js';
+import { isReadonlyArray } from '../utils/utils.js';
+import { Project, ProjectOptions } from './project.js';
+import { ProjectSource } from './source.js';
 
 export interface ModuleSelectionOptions {
     /**

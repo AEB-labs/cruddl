@@ -1,9 +1,9 @@
-import gql from 'graphql-tag';
-import { Project } from '../../../src/project/project';
+import { gql } from 'graphql-tag';
+import { Project } from '../../../src/project/project.js';
 import {
     expectSingleCompatibilityIssue,
     expectToBeValid,
-} from '../implementation/validation-utils';
+} from '../implementation/validation-utils.js';
 
 describe('checkModel', () => {
     describe('ttl', () => {

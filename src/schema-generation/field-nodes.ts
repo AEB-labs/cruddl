@@ -1,6 +1,6 @@
-import { AggregationOperator, RootEntityType } from '../model';
-import { Field } from '../model/implementation';
-import { getEffectiveCollectSegments } from '../model/implementation/collect-path';
+import { getEffectiveCollectSegments } from '../model/implementation/collect-path.js';
+import { Field } from '../model/implementation/index.js';
+import { AggregationOperator, RootEntityType } from '../model/index.js';
 import {
     AggregationQueryNode,
     BasicType,
@@ -20,12 +20,12 @@ import {
     TraversalQueryNode,
     TypeCheckQueryNode,
     VariableQueryNode,
-} from '../query-tree';
-import { ID_FIELD } from '../schema/constants';
-import { GraphQLOffsetDateTime } from '../schema/scalars/offset-date-time';
-import { decapitalize } from '../utils/utils';
-import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
-import { and } from './utils/input-types';
+} from '../query-tree/index.js';
+import { ID_FIELD } from '../schema/constants.js';
+import { GraphQLOffsetDateTime } from '../schema/scalars/offset-date-time.js';
+import { decapitalize } from '../utils/utils.js';
+import { getScalarFilterValueNode } from './filter-input-types/filter-fields.js';
+import { and } from './utils/input-types.js';
 
 export interface CreateFieldNodeOptions {
     readonly skipNullFallbackForEntityExtensions?: boolean;

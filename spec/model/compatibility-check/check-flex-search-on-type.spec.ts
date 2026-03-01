@@ -1,9 +1,9 @@
-import gql from 'graphql-tag';
+import { gql } from 'graphql-tag';
 import {
     expectSingleCompatibilityIssue,
     expectToBeValid,
-} from '../implementation/validation-utils';
-import { runCheck } from './utils';
+} from '../implementation/validation-utils.js';
+import { runCheck } from './utils.js';
 
 describe('checkModel', () => {
     describe('@rootEntity(flexSearch...)', () => {

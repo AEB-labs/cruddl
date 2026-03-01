@@ -1,6 +1,6 @@
-import { ParsedObjectProjectSource } from '../config/parsed-project';
-import { isReadonlyArray } from '../utils/utils';
-import { TimeToLiveConfig } from './config';
+import { ParsedObjectProjectSource } from '../config/parsed-project.js';
+import { isReadonlyArray } from '../utils/utils.js';
+import { TimeToLiveConfig } from './config/index.js';
 
 export function parseTTLConfigs(
     source: ParsedObjectProjectSource,

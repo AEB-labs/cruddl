@@ -1,10 +1,10 @@
-import { AggregationOperator } from '../model/config';
-import { OrderDirection } from '../model/implementation/order';
-import { indent, isDefined } from '../utils/utils';
-import { QueryNode } from './base';
-import { ConstBoolQueryNode } from './literals';
-import { VariableQueryNode } from './variables';
-export { OrderDirection } from '../model/implementation/order';
+import { AggregationOperator } from '../model/config/index.js';
+import { OrderDirection } from '../model/implementation/order.js';
+import { indent, isDefined } from '../utils/utils.js';
+import { QueryNode } from './base.js';
+import { ConstBoolQueryNode } from './literals.js';
+import { VariableQueryNode } from './variables.js';
+export { OrderDirection } from '../model/implementation/order.js';
 
 /**
  * A node that evaluates to a list with query nodes as list entries

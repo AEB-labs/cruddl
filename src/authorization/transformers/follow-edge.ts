@@ -5,13 +5,13 @@ import {
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { AccessOperation, AuthContext } from '../auth-basics';
-import { PermissionResult } from '../permission-descriptors';
+} from '../../query-tree/index.js';
+import { AccessOperation, AuthContext } from '../auth-basics.js';
 import {
     getPermissionDescriptorOfField,
     getPermissionDescriptorOfRootEntityType,
-} from '../permission-descriptors-in-model';
+} from '../permission-descriptors-in-model.js';
+import { PermissionResult } from '../permission-descriptors.js';
 
 export function transformFollowEdgeQueryNode(
     node: FollowEdgeQueryNode,

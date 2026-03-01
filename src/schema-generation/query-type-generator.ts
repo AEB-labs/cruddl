@@ -1,25 +1,30 @@
-import memorize from 'memorize-decorator';
-import { Namespace, RootEntityType } from '../model';
-import { EntitiesQueryNode, FirstOfListQueryNode, ObjectQueryNode, QueryNode } from '../query-tree';
-import { QUERY_TYPE } from '../schema/constants';
-import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names';
+import { memorize } from 'memorize-decorator';
+import { Namespace, RootEntityType } from '../model/index.js';
+import {
+    EntitiesQueryNode,
+    FirstOfListQueryNode,
+    ObjectQueryNode,
+    QueryNode,
+} from '../query-tree/index.js';
+import { QUERY_TYPE } from '../schema/constants.js';
+import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names.js';
 
-import { FilterAugmentation } from './filter-augmentation';
-import { FlexSearchGenerator } from './flex-search-generator';
-import { MetaFirstAugmentation } from './limit-augmentation';
-import { ListAugmentation } from './list-augmentation';
-import { MetaTypeGenerator } from './meta-type-generator';
-import { LimitTypeCheckType } from './order-by-and-pagination-augmentation';
-import { OutputTypeGenerator } from './output-type-generator';
+import { FilterAugmentation } from './filter-augmentation.js';
+import { FlexSearchGenerator } from './flex-search-generator.js';
+import { MetaFirstAugmentation } from './limit-augmentation.js';
+import { ListAugmentation } from './list-augmentation.js';
+import { MetaTypeGenerator } from './meta-type-generator.js';
+import { LimitTypeCheckType } from './order-by-and-pagination-augmentation.js';
+import { OutputTypeGenerator } from './output-type-generator.js';
 import {
     FieldContext,
     QueryNodeField,
     QueryNodeListType,
     QueryNodeNonNullType,
     QueryNodeObjectType,
-} from './query-node-object-type';
-import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator';
-import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
+} from './query-node-object-type/index.js';
+import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator.js';
+import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field.js';
 
 export class QueryTypeGenerator {
     constructor(
