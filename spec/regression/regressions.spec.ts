@@ -99,7 +99,7 @@ describe('regression tests', async () => {
                                     );
                                 }
                             }
-                        }).timeout(10000); // travis is sometimes on the slower side
+                        })?.timeout(10000); // travis is sometimes on the slower side
                     }
                 });
             }
