@@ -317,10 +317,10 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             ',\n',
         )}}`;
 
-        return String(arangoExecutionFunction).replace(
-            '//inject_validators_here',
-            allValidatorFunctionsObjectString,
-        );
+        // when running cruddl with tsx in this repo, esbuild is used, which emits __name() calls. This is not available in arangodb
+        return String(arangoExecutionFunction)
+            .replace('//inject_validators_here', allValidatorFunctionsObjectString)
+            .replace(/__name\([^)]*\);\s*/g, '');
     }
 
     async execute(queryTree: QueryNode) {
