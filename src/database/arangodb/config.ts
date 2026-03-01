@@ -1,6 +1,6 @@
 import { Database } from 'arangojs';
-import { CreateCollectionOptions } from 'arangojs/collection';
-import { Config } from 'arangojs/connection';
+import { CreateCollectionOptions } from 'arangojs/collection.js';
+import { Config } from 'arangojs/connection.js';
 import { ProjectOptions } from '../../config/interfaces';
 import { DEFAULT_LOGGER_PROVIDER, Logger } from '../../config/logging';
 import { CustomDatabase } from './arangojs-instrumentation/custom-database';
