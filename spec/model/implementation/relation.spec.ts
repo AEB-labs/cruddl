@@ -1,8 +1,8 @@
 import { expect } from 'chai';
-import { DatabaseAdapter, FlexSearchTokenizable } from '../../../src/database/database-adapter';
-import { Model, Relation, TypeKind } from '../../../src/model';
-import { QueryNode } from '../../../src/query-tree';
-import { FlexSearchTokenization } from '../../../src/query-tree/flex-search';
+import { DatabaseAdapter, FlexSearchTokenizable } from '../../../src/database/database-adapter.js';
+import { Model, Relation, TypeKind } from '../../../src/model/index.js';
+import { FlexSearchTokenization } from '../../../src/query-tree/flex-search.js';
+import { QueryNode } from '../../../src/query-tree/index.js';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {

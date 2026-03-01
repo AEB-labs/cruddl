@@ -1,15 +1,20 @@
 import { print } from 'graphql';
-import { applyAuthorizationToQueryTree } from '../authorization/execution';
-import { globalContext } from '../config/global';
-import { RequestProfile } from '../config/interfaces';
+import { applyAuthorizationToQueryTree } from '../authorization/execution.js';
+import { globalContext } from '../config/global.js';
+import { RequestProfile } from '../config/interfaces.js';
 import {
     DatabaseAdapter,
     ExecutionPlan,
     FlexSearchTokenizable,
     TransactionStats,
-} from '../database/database-adapter';
-import { OperationParams } from '../graphql/operation-based-resolvers';
-import { distillOperation } from '../graphql/query-distiller';
+} from '../database/database-adapter.js';
+import { OperationParams } from '../graphql/operation-based-resolvers.js';
+import { distillOperation } from '../graphql/query-distiller.js';
+import {
+    FlexSearchComplexOperatorQueryNode,
+    FlexSearchQueryNode,
+    FlexSearchTokenization,
+} from '../query-tree/flex-search.js';
 import {
     BinaryOperator,
     ObjectQueryNode,
@@ -17,24 +22,19 @@ import {
     PropertySpecification,
     QueryNode,
     WithPreExecutionQueryNode,
-} from '../query-tree';
-import {
-    FlexSearchComplexOperatorQueryNode,
-    FlexSearchQueryNode,
-    FlexSearchTokenization,
-} from '../query-tree/flex-search';
-import { evaluateQueryStatically } from '../query-tree/utils';
+} from '../query-tree/index.js';
+import { evaluateQueryStatically } from '../query-tree/utils/index.js';
 import {
     buildConditionalObjectQueryNode,
     FieldContext,
     QueryNodeObjectType,
     SelectionToken,
-} from '../schema-generation/query-node-object-type';
-import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
-import { isDefined } from '../utils/utils';
-import { getPreciseTime, Watch } from '../utils/watch';
-import { DefaultClock, ExecutionOptions, UUIDGenerator } from './execution-options';
-import { ExecutionResult } from './execution-result';
+} from '../schema-generation/query-node-object-type/index.js';
+import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
+import { isDefined } from '../utils/utils.js';
+import { getPreciseTime, Watch } from '../utils/watch.js';
+import { DefaultClock, ExecutionOptions, UUIDGenerator } from './execution-options.js';
+import { ExecutionResult } from './execution-result.js';
 
 export class OperationResolver {
     constructor(private context: SchemaTransformationContext) {}

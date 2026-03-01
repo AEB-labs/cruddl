@@ -1,11 +1,11 @@
-import { ParsedObjectProjectSource } from '../config/parsed-project';
-import { isDefined, mapValues } from '../utils/utils';
+import { ParsedObjectProjectSource } from '../config/parsed-project.js';
+import { isDefined, mapValues } from '../utils/utils.js';
 import {
     LocalizationBaseConfig,
     LocalizationConfig,
     NamespaceLocalizationConfig,
     TypeLocalizationConfig,
-} from './config';
+} from './config/index.js';
 
 function normalizeLocalizationBaseConfig(
     fieldConfigs: { [name: string]: LocalizationBaseConfig | string } | undefined,

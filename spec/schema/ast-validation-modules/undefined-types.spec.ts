@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { assertValidatorAcceptsAndDoesNotWarn, validate } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, validate } from './helpers.js';
 
 const invalidSource = `
             type Test @rootEntity {

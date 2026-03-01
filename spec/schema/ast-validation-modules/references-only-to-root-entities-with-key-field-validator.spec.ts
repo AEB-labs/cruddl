@@ -1,4 +1,4 @@
-import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers.js';
 
 const modelWithReferenceToNonRoot = `
             type Stuff @childEntity {

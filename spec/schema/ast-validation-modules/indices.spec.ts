@@ -1,6 +1,6 @@
-import gql from 'graphql-tag';
-import { prettyPrint } from '../../../src/graphql/pretty-print';
-import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
+import { gql } from 'graphql-tag';
+import { prettyPrint } from '../../../src/graphql/pretty-print.js';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers.js';
 
 describe('index validations', () => {
     it('accepts simple indices on root entities', () => {

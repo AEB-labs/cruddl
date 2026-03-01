@@ -1,5 +1,5 @@
-import { Field, Permission, PermissionProfile, RootEntityType } from '../model';
-import { FieldPath } from '../model/implementation/field-path';
+import { FieldPath } from '../model/implementation/field-path.js';
+import { Field, Permission, PermissionProfile, RootEntityType } from '../model/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -8,12 +8,12 @@ import {
     LiteralQueryNode,
     QueryNode,
     UnknownValueQueryNode,
-} from '../query-tree';
-import { simplifyBooleans } from '../query-tree/utils';
-import { createFieldPathNode } from '../schema-generation/field-path-node';
-import { ACCESS_GROUP_FIELD } from '../schema/constants';
-import { isReadonlyArray } from '../utils/utils';
-import { AccessOperation, AuthContext } from './auth-basics';
+} from '../query-tree/index.js';
+import { simplifyBooleans } from '../query-tree/utils/index.js';
+import { createFieldPathNode } from '../schema-generation/field-path-node.js';
+import { ACCESS_GROUP_FIELD } from '../schema/constants.js';
+import { isReadonlyArray } from '../utils/utils.js';
+import { AccessOperation, AuthContext } from './auth-basics.js';
 
 export enum ConditionExplanationContext {
     BEFORE_WRITE,

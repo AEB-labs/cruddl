@@ -6,7 +6,8 @@ import {
     GraphQLNonNull,
     GraphQLString,
 } from 'graphql';
-import { Field, TypeKind } from '../../model';
+import { Field, TypeKind } from '../../model/index.js';
+import { FlexSearchFieldExistsQueryNode } from '../../query-tree/flex-search.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -18,8 +19,7 @@ import {
     QueryNode,
     RootEntityIDQueryNode,
     RuntimeErrorQueryNode,
-} from '../../query-tree';
-import { FlexSearchFieldExistsQueryNode } from '../../query-tree/flex-search';
+} from '../../query-tree/index.js';
 import {
     AND_FILTER_FIELD,
     FILTER_FIELD_PREFIX_SEPARATOR,
@@ -35,22 +35,22 @@ import {
     INPUT_FIELD_NOT_STARTS_WITH,
     INPUT_FIELD_STARTS_WITH,
     OR_FILTER_FIELD,
-} from '../../schema/constants';
-import { AnyValue, isDefined, isReadonlyArray, PlainObject } from '../../utils/utils';
+} from '../../schema/constants.js';
+import { AnyValue, isDefined, isReadonlyArray, PlainObject } from '../../utils/utils.js';
 import {
     FilterField,
     getScalarFilterLiteralValue,
     getScalarFilterValueNode,
-} from '../filter-input-types/filter-fields';
-import { QueryNodeResolveInfo } from '../query-node-object-type';
-import { TypedInputFieldBase } from '../typed-input-object-type';
-import { not } from '../utils/input-types';
+} from '../filter-input-types/filter-fields.js';
+import { QueryNodeResolveInfo } from '../query-node-object-type/index.js';
+import { TypedInputFieldBase } from '../typed-input-object-type.js';
+import { not } from '../utils/input-types.js';
 import {
     FLEX_SEARCH_FILTER_DESCRIPTIONS,
     FLEX_SEARCH_OPERATORS_WITH_LIST_OPERAND,
     STRING_TEXT_ANALYZER_FILTER_FIELDS,
-} from './constants';
-import { FlexSearchFilterObjectType } from './filter-types';
+} from './constants.js';
+import { FlexSearchFilterObjectType } from './filter-types.js';
 
 const NESTED_FIELD_SUFFIX = 'Aggregation';
 

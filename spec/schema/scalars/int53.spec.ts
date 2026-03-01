@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { Kind } from 'graphql';
-import { GraphQLInt53 } from '../../../src/schema/scalars/int53';
+import { GraphQLInt53 } from '../../../src/schema/scalars/int53.js';
 
 describe('Int53', () => {
     describe('parseLiteral', () => {

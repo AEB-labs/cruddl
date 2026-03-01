@@ -1,31 +1,38 @@
-export { AuthContext } from './src/authorization/auth-basics';
+export { AuthContext } from './src/authorization/auth-basics.js';
 export {
     ModelOptions,
     ProjectOptions,
     RequestContext,
     RequestProfile,
-} from './src/config/interfaces';
-export { Logger, LoggerProvider } from './src/config/logging';
-export { DatabaseAdapter } from './src/database/database-adapter';
+} from './src/config/interfaces.js';
+export { Logger, LoggerProvider } from './src/config/logging.js';
+export { DatabaseAdapter } from './src/database/database-adapter.js';
 export {
     Clock,
     ExecutionOptions,
     ExecutionOptionsCallbackArgs,
     IDGenerator,
     MutationMode,
-} from './src/execution/execution-options';
-export { ExecutionResult } from './src/execution/execution-result';
+} from './src/execution/execution-options.js';
+export { ExecutionResult } from './src/execution/execution-result.js';
 export {
     ConflictRetriesExhaustedError,
     TransactionCancelledError,
     TransactionTimeoutError,
-} from './src/execution/runtime-errors';
-export { SchemaExecutionArgs, SchemaExecutor } from './src/execution/schema-executor';
-export { TransactionError } from './src/execution/transaction-error';
+} from './src/execution/runtime-errors.js';
+export { SchemaExecutionArgs, SchemaExecutor } from './src/execution/schema-executor.js';
+export { TransactionError } from './src/execution/transaction-error.js';
 export {
     FieldResolverParameters,
     NoOperationIdentifierError,
-} from './src/graphql/operation-based-resolvers';
+} from './src/graphql/operation-based-resolvers.js';
+export {
+    applyChangeSet,
+    applyYamlAddInMapChange,
+} from './src/model/change-set/apply-change-set.js';
+export { ChangeSet, TextChange, YamlAddInMapChange } from './src/model/change-set/change-set.js';
+export { TypeKind } from './src/model/config/index.js';
+export * from './src/model/implementation/index.js';
 export {
     MessageLocation,
     Model,
@@ -34,12 +41,8 @@ export {
     SourcePosition,
     ValidationMessage,
     ValidationResult,
-} from './src/model';
-export { applyChangeSet, applyYamlAddInMapChange } from './src/model/change-set/apply-change-set';
-export { ChangeSet, TextChange, YamlAddInMapChange } from './src/model/change-set/change-set';
-export { TypeKind } from './src/model/config';
-export * from './src/model/implementation';
-export { InvalidProjectError } from './src/project/invalid-project-error';
-export { Project, ProjectConfig } from './src/project/project';
-export { ProjectSource, SourceConfig, SourceLike, SourceType } from './src/project/source';
-export { CORE_SCALARS, DIRECTIVES } from './src/schema/graphql-base';
+} from './src/model/index.js';
+export { InvalidProjectError } from './src/project/invalid-project-error.js';
+export { Project, ProjectConfig } from './src/project/project.js';
+export { ProjectSource, SourceConfig, SourceLike, SourceType } from './src/project/source.js';
+export { CORE_SCALARS, DIRECTIVES } from './src/schema/graphql-base.js';

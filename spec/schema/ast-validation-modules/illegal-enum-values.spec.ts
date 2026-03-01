@@ -3,7 +3,7 @@ import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
-} from './helpers';
+} from './helpers.js';
 
 describe('enum declaration validation', () => {
     it('accepts regular enums', () => {

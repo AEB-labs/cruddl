@@ -1,4 +1,4 @@
-import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers';
+import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers.js';
 
 describe('entity directive nesting validator', () => {
     it('accepts field of @rootEntity type as @relation', () => {

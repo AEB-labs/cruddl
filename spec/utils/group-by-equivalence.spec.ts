@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { groupByEquivalence } from '../../src/utils/group-by-equivalence';
+import { groupByEquivalence } from '../../src/utils/group-by-equivalence.js';
 
 describe('groupByEquivalence', () => {
     it('groups correctly', () => {

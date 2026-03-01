@@ -1,8 +1,8 @@
 import { expect } from 'chai';
-import { ValidationContext, ValidationMessage } from '../../../src/model/validation';
-import { ProjectSource } from '../../../src/project/source';
-import { PermissionProfileValidator } from '../../../src/schema/preparation/source-validation-modules/permission-profile-validator';
-import { parseProjectSource } from '../../../src/schema/schema-builder';
+import { ValidationContext, ValidationMessage } from '../../../src/model/validation/index.js';
+import { ProjectSource } from '../../../src/project/source.js';
+import { PermissionProfileValidator } from '../../../src/schema/preparation/source-validation-modules/permission-profile-validator.js';
+import { parseProjectSource } from '../../../src/schema/schema-builder.js';
 
 describe('permission-profile-validator', () => {
     const validator = new PermissionProfileValidator();

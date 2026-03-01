@@ -1,7 +1,7 @@
 import { readdir, readFile, stat } from 'fs/promises';
 import { resolve } from 'path';
-import { Project, ProjectOptions } from './project';
-import { ProjectSource } from './source';
+import { Project, ProjectOptions } from './project.js';
+import { ProjectSource } from './source.js';
 
 /**
  * Creates a Project by loading source files from a directory

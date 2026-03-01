@@ -1,14 +1,14 @@
 import { ArangoSearchViewProperties, TierConsolidationPolicy } from 'arangojs/view.js';
 import { expect } from 'chai';
 import { deepEqual } from 'fast-equals';
-import gql from 'graphql-tag';
-import { ArangoDBAdapter, ArangoDBConfig } from '../../../../src/database/arangodb';
-import { prettyPrint } from '../../../../src/graphql/pretty-print';
-import { Model } from '../../../../src/model';
-import { Project } from '../../../../src/project/project';
-import { ProjectSource } from '../../../../src/project/source';
-import { createTempDatabase, getTempDatabase } from '../../../regression/initialization';
-import { isArangoDBDisabled } from '../arangodb-test-utils';
+import { gql } from 'graphql-tag';
+import { ArangoDBAdapter, ArangoDBConfig } from '../../../../src/database/arangodb/index.js';
+import { prettyPrint } from '../../../../src/graphql/pretty-print.js';
+import { Model } from '../../../../src/model/index.js';
+import { Project } from '../../../../src/project/project.js';
+import { ProjectSource } from '../../../../src/project/source.js';
+import { createTempDatabase, getTempDatabase } from '../../../regression/initialization.js';
+import { isArangoDBDisabled } from '../arangodb-test-utils.js';
 
 type GqlDocument = ReturnType<typeof gql>;
 

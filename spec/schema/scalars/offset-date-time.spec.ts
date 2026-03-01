@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import {
     GraphQLOffsetDateTime,
     serializeForStorage,
-} from '../../../src/schema/scalars/offset-date-time';
+} from '../../../src/schema/scalars/offset-date-time.js';
 
 describe('GraphQLOffsetDateTime', () => {
     const validStrings = [

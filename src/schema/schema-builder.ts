@@ -17,16 +17,16 @@ import {
     YAMLScalar,
     YAMLSequence,
 } from 'yaml-ast-parser';
-import { globalContext } from '../config/global';
+import { globalContext } from '../config/global.js';
 import {
     ParsedGraphQLProjectSource,
     ParsedObjectProjectSource,
     ParsedProject,
     ParsedProjectSource,
     ParsedProjectSourceBaseKind,
-} from '../config/parsed-project';
-import { DatabaseAdapter } from '../database/database-adapter';
-import { isCommentOnlySource } from '../graphql/is-comment-only-source';
+} from '../config/parsed-project.js';
+import { DatabaseAdapter } from '../database/database-adapter.js';
+import { isCommentOnlySource } from '../graphql/is-comment-only-source.js';
 import {
     createModel,
     MessageLocation,
@@ -36,21 +36,21 @@ import {
     ValidationContext,
     ValidationMessage,
     ValidationResult,
-} from '../model';
-import { Project, ProjectOptions } from '../project/project';
-import { ProjectSource, SourceType } from '../project/source';
-import { SchemaGenerator } from '../schema-generation';
-import { isDefined, isReadonlyArray, PlainObject } from '../utils/utils';
+} from '../model/index.js';
+import { Project, ProjectOptions } from '../project/project.js';
+import { ProjectSource, SourceType } from '../project/source.js';
+import { SchemaGenerator } from '../schema-generation/index.js';
+import { isDefined, isReadonlyArray, PlainObject } from '../utils/utils.js';
 import {
     validateParsedProjectSource,
     validatePostMerge,
     validateSource,
-} from './preparation/ast-validator';
+} from './preparation/ast-validator.js';
 import {
     executePreMergeTransformationPipeline,
     SchemaTransformationContext,
-} from './preparation/transformation-pipeline';
-import { getLineEndPosition } from './schema-utils';
+} from './preparation/transformation-pipeline.js';
+import { getLineEndPosition } from './schema-utils.js';
 import jsonLint = require('json-lint');
 import stripJsonComments = require('strip-json-comments');
 

@@ -1,10 +1,10 @@
-import { Type } from '../model';
-import { FilterAugmentation } from './filter-augmentation';
+import { Type } from '../model/index.js';
+import { FilterAugmentation } from './filter-augmentation.js';
 import {
     OrderByAndPaginationAugmentation,
     OrderByAndPaginationAugmentationOptions,
-} from './order-by-and-pagination-augmentation';
-import { QueryNodeField } from './query-node-object-type';
+} from './order-by-and-pagination-augmentation.js';
+import { QueryNodeField } from './query-node-object-type/index.js';
 
 export interface ListAugmentationOptions {
     orderByAugmentationOptions?: OrderByAndPaginationAugmentationOptions;

@@ -1,15 +1,15 @@
-import { Field, RelationSide, RootEntityType } from '../model';
 import {
     CollectPathSegment,
     FieldSegment,
     RelationSegment,
-} from '../model/implementation/collect-path';
-import { blue } from '../utils/colors';
-import { indent, isDefined } from '../utils/utils';
-import { QueryNode } from './base';
-import { OrderSpecification } from './lists';
-import { EntitiesIdentifierKind } from './mutations';
-import { VariableQueryNode } from './variables';
+} from '../model/implementation/collect-path.js';
+import { Field, RelationSide, RootEntityType } from '../model/index.js';
+import { blue } from '../utils/colors.js';
+import { indent, isDefined } from '../utils/utils.js';
+import { QueryNode } from './base.js';
+import { OrderSpecification } from './lists.js';
+import { EntitiesIdentifierKind } from './mutations.js';
+import { VariableQueryNode } from './variables.js';
 
 export class EntityFromIdQueryNode extends QueryNode {
     constructor(

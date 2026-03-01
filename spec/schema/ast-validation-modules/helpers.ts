@@ -1,21 +1,21 @@
 import { expect } from 'chai';
 import { DocumentNode, parse, Source } from 'graphql';
-import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project';
-import { prettyPrint } from '../../../src/graphql/pretty-print';
+import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project.js';
+import { prettyPrint } from '../../../src/graphql/pretty-print.js';
 import {
     createModel,
     PermissionProfileConfigMap,
     TimeToLiveConfig,
     ValidationContext,
     ValidationResult,
-} from '../../../src/model';
-import { ProjectSource } from '../../../src/project/source';
+} from '../../../src/model/index.js';
+import { ProjectSource } from '../../../src/project/source.js';
 import {
     validateParsedProjectSource,
     validatePostMerge,
     validateSource,
-} from '../../../src/schema/preparation/ast-validator';
-import { parseProjectSource } from '../../../src/schema/schema-builder';
+} from '../../../src/schema/preparation/ast-validator.js';
+import { parseProjectSource } from '../../../src/schema/schema-builder.js';
 
 export function assertValidatorRejects(
     source: string | DocumentNode,

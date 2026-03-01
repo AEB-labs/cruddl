@@ -15,13 +15,13 @@ import {
     SelectionNode,
     TypeNameMetaFieldDef,
 } from 'graphql';
-import { blue, cyan, green } from '../utils/colors';
-import { groupArray, indent, INDENTATION } from '../utils/utils';
-import { getArgumentValues } from './argument-values';
-import { resolveSelections } from './field-collection';
-import { getAliasOrName } from './language-utils';
-import { extractOperation } from './operations';
-import { getOperationRootType } from './schema-utils';
+import { blue, cyan, green } from '../utils/colors.js';
+import { groupArray, indent, INDENTATION } from '../utils/utils.js';
+import { getArgumentValues } from './argument-values.js';
+import { resolveSelections } from './field-collection.js';
+import { getAliasOrName } from './language-utils.js';
+import { extractOperation } from './operations.js';
+import { getOperationRootType } from './schema-utils.js';
 
 interface FieldRequestParams {
     readonly field: GraphQLField<unknown, unknown>;
