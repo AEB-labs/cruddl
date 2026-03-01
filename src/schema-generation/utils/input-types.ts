@@ -1,14 +1,14 @@
+import { QueryNode } from '../../query-tree/base.js';
+import { RuntimeErrorQueryNode } from '../../query-tree/errors.js';
+import { FlexSearchStartsWithQueryNode } from '../../query-tree/flex-search.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     BinaryOperatorWithAnalyzer,
-    FlexSearchStartsWithQueryNode,
     OperatorWithAnalyzerQueryNode,
-    QueryNode,
-    RuntimeErrorQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
-} from '../../query-tree';
+} from '../../query-tree/operators.js';
 
 export const noAnalyzerWasSuppliedError = 'No Analyzer was supplied';
 

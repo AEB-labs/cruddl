@@ -1,8 +1,8 @@
 import { GraphQLInt } from 'graphql';
-import { TransformListQueryNode, VariableQueryNode } from '../query-tree';
-import { FIRST_ARG } from '../schema/constants';
-import { isDefined } from '../utils/utils';
-import { QueryNodeField } from './query-node-object-type';
+import { TransformListQueryNode, VariableQueryNode } from '../query-tree/index.js';
+import { FIRST_ARG } from '../schema/constants.js';
+import { isDefined } from '../utils/utils.js';
+import { QueryNodeField } from './query-node-object-type/index.js';
 
 /**
  * Augments meta fields with a "first" argument

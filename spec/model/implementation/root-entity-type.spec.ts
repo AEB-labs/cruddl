@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { Model, RootEntityType, Severity, TypeKind } from '../../../src/model';
-import { expectSingleError, expectToBeValid, validate } from './validation-utils';
+import { Model, RootEntityType, Severity, TypeKind } from '../../../src/model/index.js';
+import { expectSingleError, expectToBeValid, validate } from './validation-utils.js';
 
 describe('RootEntityType', () => {
     const modelWithoutDefaultProfile = new Model({

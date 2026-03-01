@@ -1,8 +1,8 @@
-import { EntityExtensionTypeConfig, TypeKind } from '../config';
-import { ValidationContext, ValidationMessage } from '../validation';
-import { Field } from './field';
-import { Model } from './model';
-import { ObjectTypeBase } from './object-type-base';
+import { EntityExtensionTypeConfig, TypeKind } from '../config/index.js';
+import { ValidationContext, ValidationMessage } from '../validation/index.js';
+import { Field } from './field.js';
+import { Model } from './model.js';
+import { ObjectTypeBase } from './object-type-base.js';
 
 export class EntityExtensionType extends ObjectTypeBase {
     constructor(input: EntityExtensionTypeConfig, model: Model) {

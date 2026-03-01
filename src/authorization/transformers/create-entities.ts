@@ -1,4 +1,4 @@
-import { AggregationOperator } from '../../model';
+import { AggregationOperator } from '../../model/index.js';
 import {
     AggregationQueryNode,
     CreateEntitiesQueryNode,
@@ -10,10 +10,10 @@ import {
     TransformListQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode,
-} from '../../query-tree';
-import { AccessOperation, AuthContext } from '../auth-basics';
-import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors';
-import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';
+} from '../../query-tree/index.js';
+import { AccessOperation, AuthContext } from '../auth-basics.js';
+import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model.js';
+import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors.js';
 
 export function transformCreateEntitiesQueryNode(
     node: CreateEntitiesQueryNode,

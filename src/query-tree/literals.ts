@@ -1,6 +1,6 @@
-import { cyan } from '../utils/colors';
-import { INDENTATION } from '../utils/utils';
-import { QueryNode } from './base';
+import { cyan } from '../utils/colors.js';
+import { INDENTATION } from '../utils/utils.js';
+import { QueryNode } from './base.js';
 
 /**
  * A node that evaluates to a predefined literal value

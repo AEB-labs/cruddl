@@ -1,4 +1,4 @@
-import { escapeRegExp } from '../utils/utils';
+import { escapeRegExp } from '../utils/utils.js';
 
 /**
  * Gets the literal part until the first placeholder. Also returns whether the literal part is followed by a simple %

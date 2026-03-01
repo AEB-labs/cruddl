@@ -1,12 +1,12 @@
 import { Database } from 'arangojs';
 import { CollectionType } from 'arangojs/collection.js';
-import { ArangoDBConfig, initDatabase } from '../config';
+import { ArangoDBConfig, initDatabase } from '../config.js';
 import {
     ERROR_ARANGO_DATA_SOURCE_NOT_FOUND,
     ERROR_ARANGO_DUPLICATE_NAME,
     ERROR_ARANGO_INDEX_NOT_FOUND,
-} from '../error-codes';
-import { configureForBackgroundCreation, isEqualProperties } from './arango-search-helpers';
+} from '../error-codes.js';
+import { configureForBackgroundCreation, isEqualProperties } from './arango-search-helpers.js';
 import {
     CreateArangoSearchAnalyzerMigration,
     CreateArangoSearchViewMigration,
@@ -18,7 +18,7 @@ import {
     SchemaMigration,
     UpdateArangoSearchAnalyzerMigration,
     UpdateArangoSearchViewMigration,
-} from './migrations';
+} from './migrations.js';
 
 export class MigrationPerformer {
     private readonly db: Database;

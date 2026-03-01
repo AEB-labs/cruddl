@@ -1,6 +1,11 @@
 import { GraphQLFieldConfigArgumentMap, GraphQLString } from 'graphql';
-import { Field, RootEntityType } from '../model/implementation';
-import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../model/implementation/flex-search';
+import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../model/implementation/flex-search.js';
+import { Field, RootEntityType } from '../model/implementation/index.js';
+import {
+    FlexSearchComplexOperatorQueryNode,
+    FlexSearchQueryNode,
+    FlexSearchStartsWithQueryNode,
+} from '../query-tree/flex-search.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -16,39 +21,34 @@ import {
     RuntimeErrorQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode,
-} from '../query-tree';
-import {
-    FlexSearchComplexOperatorQueryNode,
-    FlexSearchQueryNode,
-    FlexSearchStartsWithQueryNode,
-} from '../query-tree/flex-search';
-import { simplifyBooleans } from '../query-tree/utils';
+} from '../query-tree/index.js';
+import { simplifyBooleans } from '../query-tree/utils/index.js';
 import {
     FILTER_ARG,
     FLEX_SEARCH_EXPRESSION_ARG,
     FLEX_SEARCH_FILTER_ARG,
     ORDER_BY_ARG,
     POST_FILTER_ARG,
-} from '../schema/constants';
-import { getFlexSearchEntitiesFieldName, getMetaFieldName } from '../schema/names';
-import { decapitalize } from '../utils/utils';
-import { FlexSearchFilterTypeGenerator } from './flex-search-filter-input-types';
-import { FlexSearchFilterObjectType } from './flex-search-filter-input-types/filter-types';
-import { FlexSearchPostFilterAugmentation } from './flex-search-post-filter-augmentation';
+} from '../schema/constants.js';
+import { getFlexSearchEntitiesFieldName, getMetaFieldName } from '../schema/names.js';
+import { decapitalize } from '../utils/utils.js';
+import { FlexSearchFilterObjectType } from './flex-search-filter-input-types/filter-types.js';
+import { FlexSearchFilterTypeGenerator } from './flex-search-filter-input-types/index.js';
+import { FlexSearchPostFilterAugmentation } from './flex-search-post-filter-augmentation.js';
 import {
     LimitTypeCheckType,
     OrderByAndPaginationAugmentation,
-} from './order-by-and-pagination-augmentation';
-import { OutputTypeGenerator } from './output-type-generator';
+} from './order-by-and-pagination-augmentation.js';
+import { OutputTypeGenerator } from './output-type-generator.js';
 import {
     QueryNodeField,
     QueryNodeListType,
     QueryNodeNonNullType,
     QueryNodeObjectType,
     QueryNodeResolveInfo,
-} from './query-node-object-type';
-import { orderArgMatchesPrimarySort } from './utils/flex-search-utils';
-import { or } from './utils/input-types';
+} from './query-node-object-type/index.js';
+import { orderArgMatchesPrimarySort } from './utils/flex-search-utils.js';
+import { or } from './utils/input-types.js';
 
 export const DEFAULT_FLEXSEARCH_MAX_FILTERABLE_AMOUNT: number = 1000;
 

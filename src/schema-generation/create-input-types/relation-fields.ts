@@ -1,17 +1,17 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { Field, Multiplicity } from '../../model';
-import { PreExecQueryParms, QueryNode } from '../../query-tree';
-import { getCreateRelatedEntityFieldName } from '../../schema/names';
-import { AnyValue, isDefined, isReadonlyArray, PlainObject } from '../../utils/utils';
-import { FieldContext } from '../query-node-object-type';
+import { Field, Multiplicity } from '../../model/index.js';
+import { PreExecQueryParms, QueryNode } from '../../query-tree/index.js';
+import { getCreateRelatedEntityFieldName } from '../../schema/names.js';
+import { AnyValue, isDefined, isReadonlyArray, PlainObject } from '../../utils/utils.js';
+import { FieldContext } from '../query-node-object-type/index.js';
 import {
     getAddEdgesStatements,
     getCreateAndAddEdgesStatements,
     getCreateAndSetEdgeStatements,
     getSetEdgeStatements,
-} from '../utils/relations';
-import { CreateInputField, FieldValidationContext } from './input-fields';
-import { CreateRootEntityInputType } from './input-types';
+} from '../utils/relations.js';
+import { CreateInputField, FieldValidationContext } from './input-fields.js';
+import { CreateRootEntityInputType } from './input-types.js';
 
 export abstract class AbstractRelationCreateInputField implements CreateInputField {
     readonly description: string;

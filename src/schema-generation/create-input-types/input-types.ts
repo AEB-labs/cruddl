@@ -6,7 +6,7 @@ import {
     ObjectType,
     RootEntityType,
     ValueObjectType,
-} from '../../model';
+} from '../../model/index.js';
 import {
     AffectedFieldInfoQueryNode,
     CreateBillingEntityQueryNode,
@@ -19,18 +19,18 @@ import {
     QueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
-import { getCreateInputTypeName, getValueObjectInputTypeName } from '../../schema/names';
-import { PlainObject } from '../../utils/utils';
-import { FieldContext } from '../query-node-object-type';
-import { TypedInputObjectType } from '../typed-input-object-type';
+} from '../../query-tree/index.js';
+import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants.js';
+import { getCreateInputTypeName, getValueObjectInputTypeName } from '../../schema/names.js';
+import { PlainObject } from '../../utils/utils.js';
+import { FieldContext } from '../query-node-object-type/index.js';
+import { TypedInputObjectType } from '../typed-input-object-type.js';
 import {
     createBillingEntityCategoryNode,
     createBillingEntityQuantityNode,
-} from '../utils/billing-nodes';
-import { CreateInputField } from './input-fields';
-import { isRelationCreateField } from './relation-fields';
+} from '../utils/billing-nodes.js';
+import { CreateInputField } from './input-fields.js';
+import { isRelationCreateField } from './relation-fields.js';
 
 export class CreateObjectInputType extends TypedInputObjectType<CreateInputField> {
     constructor(

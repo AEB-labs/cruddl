@@ -1,7 +1,7 @@
-import { TypeKind } from '../../../src/model/config';
-import { EntityExtensionType, Model } from '../../../src/model/implementation';
-import { Severity } from '../../../src/model/validation';
-import { expectSingleMessage } from './validation-utils';
+import { TypeKind } from '../../../src/model/config/index.js';
+import { EntityExtensionType, Model } from '../../../src/model/implementation/index.js';
+import { Severity } from '../../../src/model/validation/index.js';
+import { expectSingleMessage } from './validation-utils.js';
 
 describe('EnityExtensionType', () => {
     it('rejects EntityExtensions with recursion', () => {

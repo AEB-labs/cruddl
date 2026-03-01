@@ -1,22 +1,26 @@
 import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import memorize from 'memorize-decorator';
+import { memorize } from 'memorize-decorator';
 import {
     CalcMutationsOperator,
     ChildEntityType,
     EntityExtensionType,
     Field,
     RootEntityType,
-} from '../../model';
-import { CALC_MUTATIONS_OPERATORS, CalcMutationOperator, ID_FIELD } from '../../schema/constants';
+} from '../../model/index.js';
+import {
+    CALC_MUTATIONS_OPERATORS,
+    CalcMutationOperator,
+    ID_FIELD,
+} from '../../schema/constants.js';
 import {
     getAddChildEntitiesFieldName,
     getRemoveChildEntitiesFieldName,
     getUpdateAllInputTypeName,
     getUpdateChildEntitiesFieldName,
     getUpdateInputTypeName,
-} from '../../schema/names';
-import { CreateInputTypeGenerator } from '../create-input-types';
-import { EnumTypeGenerator } from '../enum-type-generator';
+} from '../../schema/names.js';
+import { CreateInputTypeGenerator } from '../create-input-types/index.js';
+import { EnumTypeGenerator } from '../enum-type-generator.js';
 import {
     AddChildEntitiesInputField,
     BasicListUpdateInputField,
@@ -31,20 +35,20 @@ import {
     UpdateInputField,
     UpdateValueObjectInputField,
     UpdateValueObjectListInputField,
-} from './input-fields';
+} from './input-fields.js';
 import {
     UpdateChildEntityInputType,
     UpdateEntityExtensionInputType,
     UpdateObjectInputType,
     UpdateRootEntityInputType,
-} from './input-types';
+} from './input-types.js';
 import {
     AddEdgesInputField,
     CreateAndAddEdgesInputField,
     CreateAndSetEdgeInputField,
     RemoveEdgesInputField,
     SetEdgeInputField,
-} from './relation-fields';
+} from './relation-fields.js';
 
 export class UpdateInputTypeGenerator {
     constructor(

@@ -1,6 +1,12 @@
 import { expect } from 'chai';
-import { Model, Namespace, PermissionProfile, RootEntityType, TypeKind } from '../../../src/model';
-import { expectSingleWarning, expectToBeValid, validate } from './validation-utils';
+import {
+    Model,
+    Namespace,
+    PermissionProfile,
+    RootEntityType,
+    TypeKind,
+} from '../../../src/model/index.js';
+import { expectSingleWarning, expectToBeValid, validate } from './validation-utils.js';
 
 const model = new Model({
     types: [],
