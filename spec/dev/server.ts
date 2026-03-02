@@ -1,4 +1,5 @@
-import { ApolloServer } from 'apollo-server';
+import { ApolloServer } from '@apollo/server';
+import { startStandaloneServer } from '@apollo/server/standalone';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import express from 'express';
@@ -88,19 +89,18 @@ export async function start() {
         logger.info(JSON.stringify(await project.getTTLInfo(db, {}), undefined, 2));
     }
 
-    const server = new ApolloServer({
-        schema: schema,
-        context: (props) => props,
-    });
-
     const fastServer = express();
     fastServer.use(cors());
     fastServer.use(bodyParser.json());
     fastServer.post('/', createFastApp(project, db));
     fastServer.listen(3002);
 
-    await server.listen({ port });
-    logger.info(`Server started on http://localhost:${port}`);
+    const server = new ApolloServer({ schema });
+    const { url } = await startStandaloneServer(server, {
+        listen: { port },
+        context: async (props: any) => props,
+    });
+    logger.info(`Server started on ${url}`);
 
     await startMetaServer(project);
 }
@@ -115,22 +115,10 @@ export async function startMetaServer(project: Project) {
     const logger = globalContext.loggerProvider.getLogger('server');
 
     const metaSchemaPort = port + 1;
-    const metaSchemaServer = new ApolloServer({
-        schema: getMetaSchema(project),
-        context: { locale: 'en' },
+    const metaSchemaServer = new ApolloServer({ schema: getMetaSchema(project) });
+    const { url } = await startStandaloneServer(metaSchemaServer, {
+        listen: { port: metaSchemaPort },
+        context: async () => ({ locale: 'en' }),
     });
-    expressServerReference = await metaSchemaServer.listen({ port: metaSchemaPort });
-    logger.info(`Meta-Schema-Server started on http://localhost:${metaSchemaPort}`);
-}
-
-/**
- * stops the active GraphQL endpoint at the end of debugging/testing
- * @returns {Promise<void>} used for graceful shutdown at the end of a test session.
- */
-export async function stopMetaServer() {
-    const logger = globalContext.loggerProvider.getLogger('server');
-    if (expressServerReference && expressServerReference.close) {
-        expressServerReference.close();
-    }
-    logger.info(`Meta-Schema-Server stopped`);
+    logger.info(`Meta schema server started on ${url}`);
 }
