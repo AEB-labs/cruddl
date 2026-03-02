@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { NamespacedPermissionProfileConfigMap } from '../../../src/model/index.js';
 import { Model, Severity, TypeKind } from '../../../src/model/index.js';
 import { expectSingleError, expectToBeValid, validate } from './validation-utils.js';
