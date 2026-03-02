@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { gql } from 'graphql-tag';
+import { describe, it } from 'vitest';
 import { parseDocument } from 'yaml';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';
 import { applyChangeSet } from '../../../src/model/change-set/apply-change-set.js';

@@ -1,3 +1,4 @@
+import { describe, it } from 'vitest';
 import { assertValidatorAcceptsAndDoesNotWarn, assertValidatorRejects } from './helpers.js';
 
 describe('indices validator', () => {

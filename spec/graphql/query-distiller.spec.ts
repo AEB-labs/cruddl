@@ -13,6 +13,7 @@ import {
     parse,
 } from 'graphql';
 import { gql } from 'graphql-tag';
+import { describe, it } from 'vitest';
 import type { DistilledOperation, FieldRequest } from '../../src/graphql/query-distiller.js';
 import { distillQuery } from '../../src/graphql/query-distiller.js';
 
