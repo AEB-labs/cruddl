@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { Kind } from 'graphql';
+import { describe, it } from 'vitest';
 import { GraphQLDecimal2 } from '../../../src/schema/scalars/fixed-point-decimals.js';
 
 describe('Decimal2', () => {

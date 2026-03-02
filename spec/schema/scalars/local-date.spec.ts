@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { GraphQLLocalDate } from '../../../src/schema/scalars/local-date.js';
 
 describe('GraphQLLocalDate', () => {
