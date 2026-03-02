@@ -1,6 +1,5 @@
-import { expect } from 'chai';
 import { Kind } from 'graphql';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { GraphQLInt53 } from '../../../src/schema/scalars/int53.js';
 
 describe('Int53', () => {

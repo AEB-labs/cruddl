@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { moveErrorsToOutputNodes } from '../../src/authorization/move-errors-to-output-nodes.js';
 import {
     ConditionalQueryNode,
