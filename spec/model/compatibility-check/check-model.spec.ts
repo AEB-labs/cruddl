@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { parseDocument } from 'yaml';
 import { applyChangeSet, Project, ProjectSource } from '../../../core-exports.js';
 import { gql } from '../../../src/graphql/graphql-tag.js';

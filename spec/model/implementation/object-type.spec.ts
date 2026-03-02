@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { ChildEntityType, Model, Severity, TypeKind } from '../../../src/model/index.js';
 import { expectToBeValid, validate } from './validation-utils.js';
 

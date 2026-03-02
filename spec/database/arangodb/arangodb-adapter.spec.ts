@@ -1,6 +1,5 @@
 import type { ArangoSearchViewProperties } from 'arangojs/view.js';
-import { expect } from 'chai';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';
 import { gql } from '../../../src/graphql/graphql-tag.js';
 import { createSimpleModel } from '../../model/model-spec.helper.js';
@@ -116,13 +115,19 @@ describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {
                 },
             ];
             expect(
-                indices.map((index: any) => ({
-                    fields: index.fields,
-                    sparse: index.sparse,
-                    type: index.type,
-                    unique: index.unique,
-                })),
-            ).to.deep.equalInAnyOrder(expectedIndices);
+                indices
+                    .map((index: any) => ({
+                        fields: index.fields,
+                        sparse: index.sparse,
+                        type: index.type,
+                        unique: index.unique,
+                    }))
+                    .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
+            ).to.deep.equal(
+                [...expectedIndices].sort((a, b) =>
+                    JSON.stringify(a).localeCompare(JSON.stringify(b)),
+                ),
+            );
 
             const indicesOnOtherCollection = await db.collection('second').indexes();
             expect(
