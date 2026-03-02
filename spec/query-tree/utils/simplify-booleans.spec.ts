@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import type { QueryNode } from '../../../src/query-tree/index.js';
 import {
     BinaryOperationQueryNode,
