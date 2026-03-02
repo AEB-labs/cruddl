@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import type { DocumentNode } from 'graphql';
-import { gql } from 'graphql-tag';
 import { Project, ProjectSource } from '../../core-exports.js';
+import { gql } from '../../src/graphql/graphql-tag.js';
 import { Severity, ValidationContext, createModel } from '../../src/model/index.js';
 import { parseProject } from '../../src/schema/schema-builder.js';
 import { expectSingleError, expectToBeValid } from './implementation/validation-utils.js';

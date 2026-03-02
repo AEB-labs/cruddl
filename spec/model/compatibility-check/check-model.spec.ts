@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import { gql } from 'graphql-tag';
 import { parseDocument } from 'yaml';
 import { applyChangeSet, Project, ProjectSource } from '../../../core-exports.js';
+import { gql } from '../../../src/graphql/graphql-tag.js';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';
 import {
     expectQuickFix,

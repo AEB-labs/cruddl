@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { gql } from 'graphql-tag';
 import { parseDocument } from 'yaml';
+import { gql } from '../../../src/graphql/graphql-tag.js';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';
 import { applyChangeSet } from '../../../src/model/change-set/apply-change-set.js';
 import { Project } from '../../../src/project/project.js';
