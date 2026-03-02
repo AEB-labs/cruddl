@@ -243,10 +243,7 @@ export class RegressionSuite {
         return readdirSync(resolve(this.path, 'tests'));
     }
 
-    async shouldIgnoreTest(name: string) {
-        if (!this._isSetUpClean) {
-            await this.setUp();
-        }
+    shouldIgnoreTest(name: string) {
         let metaPath = resolve(this.testsPath, name, 'meta.json');
         if (!existsSync(metaPath)) {
             metaPath = resolve(this.path, 'meta.json');
