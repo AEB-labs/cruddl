@@ -1,6 +1,5 @@
-import { expect } from 'chai';
 import { Source } from 'graphql';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { createModel, ValidationContext } from '../../../src/model/index.js';
 import { Project } from '../../../src/project/project.js';
 import { parseProject } from '../../../src/schema/schema-builder.js';

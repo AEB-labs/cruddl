@@ -1,8 +1,7 @@
-import { expect } from 'chai';
 import type { DocumentNode } from 'graphql';
 import { graphql } from 'graphql';
 import { gql } from 'graphql-tag';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { CRUDDL_VERSION } from '../../src/cruddl-version.js';
 import type {
     ExecutionOptions,
