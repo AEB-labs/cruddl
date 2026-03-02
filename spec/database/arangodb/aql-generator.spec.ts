@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { getAQLQuery } from '../../../src/database/arangodb/aql-generator.js';
 import {
     LiteralQueryNode,

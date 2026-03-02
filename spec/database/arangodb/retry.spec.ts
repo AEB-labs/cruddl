@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { gql } from 'graphql-tag';
+import { describe, it } from 'vitest';
 import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';
 import type { QueryNode } from '../../../src/query-tree/index.js';
 import {
@@ -17,22 +18,11 @@ import {
 import { range } from '../../../src/utils/utils.js';
 import { createSimpleModel } from '../../model/model-spec.helper.js';
 import { createTempDatabase } from '../../regression/initialization.js';
-import { isArangoDBDisabled } from './arangodb-test-utils.js';
 
 const PARALLELISM = 20;
 
-if (!globalThis.xdescribe) {
-    globalThis.xdescribe = describe.skip;
-}
-
 // this test is disabled because of its probabilistic nature
-xdescribe('ArangoDB retryOnConflict', async function () {
-    // can't use arrow function because we need the "this"
-    if (isArangoDBDisabled()) {
-        (this as any).skip();
-        return;
-    }
-
+describe.skip('ArangoDB retryOnConflict', () => {
     it('causes conflicts when retry is disabled', async () => {
         const { adapter, updateQuery } = await prepareAdapter(0);
         const result = await Promise.all(
