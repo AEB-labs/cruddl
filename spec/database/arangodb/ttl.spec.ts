@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import type { GraphQLSchema } from 'graphql';
 import { graphql } from 'graphql';
+import { describe, it } from 'vitest';
 import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';
 import { gql } from '../../../src/graphql/graphql-tag.js';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';
@@ -137,13 +138,7 @@ async function setUp(
     };
 }
 
-describe('ArangoDB TTL', async function () {
-    // can't use arrow function because we need the "this"
-    if (isArangoDBDisabled()) {
-        (this as any).skip();
-        return;
-    }
-
+describe.skipIf(isArangoDBDisabled())('ArangoDB TTL', () => {
     it('deletes expired objects', async () => {
         const { project, adapter, getAllKeys } = await setUp([
             {
