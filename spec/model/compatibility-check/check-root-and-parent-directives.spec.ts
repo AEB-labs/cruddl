@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { gql } from 'graphql-tag';
+import { gql } from '../../../src/graphql/graphql-tag.js';
 import { expectToBeValid } from '../implementation/validation-utils.js';
 import { runCheck } from './utils.js';
 

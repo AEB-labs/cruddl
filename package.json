@@ -106,7 +106,6 @@
     "ansi-styles": "^5.2.0",
     "arangojs": "^8.1.0",
     "fast-equals": "^6.0.0",
-    "graphql-tag": "^2.12.4",
     "json-lint": "^0.1.0",
     "json-source-map": "^0.6.1",
     "memorize-decorator": "^0.2.2",

@@ -1,9 +1,9 @@
 import type { ArangoSearchViewProperties, TierConsolidationPolicy } from 'arangojs/view.js';
 import { expect } from 'chai';
 import { deepEqual } from 'fast-equals';
-import { gql } from 'graphql-tag';
 import type { ArangoDBConfig } from '../../../../src/database/arangodb/index.js';
 import { ArangoDBAdapter } from '../../../../src/database/arangodb/index.js';
+import { gql } from '../../../../src/graphql/graphql-tag.js';
 import { prettyPrint } from '../../../../src/graphql/pretty-print.js';
 import type { Model } from '../../../../src/model/index.js';
 import { Project } from '../../../../src/project/project.js';

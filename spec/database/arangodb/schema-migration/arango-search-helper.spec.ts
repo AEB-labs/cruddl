@@ -1,6 +1,6 @@
 import { expect } from 'chai';
-import { gql } from 'graphql-tag';
 import { getRequiredViewsFromModel } from '../../../../src/database/arangodb/schema-migration/arango-search-helpers.js';
+import { gql } from '../../../../src/graphql/graphql-tag.js';
 import { createSimpleModel } from '../../../model/model-spec.helper.js';
 
 describe('arango-search-helper', () => {

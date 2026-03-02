@@ -11,9 +11,9 @@ import {
     ValuesOfCorrectTypeRule,
     VariablesInAllowedPositionRule,
 } from 'graphql';
-import { gql } from 'graphql-tag';
 import type { ParsedProjectSource } from '../../../config/parsed-project.js';
 import { ParsedProjectSourceBaseKind } from '../../../config/parsed-project.js';
+import { gql } from '../../../graphql/graphql-tag.js';
 import { ValidationMessage } from '../../../model/index.js';
 import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base.js';
 import type { ParsedSourceValidator } from '../ast-validator.js';

@@ -1,7 +1,7 @@
 import { expect } from 'chai';
-import { gql } from 'graphql-tag';
 import { parseDocument } from 'yaml';
 import { applyChangeSet } from '../../../core-exports.js';
+import { gql } from '../../../src/graphql/graphql-tag.js';
 import { Project } from '../../../src/project/project.js';
 import { ProjectSource } from '../../../src/project/source.js';
 import {

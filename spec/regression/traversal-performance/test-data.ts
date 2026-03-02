@@ -1,4 +1,4 @@
-import { gql } from 'graphql-tag';
+import { gql } from '../../../src/graphql/graphql-tag.js';
 import { generateRandomString } from '../../helpers/generate-random-string.js';
 import type { InitTestDataContext } from '../init-test-data-context.js';
 
