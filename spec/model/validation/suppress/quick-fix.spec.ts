@@ -1,4 +1,5 @@
 import { gql } from 'graphql-tag';
+import { describe, it } from 'vitest';
 import { Project } from '../../../../src/project/project.js';
 import { expectQuickFix } from '../../implementation/validation-utils.js';
 

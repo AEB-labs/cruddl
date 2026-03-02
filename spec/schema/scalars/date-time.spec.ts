@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { GraphQLDateTime } from '../../../src/schema/scalars/date-time.js';
 
 describe('GraphQLDateTime', () => {
