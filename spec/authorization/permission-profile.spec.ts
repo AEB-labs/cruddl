@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { InvalidRoleSpecifierError } from '../../src/model/implementation/permission-profile.js';
 import { Permission, RoleSpecifier } from '../../src/model/index.js';
 
