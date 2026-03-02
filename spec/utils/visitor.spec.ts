@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { AnyValue } from '../../src/utils/utils.js';
 import type { VisitResult } from '../../src/utils/visitor.js';
 import { visitObject } from '../../src/utils/visitor.js';
