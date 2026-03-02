@@ -1,6 +1,5 @@
-import { expect } from 'chai';
 import { gql } from 'graphql-tag';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';
 import type { QueryNode } from '../../../src/query-tree/index.js';
 import {
