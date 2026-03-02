@@ -1,6 +1,5 @@
-import { expect } from 'chai';
 import { gql } from 'graphql-tag';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { getRequiredViewsFromModel } from '../../../../src/database/arangodb/schema-migration/arango-search-helpers.js';
 import { createSimpleModel } from '../../../model/model-spec.helper.js';
 
