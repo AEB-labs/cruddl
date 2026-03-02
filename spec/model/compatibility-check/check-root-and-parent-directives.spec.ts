@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { gql } from '../../../src/graphql/graphql-tag.js';
 import { expectToBeValid } from '../implementation/validation-utils.js';
 import { runCheck } from './utils.js';

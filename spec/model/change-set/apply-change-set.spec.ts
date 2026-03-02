@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { Pair, parseDocument } from 'yaml';
 import {
     applyChangeSet,
