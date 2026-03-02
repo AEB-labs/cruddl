@@ -22,6 +22,10 @@ const resolutionOrderDescription = JSON.stringify(
     'The order in which languages and other localization providers are queried for a localization. You can specify languages as defined in the schema as well as the following special identifiers:\n\n- `_LOCALE`: The language defined by the GraphQL request (might be a list of languages, e.g. ["de_DE", "de", "en"])\n- `_GENERIC`: is auto-generated localization from field and type names (e. G. `orderDate` => `Order date`)\n\nThe default `resolutionOrder` is `["_LOCALE", "_GENERIC"]` (if not specified).',
 );
 
+interface Context {
+    readonly locale: string;
+}
+
 // noinspection GraphQLUnresolvedReference
 const typeDefs = gql`
     scalar I18nString
@@ -576,7 +580,7 @@ const typeDefs = gql`
  */
 export function getMetaSchema(project: Project): GraphQLSchema {
     const model = project.getModel();
-    const resolvers: IResolvers<{}, { locale: string }> = {
+    const resolvers: IResolvers<{}, Context> = {
         Query: {
             types: () => model.types,
             type: (_, { name }) => model.getType(name),
@@ -835,7 +839,7 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         };
     }
 
-    return makeExecutableSchema({
+    return makeExecutableSchema<Context>({
         typeDefs,
         resolvers,
     });
