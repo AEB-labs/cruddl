@@ -1,6 +1,5 @@
-import { expect } from 'chai';
 import { Kind, parse } from 'graphql';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { NAMESPACE_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../../../src/schema/constants.js';
 import { AddNamespacesToTypesTransformer } from '../../../../src/schema/preparation/pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer.js';
 import { findDirectiveWithName, getObjectTypes } from '../../../../src/schema/schema-utils.js';

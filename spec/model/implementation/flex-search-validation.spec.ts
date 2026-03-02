@@ -1,7 +1,6 @@
-import { expect } from 'chai';
 import type { DocumentNode } from 'graphql';
 import { gql } from 'graphql-tag';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { RootEntityType } from '../../../core-exports.js';
 import { Model, TypeKind } from '../../../core-exports.js';
 import { FlexSearchLanguage } from '../../../src/model/index.js';

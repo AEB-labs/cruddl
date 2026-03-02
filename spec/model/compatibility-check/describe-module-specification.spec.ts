@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { describeModuleSpecification } from '../../../src/model/compatibility-check/describe-module-specification.js';
 import { EffectiveModuleSpecification } from '../../../src/model/implementation/modules/effective-module-specification.js';
 

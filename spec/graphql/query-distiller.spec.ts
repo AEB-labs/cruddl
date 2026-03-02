@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import type { GraphQLResolveInfo } from 'graphql';
 import {
     buildASTSchema,
@@ -13,7 +12,7 @@ import {
     parse,
 } from 'graphql';
 import { gql } from 'graphql-tag';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { DistilledOperation, FieldRequest } from '../../src/graphql/query-distiller.js';
 import { distillQuery } from '../../src/graphql/query-distiller.js';
 
