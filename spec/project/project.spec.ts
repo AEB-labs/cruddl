@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 import { graphql } from 'graphql';
-import { gql } from 'graphql-tag';
 import type { Logger, LoggerProvider } from '../../src/config/logging.js';
 import type {
     DatabaseAdapter,
     FlexSearchTokenizable,
 } from '../../src/database/database-adapter.js';
+import { gql } from '../../src/graphql/graphql-tag.js';
 import type { Model } from '../../src/model/index.js';
 import { Project } from '../../src/project/project.js';
 import { ProjectSource } from '../../src/project/source.js';
