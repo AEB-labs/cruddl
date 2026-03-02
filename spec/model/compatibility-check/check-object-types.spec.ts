@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { gql } from 'graphql-tag';
+import { describe, it } from 'vitest';
 import { parseDocument } from 'yaml';
 import { applyChangeSet } from '../../../core-exports.js';
 import { Project } from '../../../src/project/project.js';

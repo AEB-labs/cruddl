@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { execute, graphql, parse } from 'graphql';
+import { describe, it } from 'vitest';
 import { InMemoryAdapter } from '../../src/database/inmemory/index.js';
 import { Project } from '../../src/project/project.js';
 import { ProjectSource } from '../../src/project/source.js';
