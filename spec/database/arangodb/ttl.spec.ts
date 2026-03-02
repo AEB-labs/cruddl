@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import type { GraphQLSchema } from 'graphql';
 import { graphql } from 'graphql';
 import { gql } from 'graphql-tag';
+import { describe, it } from 'vitest';
 import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';
 import type { TimeToLiveConfig } from '../../../src/model/index.js';

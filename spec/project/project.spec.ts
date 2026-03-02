@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { graphql } from 'graphql';
 import { gql } from 'graphql-tag';
+import { describe, it } from 'vitest';
 import type { Logger, LoggerProvider } from '../../src/config/logging.js';
 import type {
     DatabaseAdapter,

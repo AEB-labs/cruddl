@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import type { CollectPathSegment } from '../../../src/model/index.js';
 import { CollectPath, Model, TypeKind, ValidationContext } from '../../../src/model/index.js';
 
