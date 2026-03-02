@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { ProjectSource } from '../../../src/project/source.js';
 import { getMessages } from './source-validation-helper.js';
 
