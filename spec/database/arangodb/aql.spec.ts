@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { aql, aqlConfig, AQLVariable } from '../../../src/database/arangodb/aql.js';
 
 describe('aql', () => {
