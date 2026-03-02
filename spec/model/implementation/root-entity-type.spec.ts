@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { Model, RootEntityType, Severity, TypeKind } from '../../../src/model/index.js';
 import { expectSingleError, expectToBeValid, validate } from './validation-utils.js';
 
