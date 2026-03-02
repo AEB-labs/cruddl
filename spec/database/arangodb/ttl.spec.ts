@@ -1,7 +1,6 @@
-import { expect } from 'chai';
 import type { GraphQLSchema } from 'graphql';
 import { graphql } from 'graphql';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';
 import { gql } from '../../../src/graphql/graphql-tag.js';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';
@@ -306,7 +305,7 @@ describe.skipIf(isArangoDBDisabled())('ArangoDB TTL', () => {
             clock: { getCurrentTimestamp: () => '2023-01-10T01:00:00Z' },
             disableAuthorization: true,
         });
-        await expect(ttlPromise).to.be.rejectedWith(
+        await expect(ttlPromise).rejects.toThrow(
             /Cannot delete Test object because 2 N2 objects are still referenced via nested.nested.*/,
         );
 

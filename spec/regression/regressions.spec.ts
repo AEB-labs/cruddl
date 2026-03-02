@@ -1,7 +1,6 @@
-import { assert, expect } from 'chai';
 import { readdirSync, statSync } from 'fs';
 import { resolve } from 'path';
-import { afterEach, beforeEach, describe, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { likePatternToRegExp } from '../../src/database/like-helpers.js';
 import { CategoryLoggerProvider } from '../helpers/category-logger-provider.js';
 import type { RegressionSuiteOptions } from './regression-suite.js';
@@ -87,14 +86,14 @@ describe('regression tests', async () => {
                                     // the messages just turn "expected" around to say the file (which should contain the expected AQL)
                                     // is *expected* to exist or not, that's why this looks inverted here
                                     if (aqlResult.actual !== null && aqlResult.expected === null) {
-                                        assert.fail(
+                                        throw new Error(
                                             `AQL file at "${aqlFileName}" missing (run with --save-actual-as-expected to create it)`,
                                         );
                                     } else if (
                                         aqlResult.expected !== null &&
                                         aqlResult.actual === null
                                     ) {
-                                        assert.fail(
+                                        throw new Error(
                                             `AQL file at "${aqlFileName}" should not exist because there is no operation called ${aqlResult.operationName} (or it does not produce AQL)`,
                                         );
                                     } else {

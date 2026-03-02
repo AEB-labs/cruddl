@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { IndexField, Model, RootEntityType, TypeKind } from '../../../src/model/index.js';
 
 describe('IndexField', () => {
