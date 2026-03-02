@@ -1,6 +1,5 @@
 import type { GraphQLScalarType } from 'graphql';
 import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
-import { GraphQLJSON, GraphQLJSONObject } from 'graphql-type-json';
 import { GraphQLDateTime } from '../../schema/scalars/date-time.js';
 import {
     GraphQLDecimal1,
@@ -8,6 +7,8 @@ import {
     GraphQLDecimal3,
 } from '../../schema/scalars/fixed-point-decimals.js';
 import { GraphQLInt53 } from '../../schema/scalars/int53.js';
+import { GraphQLJSONObject } from '../../schema/scalars/json-object.js';
+import { GraphQLJSON } from '../../schema/scalars/json.js';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time.js';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js';
