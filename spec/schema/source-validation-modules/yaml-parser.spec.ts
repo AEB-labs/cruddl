@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project.js';
 import { ValidationContext } from '../../../src/model/validation/index.js';
 import { ProjectSource } from '../../../src/project/source.js';
