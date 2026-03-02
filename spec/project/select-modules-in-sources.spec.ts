@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import type { DocumentNode } from 'graphql';
 import { gql } from 'graphql-tag';
+import { describe, it } from 'vitest';
 import { Project, ProjectSource } from '../../core-exports.js';
 import type { ModuleSelectionOptions } from '../../src/project/select-modules-in-sources.js';
 import { expectToBeValid } from '../model/implementation/validation-utils.js';

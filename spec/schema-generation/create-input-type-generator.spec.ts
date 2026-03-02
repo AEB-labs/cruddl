@@ -6,6 +6,7 @@ import {
     GraphQLNonNull,
     GraphQLString,
 } from 'graphql';
+import { describe, it } from 'vitest';
 import { ChildEntityType, Model, RootEntityType, TypeKind } from '../../src/model/index.js';
 import type { CreateObjectInputField } from '../../src/schema-generation/create-input-types/index.js';
 import { CreateInputTypeGenerator } from '../../src/schema-generation/create-input-types/index.js';
