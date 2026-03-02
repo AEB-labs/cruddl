@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { Kind } from 'graphql';
+import { describe, it } from 'vitest';
 import { GraphQLJSONObject } from '../../../src/schema/scalars/json-object.js';
 
 describe('GraphQLJSONObject', () => {

@@ -2,6 +2,7 @@ import type { ArangoSearchViewProperties, TierConsolidationPolicy } from 'arango
 import { expect } from 'chai';
 import { deepEqual } from 'fast-equals';
 import { gql } from 'graphql-tag';
+import { describe, it } from 'vitest';
 import type { ArangoDBConfig } from '../../../../src/database/arangodb/index.js';
 import { ArangoDBAdapter } from '../../../../src/database/arangodb/index.js';
 import { prettyPrint } from '../../../../src/graphql/pretty-print.js';
@@ -20,15 +21,8 @@ interface IndexExpectation {
     readonly sparse?: boolean;
 }
 
-describe('ArangoDB schema migrations (integration)', function () {
-    if (isArangoDBDisabled()) {
-        (this as any).skip();
-        return;
-    }
-
-    this?.timeout(20000);
-
-    it('creates required resources and remains stable across runs', async function () {
+describe.skipIf(isArangoDBDisabled())('ArangoDB schema migrations (integration)', () => {
+    it('creates required resources and remains stable across runs', async () => {
         const project = buildProject(gql`
             enum DeliveryStatus {
                 CREATED
@@ -79,9 +73,9 @@ describe('ArangoDB schema migrations (integration)', function () {
         const deliveryView = db.view('flex_view_deliveries');
         const viewProperties = (await deliveryView.properties()) as ArangoSearchViewProperties;
         expect(viewProperties.commitIntervalMsec).to.equal(2000);
-    });
+    }, 20_000);
 
-    it('drops obsolete indices and views when the schema changes', async function () {
+    it('drops obsolete indices and views when the schema changes', async () => {
         const initialProject = buildProject(gql`
             type Warehouse @rootEntity(flexSearch: true) {
                 code: String @key @flexSearch
@@ -125,9 +119,9 @@ describe('ArangoDB schema migrations (integration)', function () {
         expect(
             hasIndex(warehouseIndexes, { fields: ['description'], type: 'persistent' }),
         ).to.equal(true);
-    });
+    }, 20_000);
 
-    it('handles setting old consolidation policy properties in 3.12.7', async function () {
+    it('handles setting old consolidation policy properties in 3.12.7', async () => {
         // 3.12.7 soft-removed some properties, so they are ignored when set.
         // This would mean that the adapter constantly generates a migration to update it to the
         // intended value. This test ensures that this does not happen.
@@ -164,7 +158,7 @@ describe('ArangoDB schema migrations (integration)', function () {
         if ('minScore' in view.consolidationPolicy) {
             expect(view.consolidationPolicy).to.deep.equal(consolidationPolicy);
         }
-    });
+    }, 20_000);
 });
 
 async function runMigrationsAndCheckStable(adapter: ArangoDBAdapter, model: Model) {

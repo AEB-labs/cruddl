@@ -1,4 +1,5 @@
 import { gql } from 'graphql-tag';
+import { describe, it } from 'vitest';
 import {
     expectSingleCompatibilityIssue,
     expectToBeValid,
