@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { Model, TypeKind, ValueObjectType } from '../../src/model/index.js';
 import { OrderByEnumGenerator } from '../../src/schema-generation/order-by-enum-generator.js';
 
