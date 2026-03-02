@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import type { AuthContext } from '../../src/authorization/auth-basics.js';
 import { AccessOperation } from '../../src/authorization/auth-basics.js';
 import {
