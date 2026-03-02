@@ -1,5 +1,4 @@
-import { expect } from 'chai';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { LocalizationConfig } from '../../../src/model/index.js';
 import { Model, TypeKind } from '../../../src/model/index.js';
 
