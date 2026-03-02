@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { groupByEquivalence } from '../../src/utils/group-by-equivalence.js';
 
 describe('groupByEquivalence', () => {

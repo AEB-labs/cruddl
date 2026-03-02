@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { assertValidatorAcceptsAndDoesNotWarn, validate } from './helpers.js';
 
 const invalidSource = `

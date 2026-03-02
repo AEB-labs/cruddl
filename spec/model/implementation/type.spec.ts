@@ -1,4 +1,5 @@
 import { GraphQLString } from 'graphql';
+import { describe, it } from 'vitest';
 import { Model, ScalarType, TypeKind } from '../../../src/model/index.js';
 import { expectSingleError, expectSingleWarning, expectToBeValid } from './validation-utils.js';
 
