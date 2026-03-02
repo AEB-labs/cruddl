@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import { parseDocument } from 'yaml';
 import { gql } from '../../../src/graphql/graphql-tag.js';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';

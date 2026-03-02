@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { describe, it } from 'vitest';
 import type { ParsedProjectSource } from '../../../src/config/parsed-project.js';
 import { gql } from '../../../src/graphql/graphql-tag.js';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';

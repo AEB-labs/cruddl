@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import type { DocumentNode } from 'graphql';
+import { describe, it } from 'vitest';
 import { Project, ProjectSource } from '../../core-exports.js';
 import { gql } from '../../src/graphql/graphql-tag.js';
 import { Severity, ValidationContext, createModel } from '../../src/model/index.js';

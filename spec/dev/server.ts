@@ -109,7 +109,7 @@ let expressServerReference: any;
 
 /**
  * starts an active GraphQL endpoint for testing and debugging the meta server API
- * @returns {Promise<void>} returns promise so that Mocha will wait till server was started
+ * @returns {Promise<void>} returns promise so that the test runner waits until server startup finished
  */
 export async function startMetaServer(project: Project) {
     const logger = globalContext.loggerProvider.getLogger('server');

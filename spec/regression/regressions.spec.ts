@@ -1,6 +1,7 @@
 import { assert, expect } from 'chai';
 import { readdirSync, statSync } from 'fs';
 import { resolve } from 'path';
+import { afterEach, beforeEach, describe, it } from 'vitest';
 import { likePatternToRegExp } from '../../src/database/like-helpers.js';
 import type { RegressionSuiteOptions } from './regression-suite.js';
 import { RegressionSuite } from './regression-suite.js';
@@ -55,7 +56,7 @@ describe('regression tests', async () => {
 
                         it(
                             testName,
-                            async function () {
+                            async () => {
                                 const result = await suite.runTest(testName);
                                 expect(result.actualResult).to.deep.equal(result.expectedResult);
 
@@ -84,9 +85,8 @@ describe('regression tests', async () => {
                                     }
                                 }
                             },
-                            // @ts-ignore
-                            { timeout: 10_000 }, // for vitest
-                        )?.timeout(10000); // for mocha
+                            { timeout: 10_000 },
+                        );
                     }
                 });
             }

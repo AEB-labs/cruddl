@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import type { DocumentNode } from 'graphql';
+import { describe, it } from 'vitest';
 import type { RootEntityType } from '../../../core-exports.js';
 import { Model, TypeKind } from '../../../core-exports.js';
 import { gql } from '../../../src/graphql/graphql-tag.js';
