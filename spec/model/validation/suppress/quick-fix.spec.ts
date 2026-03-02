@@ -1,4 +1,4 @@
-import { gql } from 'graphql-tag';
+import { gql } from '../../../../src/graphql/graphql-tag.js';
 import { Project } from '../../../../src/project/project.js';
 import { expectQuickFix } from '../../implementation/validation-utils.js';
 

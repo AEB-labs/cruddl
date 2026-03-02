@@ -1,7 +1,6 @@
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import type { IResolvers } from '@graphql-tools/utils';
 import type { GraphQLResolveInfo, GraphQLSchema } from 'graphql';
-import { gql } from 'graphql-tag';
 import { AccessOperation } from '../authorization/auth-basics.js';
 import {
     getPermissionDescriptorOfField,
@@ -10,6 +9,7 @@ import {
 import { PermissionResult } from '../authorization/permission-descriptors.js';
 import { CRUDDL_VERSION } from '../cruddl-version.js';
 import type { ExecutionOptionsCallbackArgs } from '../execution/execution-options.js';
+import { gql } from '../graphql/graphql-tag.js';
 import { OrderDirection } from '../model/implementation/order.js';
 import type { EnumValue, RootEntityType, Type } from '../model/index.js';
 import { Field, TypeKind } from '../model/index.js';

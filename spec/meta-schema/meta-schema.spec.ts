@@ -1,12 +1,12 @@
 import { expect } from 'chai';
 import type { DocumentNode } from 'graphql';
 import { graphql } from 'graphql';
-import { gql } from 'graphql-tag';
 import { CRUDDL_VERSION } from '../../src/cruddl-version.js';
 import type {
     ExecutionOptions,
     ExecutionOptionsCallbackArgs,
 } from '../../src/execution/execution-options.js';
+import { gql } from '../../src/graphql/graphql-tag.js';
 import { prettyPrint } from '../../src/graphql/pretty-print.js';
 import { getMetaSchema } from '../../src/meta-schema/meta-schema.js';
 import { AggregationOperator, Model, TypeKind } from '../../src/model/index.js';
