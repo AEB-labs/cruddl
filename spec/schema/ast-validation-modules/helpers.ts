@@ -1,6 +1,6 @@
-import { expect } from 'chai';
 import type { DocumentNode } from 'graphql';
 import { parse, Source } from 'graphql';
+import { expect } from 'vitest';
 import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project.js';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';
 import type { PermissionProfileConfigMap, TimeToLiveConfig } from '../../../src/model/index.js';

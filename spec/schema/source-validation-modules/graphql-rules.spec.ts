@@ -1,6 +1,5 @@
-import { expect } from 'chai';
 import { gql } from 'graphql-tag';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { ParsedProjectSource } from '../../../src/config/parsed-project.js';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';
 import { ValidationContext } from '../../../src/model/validation/index.js';
