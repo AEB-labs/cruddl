@@ -12,6 +12,7 @@ export {
 } from './i18n.js';
 export { Index, IndexField } from './indices.js';
 export { Model } from './model.js';
+export { EffectiveModuleSpecification } from './modules/effective-module-specification.js';
 export { Namespace } from './namespace.js';
 export { Permission, PermissionProfile, RoleSpecifier } from './permission-profile.js';
 export { Multiplicity, Relation, RelationSide } from './relation.js';
