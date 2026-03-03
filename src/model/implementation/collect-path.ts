@@ -1,19 +1,16 @@
-import { StringValueNode } from 'graphql';
+import type { StringValueNode } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import { QueryNode, VariableQueryNode } from '../../query-tree/index.js';
+import type { QueryNode, VariableQueryNode } from '../../query-tree/index.js';
 import { isDefined } from '../../utils/utils.js';
 
-import { CollectFieldConfig } from '../config/index.js';
-import {
-    locationWithinStringArgument,
-    MessageLocation,
-    ValidationContext,
-    ValidationMessage,
-} from '../validation/index.js';
-import { Field } from './field.js';
-import { Multiplicity, RelationSide } from './relation.js';
-import { RootEntityType } from './root-entity-type.js';
-import { ObjectType, Type } from './type.js';
+import type { CollectFieldConfig } from '../config/index.js';
+import type { MessageLocation, ValidationContext } from '../validation/index.js';
+import { locationWithinStringArgument, ValidationMessage } from '../validation/index.js';
+import type { Field } from './field.js';
+import type { RelationSide } from './relation.js';
+import { Multiplicity } from './relation.js';
+import type { RootEntityType } from './root-entity-type.js';
+import type { ObjectType, Type } from './type.js';
 
 interface PathSegmentBase {
     readonly kind: 'field' | 'relation' | 'collect';

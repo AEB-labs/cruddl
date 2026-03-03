@@ -1,6 +1,7 @@
 import { aql } from 'arangojs';
 import { takeRandomSample } from '../../src/utils/utils.js';
-import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench.js';
+import type { BenchmarkConfig, BenchmarkFactories } from './support/async-bench.js';
+import type { TestEnvironment } from './support/helpers.js';
 import {
     addManyPapersWithAQL,
     addManyUsersWithAQL,
@@ -8,7 +9,6 @@ import {
     createUser,
     getRandomPaperIDsWithAQL,
     initEnvironment,
-    TestEnvironment,
 } from './support/helpers.js';
 
 async function setUpPapersAndReaders(

@@ -1,4 +1,4 @@
-import {
+import type {
     ArgumentNode,
     ASTNode,
     FieldNode,
@@ -7,9 +7,6 @@ import {
     GraphQLNamedType,
     GraphQLNonNull,
     GraphQLType,
-    isListType,
-    isNonNullType,
-    Kind,
     ListTypeNode,
     NamedTypeNode,
     NonNullTypeNode,
@@ -18,8 +15,8 @@ import {
     TypeNode,
     ValueNode,
     VariableDefinitionNode,
-    visit,
 } from 'graphql';
+import { isListType, isNonNullType, Kind, visit } from 'graphql';
 import { isDefined } from '../utils/utils.js';
 
 /**

@@ -1,7 +1,7 @@
 import { isDocumentNode } from '@graphql-tools/utils';
-import { DocumentNode } from 'graphql';
+import type { DocumentNode } from 'graphql';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';
-import { ValidationResult } from '../../../src/model/validation/result.js';
+import type { ValidationResult } from '../../../src/model/validation/result.js';
 import { Project } from '../../../src/project/project.js';
 import { ProjectSource } from '../../../src/project/source.js';
 import { isReadonlyArray } from '../../../src/utils/utils.js';

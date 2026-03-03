@@ -1,11 +1,5 @@
-import {
-    GraphQLList,
-    GraphQLObjectType,
-    GraphQLSchema,
-    GraphQLType,
-    isNonNullType,
-    OperationTypeNode,
-} from 'graphql';
+import type { GraphQLObjectType, GraphQLSchema, GraphQLType, OperationTypeNode } from 'graphql';
+import { GraphQLList, isNonNullType } from 'graphql';
 
 export function getOperationRootType(
     schema: GraphQLSchema,

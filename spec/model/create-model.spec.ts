@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { DocumentNode } from 'graphql';
+import type { DocumentNode } from 'graphql';
 import { gql } from 'graphql-tag';
 import { Project, ProjectSource } from '../../core-exports.js';
 import { Severity, ValidationContext, createModel } from '../../src/model/index.js';

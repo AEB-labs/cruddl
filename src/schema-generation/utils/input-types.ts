@@ -1,10 +1,10 @@
-import { QueryNode } from '../../query-tree/base.js';
+import type { QueryNode } from '../../query-tree/base.js';
 import { RuntimeErrorQueryNode } from '../../query-tree/errors.js';
 import { FlexSearchStartsWithQueryNode } from '../../query-tree/flex-search.js';
+import type { BinaryOperatorWithAnalyzer } from '../../query-tree/operators.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
-    BinaryOperatorWithAnalyzer,
     OperatorWithAnalyzerQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,

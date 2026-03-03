@@ -2,10 +2,10 @@ import { memorize } from 'memorize-decorator';
 import { DEFAULT_PERMISSION_PROFILE } from '../../schema/constants.js';
 import { capitalize, groupArray, isDefined } from '../../utils/utils.js';
 import { ValidationMessage } from '../validation/index.js';
-import { ModelComponent, ValidationContext } from '../validation/validation-context.js';
-import { PermissionProfile } from './permission-profile.js';
-import { RootEntityType } from './root-entity-type.js';
-import { Type } from './type.js';
+import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import type { PermissionProfile } from './permission-profile.js';
+import type { RootEntityType } from './root-entity-type.js';
+import type { Type } from './type.js';
 
 export class Namespace implements ModelComponent {
     public readonly types: ReadonlyArray<Type>;

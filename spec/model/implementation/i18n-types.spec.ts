@@ -1,5 +1,6 @@
 import { expect } from 'chai';
-import { LocalizationConfig, Model, TypeKind } from '../../../src/model/index.js';
+import type { LocalizationConfig } from '../../../src/model/index.js';
+import { Model, TypeKind } from '../../../src/model/index.js';
 
 const FULLY = 'fully';
 const PARTIALLY = 'partially';

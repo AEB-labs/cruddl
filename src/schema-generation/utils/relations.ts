@@ -1,12 +1,8 @@
-import { RelationSegment } from '../../model/implementation/collect-path.js';
-import { FieldPath } from '../../model/implementation/field-path.js';
-import {
-    Field,
-    Multiplicity,
-    RelationDeleteAction,
-    RelationSide,
-    RootEntityType,
-} from '../../model/index.js';
+import type { RelationSegment } from '../../model/implementation/collect-path.js';
+import type { FieldPath } from '../../model/implementation/field-path.js';
+import type { Field, RelationSide, RootEntityType } from '../../model/index.js';
+import { Multiplicity, RelationDeleteAction } from '../../model/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     AddEdgesQueryNode,
     BinaryOperationQueryNode,
@@ -24,15 +20,15 @@ import {
     NOT_FOUND_ERROR,
     PartialEdgeIdentifier,
     PreExecQueryParms,
-    QueryNode,
     RemoveEdgesQueryNode,
     SetEdgeQueryNode,
     TraversalQueryNode,
     VariableQueryNode,
 } from '../../query-tree/index.js';
-import { isDefined, PlainObject } from '../../utils/utils.js';
-import { CreateRootEntityInputType } from '../create-input-types/index.js';
-import { FieldContext } from '../query-node-object-type/index.js';
+import type { PlainObject } from '../../utils/utils.js';
+import { isDefined } from '../../utils/utils.js';
+import type { CreateRootEntityInputType } from '../create-input-types/index.js';
+import type { FieldContext } from '../query-node-object-type/index.js';
 import { mapToIDNodesWithOptimizations } from './map.js';
 
 /**

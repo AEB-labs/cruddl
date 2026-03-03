@@ -1,7 +1,8 @@
 import { GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
-import { ExecutionOptions } from '../execution/execution-options.js';
-import { Type } from '../model/index.js';
+import type { ExecutionOptions } from '../execution/execution-options.js';
+import type { Type } from '../model/index.js';
 import { FlexSearchQueryNode } from '../query-tree/flex-search.js';
+import type { QueryNode, TraversalQueryNodeParams } from '../query-tree/index.js';
 import {
     ARGUMENT_OUT_OF_RANGE_ERROR,
     BinaryOperationQueryNode,
@@ -16,12 +17,10 @@ import {
     OrderDirection,
     OrderSpecification,
     PreExecQueryParms,
-    QueryNode,
     RuntimeError,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     TraversalQueryNode,
-    TraversalQueryNodeParams,
     VariableQueryNode,
     WithPreExecutionQueryNode,
 } from '../query-tree/index.js';
@@ -37,19 +36,19 @@ import {
     ORDER_BY_ASC_SUFFIX,
     SKIP_ARG,
 } from '../schema/constants.js';
-import { RequireAllProperties } from '../utils/util-types.js';
+import type { RequireAllProperties } from '../utils/util-types.js';
 import { decapitalize, isDefined } from '../utils/utils.js';
 import {
     FlexSearchScalarOrEnumFilterField,
     resolveFilterField,
 } from './flex-search-filter-input-types/filter-fields.js';
-import {
+import type {
     OrderByEnumGenerator,
     OrderByEnumType,
     OrderByEnumValue,
 } from './order-by-enum-generator.js';
-import { QueryNodeField } from './query-node-object-type/index.js';
-import { RootFieldHelper } from './root-field-helper.js';
+import type { QueryNodeField } from './query-node-object-type/index.js';
+import type { RootFieldHelper } from './root-field-helper.js';
 import {
     getSortClausesForPrimarySort,
     orderArgMatchesPrimarySort,

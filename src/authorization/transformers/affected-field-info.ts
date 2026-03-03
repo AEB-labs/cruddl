@@ -1,10 +1,7 @@
-import {
-    AffectedFieldInfoQueryNode,
-    PERMISSION_DENIED_ERROR,
-    QueryNode,
-    RuntimeErrorQueryNode,
-} from '../../query-tree/index.js';
-import { AccessOperation, AuthContext } from '../auth-basics.js';
+import type { AffectedFieldInfoQueryNode, QueryNode } from '../../query-tree/index.js';
+import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/index.js';
+import type { AuthContext } from '../auth-basics.js';
+import { AccessOperation } from '../auth-basics.js';
 import { getPermissionDescriptorOfField } from '../permission-descriptors-in-model.js';
 import { PermissionResult } from '../permission-descriptors.js';
 

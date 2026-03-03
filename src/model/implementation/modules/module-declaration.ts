@@ -1,6 +1,7 @@
-import { ModuleConfig } from '../../config/module.js';
-import { MessageLocation, ValidationMessage } from '../../validation/index.js';
-import { ModelComponent, ValidationContext } from '../../validation/validation-context.js';
+import type { ModuleConfig } from '../../config/module.js';
+import type { MessageLocation } from '../../validation/index.js';
+import { ValidationMessage } from '../../validation/index.js';
+import type { ModelComponent, ValidationContext } from '../../validation/validation-context.js';
 import {
     ALLOWD_MODULE_IDENTIFIER_CHARACTERS_DESCRIPTION,
     MODULE_IDENTIFIER_PATTERN,

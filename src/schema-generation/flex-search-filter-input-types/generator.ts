@@ -1,17 +1,14 @@
-import {
-    GraphQLEnumType,
-    GraphQLString,
-    resolveReadonlyArrayThunk,
-    ThunkReadonlyArray,
-} from 'graphql';
+import type { GraphQLEnumType, ThunkReadonlyArray } from 'graphql';
+import { GraphQLString, resolveReadonlyArrayThunk } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import { EnumType, Field, ObjectType, ScalarType, Type } from '../../model/index.js';
+import type { Field, ObjectType, Type } from '../../model/index.js';
+import { EnumType, ScalarType } from '../../model/index.js';
 import { FlexSearchComplexOperatorQueryNode } from '../../query-tree/flex-search.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperator,
     BinaryOperatorWithAnalyzer,
     LiteralQueryNode,
-    QueryNode,
     RuntimeErrorQueryNode,
 } from '../../query-tree/index.js';
 import {
@@ -30,7 +27,7 @@ import {
 import { getFlexSearchFilterTypeName } from '../../schema/names.js';
 import { GraphQLI18nString } from '../../schema/scalars/string-map.js';
 
-import { EnumTypeGenerator } from '../enum-type-generator.js';
+import type { EnumTypeGenerator } from '../enum-type-generator.js';
 import {
     ENUM_FILTER_FIELDS,
     FILTER_OPERATORS,
@@ -49,11 +46,11 @@ import {
     STRING_FLEX_SEARCH_FILTER_OPERATORS,
     STRING_TEXT_ANALYZER_FILTER_FIELDS,
 } from './constants.js';
+import type { FlexSearchFilterField } from './filter-fields.js';
 import {
     FlexSearchAndFilterField,
     FlexSearchEmptyListFilterField,
     FlexSearchEntityExtensionFilterField,
-    FlexSearchFilterField,
     FlexSearchI18nStringLocalizedFilterField,
     FlexSearchNestedObjectFilterField,
     FlexSearchOrFilterField,
