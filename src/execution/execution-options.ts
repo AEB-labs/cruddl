@@ -1,5 +1,4 @@
 import type { OperationDefinitionNode } from 'graphql';
-import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext } from '../authorization/auth-basics.js';
 
 export type MutationMode = 'normal' | 'disallowed' | 'rollback';
@@ -226,6 +225,6 @@ export class UUIDGenerator implements IDGenerator {
      * Generates a random UUID
      */
     generateID(): string {
-        return uuidv4();
+        return crypto.randomUUID();
     }
 }
