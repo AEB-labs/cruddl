@@ -124,5 +124,9 @@
   },
   "lint-staged": {
     "*": "prettier --ignore-unknown --write"
-  }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
 }
