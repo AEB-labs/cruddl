@@ -5,7 +5,7 @@ import { graphql, OperationTypeNode, parse } from 'graphql';
 import { unlinkSync } from 'node:fs';
 import { resolve } from 'path';
 import stripJsonComments from 'strip-json-comments';
-import { ConsoleLoggerProvider } from '../../src/config/console-logger';
+import { ConsoleLoggerProvider } from '../../src/config/console-logger.js';
 import type { RequestProfile } from '../../src/config/interfaces.js';
 import { ArangoDBAdapter } from '../../src/database/arangodb/index.js';
 import type { DatabaseAdapter } from '../../src/database/database-adapter.js';
@@ -243,11 +243,15 @@ export class RegressionSuite {
         return readdirSync(resolve(this.path, 'tests'));
     }
 
+    shouldIgnoreSuite() {
+        return this.shouldIgnore(resolve(this.path, 'meta.json'));
+    }
+
     shouldIgnoreTest(name: string) {
-        let metaPath = resolve(this.testsPath, name, 'meta.json');
-        if (!existsSync(metaPath)) {
-            metaPath = resolve(this.path, 'meta.json');
-        }
+        return this.shouldIgnore(resolve(this.testsPath, name, 'meta.json'));
+    }
+
+    private shouldIgnore(metaPath: string) {
         const meta: MetaOptions | undefined = existsSync(metaPath)
             ? JSON.parse(stripJsonComments(readFileSync(metaPath, 'utf-8')))
             : undefined;
