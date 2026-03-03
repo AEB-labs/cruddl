@@ -1,6 +1,6 @@
+import { expect } from 'chai';
 import { AnyValue } from '../../src/utils/utils';
 import { visitObject, VisitResult } from '../../src/utils/visitor';
-import { expect } from 'chai';
 
 describe('visitObject', () => {
     const a = { inA: true };

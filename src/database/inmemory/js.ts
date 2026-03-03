@@ -1,5 +1,5 @@
-import { cyan, magenta } from '../../utils/colors';
 import { QueryResultValidator } from '../../query-tree';
+import { cyan, magenta } from '../../utils/colors';
 import { arrayToObject, flatMap } from '../../utils/utils';
 
 function stringify(val: any) {

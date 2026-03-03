@@ -1,5 +1,5 @@
-import { ProjectSource } from '../../../src/project/source';
 import { expect } from 'chai';
+import { ProjectSource } from '../../../src/project/source';
 import { getMessages } from './source-validation-helper';
 
 describe('check-json-syntax validation', () => {

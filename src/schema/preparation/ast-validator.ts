@@ -1,4 +1,5 @@
 import { DocumentNode } from 'graphql';
+import { ParsedProjectSource } from '../../config/parsed-project';
 import { Model, ValidationMessage, ValidationResult } from '../../model';
 import { ProjectSource } from '../../project/source';
 import { flatMap } from '../../utils/utils';
@@ -8,9 +9,8 @@ import { NoListsOfListsValidator } from './ast-validation-modules/no-lists-of-li
 import { NoUnusedNonRootObjectTypesValidator } from './ast-validation-modules/no-unused-non-root-object-types-validator';
 import { RolesOnNonRootEntityTypesValidator } from './ast-validation-modules/roles-on-non-root-entity-types';
 import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules';
-import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema';
-import { ParsedProjectSource } from '../../config/parsed-project';
 import { PermissionProfileValidator } from './source-validation-modules/permission-profile-validator';
+import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema';
 
 const sourceValidators: ReadonlyArray<SourceValidator> = [];
 

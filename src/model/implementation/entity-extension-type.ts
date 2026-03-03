@@ -1,9 +1,8 @@
-import { flatMap } from '../../utils/utils';
+import { EntityExtensionTypeConfig, TypeKind } from '../config';
 import { ValidationContext, ValidationMessage } from '../validation';
 import { Field } from './field';
-import { ObjectTypeBase } from './object-type-base';
-import { EntityExtensionTypeConfig, TypeKind } from '../config';
 import { Model } from './model';
+import { ObjectTypeBase } from './object-type-base';
 
 export class EntityExtensionType extends ObjectTypeBase {
     constructor(input: EntityExtensionTypeConfig, model: Model) {

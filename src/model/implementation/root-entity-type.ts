@@ -7,7 +7,6 @@ import {
     FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
     FLEX_SEARCH_INDEXED_DIRECTIVE,
     ID_FIELD,
-    MODULES_DIRECTIVE,
     SCALAR_INT,
     SCALAR_STRING,
 } from '../../schema/constants';
@@ -22,12 +21,13 @@ import {
     RootEntityTypeConfig,
     TypeKind,
 } from '../config';
-import { QuickFix, ValidationContext, ValidationMessage } from '../validation';
+import { ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
 import { FieldPath } from './field-path';
 import { FlexSearchPrimarySortClause } from './flex-search';
 import { Index } from './indices';
 import { Model } from './model';
+import { EffectiveModuleSpecification } from './modules/effective-module-specification';
 import { ObjectTypeBase } from './object-type-base';
 import { OrderDirection } from './order';
 import { PermissionProfile } from './permission-profile';
@@ -35,8 +35,6 @@ import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { ScalarType } from './scalar-type';
 import { TimeToLiveType } from './time-to-live';
-import { EffectiveModuleSpecification } from './modules/effective-module-specification';
-import { WarningCode } from '../validation/suppress/message-codes';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};

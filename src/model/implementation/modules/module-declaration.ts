@@ -2,8 +2,8 @@ import { ModuleConfig } from '../../config/module';
 import { MessageLocation, ValidationMessage } from '../../validation';
 import { ModelComponent, ValidationContext } from '../../validation/validation-context';
 import {
-    MODULE_IDENTIFIER_PATTERN,
     ALLOWD_MODULE_IDENTIFIER_CHARACTERS_DESCRIPTION,
+    MODULE_IDENTIFIER_PATTERN,
 } from './patterns';
 
 /**

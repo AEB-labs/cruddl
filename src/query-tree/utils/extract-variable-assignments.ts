@@ -5,8 +5,6 @@ import {
     FirstOfListQueryNode,
     HoistableQueryNode,
     ObjectQueryNode,
-    OrderClause,
-    OrderSpecification,
     PropertySpecification,
     QueryNode,
     RootEntityIDQueryNode,

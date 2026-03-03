@@ -1,5 +1,4 @@
-import { DocumentNode, GraphQLSchema } from 'graphql';
-import { ExecutionResult } from 'graphql';
+import { DocumentNode, ExecutionResult, GraphQLSchema } from 'graphql';
 import { graphql, print } from 'graphql/index';
 
 export interface ExecuteGraphqlOptions {

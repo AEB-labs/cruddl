@@ -1,5 +1,5 @@
-import { benchmark, BenchmarkFactories, time } from './async-bench';
 import { bold, green, grey, red, yellow } from '../../../src/utils/colors';
+import { benchmark, BenchmarkFactories, time } from './async-bench';
 
 const SHOW_CYCLE_INFO = false;
 

@@ -1,7 +1,7 @@
+import { expect } from 'chai';
 import { Severity, ValidationContext, ValidationMessage } from '../../../src/model/validation';
 import { ProjectSource } from '../../../src/project/source';
 import { SidecarSchemaValidator } from '../../../src/schema/preparation/source-validation-modules/sidecar-schema';
-import { expect } from 'chai';
 import { parseProjectSource } from '../../../src/schema/schema-builder';
 
 const validValue = `{

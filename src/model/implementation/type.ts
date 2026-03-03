@@ -1,12 +1,12 @@
 import { GraphQLString } from 'graphql';
 import { TypeConfig, TypeKind } from '../config';
-import { RootEntityType } from './root-entity-type';
-import { ScalarType } from './scalar-type';
 import { ChildEntityType } from './child-entity-type';
 import { EntityExtensionType } from './entity-extension-type';
-import { ValueObjectType } from './value-object-type';
 import { EnumType } from './enum-type';
 import { Model } from './model';
+import { RootEntityType } from './root-entity-type';
+import { ScalarType } from './scalar-type';
+import { ValueObjectType } from './value-object-type';
 
 export type ObjectType = RootEntityType | ChildEntityType | EntityExtensionType | ValueObjectType;
 export type Type = ObjectType | ScalarType | EnumType;

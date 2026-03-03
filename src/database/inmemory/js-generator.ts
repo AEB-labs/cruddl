@@ -1,6 +1,7 @@
 import { compact } from 'lodash';
-import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../model/implementation/flex-search';
+import { Clock, DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
 import { AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
+import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../model/implementation/flex-search';
 import {
     AddEdgesQueryNode,
     AggregationQueryNode,
@@ -72,7 +73,6 @@ import { Constructor, decapitalize } from '../../utils/utils';
 import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
-import { Clock, DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
 
 const ID_FIELD_NAME = 'id';
 

@@ -1,6 +1,5 @@
 import { RequestHandler } from 'express';
 import { execute, formatError, GraphQLError, parse, validate } from 'graphql';
-import { AuthContext } from '../../src/authorization/auth-basics';
 import { DatabaseAdapter } from '../../src/database/database-adapter';
 import { Project } from '../../src/project/project';
 

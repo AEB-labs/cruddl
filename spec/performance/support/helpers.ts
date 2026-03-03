@@ -6,8 +6,8 @@ import { ArangoDBAdapter } from '../../../src/database/arangodb';
 import { Project } from '../../../src/project/project';
 import { loadProjectFromDir } from '../../../src/project/project-from-fs';
 import { range } from '../../../src/utils/utils';
-import { createTempDatabase } from '../../regression/initialization';
 import { WarnAndErrorLoggerProvider } from '../../helpers/warn-and-error-logger-provider';
+import { createTempDatabase } from '../../regression/initialization';
 
 // arangojs typings for this are completely broken
 export const aql: (template: TemplateStringsArray, ...args: ReadonlyArray<any>) => any =

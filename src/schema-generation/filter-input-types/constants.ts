@@ -1,4 +1,4 @@
-import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
+import { GraphQLBoolean, GraphQLID, GraphQLString } from 'graphql';
 import { BinaryOperator, QueryNode } from '../../query-tree';
 import {
     INPUT_FIELD_CONTAINS,
@@ -24,8 +24,8 @@ import {
 import { GraphQLDateTime } from '../../schema/scalars/date-time';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
-import { binaryNotOp, binaryOp } from '../utils/input-types';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
+import { binaryNotOp, binaryOp } from '../utils/input-types';
 
 export const FILTER_OPERATORS: {
     [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode;

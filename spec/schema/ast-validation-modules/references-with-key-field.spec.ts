@@ -1,10 +1,10 @@
+import { expect } from 'chai';
 import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
     validate,
 } from './helpers';
-import { expect } from 'chai';
 
 describe('references with key field', () => {
     it('accepts proper configuration', () => {

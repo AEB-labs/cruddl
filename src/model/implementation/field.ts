@@ -28,6 +28,7 @@ import { GraphQLLocalDate } from '../../schema/scalars/local-date';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
 import { GraphQLI18nString } from '../../schema/scalars/string-map';
+import { describeModuleSpecification } from '../compatibility-check/describe-module-specification';
 import {
     AggregationOperator,
     CalcMutationsOperator,
@@ -55,7 +56,6 @@ import { Relation, RelationSide } from './relation';
 import { RolesSpecifier } from './roles-specifier';
 import { InvalidType, ObjectType, Type } from './type';
 import { ValueObjectType } from './value-object-type';
-import { describeModuleSpecification } from '../compatibility-check/describe-module-specification';
 
 export interface SystemFieldConfig extends FieldConfig {
     readonly isSystemField?: boolean;

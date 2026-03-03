@@ -19,10 +19,10 @@ import { GraphQLLocalTime } from '../../schema/scalars/local-time';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
 import { GraphQLI18nString, GraphQLStringMap } from '../../schema/scalars/string-map';
 import { TypeKind } from '../config';
+import { ModuleSpecificationClauseConfig } from '../config/module-specification';
 import { Model } from './model';
 import { ScalarType } from './scalar-type';
 import { Type } from './type';
-import { ModuleSpecificationClauseConfig } from '../config/module-specification';
 
 const graphQLTypes: ReadonlyArray<GraphQLScalarType> = [
     GraphQLID,
