@@ -1,5 +1,4 @@
 import type { Database } from 'arangojs';
-import { v4 as uuid } from 'uuid';
 import { globalContext } from '../../config/global.js';
 import type { ProjectOptions } from '../../config/interfaces.js';
 import type { Logger } from '../../config/logging.js';
@@ -587,7 +586,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         options: ExecutionOptions,
         aqlQuery: AQLCompoundQuery,
     ): Promise<TransactionResult> {
-        const transactionID = uuid();
+        const transactionID = crypto.randomUUID();
         const args: ArangoExecutionOptions = {
             queries: executableQueries,
             options: {
