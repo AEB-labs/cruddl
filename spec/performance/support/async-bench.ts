@@ -1,3 +1,5 @@
+import stats from 'stats-lite';
+
 // asynchronous benchmarks
 
 const TARGET_RELATIVE_MARGIN_OF_ERROR = 0.02;
@@ -147,8 +149,6 @@ export class BenchmarkResult {
 export interface BenchmarkExecutionCallbacks {
     readonly onCycleDone?: (cycleDetails: BenchmarkCycleDetails) => void;
 }
-
-const stats = require('stats-lite');
 
 export async function benchmark(
     config: BenchmarkConfig,
@@ -366,9 +366,9 @@ const tTable: { [key: string]: number } = {
 };
 
 function getTimings(times: ReadonlyArray<number>): Timings {
-    const mean: number = stats.mean(times);
+    const mean: number = stats.mean([...times]);
     // Compute the sample standard deviation (estimate of the population standard deviation).
-    const sd = stats.stdev(times);
+    const sd = stats.stdev([...times]);
     // Compute the standard error of the mean (a.k.a. the standard deviation of the sampling distribution of the sample mean).
     const sem = sd / Math.sqrt(times.length);
     // Compute the degrees of freedom.
