@@ -1,6 +1,7 @@
 import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import { Namespace, RootEntityType } from '../model/index.js';
+import type { Namespace, RootEntityType } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     AffectedFieldInfoQueryNode,
     BinaryOperationQueryNode,
@@ -18,7 +19,6 @@ import {
     NullQueryNode,
     ObjectQueryNode,
     PreExecQueryParms,
-    QueryNode,
     RootEntityIDQueryNode,
     TransformListQueryNode,
     UnknownValueQueryNode,
@@ -43,24 +43,30 @@ import {
     getUpdateEntitiesFieldName,
     getUpdateEntityFieldName,
 } from '../schema/names.js';
-import { PlainObject, decapitalize, isDefined } from '../utils/utils.js';
-import { BillingTypeGenerator } from './billing-type-generator.js';
-import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types/index.js';
+import type { PlainObject } from '../utils/utils.js';
+import { decapitalize, isDefined } from '../utils/utils.js';
+import type { BillingTypeGenerator } from './billing-type-generator.js';
+import type {
+    CreateInputTypeGenerator,
+    CreateRootEntityInputType,
+} from './create-input-types/index.js';
 import { generateDeleteAllQueryNode } from './delete-all-generator.js';
 import { createGraphQLError } from './graphql-errors.js';
-import { ListAugmentation } from './list-augmentation.js';
+import type { ListAugmentation } from './list-augmentation.js';
 import { LimitTypeCheckType } from './order-by-and-pagination-augmentation.js';
-import { OutputTypeGenerator } from './output-type-generator.js';
-import {
+import type { OutputTypeGenerator } from './output-type-generator.js';
+import type {
     FieldContext,
     QueryNodeField,
+    QueryNodeObjectType,
+} from './query-node-object-type/index.js';
+import {
     QueryNodeListType,
     QueryNodeNonNullType,
-    QueryNodeObjectType,
     makeNonNullableList,
 } from './query-node-object-type/index.js';
-import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator.js';
-import {
+import type { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator.js';
+import type {
     UpdateInputFieldContext,
     UpdateInputTypeGenerator,
     UpdateRootEntityInputType,

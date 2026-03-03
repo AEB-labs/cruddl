@@ -1,10 +1,17 @@
-import {
+import type {
     ArgumentNode,
     DirectiveNode,
     EnumTypeDefinitionNode,
     EnumValueDefinitionNode,
     EnumValueNode,
     FieldDefinitionNode,
+    ObjectTypeDefinitionNode,
+    ObjectValueNode,
+    StringValueNode,
+    TypeDefinitionNode,
+    ValueNode,
+} from 'graphql';
+import {
     GraphQLBoolean,
     GraphQLEnumType,
     GraphQLInputObjectType,
@@ -13,20 +20,15 @@ import {
     GraphQLNonNull,
     GraphQLString,
     Kind,
-    ObjectTypeDefinitionNode,
-    ObjectValueNode,
-    StringValueNode,
-    TypeDefinitionNode,
     valueFromAST,
-    ValueNode,
 } from 'graphql';
-import { ModelOptions } from '../config/interfaces.js';
-import {
+import type { ModelOptions } from '../config/interfaces.js';
+import type {
     ParsedGraphQLProjectSource,
     ParsedObjectProjectSource,
     ParsedProject,
-    ParsedProjectSourceBaseKind,
 } from '../config/parsed-project.js';
+import { ParsedProjectSourceBaseKind } from '../config/parsed-project.js';
 import { getValueFromAST } from '../graphql/value-from-ast.js';
 import {
     ACCESS_FIELD_DIRECTIVE,
@@ -87,8 +89,8 @@ import {
     hasDirectiveWithName,
 } from '../schema/schema-utils.js';
 import { isDefined, mapValues } from '../utils/utils.js';
-import { BillingConfig } from './config/billing.js';
-import {
+import type { BillingConfig } from './config/billing.js';
+import type {
     AggregationOperator,
     CalcMutationsOperator,
     CollectFieldConfig,
@@ -111,13 +113,13 @@ import {
     TimeToLiveConfig,
     TypeConfig,
     TypeConfigBase,
-    TypeKind,
 } from './config/index.js';
-import {
+import { TypeKind } from './config/index.js';
+import type {
     FieldModuleSpecificationConfig,
     TypeModuleSpecificationConfig,
 } from './config/module-specification.js';
-import { ModuleConfig } from './config/module.js';
+import type { ModuleConfig } from './config/module.js';
 import { Model } from './implementation/index.js';
 import { OrderDirection } from './implementation/order.js';
 import { parseBillingConfigs } from './parse-billing.js';

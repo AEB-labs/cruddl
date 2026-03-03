@@ -1,13 +1,14 @@
 import { GraphQLID, GraphQLNonNull, GraphQLString } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import { FieldRequest } from '../graphql/query-distiller.js';
+import type { FieldRequest } from '../graphql/query-distiller.js';
 import { isListTypeIgnoringNonNull } from '../graphql/schema-utils.js';
-import { Field, ObjectType, Type, TypeKind } from '../model/index.js';
+import type { Field, ObjectType, Type } from '../model/index.js';
+import { TypeKind } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     NullQueryNode,
     ObjectQueryNode,
     PropertySpecification,
-    QueryNode,
     RevisionQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
@@ -20,24 +21,23 @@ import {
 } from '../schema/constants.js';
 import { getMetaFieldName } from '../schema/names.js';
 import { isDefined } from '../utils/utils.js';
-import { EnumTypeGenerator } from './enum-type-generator.js';
+import type { EnumTypeGenerator } from './enum-type-generator.js';
 import { createFieldNode } from './field-nodes.js';
-import { FilterAugmentation } from './filter-augmentation.js';
-import { ListAugmentation } from './list-augmentation.js';
-import { MetaTypeGenerator } from './meta-type-generator.js';
-import {
+import type { FilterAugmentation } from './filter-augmentation.js';
+import type { ListAugmentation } from './list-augmentation.js';
+import type { MetaTypeGenerator } from './meta-type-generator.js';
+import type {
     OrderByEnumGenerator,
     OrderByEnumType,
     OrderByEnumValue,
 } from './order-by-enum-generator.js';
-import {
+import type {
     FieldContext,
     QueryNodeField,
-    QueryNodeListType,
-    QueryNodeNonNullType,
     QueryNodeOutputType,
 } from './query-node-object-type/index.js';
-import { RootFieldHelper } from './root-field-helper.js';
+import { QueryNodeListType, QueryNodeNonNullType } from './query-node-object-type/index.js';
+import type { RootFieldHelper } from './root-field-helper.js';
 import {
     getSortClausesForPrimarySort,
     orderArgMatchesPrimarySort,

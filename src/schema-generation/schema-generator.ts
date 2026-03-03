@@ -1,11 +1,9 @@
 import { GraphQLSchema } from 'graphql';
 import { OperationResolver } from '../execution/operation-resolver.js';
-import {
-    addOperationBasedResolvers,
-    AddOperationBasedResolversParams,
-} from '../graphql/operation-based-resolvers.js';
-import { Model } from '../model/index.js';
-import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
+import type { AddOperationBasedResolversParams } from '../graphql/operation-based-resolvers.js';
+import { addOperationBasedResolvers } from '../graphql/operation-based-resolvers.js';
+import type { Model } from '../model/index.js';
+import type { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
 import { QueryNodeObjectTypeConverter } from './query-node-object-type/index.js';
 import { RootTypesGenerator } from './root-types-generator.js';
 

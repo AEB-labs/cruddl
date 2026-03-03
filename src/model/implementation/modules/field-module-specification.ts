@@ -1,8 +1,8 @@
 import { MODULES_ALL_ARG, MODULES_IN_ARG } from '../../../schema/constants.js';
-import { FieldModuleSpecificationConfig } from '../../config/module-specification.js';
+import type { FieldModuleSpecificationConfig } from '../../config/module-specification.js';
 import { ValidationMessage } from '../../validation/index.js';
-import { ValidationContext } from '../../validation/validation-context.js';
-import { Model } from '../model.js';
+import type { ValidationContext } from '../../validation/validation-context.js';
+import type { Model } from '../model.js';
 import { BaseModuleSpecification } from './base-module-specification.js';
 
 export class FieldModuleSpecification extends BaseModuleSpecification {

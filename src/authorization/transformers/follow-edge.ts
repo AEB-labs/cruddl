@@ -1,12 +1,12 @@
+import type { FollowEdgeQueryNode, QueryNode } from '../../query-tree/index.js';
 import {
-    FollowEdgeQueryNode,
     PERMISSION_DENIED_ERROR,
-    QueryNode,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     VariableQueryNode,
 } from '../../query-tree/index.js';
-import { AccessOperation, AuthContext } from '../auth-basics.js';
+import type { AuthContext } from '../auth-basics.js';
+import { AccessOperation } from '../auth-basics.js';
 import {
     getPermissionDescriptorOfField,
     getPermissionDescriptorOfRootEntityType,

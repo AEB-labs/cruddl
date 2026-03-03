@@ -1,9 +1,6 @@
 import { expect } from 'chai';
-import {
-    Severity,
-    ValidationContext,
-    ValidationMessage,
-} from '../../../src/model/validation/index.js';
+import type { ValidationMessage } from '../../../src/model/validation/index.js';
+import { Severity, ValidationContext } from '../../../src/model/validation/index.js';
 import { ProjectSource } from '../../../src/project/source.js';
 import { SidecarSchemaValidator } from '../../../src/schema/preparation/source-validation-modules/sidecar-schema.js';
 import { parseProjectSource } from '../../../src/schema/schema-builder.js';

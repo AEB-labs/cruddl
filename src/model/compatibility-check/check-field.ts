@@ -1,5 +1,5 @@
-import { Field } from '../implementation/index.js';
-import { ValidationContext } from '../validation/index.js';
+import type { Field } from '../implementation/index.js';
+import type { ValidationContext } from '../validation/index.js';
 import { checkCalcMutations } from './check-calc-mutations.js';
 import { checkCollectField } from './check-collect-field.js';
 import { checkDefaultValue } from './check-default-value.js';

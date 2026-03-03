@@ -1,14 +1,10 @@
 import { expect } from 'chai';
-import { DocumentNode, parse, Source } from 'graphql';
+import type { DocumentNode } from 'graphql';
+import { parse, Source } from 'graphql';
 import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project.js';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';
-import {
-    createModel,
-    PermissionProfileConfigMap,
-    TimeToLiveConfig,
-    ValidationContext,
-    ValidationResult,
-} from '../../../src/model/index.js';
+import type { PermissionProfileConfigMap, TimeToLiveConfig } from '../../../src/model/index.js';
+import { createModel, ValidationContext, ValidationResult } from '../../../src/model/index.js';
 import { ProjectSource } from '../../../src/project/source.js';
 import {
     validateParsedProjectSource,

@@ -1,4 +1,5 @@
-import { Severity, ValidationMessage } from './message.js';
+import type { ValidationMessage } from './message.js';
+import { Severity } from './message.js';
 
 export class ValidationResult {
     readonly messages: ReadonlyArray<ValidationMessage>;
