@@ -87,7 +87,6 @@
     "@types/node": "^20.14.8",
     "@types/pluralize": "0.0.29",
     "@types/stats-lite": "^2.2.2",
-    "@types/uuid": "^8.3.4",
     "@vitest/coverage-v8": "^4.0.18",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
@@ -119,7 +118,6 @@
     "pluralize": "^8.0.0",
     "strip-json-comments": "^3.0.1",
     "tslib": "^2.4.0",
-    "uuid": "^8.3.2",
     "yaml": "^2.8.1",
     "yaml-ast-parser": "0.0.43"
   },
