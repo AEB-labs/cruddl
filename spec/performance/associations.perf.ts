@@ -1,9 +1,9 @@
+import { aql } from 'arangojs';
 import { takeRandomSample } from '../../src/utils/utils';
 import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
 import {
     addManyPapersWithAQL,
     addManyUsersWithAQL,
-    aql,
     createLargePaper,
     createUser,
     getRandomPaperIDsWithAQL,
