@@ -1,4 +1,4 @@
-import { QueryNode } from '../base.js';
+import type { QueryNode } from '../base.js';
 import { ConstBoolQueryNode } from '../literals.js';
 import {
     BinaryOperationQueryNode,

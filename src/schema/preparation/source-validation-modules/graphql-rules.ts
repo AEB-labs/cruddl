@@ -1,27 +1,22 @@
+import type { DocumentNode, GraphQLError, Location, ValidationRule } from 'graphql';
 import {
     buildASTSchema,
-    DocumentNode,
-    GraphQLError,
     Kind,
     KnownArgumentNamesRule,
     KnownDirectivesRule,
-    Location,
     ProvidedRequiredArgumentsRule,
     UniqueArgumentNamesRule,
     UniqueDirectivesPerLocationRule,
     validate,
-    ValidationRule,
     ValuesOfCorrectTypeRule,
     VariablesInAllowedPositionRule,
 } from 'graphql';
 import { gql } from 'graphql-tag';
-import {
-    ParsedProjectSource,
-    ParsedProjectSourceBaseKind,
-} from '../../../config/parsed-project.js';
+import type { ParsedProjectSource } from '../../../config/parsed-project.js';
+import { ParsedProjectSourceBaseKind } from '../../../config/parsed-project.js';
 import { ValidationMessage } from '../../../model/index.js';
 import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base.js';
-import { ParsedSourceValidator } from '../ast-validator.js';
+import type { ParsedSourceValidator } from '../ast-validator.js';
 
 // Only include rules that are relevant for schema files
 // there is a non-public export specifiedSDLRules, but we only include those relevant for us. Some rules apply to

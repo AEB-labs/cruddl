@@ -1,4 +1,4 @@
-import {
+import type {
     GraphQLEnumType,
     GraphQLFieldConfigArgumentMap,
     GraphQLList,
@@ -8,9 +8,9 @@ import {
     GraphQLScalarType,
     ThunkReadonlyArray,
 } from 'graphql';
-import { ExecutionOptions } from '../../execution/execution-options.js';
-import { QueryNode } from '../../query-tree/index.js';
-import { FieldContext } from './context.js';
+import type { ExecutionOptions } from '../../execution/execution-options.js';
+import type { QueryNode } from '../../query-tree/index.js';
+import type { FieldContext } from './context.js';
 
 export interface QueryNodeResolveInfo extends FieldContext {}
 

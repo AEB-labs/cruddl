@@ -1,4 +1,4 @@
-import {
+import type {
     DirectiveNode,
     DocumentNode,
     EnumTypeDefinitionNode,
@@ -6,7 +6,6 @@ import {
     FieldDefinitionNode,
     InputObjectTypeDefinitionNode,
     InputValueDefinitionNode,
-    Kind,
     NamedTypeNode,
     NameNode,
     ObjectTypeDefinitionNode,
@@ -14,8 +13,9 @@ import {
     TypeDefinitionNode,
     TypeNode,
 } from 'graphql';
+import { Kind } from 'graphql';
 import { SourcePosition } from '../model/validation/index.js';
-import { ProjectSource } from '../project/source.js';
+import type { ProjectSource } from '../project/source.js';
 import {
     CHILD_ENTITY_DIRECTIVE,
     ENTITY_EXTENSION_DIRECTIVE,

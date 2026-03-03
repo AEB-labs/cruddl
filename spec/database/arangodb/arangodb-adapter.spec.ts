@@ -1,4 +1,4 @@
-import { ArangoSearchViewProperties } from 'arangojs/view.js';
+import type { ArangoSearchViewProperties } from 'arangojs/view.js';
 import { expect } from 'chai';
 import { gql } from 'graphql-tag';
 import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';

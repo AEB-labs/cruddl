@@ -1,13 +1,11 @@
-import {
-    defaultFieldResolver,
+import type {
     FragmentDefinitionNode,
     GraphQLFieldConfigMap,
     GraphQLFieldResolver,
-    GraphQLObjectType,
     GraphQLResolveInfo,
-    GraphQLSchema,
     OperationDefinitionNode,
 } from 'graphql';
+import { defaultFieldResolver, GraphQLObjectType, GraphQLSchema } from 'graphql';
 import { isDefined } from '../utils/utils.js';
 
 export interface OperationParams {

@@ -1,7 +1,8 @@
 import { expect } from 'chai';
-import { DocumentNode } from 'graphql';
+import type { DocumentNode } from 'graphql';
 import { gql } from 'graphql-tag';
-import { Model, RootEntityType, TypeKind } from '../../../core-exports.js';
+import type { RootEntityType } from '../../../core-exports.js';
+import { Model, TypeKind } from '../../../core-exports.js';
 import { FlexSearchLanguage } from '../../../src/model/index.js';
 import {
     FLEX_SEARCH_CASE_SENSITIVE_ARGUMENT,

@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import type { GraphQLResolveInfo } from 'graphql';
 import {
     buildASTSchema,
     graphql,
@@ -7,17 +8,13 @@ import {
     GraphQLInt,
     GraphQLList,
     GraphQLObjectType,
-    GraphQLResolveInfo,
     GraphQLSchema,
     GraphQLString,
     parse,
 } from 'graphql';
 import { gql } from 'graphql-tag';
-import {
-    DistilledOperation,
-    distillQuery,
-    FieldRequest,
-} from '../../src/graphql/query-distiller.js';
+import type { DistilledOperation, FieldRequest } from '../../src/graphql/query-distiller.js';
+import { distillQuery } from '../../src/graphql/query-distiller.js';
 
 describe('query-distiller', () => {
     const userType = new GraphQLObjectType({

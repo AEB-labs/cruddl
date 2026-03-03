@@ -1,4 +1,4 @@
-import { ValidationResult } from '../model/validation/index.js';
+import type { ValidationResult } from '../model/validation/index.js';
 
 /**
  * Thrown by a project with validation errors when certain methods are invoked (not thrown by validate())

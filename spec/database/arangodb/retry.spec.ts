@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { gql } from 'graphql-tag';
 import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';
+import type { QueryNode } from '../../../src/query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -8,7 +9,6 @@ import {
     EntitiesQueryNode,
     FieldQueryNode,
     LiteralQueryNode,
-    QueryNode,
     SetFieldQueryNode,
     TransformListQueryNode,
     UpdateEntitiesQueryNode,

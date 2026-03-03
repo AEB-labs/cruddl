@@ -1,11 +1,12 @@
-import { TypeConfig, TypeKind } from '../config/index.js';
+import type { TypeConfig } from '../config/index.js';
+import { TypeKind } from '../config/index.js';
 import { ChildEntityType } from './child-entity-type.js';
 import { EntityExtensionType } from './entity-extension-type.js';
 import { EnumType } from './enum-type.js';
 import { InvalidType } from './invalid-type.js';
-import { Model } from './model.js';
+import type { Model } from './model.js';
 import { RootEntityType } from './root-entity-type.js';
-import { ScalarType } from './scalar-type.js';
+import type { ScalarType } from './scalar-type.js';
 import { ValueObjectType } from './value-object-type.js';
 
 export type ObjectType = RootEntityType | ChildEntityType | EntityExtensionType | ValueObjectType;

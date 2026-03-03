@@ -1,30 +1,30 @@
-export { AuthContext } from './src/authorization/auth-basics.js';
-export {
+export type { AuthContext } from './src/authorization/auth-basics.js';
+export type {
     ModelOptions,
     ProjectOptions,
     RequestContext,
     RequestProfile,
 } from './src/config/interfaces.js';
-export { Logger, LoggerProvider } from './src/config/logging.js';
-export { DatabaseAdapter } from './src/database/database-adapter.js';
-export {
+export type { Logger, LoggerProvider } from './src/config/logging.js';
+export type { DatabaseAdapter } from './src/database/database-adapter.js';
+export type {
     Clock,
     ExecutionOptions,
     ExecutionOptionsCallbackArgs,
     IDGenerator,
     MutationMode,
 } from './src/execution/execution-options.js';
-export { ExecutionResult } from './src/execution/execution-result.js';
+export type { ExecutionResult } from './src/execution/execution-result.js';
 export {
     ConflictRetriesExhaustedError,
     TransactionCancelledError,
     TransactionTimeoutError,
 } from './src/execution/runtime-errors.js';
-export { SchemaExecutionArgs, SchemaExecutor } from './src/execution/schema-executor.js';
+export { SchemaExecutor, type SchemaExecutionArgs } from './src/execution/schema-executor.js';
 export { TransactionError } from './src/execution/transaction-error.js';
 export {
-    FieldResolverParameters,
     NoOperationIdentifierError,
+    type FieldResolverParameters,
 } from './src/graphql/operation-based-resolvers.js';
 export {
     applyChangeSet,
@@ -43,6 +43,11 @@ export {
     ValidationResult,
 } from './src/model/index.js';
 export { InvalidProjectError } from './src/project/invalid-project-error.js';
-export { Project, ProjectConfig } from './src/project/project.js';
-export { ProjectSource, SourceConfig, SourceLike, SourceType } from './src/project/source.js';
+export { Project, type ProjectConfig } from './src/project/project.js';
+export {
+    ProjectSource,
+    SourceType,
+    type SourceConfig,
+    type SourceLike,
+} from './src/project/source.js';
 export { CORE_SCALARS, DIRECTIVES } from './src/schema/graphql-base.js';
