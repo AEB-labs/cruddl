@@ -1,11 +1,9 @@
+import gql from 'graphql-tag';
 import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
-    validate,
 } from './helpers';
-import gql from 'graphql-tag';
-import { expect } from 'chai';
 
 describe('timeToLive config', () => {
     it('accepts simple case', () => {

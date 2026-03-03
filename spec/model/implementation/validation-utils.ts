@@ -1,11 +1,11 @@
 import { expect } from 'chai';
+import { applyChangeSet } from '../../../core-exports';
 import { Severity, ValidationResult } from '../../../src/model';
 import {
     ModelComponent,
     ValidationContext,
 } from '../../../src/model/validation/validation-context';
 import { Project } from '../../../src/project/project';
-import { applyChangeSet } from '../../../core-exports';
 
 type Validatable = ModelComponent | ValidationResult | Project;
 

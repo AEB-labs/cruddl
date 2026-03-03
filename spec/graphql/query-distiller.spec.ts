@@ -1,7 +1,7 @@
+import { expect } from 'chai';
 import {
     buildASTSchema,
     graphql,
-    GraphQLBoolean,
     GraphQLID,
     GraphQLInputObjectType,
     GraphQLInt,
@@ -12,9 +12,8 @@ import {
     GraphQLString,
     parse,
 } from 'graphql';
-import { DistilledOperation, distillQuery, FieldRequest } from '../../src/graphql/query-distiller';
 import gql from 'graphql-tag';
-import { expect } from 'chai';
+import { DistilledOperation, distillQuery, FieldRequest } from '../../src/graphql/query-distiller';
 
 describe('query-distiller', () => {
     const userType = new GraphQLObjectType({

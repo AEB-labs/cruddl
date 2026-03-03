@@ -12,10 +12,10 @@ import { Model, TimeToLiveType, ValidationResult } from '../model';
 import { checkModel } from '../model/compatibility-check/check-model';
 import { ListQueryNode, QueryNode } from '../query-tree';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
+import { isReadonlyArray } from '../utils/utils';
 import { ModuleSelectionOptions, selectModulesInProject } from './select-modules-in-sources';
 import { ProjectSource, SourceLike, SourceType } from './source';
 import { TTLInfo, getQueryNodeForTTLType, getTTLInfoQueryNode } from './time-to-live';
-import { isReadonlyArray } from '../utils/utils';
 
 export { ProjectOptions };
 

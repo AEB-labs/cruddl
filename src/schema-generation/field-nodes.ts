@@ -7,7 +7,6 @@ import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConditionalQueryNode,
-    CountQueryNode,
     EntitiesQueryNode,
     FieldQueryNode,
     FirstOfListQueryNode,
@@ -24,9 +23,9 @@ import {
 } from '../query-tree';
 import { ID_FIELD } from '../schema/constants';
 import { GraphQLOffsetDateTime } from '../schema/scalars/offset-date-time';
+import { decapitalize } from '../utils/utils';
 import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
 import { and } from './utils/input-types';
-import { decapitalize } from '../utils/utils';
 
 export interface CreateFieldNodeOptions {
     readonly skipNullFallbackForEntityExtensions?: boolean;

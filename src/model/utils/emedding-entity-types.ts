@@ -1,4 +1,4 @@
-import { ChildEntityType, Model, Type } from '../implementation';
+import { ChildEntityType, Type } from '../implementation';
 
 export function collectEmbeddingEntityTypes(type: ChildEntityType): {
     readonly embeddingEntityTypes: ReadonlySet<Type>;

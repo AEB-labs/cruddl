@@ -8,8 +8,8 @@ import {
     StringValueNode,
     ValueNode,
 } from 'graphql';
-import { PermissionsConfig } from './permissions';
 import { FieldModuleSpecificationConfig } from './module-specification';
+import { PermissionsConfig } from './permissions';
 
 export interface FieldConfig {
     readonly name: string;

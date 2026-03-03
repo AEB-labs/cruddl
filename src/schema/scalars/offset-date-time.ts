@@ -1,4 +1,3 @@
-import { GraphQLScalarType } from 'graphql';
 import {
     DateTimeFormatter,
     DateTimeFormatterBuilder,
@@ -8,6 +7,7 @@ import {
     ZonedDateTime,
     ZoneOffset,
 } from '@js-joda/core';
+import { GraphQLScalarType } from 'graphql';
 
 /**
  * The representation of an OffsetDateTime in the database

@@ -1,9 +1,11 @@
 import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
 import { DEFAULT_LOGGER_PROVIDER, Logger } from '../../config/logging';
+import { DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { FlexSearchTokenization } from '../../query-tree/flex-search';
+import { isReadonlyArray } from '../../utils/utils';
 import {
     DatabaseAdapter,
     ExecutionArgs,
@@ -14,9 +16,6 @@ import { likePatternToRegExp } from '../like-helpers';
 import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
 import { JSCompoundQuery, JSExecutableQuery } from './js';
 import { getJSQuery } from './js-generator';
-import { v4 as uuid } from 'uuid';
-import { DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
-import { isReadonlyArray } from '../../utils/utils';
 
 export class InMemoryDB {
     collections: { [name: string]: ReadonlyArray<any> } = {};

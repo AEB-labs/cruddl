@@ -10,10 +10,10 @@ import {
     QueryNodeObjectType,
     RootTypesGenerator,
 } from '../../src/schema-generation';
+import { createRootFieldContext } from '../../src/schema-generation/query-node-object-type';
 import { compact } from '../../src/utils/utils';
 import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
 import { createTestProject } from './support/helpers';
-import { createRootFieldContext } from '../../src/schema-generation/query-node-object-type';
 
 const QUERIES = [
     `{

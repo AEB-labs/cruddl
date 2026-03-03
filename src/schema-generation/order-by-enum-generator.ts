@@ -1,11 +1,10 @@
 import { GraphQLEnumType, GraphQLEnumValueConfig } from 'graphql';
 import { chain } from 'lodash';
 import memorize from 'memorize-decorator';
-import { Field, ObjectType, Type } from '../model';
-import { OrderClause, OrderDirection, PropertyAccessQueryNode, QueryNode } from '../query-tree';
+import { Field, ObjectType } from '../model';
+import { OrderClause, OrderDirection, QueryNode } from '../query-tree';
 import { ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/constants';
 import { getOrderByTypeName } from '../schema/names';
-import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../schema/scalars/offset-date-time';
 import { flatMap } from '../utils/utils';
 import { createFieldNode } from './field-nodes';
 import { getScalarFilterValueNode } from './filter-input-types/filter-fields';

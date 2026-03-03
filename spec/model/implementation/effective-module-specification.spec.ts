@@ -1,8 +1,8 @@
+import { expect } from 'chai';
 import {
     EffectiveModuleSpecification,
     EffectiveModuleSpecificationClause,
 } from '../../../src/model/implementation/modules/effective-module-specification';
-import { expect } from 'chai';
 
 describe('EffectiveModuleSpecification', () => {
     describe('simplify()', () => {

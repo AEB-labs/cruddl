@@ -4,11 +4,11 @@ import { checkCalcMutations } from './check-calc-mutations';
 import { checkCollectField } from './check-collect-field';
 import { checkDefaultValue } from './check-default-value';
 import { checkFieldType } from './check-field-type';
+import { checkFlexSearchOnField } from './check-flex-search-on-field';
 import { checkKeyField } from './check-key-field';
 import { checkReference } from './check-reference';
 import { checkRelation } from './check-relation';
 import { checkRootAndParentDirectives } from './check-root-and-parent-directives';
-import { checkFlexSearchOnField } from './check-flex-search-on-field';
 
 export function checkField(fieldToCheck: Field, baselineField: Field, context: ValidationContext) {
     checkFieldType(fieldToCheck, baselineField, context);

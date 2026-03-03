@@ -1,10 +1,10 @@
 import { AggregationOperator } from '../model/config';
-export { OrderDirection } from '../model/implementation/order';
 import { OrderDirection } from '../model/implementation/order';
 import { indent } from '../utils/utils';
 import { QueryNode } from './base';
 import { ConstBoolQueryNode } from './literals';
 import { VariableQueryNode } from './variables';
+export { OrderDirection } from '../model/implementation/order';
 
 /**
  * A node that evaluates to a list with query nodes as list entries

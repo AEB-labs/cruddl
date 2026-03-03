@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { graphql } from 'graphql';
+import gql from 'graphql-tag';
 import { Logger, LoggerProvider } from '../../src/config/logging';
 import { DatabaseAdapter, FlexSearchTokenizable } from '../../src/database/database-adapter';
 import { Model } from '../../src/model';
@@ -7,7 +8,6 @@ import { Project } from '../../src/project/project';
 import { ProjectSource } from '../../src/project/source';
 import { QueryNode } from '../../src/query-tree';
 import { FlexSearchTokenization } from '../../src/query-tree/flex-search';
-import gql from 'graphql-tag';
 import { expectSingleError, expectToBeValid } from '../model/implementation/validation-utils';
 
 class FakeDBAdatper implements DatabaseAdapter {

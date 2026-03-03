@@ -15,6 +15,7 @@ import {
     ParsedObjectProjectSource,
     ParsedProjectSourceBaseKind,
 } from '../config/parsed-project';
+import { isCommentOnlySource } from '../graphql/is-comment-only-source';
 import { IndexField, Model, RootEntityType, ValidationMessage } from '../model';
 import { parseModuleSpecificationExpression } from '../model/implementation/modules/expression-parser';
 import { ValidationContext } from '../model/validation/validation-context';
@@ -26,10 +27,9 @@ import {
 } from '../schema/constants';
 import { parseProjectSource } from '../schema/schema-builder';
 import { findDirectiveWithName } from '../schema/schema-utils';
+import { isReadonlyArray } from '../utils/utils';
 import { Project, ProjectOptions } from './project';
 import { ProjectSource } from './source';
-import { isReadonlyArray } from '../utils/utils';
-import { isCommentOnlySource } from '../graphql/is-comment-only-source';
 
 export interface ModuleSelectionOptions {
     /**

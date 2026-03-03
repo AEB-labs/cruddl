@@ -1,9 +1,8 @@
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { RolesSpecifierConfig } from '../config';
 import { ValidationMessage } from '../validation';
-import { WarningCode } from '../validation/suppress/message-codes';
-import { Type } from './type';
+import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { Field } from './field';
+import { Type } from './type';
 
 export class RolesSpecifier implements ModelComponent {
     readonly read: ReadonlyArray<string>;

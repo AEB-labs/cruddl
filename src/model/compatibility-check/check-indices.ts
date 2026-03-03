@@ -1,8 +1,8 @@
-import { RootEntityType } from '../implementation';
-import { ValidationContext, ValidationMessage } from '../validation';
-import { IndexDefinitionConfig } from '../config';
 import { Kind, ObjectFieldNode, ObjectValueNode, print, StringValueNode } from 'graphql';
 import { INDICES_ARG } from '../../schema/constants';
+import { IndexDefinitionConfig } from '../config';
+import { RootEntityType } from '../implementation';
+import { ValidationContext, ValidationMessage } from '../validation';
 
 export function checkIndices(
     typeToCheck: RootEntityType,

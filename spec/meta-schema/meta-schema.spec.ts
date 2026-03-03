@@ -6,11 +6,11 @@ import {
     ExecutionOptions,
     ExecutionOptionsCallbackArgs,
 } from '../../src/execution/execution-options';
+import { prettyPrint } from '../../src/graphql/pretty-print';
 import { getMetaSchema } from '../../src/meta-schema/meta-schema';
 import { AggregationOperator, Model, TypeKind } from '../../src/model';
 import { Project } from '../../src/project/project';
 import { stopMetaServer } from '../dev/server';
-import { prettyPrint } from '../../src/graphql/pretty-print';
 
 describe('Meta schema API', () => {
     const introQuery = gql`

@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { DocumentNode, parse, Source } from 'graphql';
 import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project';
+import { prettyPrint } from '../../../src/graphql/pretty-print';
 import {
     createModel,
     PermissionProfileConfigMap,
@@ -15,7 +16,6 @@ import {
     validateSource,
 } from '../../../src/schema/preparation/ast-validator';
 import { parseProjectSource } from '../../../src/schema/schema-builder';
-import { prettyPrint } from '../../../src/graphql/pretty-print';
 
 export function assertValidatorRejects(
     source: string | DocumentNode,

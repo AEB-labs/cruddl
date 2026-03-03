@@ -6,7 +6,6 @@ import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConfirmForBillingQueryNode,
-    CreateBillingEntityQueryNode,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
     ErrorIfNotTruthyResultValidator,
