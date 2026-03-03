@@ -2,7 +2,6 @@ import {
     ArgumentNode,
     DirectiveNode,
     EnumValueNode,
-    IntValueNode,
     ObjectValueNode,
     StringValueNode,
     ValueNode,

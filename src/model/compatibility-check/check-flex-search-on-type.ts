@@ -1,9 +1,9 @@
-import { RootEntityType } from '../implementation';
-import { ValidationContext, ValidationMessage } from '../validation';
 import { ArgumentNode, Kind, ListValueNode, ObjectValueNode, print } from 'graphql';
-import { OrderDirection } from '../implementation/order';
 import { FLEX_SEARCH_ORDER_ARGUMENT } from '../../schema/constants';
+import { RootEntityType } from '../implementation';
 import { FlexSearchPrimarySortClause } from '../implementation/flex-search';
+import { OrderDirection } from '../implementation/order';
+import { ValidationContext, ValidationMessage } from '../validation';
 
 export function checkFlexSearchOnType(
     typeToCheck: RootEntityType,

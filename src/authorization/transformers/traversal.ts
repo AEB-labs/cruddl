@@ -7,14 +7,14 @@ import {
     TraversalQueryNodeParams,
     VariableQueryNode,
 } from '../../query-tree';
+import { RequireAllProperties } from '../../utils/util-types';
+import { decapitalize } from '../../utils/utils';
 import { AccessOperation, AuthContext } from '../auth-basics';
 import { PermissionResult } from '../permission-descriptors';
 import {
     getPermissionDescriptorOfField,
     getPermissionDescriptorOfRootEntityType,
 } from '../permission-descriptors-in-model';
-import { decapitalize } from '../../utils/utils';
-import { RequireAllProperties } from '../../utils/util-types';
 
 export function transformTraversalQueryNode(
     node: TraversalQueryNode,

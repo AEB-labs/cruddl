@@ -1,9 +1,9 @@
 import { Database } from 'arangojs';
 import { CollectionType } from 'arangojs/collection';
-import { NORM_CI_ANALYZER } from '../../../model/implementation/flex-search';
 import { ProjectOptions } from '../../../config/interfaces';
 import { Logger } from '../../../config/logging';
 import { Model, RootEntityType } from '../../../model';
+import { NORM_CI_ANALYZER } from '../../../model/implementation/flex-search';
 import {
     billingCollectionName,
     getCollectionNameForRelation,

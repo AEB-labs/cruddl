@@ -1,5 +1,5 @@
-import { ArangoDBAdapter, Project } from 'cruddl';
 import { ApolloServer } from 'apollo-server';
+import { ArangoDBAdapter, Project } from 'cruddl';
 
 // arangodb --starter.local --starter.mode=single  --starter.port=8529
 const db = new ArangoDBAdapter({

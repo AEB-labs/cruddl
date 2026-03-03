@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { EntityExtensionType, Model, TypeKind, ValueObjectType } from '../../src/model';
+import { Model, TypeKind, ValueObjectType } from '../../src/model';
 import { OrderByEnumGenerator } from '../../src/schema-generation/order-by-enum-generator';
 
 describe('OrderByEnumGenerator', () => {

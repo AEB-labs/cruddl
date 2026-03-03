@@ -10,10 +10,9 @@ import {
     VariableQueryNode,
 } from '../../query-tree';
 import { simplifyBooleans } from '../../query-tree/utils';
-import { FILTER_ARG } from '../../schema/constants';
+import { RequireAllProperties } from '../../utils/util-types';
 import { decapitalize } from '../../utils/utils';
 import { FilterObjectType } from '../filter-input-types';
-import { RequireAllProperties } from '../../utils/util-types';
 
 interface BuildFilteredListNodeParams {
     readonly listNode: QueryNode;

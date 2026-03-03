@@ -4,13 +4,9 @@ import {
     QueryNode,
     RuntimeErrorQueryNode,
 } from '../../query-tree';
-import { ACCESS_GROUP_FIELD } from '../../schema/constants';
 import { AccessOperation, AuthContext } from '../auth-basics';
 import { PermissionResult } from '../permission-descriptors';
-import {
-    getPermissionDescriptorOfField,
-    getPermissionDescriptorOfRootEntityType,
-} from '../permission-descriptors-in-model';
+import { getPermissionDescriptorOfField } from '../permission-descriptors-in-model';
 
 export function transformAffectedFieldInfoQueryNode(
     node: AffectedFieldInfoQueryNode,

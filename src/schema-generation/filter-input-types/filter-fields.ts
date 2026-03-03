@@ -1,5 +1,6 @@
-import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { ZonedDateTime } from '@js-joda/core';
+import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import { GraphQLBoolean } from 'graphql/index';
 import { EnumType, Field, ScalarType, Type, TypeKind } from '../../model';
 import {
     BinaryOperationQueryNode,
@@ -27,8 +28,6 @@ import { createFieldNode } from '../field-nodes';
 import { TypedInputFieldBase } from '../typed-input-object-type';
 import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants';
 import { FilterObjectType } from './generator';
-import { GraphQLBoolean } from 'graphql/index';
-import { QueryNodeResolveInfo } from '../query-node-object-type';
 
 export interface FilterField extends TypedInputFieldBase<FilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode;

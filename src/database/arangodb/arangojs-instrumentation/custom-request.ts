@@ -4,22 +4,22 @@
  * Originally licensed under Apache License 2.0
  */
 
-import { joinPath } from 'arangojs/lib/joinPath';
+import { SystemError } from 'arangojs/error';
 import { Errback } from 'arangojs/lib/errback';
+import { joinPath } from 'arangojs/lib/joinPath';
 import { omit } from 'arangojs/lib/omit';
+import { RequestOptions as ArangoRequestOptions } from 'arangojs/lib/request.node';
 import {
-    Agent as HttpAgent,
     ClientRequest,
     ClientRequestArgs,
-    IncomingMessage,
+    Agent as HttpAgent,
     request as httpRequest,
+    IncomingMessage,
 } from 'http';
 import { Agent as HttpsAgent, request as httpsRequest } from 'https';
 import { Socket } from 'net';
 import { parse as parseUrl, UrlWithStringQuery } from 'url';
 import { RequestInstrumentation, RequestInstrumentationPhase } from './config';
-import { SystemError } from 'arangojs/error';
-import { RequestOptions as ArangoRequestOptions } from 'arangojs/lib/request.node';
 
 /**
  * @internal

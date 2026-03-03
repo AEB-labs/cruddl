@@ -1,7 +1,7 @@
+import { expect } from 'chai';
 import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project';
 import { ValidationContext } from '../../../src/model/validation';
 import { ProjectSource } from '../../../src/project/source';
-import { expect } from 'chai';
 import { parseProjectSource } from '../../../src/schema/schema-builder';
 
 const yamlContent = `

@@ -1,5 +1,5 @@
-import { GraphQLScalarType } from 'graphql';
 import { LocalTime } from '@js-joda/core';
+import { GraphQLScalarType } from 'graphql';
 
 function parseLocalTime(value: unknown): LocalTime {
     if (typeof value !== 'string') {

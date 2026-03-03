@@ -6,6 +6,7 @@ import {
     RootEntityType,
 } from '../../model';
 import { RelationSegment } from '../../model/implementation/collect-path';
+import { FieldPath } from '../../model/implementation/field-path';
 import {
     AddEdgesQueryNode,
     BinaryOperationQueryNode,
@@ -33,7 +34,6 @@ import { PlainObject } from '../../utils/utils';
 import { CreateRootEntityInputType } from '../create-input-types';
 import { FieldContext } from '../query-node-object-type';
 import { mapToIDNodesWithOptimizations } from './map';
-import { FieldPath } from '../../model/implementation/field-path';
 
 /**
  * Gets a statement that deletes existing outgoing edges and creates a new one, but does not check existing

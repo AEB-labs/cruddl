@@ -1,30 +1,13 @@
-import {
-    ArgumentNode,
-    ASTNode,
-    DirectiveNode,
-    EnumValueDefinitionNode,
-    FieldDefinitionNode,
-    Kind,
-    ListValueNode,
-    print,
-    TypeDefinitionNode,
-} from 'graphql';
-import {
-    SUPPRESS_COMPATIBILITY_ISSUES_ARG,
-    SUPPRESS_DIRECTIVE,
-    SUPPRESS_INFOS_ARG,
-    SUPPRESS_WARNINGS_ARG,
-} from '../../schema/constants';
+import { EnumValueDefinitionNode, FieldDefinitionNode, TypeDefinitionNode } from 'graphql';
+import { LocationLike, MessageLocation } from './location';
+import { QuickFix } from './quick-fix';
+import { isSuppressed } from './suppress/is-suppressed';
 import {
     CompatibilityIssueCode,
     InfoCode,
     MessageCode,
     WarningCode,
 } from './suppress/message-codes';
-import { LocationLike, MessageLocation } from './location';
-import { QuickFix } from './quick-fix';
-import { ChangeSet, TextChange } from '../change-set/change-set';
-import { isSuppressed } from './suppress/is-suppressed';
 import { createSuppressQuickFix } from './suppress/quick-fix';
 
 export enum Severity {

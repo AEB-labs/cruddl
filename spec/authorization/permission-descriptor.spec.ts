@@ -1,10 +1,11 @@
+import { expect } from 'chai';
+import { AccessOperation, AuthContext } from '../../src/authorization/auth-basics';
 import {
     PermissionDescriptor,
     PermissionResult,
     ProfileBasedPermissionDescriptor,
 } from '../../src/authorization/permission-descriptors';
 import { Model, PermissionProfile, TypeKind } from '../../src/model';
-import { AccessOperation, AuthContext } from '../../src/authorization/auth-basics';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -15,7 +16,6 @@ import {
     VariableQueryNode,
 } from '../../src/query-tree';
 import { ACCESS_GROUP_FIELD } from '../../src/schema/constants';
-import { expect } from 'chai';
 
 describe('PermissionDescriptor', () => {
     describe('canAccess', () => {
