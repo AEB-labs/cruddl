@@ -30,9 +30,18 @@ export {
     applyChangeSet,
     applyYamlAddInMapChange,
 } from './src/model/change-set/apply-change-set.js';
-export { ChangeSet, TextChange, YamlAddInMapChange } from './src/model/change-set/change-set.js';
+export {
+    AppendChange,
+    ChangeSet,
+    TextChange,
+    YamlAddInMapChange,
+} from './src/model/change-set/change-set.js';
 export { TypeKind } from './src/model/config/index.js';
 export * from './src/model/implementation/index.js';
+export { BaseModuleSpecification } from './src/model/implementation/modules/base-module-specification.js';
+export { FieldModuleSpecification } from './src/model/implementation/modules/field-module-specification.js';
+export { ModuleDeclaration } from './src/model/implementation/modules/module-declaration.js';
+export { TypeModuleSpecification } from './src/model/implementation/modules/type-module-specification.js';
 export {
     MessageLocation,
     Model,
@@ -50,4 +59,5 @@ export {
     type SourceConfig,
     type SourceLike,
 } from './src/project/source.js';
+export type { TTLInfo } from './src/project/time-to-live.js';
 export { CORE_SCALARS, DIRECTIVES } from './src/schema/graphql-base.js';
