@@ -11,10 +11,10 @@ import {
     VariableAssignmentQueryNode,
     VariableQueryNode,
 } from '../../query-tree';
-import { visitQueryNode } from '../../query-tree/visitor';
-import { VisitResult } from '../../utils/visitor';
 import { FlexSearchQueryNode } from '../../query-tree/flex-search';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
+import { visitQueryNode } from '../../query-tree/visitor';
+import { VisitResult } from '../../utils/visitor';
 import { canUseArrayExpansionOperatorForQuantifierFilter } from './quantifier-filter-helpers';
 
 interface SupportedAsArrayExpansionOptions {

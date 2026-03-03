@@ -1,6 +1,6 @@
+import { indent } from '../utils/utils';
 import { QueryNode } from './base';
 import { VariableQueryNode } from './variables';
-import { indent } from '../utils/utils';
 
 export interface UpdateChildEntitiesQueryNodeParams {
     /**

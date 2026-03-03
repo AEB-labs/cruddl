@@ -2,16 +2,16 @@ import {
     DocumentNode,
     getLocation,
     GraphQLError,
-    GraphQLSchema,
     Kind as GraphQLKind,
+    GraphQLSchema,
     parse,
 } from 'graphql';
 import { parse as JSONparse } from 'json-source-map';
 import { compact } from 'lodash';
 import {
-    Kind as YAMLKind,
     load,
     YAMLAnchorReference,
+    Kind as YAMLKind,
     YamlMap,
     YAMLMapping,
     YAMLNode,
@@ -27,6 +27,7 @@ import {
     ParsedProjectSourceBaseKind,
 } from '../config/parsed-project';
 import { DatabaseAdapter } from '../database/database-adapter';
+import { isCommentOnlySource } from '../graphql/is-comment-only-source';
 import {
     createModel,
     Model,
@@ -51,7 +52,6 @@ import {
     SchemaTransformationContext,
 } from './preparation/transformation-pipeline';
 import { getLineEndPosition } from './schema-utils';
-import { isCommentOnlySource } from '../graphql/is-comment-only-source';
 import jsonLint = require('json-lint');
 import stripJsonComments = require('strip-json-comments');
 

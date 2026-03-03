@@ -1,5 +1,5 @@
-import { GraphQLScalarType } from 'graphql';
 import { Instant, LocalDateTime, ZonedDateTime, ZoneOffset } from '@js-joda/core';
+import { GraphQLScalarType } from 'graphql';
 
 function parseDateTime(value: string): Instant {
     if (typeof value !== 'string') {

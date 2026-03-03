@@ -1,6 +1,5 @@
 import { ThunkReadonlyArray } from 'graphql/type/definition';
 import { fromPairs, toPairs } from 'lodash';
-import { v4 as uuid } from 'uuid';
 import {
     ChildEntityType,
     EntityExtensionType,

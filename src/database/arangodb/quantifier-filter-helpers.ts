@@ -1,3 +1,4 @@
+import { Field } from '../../model';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -6,11 +7,10 @@ import {
     QueryNode,
     SafeListQueryNode,
 } from '../../query-tree';
-import { analyzeLikePatternPrefix } from '../like-helpers';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import { simplifyBooleans } from '../../query-tree/utils';
 import { isStringCaseInsensitive } from '../../utils/string-utils';
-import { Field } from '../../model';
+import { analyzeLikePatternPrefix } from '../like-helpers';
 
 export interface CanUseArrayExpansionOperatorForQuantifierFilterResult {
     /**

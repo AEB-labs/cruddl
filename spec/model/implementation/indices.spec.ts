@@ -1,5 +1,5 @@
-import { IndexField, Model, RootEntityType, TypeKind } from '../../../src/model';
 import { expect } from 'chai';
+import { IndexField, Model, RootEntityType, TypeKind } from '../../../src/model';
 
 describe('IndexField', () => {
     const model = new Model({

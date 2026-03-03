@@ -1,5 +1,5 @@
 import { ExecutionOptions } from '../execution/execution-options';
-import { FlexSearchLanguage, Model } from '../model';
+import { Model } from '../model';
 import { QueryNode } from '../query-tree';
 import { FlexSearchTokenization } from '../query-tree/flex-search';
 

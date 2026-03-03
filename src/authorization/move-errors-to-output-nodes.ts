@@ -2,17 +2,17 @@ import { uniq } from 'lodash';
 import {
     ConditionalQueryNode,
     FirstOfListQueryNode,
+    FLEX_SEARCH_TOO_MANY_OBJECTS,
     ListQueryNode,
     ObjectQueryNode,
     PreExecQueryParms,
     PropertySpecification,
     QueryNode,
-    FLEX_SEARCH_TOO_MANY_OBJECTS,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
+    TraversalQueryNode,
     VariableAssignmentQueryNode,
     WithPreExecutionQueryNode,
-    TraversalQueryNode,
 } from '../query-tree';
 import { visitQueryNode } from '../query-tree/visitor';
 import { VisitResult } from '../utils/visitor';

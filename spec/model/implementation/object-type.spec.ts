@@ -1,6 +1,6 @@
+import { expect } from 'chai';
 import { ChildEntityType, Model, Severity, TypeKind } from '../../../src/model';
 import { expectToBeValid, validate } from './validation-utils';
-import { expect } from 'chai';
 
 // This test uses a ChildEntityType because that is a concrete class without much addition to ObjectType, but it
 // has system fields.

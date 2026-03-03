@@ -1,14 +1,6 @@
-import { DocumentNode, print } from 'graphql';
-import gql from 'graphql-tag';
-import { ValidationResult } from '../../../src/model/validation/result';
-import { Project } from '../../../src/project/project';
-import { ProjectSource } from '../../../src/project/source';
-import {
-    expectNoErrors,
-    expectSingleCompatibilityIssue,
-    expectToBeValid,
-} from '../implementation/validation-utils';
 import { expect } from 'chai';
+import gql from 'graphql-tag';
+import { expectToBeValid } from '../implementation/validation-utils';
 import { runCheck } from './utils';
 
 describe('checkModel', () => {

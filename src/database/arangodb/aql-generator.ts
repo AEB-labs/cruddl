@@ -70,13 +70,14 @@ import {
     FlexSearchQueryNode,
     FlexSearchStartsWithQueryNode,
 } from '../../query-tree/flex-search';
-import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
+import { QuantifierFilterNode } from '../../query-tree/quantifiers';
 import {
     extractVariableAssignments,
     getReferencedVariables,
     simplifyBooleans,
 } from '../../query-tree/utils';
 import { not } from '../../schema-generation/utils/input-types';
+import { isStringCaseInsensitive } from '../../utils/string-utils';
 import { Constructor, decapitalize, isReadonlyArray } from '../../utils/utils';
 import { FlexSearchTokenizable } from '../database-adapter';
 import { analyzeLikePatternPrefix } from '../like-helpers';
@@ -93,10 +94,9 @@ import {
     getCollectionNameForRelation,
     getCollectionNameForRootEntity,
 } from './arango-basics';
+import { canUseArrayExpansionOperatorForQuantifierFilter } from './quantifier-filter-helpers';
 import { getFlexSearchViewNameForRootEntity } from './schema-migration/arango-search-helpers';
 import { supportedAsArrayExpansion } from './traversal-helpers';
-import { isStringCaseInsensitive } from '../../utils/string-utils';
-import { canUseArrayExpansionOperatorForQuantifierFilter } from './quantifier-filter-helpers';
 
 enum AccessType {
     /**

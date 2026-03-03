@@ -5,11 +5,11 @@ import {
     RelationSegment,
 } from '../model/implementation/collect-path';
 import { blue } from '../utils/colors';
+import { indent } from '../utils/utils';
 import { QueryNode } from './base';
+import { OrderSpecification } from './lists';
 import { EntitiesIdentifierKind } from './mutations';
 import { VariableQueryNode } from './variables';
-import { indent } from '../utils/utils';
-import { OrderSpecification } from './lists';
 
 export class EntityFromIdQueryNode extends QueryNode {
     constructor(

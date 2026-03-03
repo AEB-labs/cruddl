@@ -1,5 +1,5 @@
-import { PermissionProfileConfig } from '../../../src/model';
 import { expect } from 'chai';
+import { PermissionProfileConfig } from '../../../src/model';
 import { assertValidatorRejects, validate } from './helpers';
 
 const modelWithRootEntityWithPermissionProfile = `

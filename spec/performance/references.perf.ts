@@ -1,15 +1,6 @@
-import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
 import { takeRandomSample } from '../../src/utils/utils';
-import {
-    addManyPapersWithAQL,
-    addManyUsersWithAQL,
-    aql,
-    createLargePaper,
-    createUser,
-    getRandomPaperIDsWithAQL,
-    initEnvironment,
-    TestEnvironment,
-} from './support/helpers';
+import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
+import { aql, getRandomPaperIDsWithAQL, initEnvironment, TestEnvironment } from './support/helpers';
 
 async function setUpPapers(
     environment: TestEnvironment,

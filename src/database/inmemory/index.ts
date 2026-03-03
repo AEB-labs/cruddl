@@ -1,1 +1,1 @@
-export { InMemoryDB, InMemoryAdapter } from './inmemory-adapter';
+export { InMemoryAdapter, InMemoryDB } from './inmemory-adapter';

@@ -1,6 +1,6 @@
-import { ObjectTypeBase } from './object-type-base';
 import { TypeKind, ValueObjectTypeConfig } from '../config';
 import { Model } from './model';
+import { ObjectTypeBase } from './object-type-base';
 
 export class ValueObjectType extends ObjectTypeBase {
     constructor(input: ValueObjectTypeConfig, model: Model) {

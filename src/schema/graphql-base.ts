@@ -1,10 +1,4 @@
-import {
-    DocumentNode,
-    EnumTypeDefinitionNode,
-    EnumValueDefinitionNode,
-    Kind,
-    TypeKind,
-} from 'graphql';
+import { DocumentNode, EnumTypeDefinitionNode, EnumValueDefinitionNode, Kind } from 'graphql';
 import gql from 'graphql-tag';
 import {
     COMPATIBILITY_ISSUE_CODES,

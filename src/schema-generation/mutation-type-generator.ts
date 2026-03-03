@@ -45,6 +45,7 @@ import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-in
 import { generateDeleteAllQueryNode } from './delete-all-generator';
 import { createGraphQLError } from './graphql-errors';
 import { ListAugmentation } from './list-augmentation';
+import { LimitTypeCheckType } from './order-by-and-pagination-augmentation';
 import { OutputTypeGenerator } from './output-type-generator';
 import {
     FieldContext,
@@ -68,7 +69,6 @@ import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field'
 import { getFilterNode } from './utils/filtering';
 import { mapToIDNodesUnoptimized } from './utils/map';
 import { getPreEntityRemovalStatements } from './utils/relations';
-import { LimitTypeCheckType } from './order-by-and-pagination-augmentation';
 
 export class MutationTypeGenerator {
     constructor(

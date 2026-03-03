@@ -1,7 +1,6 @@
 import { OperationDefinitionNode } from 'graphql';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthContext } from '../authorization/auth-basics';
-import { ChildEntityType, RootEntityType } from '../model';
 
 export type MutationMode = 'normal' | 'disallowed' | 'rollback';
 

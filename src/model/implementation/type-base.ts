@@ -1,17 +1,16 @@
 import { NameNode, TypeDefinitionNode } from 'graphql';
 import memorize from 'memorize-decorator';
 import pluralize from 'pluralize';
+import { MODULES_DIRECTIVE } from '../../schema/constants';
 import { FlexSearchLanguage, TypeConfig, TypeKind } from '../config';
 import { ValidationMessage } from '../validation';
 import { ModelComponent, ValidationContext } from '../validation/validation-context';
 import { TypeLocalization } from './i18n';
 import { Model } from './model';
-import { Namespace } from './namespace';
 import { EffectiveModuleSpecification } from './modules/effective-module-specification';
-import { MODULES_DIRECTIVE } from '../../schema/constants';
 import { TypeModuleSpecification } from './modules/type-module-specification';
+import { Namespace } from './namespace';
 import { Type } from './type';
-import { WarningCode } from '../validation/suppress/message-codes';
 
 export abstract class TypeBase implements ModelComponent {
     readonly name: string;

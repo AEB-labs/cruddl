@@ -1,6 +1,6 @@
-import { GraphQLFieldConfigArgumentMap, GraphQLID, GraphQLInputType, GraphQLType } from 'graphql';
+import { GraphQLFieldConfigArgumentMap, GraphQLID, GraphQLInputType } from 'graphql';
 import memorize from 'memorize-decorator';
-import { RootEntityType, ScalarType, Type } from '../model';
+import { RootEntityType, Type } from '../model';
 import { ID_FIELD } from '../schema/constants';
 import { EnumTypeGenerator } from './enum-type-generator';
 

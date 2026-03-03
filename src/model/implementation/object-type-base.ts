@@ -1,14 +1,12 @@
+import { DirectiveNode } from 'graphql/index';
 import { groupBy } from 'lodash';
-import memorize from 'memorize-decorator';
 import { objectValues } from '../../utils/utils';
 import { FieldConfig, ObjectTypeConfig } from '../config';
-import { Severity, ValidationContext, ValidationMessage } from '../validation';
+import { ValidationContext, ValidationMessage } from '../validation';
 import { Field, SystemFieldConfig } from './field';
 import { Model } from './model';
-import { EffectiveModuleSpecification } from './modules/effective-module-specification';
 import { ObjectType } from './type';
 import { TypeBase } from './type-base';
-import { DirectiveNode } from 'graphql/index';
 
 export abstract class ObjectTypeBase extends TypeBase {
     readonly fields: ReadonlyArray<Field>;

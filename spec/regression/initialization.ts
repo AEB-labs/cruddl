@@ -3,8 +3,8 @@ import { existsSync, readFileSync } from 'fs';
 import { ExecutionResult } from 'graphql';
 import stripJsonComments from 'strip-json-comments';
 import { ArangoDBConfig } from '../../src/database/arangodb';
-import { InitTestDataContext } from './init-test-data-context';
 import { generateRandomString } from '../helpers/generate-random-string';
+import { InitTestDataContext } from './init-test-data-context';
 
 const DATABASE_NAME = 'cruddl-test-temp';
 // arangodb only listens on ipv4, but localhost may resolve to ::1, so explicitly state 127.0.0.1

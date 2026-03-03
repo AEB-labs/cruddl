@@ -1,13 +1,15 @@
 import { Database } from 'arangojs';
+import { v4 as uuid } from 'uuid';
 import { globalContext } from '../../config/global';
 import { ProjectOptions } from '../../config/interfaces';
 import { Logger } from '../../config/logging';
-import { DefaultClock, ExecutionOptions } from '../../execution/execution-options';
+import { ExecutionOptions } from '../../execution/execution-options';
 import {
     ConflictRetriesExhaustedError,
     TransactionCancelledError,
     TransactionTimeoutError,
 } from '../../execution/runtime-errors';
+import { TransactionError } from '../../execution/transaction-error';
 import { Model } from '../../model';
 import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
 import { FlexSearchTokenization } from '../../query-tree/flex-search';
@@ -42,9 +44,7 @@ import { hasRevisionAssertions } from './revision-helper';
 import { SchemaAnalyzer } from './schema-migration/analyzer';
 import { SchemaMigration } from './schema-migration/migrations';
 import { MigrationPerformer } from './schema-migration/performer';
-import { TransactionError } from '../../execution/transaction-error';
 import { ArangoDBVersion, ArangoDBVersionHelper } from './version-helper';
-import { v4 as uuid } from 'uuid';
 
 const requestInstrumentationBodyKey = 'cruddlRequestInstrumentation';
 

@@ -1,5 +1,4 @@
-import { GraphQLFieldConfigArgumentMap, GraphQLID } from 'graphql';
-import { RootEntityType, ScalarType, Type } from '../../model';
+import { RootEntityType } from '../../model';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -8,8 +7,8 @@ import {
     TransformListQueryNode,
     VariableQueryNode,
 } from '../../query-tree';
-import { ID_FIELD, REVISION_FIELD } from '../../schema/constants';
-import { decapitalize, objectEntries } from '../../utils/utils';
+import { ID_FIELD } from '../../schema/constants';
+import { decapitalize } from '../../utils/utils';
 import { createFieldNode } from '../field-nodes';
 import { createGraphQLError } from '../graphql-errors';
 import { FieldContext } from '../query-node-object-type';
