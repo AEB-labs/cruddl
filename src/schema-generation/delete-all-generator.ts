@@ -1,11 +1,11 @@
-import { FieldPath } from '../model/implementation/field-path.js';
-import { RootEntityType } from '../model/index.js';
+import type { FieldPath } from '../model/implementation/field-path.js';
+import type { RootEntityType } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     DeleteEntitiesQueryNode,
     DeleteEntitiesResultValue,
     EntitiesIdentifierKind,
     PreExecQueryParms,
-    QueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode,
 } from '../query-tree/index.js';

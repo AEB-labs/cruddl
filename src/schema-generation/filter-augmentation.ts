@@ -1,8 +1,8 @@
-import { Type } from '../model/index.js';
+import type { Type } from '../model/index.js';
 import { FILTER_ARG } from '../schema/constants.js';
-import { FilterTypeGenerator } from './filter-input-types/index.js';
-import { QueryNodeField } from './query-node-object-type/index.js';
-import { RootFieldHelper } from './root-field-helper.js';
+import type { FilterTypeGenerator } from './filter-input-types/index.js';
+import type { QueryNodeField } from './query-node-object-type/index.js';
+import type { RootFieldHelper } from './root-field-helper.js';
 import { buildFilteredListNode } from './utils/filtering.js';
 
 /**

@@ -1,4 +1,5 @@
-import { ASTNode, Kind, Location } from 'graphql';
+import type { ASTNode, Location } from 'graphql';
+import { Kind } from 'graphql';
 import { ProjectSource } from '../../project/source.js';
 import { getLineAndColumnFromPosition } from '../../schema/schema-utils.js';
 

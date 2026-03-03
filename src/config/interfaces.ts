@@ -1,12 +1,15 @@
-import { FragmentDefinitionNode, GraphQLSchema, OperationDefinitionNode } from 'graphql';
-import {
+import type { FragmentDefinitionNode, GraphQLSchema, OperationDefinitionNode } from 'graphql';
+import type {
     DatabaseAdapterTimings,
     ExecutionPlan,
     TransactionStats,
 } from '../database/database-adapter.js';
-import { ExecutionOptions, ExecutionOptionsCallbackArgs } from '../execution/execution-options.js';
-import { FieldResolverParameters } from '../graphql/operation-based-resolvers.js';
-import { LoggerProvider } from './logging.js';
+import type {
+    ExecutionOptions,
+    ExecutionOptionsCallbackArgs,
+} from '../execution/execution-options.js';
+import type { FieldResolverParameters } from '../graphql/operation-based-resolvers.js';
+import type { LoggerProvider } from './logging.js';
 
 export interface RequestContext {
     readonly operation: OperationDefinitionNode;

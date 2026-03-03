@@ -1,3 +1,4 @@
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -11,7 +12,6 @@ import {
     ObjectQueryNode,
     PERMISSION_DENIED_ERROR,
     PreExecQueryParms,
-    QueryNode,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     UnaryOperationQueryNode,
@@ -21,7 +21,8 @@ import {
     WithPreExecutionQueryNode,
 } from '../../query-tree/index.js';
 import { decapitalize } from '../../utils/utils.js';
-import { AccessOperation, AuthContext } from '../auth-basics.js';
+import type { AuthContext } from '../auth-basics.js';
+import { AccessOperation } from '../auth-basics.js';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model.js';
 import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors.js';
 

@@ -1,9 +1,10 @@
 import { expect } from 'chai';
-import { graphql, GraphQLSchema } from 'graphql';
+import type { GraphQLSchema } from 'graphql';
+import { graphql } from 'graphql';
 import { gql } from 'graphql-tag';
 import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';
-import { TimeToLiveConfig } from '../../../src/model/index.js';
+import type { TimeToLiveConfig } from '../../../src/model/index.js';
 import { Project } from '../../../src/project/project.js';
 import { ProjectSource } from '../../../src/project/source.js';
 import { createTempDatabase } from '../../regression/initialization.js';

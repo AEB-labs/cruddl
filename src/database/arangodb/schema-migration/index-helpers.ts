@@ -1,4 +1,4 @@
-import { IndexField, Model, RootEntityType } from '../../../model/index.js';
+import type { IndexField, Model, RootEntityType } from '../../../model/index.js';
 import { ID_FIELD } from '../../../schema/constants.js';
 import {
     GraphQLOffsetDateTime,
@@ -6,7 +6,7 @@ import {
 } from '../../../schema/scalars/offset-date-time.js';
 import { isDefined } from '../../../utils/utils.js';
 import { getCollectionNameForRootEntity } from '../arango-basics.js';
-import { ArangoDBConfig } from '../config.js';
+import type { ArangoDBConfig } from '../config.js';
 
 const DEFAULT_INDEX_TYPE = 'persistent';
 

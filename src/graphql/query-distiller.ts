@@ -1,20 +1,17 @@
 import { deepEqual } from 'fast-equals';
-import {
+import type {
     DocumentNode,
     FieldNode,
     FragmentDefinitionNode,
-    getNamedType,
     GraphQLCompositeType,
     GraphQLField,
-    GraphQLObjectType,
     GraphQLOutputType,
     GraphQLSchema,
-    isCompositeType,
     OperationDefinitionNode,
     OperationTypeNode,
     SelectionNode,
-    TypeNameMetaFieldDef,
 } from 'graphql';
+import { getNamedType, GraphQLObjectType, isCompositeType, TypeNameMetaFieldDef } from 'graphql';
 import { blue, cyan, green } from '../utils/colors.js';
 import { groupArray, indent, INDENTATION } from '../utils/utils.js';
 import { getArgumentValues } from './argument-values.js';

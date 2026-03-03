@@ -1,4 +1,5 @@
-import { ASTNode, print } from 'graphql';
+import type { ASTNode } from 'graphql';
+import { print } from 'graphql';
 
 /**
  * Prints a GraphQL document and formats it using four spaces instead of two

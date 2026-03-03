@@ -1,14 +1,12 @@
-import { EnumValueNode, Kind } from 'graphql';
+import type { EnumValueNode } from 'graphql';
+import { Kind } from 'graphql';
 import { parseDocument } from 'yaml';
 import { prettyPrint } from '../../graphql/pretty-print.js';
-import { Change, ChangeSet, TextChange, YamlAddInMapChange } from '../change-set/change-set.js';
-import { EnumType, EnumValue, ModelI18n } from '../implementation/index.js';
-import {
-    MessageLocation,
-    QuickFix,
-    ValidationContext,
-    ValidationMessage,
-} from '../validation/index.js';
+import type { Change } from '../change-set/change-set.js';
+import { ChangeSet, TextChange, YamlAddInMapChange } from '../change-set/change-set.js';
+import type { EnumType, EnumValue, ModelI18n } from '../implementation/index.js';
+import type { ValidationContext } from '../validation/index.js';
+import { MessageLocation, QuickFix, ValidationMessage } from '../validation/index.js';
 import {
     getTypeLocalizationConfigs,
     getYamlNodePairAtPath,

@@ -1,15 +1,6 @@
-import {
-    Document,
-    isDocument,
-    isMap,
-    isPair,
-    isScalar,
-    Pair,
-    parseDocument,
-    Scalar,
-    YAMLMap,
-} from 'yaml';
-import {
+import type { Document, Pair, Scalar, YAMLMap } from 'yaml';
+import { isDocument, isMap, isPair, isScalar, parseDocument } from 'yaml';
+import type {
     LocalizationBaseConfig,
     LocalizationConfig,
     TypeLocalizationConfig,

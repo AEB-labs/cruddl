@@ -1,4 +1,4 @@
-import { QueryNode } from '../base.js';
+import type { QueryNode } from '../base.js';
 import { ObjectQueryNode } from '../objects.js';
 
 export interface StaticEvaluationResult {

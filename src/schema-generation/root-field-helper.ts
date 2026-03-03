@@ -1,6 +1,8 @@
-import { Field } from '../model/index.js';
-import { NOT_SUPPORTED_ERROR, QueryNode, RuntimeErrorQueryNode } from '../query-tree/index.js';
-import { FieldContext, SelectionToken } from './query-node-object-type/index.js';
+import type { Field } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
+import { NOT_SUPPORTED_ERROR, RuntimeErrorQueryNode } from '../query-tree/index.js';
+import type { FieldContext } from './query-node-object-type/index.js';
+import { SelectionToken } from './query-node-object-type/index.js';
 
 export interface ProcessFieldResult {
     /**

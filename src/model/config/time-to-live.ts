@@ -1,4 +1,4 @@
-import { MessageLocation } from '../validation/index.js';
+import type { MessageLocation } from '../validation/index.js';
 
 export interface TimeToLiveConfig {
     readonly typeName: string;

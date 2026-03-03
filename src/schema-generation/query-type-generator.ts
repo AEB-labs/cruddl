@@ -1,29 +1,24 @@
 import { memorize } from 'memorize-decorator';
-import { Namespace, RootEntityType } from '../model/index.js';
-import {
-    EntitiesQueryNode,
-    FirstOfListQueryNode,
-    ObjectQueryNode,
-    QueryNode,
-} from '../query-tree/index.js';
+import type { Namespace, RootEntityType } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
+import { EntitiesQueryNode, FirstOfListQueryNode, ObjectQueryNode } from '../query-tree/index.js';
 import { QUERY_TYPE } from '../schema/constants.js';
 import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names.js';
 
-import { FilterAugmentation } from './filter-augmentation.js';
-import { FlexSearchGenerator } from './flex-search-generator.js';
-import { MetaFirstAugmentation } from './limit-augmentation.js';
-import { ListAugmentation } from './list-augmentation.js';
-import { MetaTypeGenerator } from './meta-type-generator.js';
+import type { FilterAugmentation } from './filter-augmentation.js';
+import type { FlexSearchGenerator } from './flex-search-generator.js';
+import type { MetaFirstAugmentation } from './limit-augmentation.js';
+import type { ListAugmentation } from './list-augmentation.js';
+import type { MetaTypeGenerator } from './meta-type-generator.js';
 import { LimitTypeCheckType } from './order-by-and-pagination-augmentation.js';
-import { OutputTypeGenerator } from './output-type-generator.js';
-import {
+import type { OutputTypeGenerator } from './output-type-generator.js';
+import type {
     FieldContext,
     QueryNodeField,
-    QueryNodeListType,
-    QueryNodeNonNullType,
     QueryNodeObjectType,
 } from './query-node-object-type/index.js';
-import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator.js';
+import { QueryNodeListType, QueryNodeNonNullType } from './query-node-object-type/index.js';
+import type { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator.js';
 import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field.js';
 
 export class QueryTypeGenerator {

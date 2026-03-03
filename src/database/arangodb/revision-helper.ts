@@ -1,10 +1,7 @@
-import {
-    DeleteEntitiesQueryNode,
-    QueryNode,
-    UpdateEntitiesQueryNode,
-} from '../../query-tree/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
+import { DeleteEntitiesQueryNode, UpdateEntitiesQueryNode } from '../../query-tree/index.js';
 import { visitQueryNode } from '../../query-tree/visitor.js';
-import { VisitResult } from '../../utils/visitor.js';
+import type { VisitResult } from '../../utils/visitor.js';
 
 export function hasRevisionAssertions(node: QueryNode) {
     let hasRevisionAssertions = false;

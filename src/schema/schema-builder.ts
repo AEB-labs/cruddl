@@ -1,55 +1,47 @@
-import {
-    DocumentNode,
-    getLocation,
-    GraphQLError,
-    Kind as GraphQLKind,
-    GraphQLSchema,
-    parse,
-} from 'graphql';
+import type { DocumentNode, GraphQLSchema } from 'graphql';
+import { getLocation, GraphQLError, Kind as GraphQLKind, parse } from 'graphql';
 import { parse as JSONparse } from 'json-source-map';
-import {
-    load,
+import type {
     YAMLAnchorReference,
-    Kind as YAMLKind,
     YamlMap,
     YAMLMapping,
     YAMLNode,
     YAMLScalar,
     YAMLSequence,
 } from 'yaml-ast-parser';
+import { load, Kind as YAMLKind } from 'yaml-ast-parser';
 import { globalContext } from '../config/global.js';
-import {
+import type {
     ParsedGraphQLProjectSource,
     ParsedObjectProjectSource,
     ParsedProject,
     ParsedProjectSource,
-    ParsedProjectSourceBaseKind,
 } from '../config/parsed-project.js';
-import { DatabaseAdapter } from '../database/database-adapter.js';
+import { ParsedProjectSourceBaseKind } from '../config/parsed-project.js';
+import type { DatabaseAdapter } from '../database/database-adapter.js';
 import { isCommentOnlySource } from '../graphql/is-comment-only-source.js';
+import type { Model, ValidationResult } from '../model/index.js';
 import {
     createModel,
     MessageLocation,
-    Model,
     Severity,
     SourcePosition,
     ValidationContext,
     ValidationMessage,
-    ValidationResult,
 } from '../model/index.js';
-import { Project, ProjectOptions } from '../project/project.js';
+import type { ProjectOptions } from '../project/project.js';
+import { Project } from '../project/project.js';
 import { ProjectSource, SourceType } from '../project/source.js';
 import { SchemaGenerator } from '../schema-generation/index.js';
-import { isDefined, isReadonlyArray, PlainObject } from '../utils/utils.js';
+import type { PlainObject } from '../utils/utils.js';
+import { isDefined, isReadonlyArray } from '../utils/utils.js';
 import {
     validateParsedProjectSource,
     validatePostMerge,
     validateSource,
 } from './preparation/ast-validator.js';
-import {
-    executePreMergeTransformationPipeline,
-    SchemaTransformationContext,
-} from './preparation/transformation-pipeline.js';
+import type { SchemaTransformationContext } from './preparation/transformation-pipeline.js';
+import { executePreMergeTransformationPipeline } from './preparation/transformation-pipeline.js';
 import { getLineEndPosition } from './schema-utils.js';
 import jsonLint = require('json-lint');
 import stripJsonComments = require('strip-json-comments');

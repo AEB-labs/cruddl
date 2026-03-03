@@ -1,4 +1,5 @@
 import { FlexSearchQueryNode } from '../../query-tree/flex-search.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     AffectedFieldInfoQueryNode,
     CreateEntitiesQueryNode,
@@ -9,11 +10,10 @@ import {
     FieldPathQueryNode,
     FieldQueryNode,
     FollowEdgeQueryNode,
-    QueryNode,
     TraversalQueryNode,
     UpdateEntitiesQueryNode,
 } from '../../query-tree/index.js';
-import { AuthContext } from '../auth-basics.js';
+import type { AuthContext } from '../auth-basics.js';
 import { transformAffectedFieldInfoQueryNode } from './affected-field-info.js';
 import { transformCreateEntitiesQueryNode } from './create-entities.js';
 import { transformCreateEntityQueryNode } from './create-entity.js';
