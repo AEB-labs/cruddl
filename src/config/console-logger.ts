@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { Logger, LoggerProvider } from './logging.js';
+import type { Logger, LoggerProvider } from './logging.js';
 
 export const LOG_LEVELS = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'] as const;
 export type LogLevel = (typeof LOG_LEVELS)[number];

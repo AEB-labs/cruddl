@@ -9,6 +9,8 @@ export default defineConfig({
     test: {
         environment: 'node',
         isolate: false,
+        fileParallelism: false,
+        silent: 'passed-only',
         include: ['spec/**/*.spec.ts'],
         setupFiles: ['./spec/init.vitest.ts'],
     },

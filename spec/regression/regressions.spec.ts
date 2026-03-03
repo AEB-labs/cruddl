@@ -1,6 +1,6 @@
 import { readdirSync, statSync } from 'fs';
 import { resolve } from 'path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { likePatternToRegExp } from '../../src/database/like-helpers.js';
 import type { RegressionSuiteOptions } from './regression-suite.js';
 import { RegressionSuite } from './regression-suite.js';
@@ -41,6 +41,13 @@ describe('regression tests', async () => {
                     database,
                 };
                 const suite = new RegressionSuite(suitePath, options);
+
+                if (suite.shouldIgnoreSuite()) {
+                    // not using test.skip() because we don't want to clutter the list of skipped tests
+                    // with tests that are just not designed for a specific environment
+                    continue;
+                }
+
                 describe(suiteName, async () => {
                     const testNames = suite
                         .getTestNames()
@@ -48,8 +55,6 @@ describe('regression tests', async () => {
 
                     for (const testName of testNames) {
                         if (suite.shouldIgnoreTest(testName)) {
-                            // not using test.skip() because we don't want to clutter the list of skipped tests
-                            // with tests that are just not designed for a specific environment
                             continue;
                         }
 
