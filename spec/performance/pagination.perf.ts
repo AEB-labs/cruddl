@@ -1,5 +1,6 @@
+import { aql } from 'arangojs';
 import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench';
-import { aql, initEnvironment, TestEnvironment } from './support/helpers';
+import { initEnvironment, TestEnvironment } from './support/helpers';
 
 export async function addManyPapersWithAQL(environment: TestEnvironment, count: number) {
     await environment
