@@ -1,14 +1,11 @@
 import { IDENTITY_ANALYZER } from '../model/implementation/flex-search.js';
-import { RootEntityType } from '../model/index.js';
+import type { RootEntityType } from '../model/index.js';
 import { binaryOp } from '../schema-generation/utils/input-types.js';
 import { decapitalize, indent } from '../utils/utils.js';
 import { QueryNode } from './base.js';
 import { ConstBoolQueryNode, LiteralQueryNode } from './literals.js';
-import {
-    BinaryOperator,
-    BinaryOperatorWithAnalyzer,
-    OperatorWithAnalyzerQueryNode,
-} from './operators.js';
+import type { BinaryOperatorWithAnalyzer } from './operators.js';
+import { BinaryOperator, OperatorWithAnalyzerQueryNode } from './operators.js';
 import { simplifyBooleans } from './utils/index.js';
 import { VariableQueryNode } from './variables.js';
 

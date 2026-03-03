@@ -1,5 +1,5 @@
 import { QueryNode } from './base.js';
-import { VariableQueryNode } from './variables.js';
+import type { VariableQueryNode } from './variables.js';
 
 export type Quantifier = 'some' | 'every' | 'none';
 

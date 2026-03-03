@@ -1,6 +1,7 @@
 import { resolveReadonlyArrayThunk } from 'graphql';
 import { DefaultClock, UUIDGenerator } from '../../execution/execution-options.js';
-import { FieldRequest, FieldSelection } from '../../graphql/query-distiller.js';
+import type { FieldRequest, FieldSelection } from '../../graphql/query-distiller.js';
+import type { QueryNode, TraversalQueryNodeParams } from '../../query-tree/index.js';
 import {
     BasicType,
     ConditionalQueryNode,
@@ -11,21 +12,20 @@ import {
     ObjectQueryNode,
     PreExecQueryParms,
     PropertySpecification,
-    QueryNode,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     TraversalQueryNode,
-    TraversalQueryNodeParams,
     TypeCheckQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode,
 } from '../../query-tree/index.js';
 import { groupByEquivalence } from '../../utils/group-by-equivalence.js';
-import { RequireAllProperties } from '../../utils/util-types.js';
+import type { RequireAllProperties } from '../../utils/util-types.js';
 import { decapitalize } from '../../utils/utils.js';
-import { FieldContext, SelectionToken } from './context.js';
-import { QueryNodeField, QueryNodeObjectType } from './definition.js';
+import type { FieldContext } from './context.js';
+import { SelectionToken } from './context.js';
+import type { QueryNodeField, QueryNodeObjectType } from './definition.js';
 import { extractQueryTreeObjectType, isListTypeIgnoringNonNull } from './utils.js';
 
 export function createRootFieldContext(

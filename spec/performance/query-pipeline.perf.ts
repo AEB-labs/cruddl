@@ -1,18 +1,21 @@
-import { DocumentNode, GraphQLSchema, parse, validate } from 'graphql';
+import type { DocumentNode, GraphQLSchema } from 'graphql';
+import { parse, validate } from 'graphql';
 import { resolve } from 'path';
 import { applyAuthorizationToQueryTree } from '../../src/authorization/execution.js';
 import { getAQLQuery } from '../../src/database/arangodb/aql-generator.js';
-import { DistilledOperation, distillQuery } from '../../src/graphql/query-distiller.js';
-import { Model } from '../../src/model/index.js';
-import { ObjectQueryNode, QueryNode } from '../../src/query-tree/index.js';
+import type { DistilledOperation } from '../../src/graphql/query-distiller.js';
+import { distillQuery } from '../../src/graphql/query-distiller.js';
+import type { Model } from '../../src/model/index.js';
+import type { QueryNode } from '../../src/query-tree/index.js';
+import { ObjectQueryNode } from '../../src/query-tree/index.js';
+import type { QueryNodeObjectType } from '../../src/schema-generation/index.js';
 import {
     buildConditionalObjectQueryNode,
-    QueryNodeObjectType,
     RootTypesGenerator,
 } from '../../src/schema-generation/index.js';
 import { createRootFieldContext } from '../../src/schema-generation/query-node-object-type/index.js';
 import { isDefined } from '../../src/utils/utils.js';
-import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench.js';
+import type { BenchmarkConfig, BenchmarkFactories } from './support/async-bench.js';
 import { createTestProject } from './support/helpers.js';
 
 const QUERIES = [

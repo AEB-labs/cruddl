@@ -1,5 +1,5 @@
 import { RelationDeleteAction } from '../config/index.js';
-import { Field, RootEntityType } from '../implementation/index.js';
+import type { Field, RootEntityType } from '../implementation/index.js';
 
 export function findRecursiveCascadePath(field: Field): ReadonlyArray<Field> | undefined {
     if (!field.type.isRootEntityType) {

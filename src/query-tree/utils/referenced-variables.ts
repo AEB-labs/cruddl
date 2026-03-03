@@ -1,4 +1,4 @@
-import { QueryNode } from '../base.js';
+import type { QueryNode } from '../base.js';
 import { VariableQueryNode } from '../variables.js';
 import { visitQueryNode } from '../visitor.js';
 

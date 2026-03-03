@@ -1,5 +1,6 @@
-import { ValidationContext, ValidationMessage } from '../../../src/model/validation/index.js';
-import { ProjectSource } from '../../../src/project/source.js';
+import type { ValidationMessage } from '../../../src/model/validation/index.js';
+import { ValidationContext } from '../../../src/model/validation/index.js';
+import type { ProjectSource } from '../../../src/project/source.js';
 import { parseProjectSource } from '../../../src/schema/schema-builder.js';
 
 export function getMessages(source: ProjectSource): ReadonlyArray<ValidationMessage> {
