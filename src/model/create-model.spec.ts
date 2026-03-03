@@ -2,10 +2,13 @@ import type { DocumentNode } from 'graphql';
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
 import { Project, ProjectSource } from '../../core-exports.js';
-import { Severity, ValidationContext, createModel } from '../../src/model/index.js';
-import { parseProject } from '../../src/schema/schema-builder.js';
-import { expectSingleError, expectToBeValid } from './implementation/validation-utils.js';
-import { createSimpleModel } from './model-spec.helper.js';
+import {
+    expectSingleError,
+    expectToBeValid,
+} from '../../spec/model/implementation/validation-utils.js';
+import { createSimpleModel } from '../../spec/model/model-spec.helper.js';
+import { parseProject } from '../schema/schema-builder.js';
+import { Severity, ValidationContext, createModel } from './index.js';
 
 describe('createModel', () => {
     it('translates _key: String @key properly', () => {

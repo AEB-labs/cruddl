@@ -2,13 +2,13 @@ import type { GraphQLSchema } from 'graphql';
 import { graphql } from 'graphql';
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
-import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';
-import { prettyPrint } from '../../../src/graphql/pretty-print.js';
-import type { TimeToLiveConfig } from '../../../src/model/index.js';
-import { Project } from '../../../src/project/project.js';
-import { ProjectSource } from '../../../src/project/source.js';
-import { createTempDatabase } from '../../regression/initialization.js';
+import { createTempDatabase } from '../../../spec/regression/initialization.js';
+import { prettyPrint } from '../../graphql/pretty-print.js';
+import type { TimeToLiveConfig } from '../../model/index.js';
+import { Project } from '../../project/project.js';
+import { ProjectSource } from '../../project/source.js';
 import { isArangoDBDisabled } from './arangodb-test-utils.js';
+import { ArangoDBAdapter } from './index.js';
 
 interface Setup {
     readonly schema: GraphQLSchema;

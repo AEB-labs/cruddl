@@ -63,7 +63,7 @@
     "compile-json-schema": "node ./scripts/compile-json-schema.mjs",
     "mrproper": "rimraf dist db node_modules package-lock.json",
     "prepare": "husky",
-    "dev": "tsx ./spec/dev/start.mts",
+    "dev": "tsx src/dev-server/start.mts",
     "knip": "knip",
     "knip:prod": "knip --production"
   },

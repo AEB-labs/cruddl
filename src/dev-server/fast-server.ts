@@ -1,7 +1,7 @@
 import type { RequestHandler } from 'express';
 import { execute, formatError, GraphQLError, parse, validate } from 'graphql';
-import type { DatabaseAdapter } from '../../src/database/database-adapter.js';
-import type { Project } from '../../src/project/project.js';
+import type { DatabaseAdapter } from '../database/database-adapter.js';
+import type { Project } from '../project/project.js';
 
 export function createFastApp(project: Project, databaseAdapter: DatabaseAdapter): RequestHandler {
     const executor = project.createSchemaExecutor(databaseAdapter);

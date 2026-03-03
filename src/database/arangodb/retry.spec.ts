@@ -1,7 +1,8 @@
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
-import { ArangoDBAdapter } from '../../../src/database/arangodb/index.js';
-import type { QueryNode } from '../../../src/query-tree/index.js';
+import { createSimpleModel } from '../../../spec/model/model-spec.helper.js';
+import { createTempDatabase } from '../../../spec/regression/initialization.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -13,11 +14,10 @@ import {
     TransformListQueryNode,
     UpdateEntitiesQueryNode,
     VariableQueryNode,
-} from '../../../src/query-tree/index.js';
-import { range } from '../../../src/utils/utils.js';
-import { createSimpleModel } from '../../model/model-spec.helper.js';
-import { createTempDatabase } from '../../regression/initialization.js';
+} from '../../query-tree/index.js';
+import { range } from '../../utils/utils.js';
 import { isArangoDBDisabled } from './arangodb-test-utils.js';
+import { ArangoDBAdapter } from './index.js';
 
 const PARALLELISM = 20;
 

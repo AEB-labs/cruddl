@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { analyzeLikePatternPrefix, likePatternToRegExp } from '../../src/database/like-helpers.js';
+import { analyzeLikePatternPrefix, likePatternToRegExp } from './like-helpers.js';
 
 describe('like-helper', () => {
     describe('analyzeLikePatternPrefix', () => {

@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { AuthContext } from '../../src/authorization/auth-basics.js';
-import { AccessOperation } from '../../src/authorization/auth-basics.js';
-import {
-    PermissionDescriptor,
-    PermissionResult,
-    ProfileBasedPermissionDescriptor,
-} from '../../src/authorization/permission-descriptors.js';
-import { Model, PermissionProfile, TypeKind } from '../../src/model/index.js';
-import type { QueryNode } from '../../src/query-tree/index.js';
+import { Model, PermissionProfile, TypeKind } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -15,8 +8,15 @@ import {
     FieldQueryNode,
     LiteralQueryNode,
     VariableQueryNode,
-} from '../../src/query-tree/index.js';
-import { ACCESS_GROUP_FIELD } from '../../src/schema/constants.js';
+} from '../query-tree/index.js';
+import { ACCESS_GROUP_FIELD } from '../schema/constants.js';
+import type { AuthContext } from './auth-basics.js';
+import { AccessOperation } from './auth-basics.js';
+import {
+    PermissionDescriptor,
+    PermissionResult,
+    ProfileBasedPermissionDescriptor,
+} from './permission-descriptors.js';
 
 describe('PermissionDescriptor', () => {
     describe('canAccess', () => {

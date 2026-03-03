@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { getAQLQuery } from '../../../src/database/arangodb/aql-generator.js';
 import {
     LiteralQueryNode,
     ObjectQueryNode,
     PropertySpecification,
-} from '../../../src/query-tree/index.js';
+} from '../../query-tree/index.js';
+import { getAQLQuery } from './aql-generator.js';
 
 describe('getAQLForQuery', () => {
     it('supports LiteralQuery', () => {

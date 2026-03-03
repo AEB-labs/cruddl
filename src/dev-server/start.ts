@@ -1,4 +1,4 @@
-import colors from '../../src/utils/colors.js';
+import colors from '../utils/colors.js';
 import { start } from './server.js';
 
 colors.enabled = true;

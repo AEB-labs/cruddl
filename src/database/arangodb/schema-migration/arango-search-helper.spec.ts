@@ -1,7 +1,7 @@
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
-import { getRequiredViewsFromModel } from '../../../../src/database/arangodb/schema-migration/arango-search-helpers.js';
-import { createSimpleModel } from '../../../model/model-spec.helper.js';
+import { createSimpleModel } from '../../../../spec/model/model-spec.helper.js';
+import { getRequiredViewsFromModel } from './arango-search-helpers.js';
 
 describe('arango-search-helper', () => {
     describe('getRequiredViewsFromModel', () => {

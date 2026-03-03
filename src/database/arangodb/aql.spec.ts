@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { aql, aqlConfig, AQLVariable } from '../../../src/database/arangodb/aql.js';
+import { aql, aqlConfig, AQLVariable } from './aql.js';
 
 describe('aql', () => {
     it('works with plain code', () => {

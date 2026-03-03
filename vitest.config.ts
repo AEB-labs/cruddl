@@ -36,7 +36,7 @@ export default defineConfig({
         isolate: false,
         fileParallelism: false,
         silent: 'passed-only',
-        include: ['spec/**/*.spec.ts'],
+        include: ['spec/**/*.spec.ts', 'src/**/*.spec.ts'],
         setupFiles: ['./spec/init.vitest.ts'],
         sequence: {
             sequencer: RegressionLastSequencer,

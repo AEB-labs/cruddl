@@ -1,5 +1,5 @@
 import { gql } from 'graphql-tag';
-import { generateRandomString } from '../../helpers/generate-random-string.js';
+import { generateRandomString } from '../../../src/testing/generate-random-string.js';
 import type { InitTestDataContext } from '../init-test-data-context.js';
 
 export default async function init(context: InitTestDataContext) {

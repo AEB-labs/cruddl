@@ -2,14 +2,14 @@ import type { ArangoSearchViewProperties, TierConsolidationPolicy } from 'arango
 import { deepEqual } from 'fast-equals';
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
-import type { ArangoDBConfig } from '../../../../src/database/arangodb/index.js';
-import { ArangoDBAdapter } from '../../../../src/database/arangodb/index.js';
-import { prettyPrint } from '../../../../src/graphql/pretty-print.js';
-import type { Model } from '../../../../src/model/index.js';
-import { Project } from '../../../../src/project/project.js';
-import { ProjectSource } from '../../../../src/project/source.js';
-import { createTempDatabase, getTempDatabase } from '../../../regression/initialization.js';
+import { createTempDatabase, getTempDatabase } from '../../../../spec/regression/initialization.js';
+import { prettyPrint } from '../../../graphql/pretty-print.js';
+import type { Model } from '../../../model/index.js';
+import { Project } from '../../../project/project.js';
+import { ProjectSource } from '../../../project/source.js';
 import { isArangoDBDisabled } from '../arangodb-test-utils.js';
+import type { ArangoDBConfig } from '../index.js';
+import { ArangoDBAdapter } from '../index.js';
 
 type GqlDocument = ReturnType<typeof gql>;
 

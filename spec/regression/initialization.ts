@@ -3,8 +3,8 @@ import { existsSync, readFileSync } from 'fs';
 import type { ExecutionResult } from 'graphql';
 import stripJsonComments from 'strip-json-comments';
 import type { ArangoDBConfig } from '../../src/database/arangodb/index.js';
+import { generateRandomString } from '../../src/testing/generate-random-string.js';
 import { isDefined } from '../../src/utils/utils.js';
-import { generateRandomString } from '../helpers/generate-random-string.js';
 import type { InitTestDataContext } from './init-test-data-context.js';
 
 const DATABASE_NAME = 'cruddl-test-temp';

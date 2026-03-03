@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { moveErrorsToOutputNodes } from '../../src/authorization/move-errors-to-output-nodes.js';
 import {
     ConditionalQueryNode,
     ConstBoolQueryNode,
@@ -11,7 +10,8 @@ import {
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     WithPreExecutionQueryNode,
-} from '../../src/query-tree/index.js';
+} from '../query-tree/index.js';
+import { moveErrorsToOutputNodes } from './move-errors-to-output-nodes.js';
 
 describe('move-errors-to-output-nodes', () => {
     it('moves errors in filter up', () => {

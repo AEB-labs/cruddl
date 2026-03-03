@@ -13,8 +13,8 @@ import {
 } from 'graphql';
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
-import type { DistilledOperation, FieldRequest } from '../../src/graphql/query-distiller.js';
-import { distillQuery } from '../../src/graphql/query-distiller.js';
+import type { DistilledOperation, FieldRequest } from './query-distiller.js';
+import { distillQuery } from './query-distiller.js';
 
 describe('query-distiller', () => {
     const userType = new GraphQLObjectType({
