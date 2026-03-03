@@ -1,15 +1,15 @@
-import { RelationSegment } from '../../model/implementation/collect-path.js';
+import type { RelationSegment } from '../../model/implementation/collect-path.js';
+import type { QueryNode, TraversalQueryNodeParams } from '../../query-tree/index.js';
 import {
     PERMISSION_DENIED_ERROR,
-    QueryNode,
     RuntimeErrorQueryNode,
     TraversalQueryNode,
-    TraversalQueryNodeParams,
     VariableQueryNode,
 } from '../../query-tree/index.js';
-import { RequireAllProperties } from '../../utils/util-types.js';
+import type { RequireAllProperties } from '../../utils/util-types.js';
 import { decapitalize } from '../../utils/utils.js';
-import { AccessOperation, AuthContext } from '../auth-basics.js';
+import type { AuthContext } from '../auth-basics.js';
+import { AccessOperation } from '../auth-basics.js';
 import {
     getPermissionDescriptorOfField,
     getPermissionDescriptorOfRootEntityType,

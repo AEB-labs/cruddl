@@ -1,12 +1,12 @@
 import { GraphQLBoolean } from 'graphql';
-import { BillingEntityType } from '../../model/index.js';
+import type { BillingEntityType } from '../../model/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     ConditionalQueryNode,
     ConstBoolQueryNode,
     CountQueryNode,
     LiteralQueryNode,
     NullQueryNode,
-    QueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
 } from '../../query-tree/index.js';

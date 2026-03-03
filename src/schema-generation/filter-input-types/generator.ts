@@ -1,23 +1,20 @@
-import {
-    GraphQLEnumType,
-    GraphQLString,
-    resolveReadonlyArrayThunk,
-    ThunkReadonlyArray,
-} from 'graphql';
+import type { GraphQLEnumType, ThunkReadonlyArray } from 'graphql';
+import { GraphQLString, resolveReadonlyArrayThunk } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import { EnumType, Field, ScalarType, Type } from '../../model/index.js';
+import type { Field, Type } from '../../model/index.js';
+import { EnumType, ScalarType } from '../../model/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConstBoolQueryNode,
     NullQueryNode,
-    QueryNode,
 } from '../../query-tree/index.js';
 import { INPUT_FIELD_EQUAL } from '../../schema/constants.js';
 import { getFilterTypeName } from '../../schema/names.js';
 import { GraphQLI18nString, GraphQLStringMap } from '../../schema/scalars/string-map.js';
-import { AnyValue } from '../../utils/utils.js';
-import { EnumTypeGenerator } from '../enum-type-generator.js';
+import type { AnyValue } from '../../utils/utils.js';
+import type { EnumTypeGenerator } from '../enum-type-generator.js';
 import { TypedInputObjectType } from '../typed-input-object-type.js';
 import { and } from '../utils/input-types.js';
 import {
@@ -27,11 +24,11 @@ import {
     NUMERIC_FILTER_FIELDS,
     QUANTIFIERS,
 } from './constants.js';
+import type { FilterField } from './filter-fields.js';
 import {
     AndFilterField,
     EmptyListFilterField,
     EntityExtensionFilterField,
-    FilterField,
     NestedObjectFilterField,
     OrFilterField,
     QuantifierFilterField,

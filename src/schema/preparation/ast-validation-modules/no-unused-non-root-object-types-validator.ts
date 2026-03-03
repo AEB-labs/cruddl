@@ -1,4 +1,4 @@
-import { DocumentNode, ObjectTypeDefinitionNode } from 'graphql';
+import type { DocumentNode, ObjectTypeDefinitionNode } from 'graphql';
 import { ValidationMessage } from '../../../model/index.js';
 import {
     getNamedTypeDefinitionAST,
@@ -6,7 +6,7 @@ import {
     getRootEntityTypes,
     getTypeNameIgnoringNonNullAndList,
 } from '../../schema-utils.js';
-import { ASTValidator } from '../ast-validator.js';
+import type { ASTValidator } from '../ast-validator.js';
 
 export class NoUnusedNonRootObjectTypesValidator implements ASTValidator {
     validate(ast: DocumentNode): ReadonlyArray<ValidationMessage> {

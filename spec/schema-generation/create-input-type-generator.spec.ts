@@ -7,10 +7,8 @@ import {
     GraphQLString,
 } from 'graphql';
 import { ChildEntityType, Model, RootEntityType, TypeKind } from '../../src/model/index.js';
-import {
-    CreateInputTypeGenerator,
-    CreateObjectInputField,
-} from '../../src/schema-generation/create-input-types/index.js';
+import type { CreateObjectInputField } from '../../src/schema-generation/create-input-types/index.js';
+import { CreateInputTypeGenerator } from '../../src/schema-generation/create-input-types/index.js';
 import { EnumTypeGenerator } from '../../src/schema-generation/enum-type-generator.js';
 import { createRootFieldContext } from '../../src/schema-generation/query-node-object-type/index.js';
 

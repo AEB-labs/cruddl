@@ -1,8 +1,8 @@
 import { ChangeSet, TextChange } from '../change-set/change-set.js';
-import { Field } from '../implementation/field.js';
+import type { Field } from '../implementation/field.js';
 import { QuickFix } from '../validation/index.js';
 import { ValidationMessage } from '../validation/message.js';
-import { ValidationContext } from '../validation/validation-context.js';
+import type { ValidationContext } from '../validation/validation-context.js';
 
 /**
  * Checks whether the field has the same type as the baseline field, including whether or not they are lists

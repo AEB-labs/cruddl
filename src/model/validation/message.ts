@@ -1,8 +1,9 @@
-import { EnumValueDefinitionNode, FieldDefinitionNode, TypeDefinitionNode } from 'graphql';
-import { LocationLike, MessageLocation } from './location.js';
-import { QuickFix } from './quick-fix.js';
+import type { EnumValueDefinitionNode, FieldDefinitionNode, TypeDefinitionNode } from 'graphql';
+import type { LocationLike } from './location.js';
+import { MessageLocation } from './location.js';
+import type { QuickFix } from './quick-fix.js';
 import { isSuppressed } from './suppress/is-suppressed.js';
-import {
+import type {
     CompatibilityIssueCode,
     InfoCode,
     MessageCode,
