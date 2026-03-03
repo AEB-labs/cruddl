@@ -1,4 +1,4 @@
-import { QueryNode } from '../base.js';
+import type { QueryNode } from '../base.js';
 import { FirstOfListQueryNode } from '../lists.js';
 import { ObjectQueryNode, PropertySpecification } from '../objects.js';
 import {

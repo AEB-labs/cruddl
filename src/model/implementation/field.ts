@@ -1,12 +1,5 @@
-import {
-    ASTNode,
-    DirectiveNode,
-    FieldDefinitionNode,
-    GraphQLBoolean,
-    GraphQLID,
-    GraphQLInt,
-    GraphQLString,
-} from 'graphql';
+import type { ASTNode, DirectiveNode, FieldDefinitionNode } from 'graphql';
+import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import { memorize } from 'memorize-decorator';
 import {
     ACCESS_GROUP_FIELD,
@@ -30,34 +23,29 @@ import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js'
 import { GraphQLI18nString } from '../../schema/scalars/string-map.js';
 import { isDefined } from '../../utils/utils.js';
 import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
-import {
-    AggregationOperator,
-    CalcMutationsOperator,
-    FieldConfig,
-    FlexSearchLanguage,
-    RelationDeleteAction,
-    TypeKind,
-} from '../config/index.js';
+import type { CalcMutationsOperator, FieldConfig, FlexSearchLanguage } from '../config/index.js';
+import { AggregationOperator, RelationDeleteAction, TypeKind } from '../config/index.js';
 import {
     collectEmbeddingEntityTypes,
     collectEmbeddingRootEntityTypes,
 } from '../utils/emedding-entity-types.js';
 import { findRecursiveCascadePath } from '../utils/recursive-cascade.js';
 import { ValidationMessage } from '../validation/index.js';
-import { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
 import { numberTypeNames } from './built-in-types.js';
 import { CollectPath } from './collect-path.js';
 import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from './flex-search.js';
-import { FieldLocalization } from './i18n.js';
+import type { FieldLocalization } from './i18n.js';
 import { InvalidType } from './invalid-type.js';
-import { Model } from './model.js';
+import type { Model } from './model.js';
 import { EffectiveModuleSpecification } from './modules/effective-module-specification.js';
 import { FieldModuleSpecification } from './modules/field-module-specification.js';
-import { PermissionProfile } from './permission-profile.js';
-import { Relation, RelationSide } from './relation.js';
+import type { PermissionProfile } from './permission-profile.js';
+import type { RelationSide } from './relation.js';
+import { Relation } from './relation.js';
 import { RolesSpecifier } from './roles-specifier.js';
 import type { ObjectType, Type } from './type.js';
-import { ValueObjectType } from './value-object-type.js';
+import type { ValueObjectType } from './value-object-type.js';
 
 export interface SystemFieldConfig extends FieldConfig {
     readonly isSystemField?: boolean;

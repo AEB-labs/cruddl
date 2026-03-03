@@ -1,10 +1,6 @@
 import { expect } from 'chai';
-import {
-    Model,
-    NamespacedPermissionProfileConfigMap,
-    Severity,
-    TypeKind,
-} from '../../../src/model/index.js';
+import type { NamespacedPermissionProfileConfigMap } from '../../../src/model/index.js';
+import { Model, Severity, TypeKind } from '../../../src/model/index.js';
 import { expectSingleError, expectToBeValid, validate } from './validation-utils.js';
 
 describe('Model', () => {

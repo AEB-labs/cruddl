@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { PermissionProfileConfig } from '../../../src/model/index.js';
+import type { PermissionProfileConfig } from '../../../src/model/index.js';
 import { assertValidatorRejects, validate } from './helpers.js';
 
 const modelWithRootEntityWithPermissionProfile = `

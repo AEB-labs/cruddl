@@ -1,6 +1,6 @@
 import { FieldPath } from '../model/implementation/field-path.js';
-import { Field } from '../model/index.js';
-import { QueryNode } from '../query-tree/index.js';
+import type { Field } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import { createFieldNode } from './field-nodes.js';
 
 export function createFieldPathNode(

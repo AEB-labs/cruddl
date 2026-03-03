@@ -1,22 +1,14 @@
-import {
+import type {
     GraphQLFieldConfig,
     GraphQLFieldConfigMap,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLObjectType,
     GraphQLOutputType,
-    resolveReadonlyArrayThunk,
     ThunkReadonlyArray,
 } from 'graphql';
+import { GraphQLList, GraphQLNonNull, GraphQLObjectType, resolveReadonlyArrayThunk } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import { SchemaTransformationContext } from '../../schema/preparation/transformation-pipeline.js';
-import {
-    QueryNodeField,
-    QueryNodeListType,
-    QueryNodeNonNullType,
-    QueryNodeObjectType,
-    QueryNodeOutputType,
-} from './definition.js';
+import type { SchemaTransformationContext } from '../../schema/preparation/transformation-pipeline.js';
+import type { QueryNodeField, QueryNodeObjectType, QueryNodeOutputType } from './definition.js';
+import { QueryNodeListType, QueryNodeNonNullType } from './definition.js';
 import { getFieldResolver } from './field-resolver.js';
 import { isGraphQLOutputType } from './utils.js';
 

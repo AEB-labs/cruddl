@@ -1,4 +1,5 @@
-import style, { CSPair } from 'ansi-styles';
+import type { CSPair } from 'ansi-styles';
+import style from 'ansi-styles';
 
 // we can neither use colors nor chalk because they import node-specific modules which would not work in a pure
 // webpack environment

@@ -1,14 +1,17 @@
-import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { Field, Multiplicity } from '../../model/index.js';
-import { PreExecQueryParms, QueryNode, SetFieldQueryNode } from '../../query-tree/index.js';
+import type { GraphQLInputType } from 'graphql';
+import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
+import type { Field } from '../../model/index.js';
+import { Multiplicity } from '../../model/index.js';
+import type { PreExecQueryParms, QueryNode, SetFieldQueryNode } from '../../query-tree/index.js';
 import {
     getAddRelationFieldName,
     getCreateRelatedEntityFieldName,
     getRemoveRelationFieldName,
 } from '../../schema/names.js';
-import { AnyValue, isDefined, isReadonlyArray, PlainObject } from '../../utils/utils.js';
-import { CreateRootEntityInputType } from '../create-input-types/index.js';
-import { FieldContext } from '../query-node-object-type/index.js';
+import type { AnyValue, PlainObject } from '../../utils/utils.js';
+import { isDefined, isReadonlyArray } from '../../utils/utils.js';
+import type { CreateRootEntityInputType } from '../create-input-types/index.js';
+import type { FieldContext } from '../query-node-object-type/index.js';
 import {
     getAddEdgesStatements,
     getCreateAndAddEdgesStatements,
@@ -16,7 +19,7 @@ import {
     getRemoveEdgesStatements,
     getSetEdgeStatements,
 } from '../utils/relations.js';
-import { UpdateInputField } from './input-fields.js';
+import type { UpdateInputField } from './input-fields.js';
 
 export abstract class AbstractRelationUpdateInputField implements UpdateInputField {
     readonly description: string;

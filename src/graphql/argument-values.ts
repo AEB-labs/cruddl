@@ -6,16 +6,8 @@
  * exposed to user code. Care should be taken to not pull values from the
  * Object prototype.
  */
-import {
-    DirectiveNode,
-    FieldNode,
-    GraphQLDirective,
-    GraphQLError,
-    GraphQLField,
-    GraphQLNonNull,
-    print,
-    valueFromAST,
-} from 'graphql';
+import type { DirectiveNode, FieldNode, GraphQLDirective, GraphQLField } from 'graphql';
+import { GraphQLError, GraphQLNonNull, print, valueFromAST } from 'graphql';
 
 export function getArgumentValues(
     def: GraphQLField<any, any> | GraphQLDirective,

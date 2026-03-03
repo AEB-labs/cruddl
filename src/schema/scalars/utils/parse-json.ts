@@ -1,4 +1,4 @@
-import { Kind, ObjectValueNode, ValueNode } from 'graphql';
+import { Kind, type ObjectValueNode, type ValueNode } from 'graphql';
 
 export function parseObject(ast: ObjectValueNode, variables: any): any {
     const value = Object.create(null);

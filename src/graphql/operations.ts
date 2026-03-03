@@ -1,4 +1,4 @@
-import { DocumentNode, OperationDefinitionNode } from 'graphql';
+import type { DocumentNode, OperationDefinitionNode } from 'graphql';
 
 export function extractOperation(document: DocumentNode, operationName: string | undefined | null) {
     let ops = document.definitions.filter(

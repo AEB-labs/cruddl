@@ -1,10 +1,10 @@
 import { expect } from 'chai';
+import type { QueryNode } from '../../../src/query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConstBoolQueryNode,
     LiteralQueryNode,
-    QueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
 } from '../../../src/query-tree/index.js';
