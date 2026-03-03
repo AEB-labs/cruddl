@@ -1,4 +1,4 @@
-import {
+import type {
     ArgumentNode,
     ASTNode,
     DirectiveNode,
@@ -8,8 +8,8 @@ import {
     StringValueNode,
     ValueNode,
 } from 'graphql';
-import { FieldModuleSpecificationConfig } from './module-specification.js';
-import { PermissionsConfig } from './permissions.js';
+import type { FieldModuleSpecificationConfig } from './module-specification.js';
+import type { PermissionsConfig } from './permissions.js';
 
 export interface FieldConfig {
     readonly name: string;

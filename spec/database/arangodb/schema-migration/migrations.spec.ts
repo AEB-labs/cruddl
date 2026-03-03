@@ -1,10 +1,11 @@
-import { ArangoSearchViewProperties, TierConsolidationPolicy } from 'arangojs/view.js';
+import type { ArangoSearchViewProperties, TierConsolidationPolicy } from 'arangojs/view.js';
 import { expect } from 'chai';
 import { deepEqual } from 'fast-equals';
 import { gql } from 'graphql-tag';
-import { ArangoDBAdapter, ArangoDBConfig } from '../../../../src/database/arangodb/index.js';
+import type { ArangoDBConfig } from '../../../../src/database/arangodb/index.js';
+import { ArangoDBAdapter } from '../../../../src/database/arangodb/index.js';
 import { prettyPrint } from '../../../../src/graphql/pretty-print.js';
-import { Model } from '../../../../src/model/index.js';
+import type { Model } from '../../../../src/model/index.js';
 import { Project } from '../../../../src/project/project.js';
 import { ProjectSource } from '../../../../src/project/source.js';
 import { createTempDatabase, getTempDatabase } from '../../../regression/initialization.js';

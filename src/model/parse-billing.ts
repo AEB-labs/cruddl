@@ -1,5 +1,5 @@
-import { ParsedObjectProjectSource } from '../config/parsed-project.js';
-import { BillingConfig } from './config/billing.js';
+import type { ParsedObjectProjectSource } from '../config/parsed-project.js';
+import type { BillingConfig } from './config/billing.js';
 
 export function parseBillingConfigs(source: ParsedObjectProjectSource): BillingConfig {
     if (!source.object || !source.object.billing || typeof source.object.billing !== 'object') {

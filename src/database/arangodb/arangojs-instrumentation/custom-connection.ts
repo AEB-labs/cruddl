@@ -1,9 +1,12 @@
-import { Config, Connection, RequestOptions } from 'arangojs/connection.js';
+import type { Config, RequestOptions } from 'arangojs/connection.js';
+import { Connection } from 'arangojs/connection.js';
 import { normalizeUrl } from 'arangojs/lib/normalizeUrl.js';
-import { ArangojsResponse } from 'arangojs/lib/request.js';
+import type { ArangojsResponse } from 'arangojs/lib/request.js';
 import { isReadonlyArray } from '../../../utils/utils.js';
-import { RequestInstrumentation, requestInstrumentationBodyKey } from './config.js';
-import { createRequest, RequestOptions as CustomRequestOptions } from './custom-request.js';
+import type { RequestInstrumentation } from './config.js';
+import { requestInstrumentationBodyKey } from './config.js';
+import type { RequestOptions as CustomRequestOptions } from './custom-request.js';
+import { createRequest } from './custom-request.js';
 
 /**
  * @internal

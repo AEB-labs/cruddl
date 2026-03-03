@@ -1,13 +1,12 @@
-import {
+import type {
     GraphQLInputFieldConfig,
     GraphQLInputFieldConfigMap,
-    GraphQLInputObjectType,
     GraphQLInputType,
-    resolveReadonlyArrayThunk,
     ThunkReadonlyArray,
 } from 'graphql';
+import { GraphQLInputObjectType, resolveReadonlyArrayThunk } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import { Constructor } from '../utils/utils.js';
+import type { Constructor } from '../utils/utils.js';
 
 export interface TypedInputFieldBase<TField extends TypedInputFieldBase<TField>> {
     readonly name: string;

@@ -1,19 +1,20 @@
 import { FieldPath } from '../model/implementation/field-path.js';
-import { Field, Permission, PermissionProfile, RootEntityType } from '../model/index.js';
+import type { Field, Permission, PermissionProfile, RootEntityType } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConstBoolQueryNode,
     FieldQueryNode,
     LiteralQueryNode,
-    QueryNode,
     UnknownValueQueryNode,
 } from '../query-tree/index.js';
 import { simplifyBooleans } from '../query-tree/utils/index.js';
 import { createFieldPathNode } from '../schema-generation/field-path-node.js';
 import { ACCESS_GROUP_FIELD } from '../schema/constants.js';
 import { isReadonlyArray } from '../utils/utils.js';
-import { AccessOperation, AuthContext } from './auth-basics.js';
+import type { AuthContext } from './auth-basics.js';
+import { AccessOperation } from './auth-basics.js';
 
 export enum ConditionExplanationContext {
     BEFORE_WRITE,

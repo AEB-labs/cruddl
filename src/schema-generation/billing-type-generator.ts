@@ -1,6 +1,7 @@
 import { GraphQLBoolean, GraphQLID } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import { RootEntityType } from '../model/implementation/index.js';
+import type { RootEntityType } from '../model/implementation/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     BILLING_KEY_FIELD_NOT_FILLED_ERROR,
     BinaryOperationQueryNode,
@@ -14,7 +15,6 @@ import {
     LiteralQueryNode,
     NOT_FOUND_ERROR,
     PreExecQueryParms,
-    QueryNode,
     RootEntityIDQueryNode,
     TransformListQueryNode,
     UpdateEntitiesQueryNode,
@@ -24,8 +24,8 @@ import {
 } from '../query-tree/index.js';
 import { BILLING_MUTATION_INPUT_ARG } from '../schema/constants.js';
 import { getConfirmForBillingFieldName } from '../schema/names.js';
-import { OutputTypeGenerator } from './output-type-generator.js';
-import { QueryNodeField } from './query-node-object-type/index.js';
+import type { OutputTypeGenerator } from './output-type-generator.js';
+import type { QueryNodeField } from './query-node-object-type/index.js';
 import {
     createBillingEntityCategoryNode,
     createBillingEntityQuantityNode,

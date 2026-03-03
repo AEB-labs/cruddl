@@ -1,6 +1,6 @@
-import { OperationDefinitionNode } from 'graphql';
+import type { OperationDefinitionNode } from 'graphql';
 import { v4 as uuidv4 } from 'uuid';
-import { AuthContext } from '../authorization/auth-basics.js';
+import type { AuthContext } from '../authorization/auth-basics.js';
 
 export type MutationMode = 'normal' | 'disallowed' | 'rollback';
 

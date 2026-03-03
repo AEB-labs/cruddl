@@ -1,3 +1,4 @@
+import type { QueryNode } from '../query-tree/index.js';
 import {
     ConditionalQueryNode,
     FirstOfListQueryNode,
@@ -6,7 +7,6 @@ import {
     ObjectQueryNode,
     PreExecQueryParms,
     PropertySpecification,
-    QueryNode,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     TraversalQueryNode,
@@ -14,7 +14,7 @@ import {
     WithPreExecutionQueryNode,
 } from '../query-tree/index.js';
 import { visitQueryNode } from '../query-tree/visitor.js';
-import { VisitResult } from '../utils/visitor.js';
+import type { VisitResult } from '../utils/visitor.js';
 
 /**
  * Moves RuntimeErrorQueryNodes up to its their deepest ancestor that is an output node, i.e., its value directly occurs

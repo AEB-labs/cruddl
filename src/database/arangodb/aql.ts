@@ -1,4 +1,4 @@
-import { QueryResultValidator } from '../../query-tree/index.js';
+import type { QueryResultValidator } from '../../query-tree/index.js';
 import { blue, cyan, magenta } from '../../utils/colors.js';
 import { isDefined } from '../../utils/utils.js';
 

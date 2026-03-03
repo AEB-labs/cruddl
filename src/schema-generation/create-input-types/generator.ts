@@ -1,6 +1,7 @@
-import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
+import type { GraphQLInputType } from 'graphql';
+import { GraphQLList, GraphQLNonNull } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import {
+import type {
     ChildEntityType,
     EntityExtensionType,
     Field,
@@ -8,21 +9,21 @@ import {
     RootEntityType,
     ValueObjectType,
 } from '../../model/index.js';
-import { EnumTypeGenerator } from '../enum-type-generator.js';
+import type { EnumTypeGenerator } from '../enum-type-generator.js';
+import type { CreateInputField } from './input-fields.js';
 import {
     BasicCreateInputField,
     BasicListCreateInputField,
     CreateEntityExtensionInputField,
-    CreateInputField,
     CreateObjectInputField,
     CreateReferenceInputField,
     DummyCreateInputField,
     ObjectListCreateInputField,
 } from './input-fields.js';
+import type { CreateObjectInputType } from './input-types.js';
 import {
     CreateChildEntityInputType,
     CreateEntityExtensionInputType,
-    CreateObjectInputType,
     CreateRootEntityInputType,
     ValueObjectInputType,
 } from './input-types.js';

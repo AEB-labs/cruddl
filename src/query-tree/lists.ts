@@ -1,4 +1,4 @@
-import { AggregationOperator } from '../model/config/index.js';
+import type { AggregationOperator } from '../model/config/index.js';
 import { OrderDirection } from '../model/implementation/order.js';
 import { indent, isDefined } from '../utils/utils.js';
 import { QueryNode } from './base.js';
