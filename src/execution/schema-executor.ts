@@ -1,23 +1,24 @@
-import {
+import type {
     DocumentNode,
     FragmentDefinitionNode,
-    getVariableValues,
     GraphQLSchema,
     OperationDefinitionNode,
     VariableDefinitionNode,
 } from 'graphql';
+import { getVariableValues } from 'graphql';
 import { globalContext } from '../config/global.js';
-import { DatabaseAdapter } from '../database/database-adapter.js';
+import type { DatabaseAdapter } from '../database/database-adapter.js';
 import { resolveSelections } from '../graphql/field-collection.js';
 import { extractOperation } from '../graphql/operations.js';
 import { InvalidProjectError } from '../project/invalid-project-error.js';
-import { Project } from '../project/project.js';
-import { QueryNodeObjectType, SchemaGenerator } from '../schema-generation/index.js';
-import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
+import type { Project } from '../project/project.js';
+import type { QueryNodeObjectType } from '../schema-generation/index.js';
+import { SchemaGenerator } from '../schema-generation/index.js';
+import type { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
 import { validateAndPrepareSchema } from '../schema/schema-builder.js';
 
-import { ExecutionOptions } from './execution-options.js';
-import { ExecutionResult } from './execution-result.js';
+import type { ExecutionOptions } from './execution-options.js';
+import type { ExecutionResult } from './execution-result.js';
 import { OperationResolver } from './operation-resolver.js';
 
 type ValidationResult =

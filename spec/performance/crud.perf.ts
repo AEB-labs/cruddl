@@ -1,5 +1,6 @@
 import { takeRandomSample } from '../../src/utils/utils.js';
-import { BenchmarkConfig, BenchmarkFactories } from './support/async-bench.js';
+import type { BenchmarkConfig, BenchmarkFactories } from './support/async-bench.js';
+import type { TestEnvironment } from './support/helpers.js';
 import {
     addManyPapersWithAQL,
     addPaper,
@@ -8,7 +9,6 @@ import {
     getRandomPaperIDsWithAQL,
     getSizeFactorForJSONLength,
     initEnvironment,
-    TestEnvironment,
 } from './support/helpers.js';
 
 function testAddRootEntity(config: { documentLength: number }): BenchmarkConfig {

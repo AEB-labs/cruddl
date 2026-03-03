@@ -1,4 +1,4 @@
-import {
+import type {
     ASTNode,
     DirectiveNode,
     EnumTypeDefinitionNode,
@@ -8,11 +8,11 @@ import {
     ScalarTypeDefinitionNode,
     TypeDefinitionNode,
 } from 'graphql';
-import { FixedPointDecimalInfo } from '../implementation/scalar-type.js';
-import { FieldConfig, FlexSearchLanguage } from './field.js';
-import { FlexSearchIndexConfig, IndexDefinitionConfig } from './indices.js';
-import { TypeModuleSpecificationConfig } from './module-specification.js';
-import { PermissionsConfig } from './permissions.js';
+import type { FixedPointDecimalInfo } from '../implementation/scalar-type.js';
+import type { FieldConfig, FlexSearchLanguage } from './field.js';
+import type { FlexSearchIndexConfig, IndexDefinitionConfig } from './indices.js';
+import type { TypeModuleSpecificationConfig } from './module-specification.js';
+import type { PermissionsConfig } from './permissions.js';
 
 export enum TypeKind {
     SCALAR = 'SCALAR',

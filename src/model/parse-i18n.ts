@@ -1,6 +1,6 @@
-import { ParsedObjectProjectSource } from '../config/parsed-project.js';
+import type { ParsedObjectProjectSource } from '../config/parsed-project.js';
 import { isDefined, mapValues } from '../utils/utils.js';
-import {
+import type {
     LocalizationBaseConfig,
     LocalizationConfig,
     NamespaceLocalizationConfig,

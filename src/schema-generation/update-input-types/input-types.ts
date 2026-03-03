@@ -1,15 +1,21 @@
-import { GraphQLID, GraphQLInputFieldConfigMap, ThunkReadonlyArray } from 'graphql';
-import {
+import type { GraphQLInputFieldConfigMap, ThunkReadonlyArray } from 'graphql';
+import { GraphQLID } from 'graphql';
+import type {
     ChildEntityType,
     EntityExtensionType,
     Field,
     ObjectType,
     RootEntityType,
 } from '../../model/index.js';
+import type {
+    ChildEntityUpdate,
+    PreExecQueryParms,
+    QueryNode,
+    RuntimeErrorQueryNode,
+} from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
-    ChildEntityUpdate,
     ConcatListsQueryNode,
     ConditionalQueryNode,
     DynamicPropertyAccessQueryNode,
@@ -17,9 +23,6 @@ import {
     LiteralQueryNode,
     MergeObjectsQueryNode,
     ObjectQueryNode,
-    PreExecQueryParms,
-    QueryNode,
-    RuntimeErrorQueryNode,
     SafeListQueryNode,
     SetFieldQueryNode,
     TransformListQueryNode,
@@ -35,16 +38,16 @@ import {
     getReplaceChildEntitiesFieldName,
     getUpdateChildEntitiesFieldName,
 } from '../../schema/names.js';
-import { AnyValue, decapitalize, groupArray, joinWithAnd, PlainObject } from '../../utils/utils.js';
+import type { AnyValue, PlainObject } from '../../utils/utils.js';
+import { decapitalize, groupArray, joinWithAnd } from '../../utils/utils.js';
 import { createGraphQLError } from '../graphql-errors.js';
-import { FieldContext } from '../query-node-object-type/index.js';
+import type { FieldContext } from '../query-node-object-type/index.js';
 import { TypedInputObjectType } from '../typed-input-object-type.js';
+import type { UpdateInputField, UpdateInputFieldContext } from './input-fields.js';
 import {
     AddChildEntitiesInputField,
     ReplaceChildEntitiesInputField,
     UpdateChildEntitiesInputField,
-    UpdateInputField,
-    UpdateInputFieldContext,
 } from './input-fields.js';
 import { isRelationUpdateField } from './relation-fields.js';
 

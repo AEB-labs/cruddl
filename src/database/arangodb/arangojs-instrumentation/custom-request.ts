@@ -4,22 +4,18 @@
  * Originally licensed under Apache License 2.0
  */
 
-import { SystemError } from 'arangojs/error.js';
-import { Errback } from 'arangojs/lib/errback.js';
+import type { SystemError } from 'arangojs/error.js';
+import type { Errback } from 'arangojs/lib/errback.js';
 import { joinPath } from 'arangojs/lib/joinPath.js';
 import { omit } from 'arangojs/lib/omit.js';
-import { RequestOptions as ArangoRequestOptions } from 'arangojs/lib/request.node.js';
-import {
-    ClientRequest,
-    ClientRequestArgs,
-    Agent as HttpAgent,
-    request as httpRequest,
-    IncomingMessage,
-} from 'http';
+import type { RequestOptions as ArangoRequestOptions } from 'arangojs/lib/request.node.js';
+import type { ClientRequest, ClientRequestArgs, IncomingMessage } from 'http';
+import { Agent as HttpAgent, request as httpRequest } from 'http';
 import { Agent as HttpsAgent, request as httpsRequest } from 'https';
-import { Socket } from 'net';
-import { parse as parseUrl, UrlWithStringQuery } from 'url';
-import { RequestInstrumentation, RequestInstrumentationPhase } from './config.js';
+import type { Socket } from 'net';
+import type { UrlWithStringQuery } from 'url';
+import { parse as parseUrl } from 'url';
+import type { RequestInstrumentation, RequestInstrumentationPhase } from './config.js';
 
 /**
  * @internal

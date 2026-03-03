@@ -1,5 +1,5 @@
-import { ThunkReadonlyArray } from 'graphql';
-import {
+import type { ThunkReadonlyArray } from 'graphql';
+import type {
     ChildEntityType,
     EntityExtensionType,
     Field,
@@ -7,6 +7,7 @@ import {
     RootEntityType,
     ValueObjectType,
 } from '../../model/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     AffectedFieldInfoQueryNode,
     CreateBillingEntityQueryNode,
@@ -16,20 +17,19 @@ import {
     ListItemQueryNode,
     LiteralQueryNode,
     PreExecQueryParms,
-    QueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
 } from '../../query-tree/index.js';
 import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants.js';
 import { getCreateInputTypeName, getValueObjectInputTypeName } from '../../schema/names.js';
-import { PlainObject } from '../../utils/utils.js';
-import { FieldContext } from '../query-node-object-type/index.js';
+import type { PlainObject } from '../../utils/utils.js';
+import type { FieldContext } from '../query-node-object-type/index.js';
 import { TypedInputObjectType } from '../typed-input-object-type.js';
 import {
     createBillingEntityCategoryNode,
     createBillingEntityQuantityNode,
 } from '../utils/billing-nodes.js';
-import { CreateInputField } from './input-fields.js';
+import type { CreateInputField } from './input-fields.js';
 import { isRelationCreateField } from './relation-fields.js';
 
 export class CreateObjectInputType extends TypedInputObjectType<CreateInputField> {

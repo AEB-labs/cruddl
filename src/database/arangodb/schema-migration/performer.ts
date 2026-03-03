@@ -1,13 +1,14 @@
-import { Database } from 'arangojs';
+import type { Database } from 'arangojs';
 import { CollectionType } from 'arangojs/collection.js';
-import { ArangoDBConfig, initDatabase } from '../config.js';
+import type { ArangoDBConfig } from '../config.js';
+import { initDatabase } from '../config.js';
 import {
     ERROR_ARANGO_DATA_SOURCE_NOT_FOUND,
     ERROR_ARANGO_DUPLICATE_NAME,
     ERROR_ARANGO_INDEX_NOT_FOUND,
 } from '../error-codes.js';
 import { configureForBackgroundCreation, isEqualProperties } from './arango-search-helpers.js';
-import {
+import type {
     CreateArangoSearchAnalyzerMigration,
     CreateArangoSearchViewMigration,
     CreateDocumentCollectionMigration,
