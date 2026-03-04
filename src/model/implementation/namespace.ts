@@ -1,5 +1,5 @@
-import { memorize } from 'memorize-decorator';
 import { DEFAULT_PERMISSION_PROFILE } from '../../schema/constants.js';
+import { memoize } from '../../utils/memoize.js';
 import { capitalize, groupArray, isDefined } from '../../utils/utils.js';
 import { ValidationMessage } from '../validation/index.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
@@ -90,12 +90,12 @@ export class Namespace implements ModelComponent {
         return namespace;
     }
 
-    @memorize()
+    @memoize()
     get allRootEntityTypes(): ReadonlyArray<RootEntityType> {
         return this.allTypes.filter((t) => t.isRootEntityType) as ReadonlyArray<RootEntityType>;
     }
 
-    @memorize()
+    @memoize()
     get rootEntityTypes(): ReadonlyArray<RootEntityType> {
         return this.types.filter((t) => t.isRootEntityType) as ReadonlyArray<RootEntityType>;
     }
@@ -171,7 +171,7 @@ export class Namespace implements ModelComponent {
         return true;
     }
 
-    @memorize()
+    @memoize()
     private get permissionProfileMap(): Map<string, PermissionProfile> {
         return new Map(
             this.permissionProfiles.map((profile): [string, PermissionProfile] => [

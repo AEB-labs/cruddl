@@ -1,6 +1,5 @@
 import type { GraphQLEnumType, ThunkReadonlyArray } from 'graphql';
 import { GraphQLString, resolveReadonlyArrayThunk } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import type { Field, ObjectType, Type } from '../../model/index.js';
 import { EnumType, ScalarType } from '../../model/index.js';
 import { FlexSearchComplexOperatorQueryNode } from '../../query-tree/flex-search.js';
@@ -26,6 +25,7 @@ import {
 } from '../../schema/constants.js';
 import { getFlexSearchFilterTypeName } from '../../schema/names.js';
 import { GraphQLI18nString } from '../../schema/scalars/string-map.js';
+import { memoize } from '../../utils/memoize.js';
 
 import type { EnumTypeGenerator } from '../enum-type-generator.js';
 import {
@@ -63,7 +63,7 @@ import { FlexSearchFilterObjectType } from './filter-types.js';
 export class FlexSearchFilterTypeGenerator {
     constructor(private enumTypeGenerator: EnumTypeGenerator) {}
 
-    @memorize()
+    @memoize()
     generate(type: ObjectType, isAggregation: boolean): FlexSearchFilterObjectType {
         const flexSearchFilterObjectType = this.generateFlexSearchFilterType(
             type,
@@ -335,7 +335,7 @@ export class FlexSearchFilterTypeGenerator {
         );
     }
 
-    @memorize()
+    @memoize()
     private generateTypeSpecificListFieldFilterFields(
         field: Field,
         path?: ReadonlyArray<Field>,
@@ -435,7 +435,7 @@ export class FlexSearchFilterTypeGenerator {
         ];
     }
 
-    @memorize()
+    @memoize()
     private generateI18nStringLocalizedFilterObjectType(
         withIdentityIndex: boolean,
         withFullTextIndex: boolean,

@@ -1,6 +1,6 @@
 import type { DirectiveNode, ObjectValueNode, StringValueNode } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import { SCALAR_JSON } from '../../schema/constants.js';
+import { memoize } from '../../utils/memoize.js';
 import { isDefined } from '../../utils/utils.js';
 import type { IndexDefinitionConfig } from '../config/index.js';
 import { TypeKind } from '../config/index.js';
@@ -24,13 +24,13 @@ export class IndexField implements ModelComponent {
     /**
      * Gets the innermost field
      */
-    @memorize()
+    @memoize()
     get field(): Field | undefined {
         const res = this.traversePath(() => undefined);
         return res ? res.field : undefined;
     }
 
-    @memorize()
+    @memoize()
     get fieldsInPath(): ReadonlyArray<Field> | undefined {
         const res = this.traversePath(() => undefined);
         return res ? res.fieldsInPath : undefined;

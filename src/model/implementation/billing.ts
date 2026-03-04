@@ -1,6 +1,6 @@
 import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import { GraphQLInt53 } from '../../schema/scalars/int53.js';
+import { memoize } from '../../utils/memoize.js';
 import { isDefined } from '../../utils/utils.js';
 import type { BillingEntityCategoryMappingConfig, BillingEntityConfig } from '../config/billing.js';
 import { ValidationMessage } from '../validation/index.js';
@@ -189,12 +189,12 @@ export class BillingEntityType implements ModelComponent {
         // TODO maybe type checking of mapping keys?
     }
 
-    @memorize()
+    @memoize()
     get rootEntityType(): RootEntityType | undefined {
         return this.model.rootEntityTypes.find((value) => value.name === this.input.typeName);
     }
 
-    @memorize()
+    @memoize()
     get billingKeyField(): Field | undefined {
         if (!this.rootEntityType) {
             return undefined;
@@ -212,7 +212,7 @@ export class BillingEntityType implements ModelComponent {
         return this.input.typeName;
     }
 
-    @memorize()
+    @memoize()
     get keyFieldName() {
         return (
             this.input.keyFieldName ||

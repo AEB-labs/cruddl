@@ -1,6 +1,5 @@
 import type { ArgumentNode } from 'graphql';
 import { GraphQLID, GraphQLString } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import {
     ACCESS_FIELD_DIRECTIVE,
     ACCESS_GROUP_FIELD,
@@ -13,6 +12,7 @@ import {
 } from '../../schema/constants.js';
 import { GraphQLInt53 } from '../../schema/scalars/int53.js';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
+import { memoize } from '../../utils/memoize.js';
 import { isDefined } from '../../utils/utils.js';
 import type {
     FlexSearchPerformanceParams,
@@ -83,7 +83,7 @@ export class RootEntityType extends ObjectTypeBase {
         this.indexConfigs = input.indices ?? [];
     }
 
-    @memorize()
+    @memoize()
     get indices(): ReadonlyArray<Index> {
         const indexConfigs = [...this.indexConfigs];
 
@@ -143,7 +143,7 @@ export class RootEntityType extends ObjectTypeBase {
         );
     }
 
-    @memorize()
+    @memoize()
     get keyField(): Field | undefined {
         if (!this.input.keyFieldName) {
             return undefined;
@@ -175,7 +175,7 @@ export class RootEntityType extends ObjectTypeBase {
     /**
      * Gets a field that is guaranteed to be unique, to be used for absolute order
      */
-    @memorize()
+    @memoize()
     get discriminatorField(): Field {
         // later, we can return @key here when it exists and is required
         // however, consider: this is used everywhere in primarySort, so changing it would cause
@@ -206,7 +206,7 @@ export class RootEntityType extends ObjectTypeBase {
     /**
      * A list of all relations concerning this type, regardless of whether there is a field on this type for it
      */
-    @memorize()
+    @memoize()
     get relations(): ReadonlyArray<Relation> {
         return this.model.relations.filter((rel) => rel.fromType === this || rel.toType === this);
     }
@@ -214,7 +214,7 @@ export class RootEntityType extends ObjectTypeBase {
     /**
      * A list of all relations sides concerning this type, regardless of whether there is a field on this type for it
      */
-    @memorize()
+    @memoize()
     get relationSides(): ReadonlyArray<RelationSide> {
         return [
             ...this.model.relations
@@ -490,7 +490,7 @@ export class RootEntityType extends ObjectTypeBase {
         }
     }
 
-    @memorize()
+    @memoize()
     get billingEntityConfig() {
         return this.model.billingEntityTypes.find((value) => value.rootEntityType === this);
     }
@@ -525,14 +525,14 @@ export class RootEntityType extends ObjectTypeBase {
         return clauses.map((clause) => new FlexSearchPrimarySortClause(clause, this));
     }
 
-    @memorize()
+    @memoize()
     get timeToLiveTypes(): ReadonlyArray<TimeToLiveType> {
         return this.model.timeToLiveTypes.filter(
             (ttlType) => ttlType.rootEntityType && ttlType.rootEntityType.name === this.name,
         );
     }
 
-    @memorize()
+    @memoize()
     get effectiveModuleSpecification(): EffectiveModuleSpecification {
         // the default behavior for an ObjectType is to be included wherever a type is used.
         // for root entity types, this is not good - they generate API on their own, so they

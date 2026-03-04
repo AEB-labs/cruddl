@@ -1,6 +1,5 @@
 import type { GraphQLInputType } from 'graphql';
 import { GraphQLList, GraphQLNonNull } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import type {
     ChildEntityType,
     EntityExtensionType,
@@ -9,6 +8,7 @@ import type {
     RootEntityType,
     ValueObjectType,
 } from '../../model/index.js';
+import { memoize } from '../../utils/memoize.js';
 import type { EnumTypeGenerator } from '../enum-type-generator.js';
 import type { CreateInputField } from './input-fields.js';
 import {
@@ -37,7 +37,7 @@ import {
 export class CreateInputTypeGenerator {
     constructor(private readonly enumTypeGenerator: EnumTypeGenerator) {}
 
-    @memorize()
+    @memoize()
     generate(type: ObjectType): CreateObjectInputType {
         if (type.isRootEntityType) {
             return this.generateForRootEntityType(type);
@@ -51,28 +51,28 @@ export class CreateInputTypeGenerator {
         return this.generateForValueObjectType(type);
     }
 
-    @memorize()
+    @memoize()
     generateForRootEntityType(type: RootEntityType): CreateRootEntityInputType {
         return new CreateRootEntityInputType(type, () =>
             type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
-    @memorize()
+    @memoize()
     generateForChildEntityType(type: ChildEntityType): CreateChildEntityInputType {
         return new CreateChildEntityInputType(type, () =>
             type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
-    @memorize()
+    @memoize()
     generateForEntityExtensionType(type: EntityExtensionType): CreateObjectInputType {
         return new CreateEntityExtensionInputType(type, () =>
             type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
-    @memorize()
+    @memoize()
     generateForValueObjectType(type: ValueObjectType): CreateObjectInputType {
         return new ValueObjectInputType(type, () =>
             type.fields.flatMap((field: Field) => this.generateFields(field)),

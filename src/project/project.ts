@@ -1,5 +1,4 @@
 import type { GraphQLSchema } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import { DEFAULT_LOGGER_PROVIDER } from '../config/console-logger.js';
 import type { ProjectOptions } from '../config/interfaces.js';
 import type { LoggerProvider } from '../config/logging.js';
@@ -15,6 +14,7 @@ import type { Model, TimeToLiveType, ValidationResult } from '../model/index.js'
 import type { QueryNode } from '../query-tree/index.js';
 import { ListQueryNode } from '../query-tree/index.js';
 import { createSchema, getModel, validateSchema } from '../schema/schema-builder.js';
+import { memoize } from '../utils/memoize.js';
 import { isReadonlyArray } from '../utils/utils.js';
 import type { ModuleSelectionOptions } from './select-modules-in-sources.js';
 import { selectModulesInProject } from './select-modules-in-sources.js';
@@ -140,7 +140,7 @@ export class Project {
      *
      * @return the result with all validation messages encountered
      */
-    @memorize()
+    @memoize()
     validate(): ValidationResult {
         return validateSchema(this);
     }
@@ -150,7 +150,7 @@ export class Project {
      *
      * @throws InvalidProjectError if this project is invalid
      */
-    @memorize()
+    @memoize()
     getModel(): Model {
         return getModel(this);
     }
@@ -209,7 +209,7 @@ export class Project {
      *
      * @throws InvalidProjectError if this project is invalid
      */
-    @memorize()
+    @memoize()
     createMetaSchema(): GraphQLSchema {
         return getMetaSchema(this);
     }

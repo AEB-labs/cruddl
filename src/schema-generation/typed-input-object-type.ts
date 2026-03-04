@@ -5,7 +5,7 @@ import type {
     ThunkReadonlyArray,
 } from 'graphql';
 import { GraphQLInputObjectType, resolveReadonlyArrayThunk } from 'graphql';
-import { memorize } from 'memorize-decorator';
+import { memoize } from '../utils/memoize.js';
 import type { Constructor } from '../utils/utils.js';
 
 export interface TypedInputFieldBase<TField extends TypedInputFieldBase<TField>> {
@@ -22,7 +22,7 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
         public readonly description?: string,
     ) {}
 
-    @memorize()
+    @memoize()
     getInputType(): GraphQLInputObjectType {
         return new GraphQLInputObjectType({
             name: this.name,
@@ -67,12 +67,12 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
         return field as T;
     }
 
-    @memorize()
+    @memoize()
     private get fieldMap() {
         return new Map(this.fields.map((field): [string, TField] => [field.name, field]));
     }
 
-    @memorize()
+    @memoize()
     public get fields(): ReadonlyArray<TField> {
         return resolveAndCheckFields(this._fields, this.name);
     }

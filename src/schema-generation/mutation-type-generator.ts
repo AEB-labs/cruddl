@@ -1,5 +1,4 @@
 import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import type { Namespace, RootEntityType } from '../model/index.js';
 import type { QueryNode } from '../query-tree/index.js';
 import {
@@ -43,6 +42,7 @@ import {
     getUpdateEntitiesFieldName,
     getUpdateEntityFieldName,
 } from '../schema/names.js';
+import { memoize } from '../utils/memoize.js';
 import type { PlainObject } from '../utils/utils.js';
 import { decapitalize, isDefined } from '../utils/utils.js';
 import type { BillingTypeGenerator } from './billing-type-generator.js';
@@ -90,7 +90,7 @@ export class MutationTypeGenerator {
         private readonly uniqueFieldArgumentsGenerator: UniqueFieldArgumentsGenerator,
     ) {}
 
-    @memorize()
+    @memoize()
     generate(namespace: Namespace): QueryNodeObjectType {
         const namespaceFields = namespace.childNamespaces
             .filter((namespace) => namespace.allRootEntityTypes.length > 0)

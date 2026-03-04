@@ -5,8 +5,8 @@ import type {
     ThunkReadonlyArray,
 } from 'graphql';
 import { GraphQLList, GraphQLNonNull, GraphQLObjectType, resolveReadonlyArrayThunk } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import type { SchemaTransformationContext } from '../../schema/preparation/transformation-pipeline.js';
+import { memoize } from '../../utils/memoize.js';
 import type { QueryNodeField, QueryNodeObjectType, QueryNodeOutputType } from './definition.js';
 import { QueryNodeListType, QueryNodeNonNullType } from './definition.js';
 import { getFieldResolver } from './field-resolver.js';
@@ -15,7 +15,7 @@ import { isGraphQLOutputType } from './utils.js';
 export class QueryNodeObjectTypeConverter {
     constructor(private readonly context: SchemaTransformationContext) {}
 
-    @memorize()
+    @memoize()
     convertToGraphQLObjectType(type: QueryNodeObjectType): GraphQLObjectType {
         return new GraphQLObjectType({
             name: type.name,

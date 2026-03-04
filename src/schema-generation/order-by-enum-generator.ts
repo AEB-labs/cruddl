@@ -1,11 +1,11 @@
 import type { GraphQLEnumValueConfig } from 'graphql';
 import { GraphQLEnumType } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import type { Field, ObjectType } from '../model/index.js';
 import type { QueryNode } from '../query-tree/index.js';
 import { OrderClause, OrderDirection } from '../query-tree/index.js';
 import { ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/constants.js';
 import { getOrderByTypeName } from '../schema/names.js';
+import { memoize } from '../utils/memoize.js';
 
 import { isDefined } from '../utils/utils.js';
 import { createFieldNode } from './field-nodes.js';
@@ -21,7 +21,7 @@ export class OrderByEnumType {
         return getOrderByTypeName(this.objectType.name);
     }
 
-    @memorize()
+    @memoize()
     private get valueMap(): Map<string, OrderByEnumValue> {
         return new Map(this.values.map((v): [string, OrderByEnumValue] => [v.name, v]));
     }
@@ -38,7 +38,7 @@ export class OrderByEnumType {
         return value;
     }
 
-    @memorize()
+    @memoize()
     getEnumType(): GraphQLEnumType {
         return new GraphQLEnumType({
             name: this.name,
@@ -121,7 +121,7 @@ export class OrderByEnumGenerator {
     /**
      * Generate the OrderBy type for an object type, or undefined if has not any fields to order by
      */
-    @memorize()
+    @memoize()
     generate(objectType: ObjectType): OrderByEnumType | undefined {
         const values = this.getValues(objectType);
         if (!values.length) {

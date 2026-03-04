@@ -1,5 +1,4 @@
 import { GraphQLBoolean, GraphQLID } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import type { RootEntityType } from '../model/implementation/index.js';
 import type { QueryNode } from '../query-tree/index.js';
 import {
@@ -24,6 +23,7 @@ import {
 } from '../query-tree/index.js';
 import { BILLING_MUTATION_INPUT_ARG } from '../schema/constants.js';
 import { getConfirmForBillingFieldName } from '../schema/names.js';
+import { memoize } from '../utils/memoize.js';
 import type { OutputTypeGenerator } from './output-type-generator.js';
 import type { QueryNodeField } from './query-node-object-type/index.js';
 import {
@@ -34,7 +34,7 @@ import {
 export class BillingTypeGenerator {
     constructor(readonly outputTypeGenerator: OutputTypeGenerator) {}
 
-    @memorize()
+    @memoize()
     getMutationField(rootEntityType: RootEntityType): QueryNodeField | undefined {
         if (
             !rootEntityType.billingEntityConfig ||

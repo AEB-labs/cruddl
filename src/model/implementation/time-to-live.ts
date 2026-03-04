@@ -1,7 +1,7 @@
-import { memorize } from 'memorize-decorator';
 import { GraphQLDateTime } from '../../schema/scalars/date-time.js';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js';
+import { memoize } from '../../utils/memoize.js';
 import type { TimeToLiveConfig } from '../config/index.js';
 import { RelationDeleteAction, TypeKind } from '../config/index.js';
 import { ValidationMessage } from '../validation/index.js';
@@ -180,19 +180,19 @@ export class TimeToLiveType implements ModelComponent {
         // cascade two layers deep and no deeper.
     }
 
-    @memorize()
+    @memoize()
     get path(): ReadonlyArray<Field> | undefined {
         const traversedPath = this.traversePath(() => undefined);
         return traversedPath && traversedPath.fieldsInPath;
     }
 
-    @memorize()
+    @memoize()
     get fieldType(): ScalarType | undefined {
         let path = this.path && this.path[this.path.length - 1];
         return path && (path.type as ScalarType);
     }
 
-    @memorize()
+    @memoize()
     get expireAfterDays() {
         return this.input.expireAfterDays;
     }

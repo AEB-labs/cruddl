@@ -1,5 +1,4 @@
 import { GraphQLID, GraphQLNonNull, GraphQLString } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import type { FieldRequest } from '../graphql/query-distiller.js';
 import { isListTypeIgnoringNonNull } from '../graphql/schema-utils.js';
 import type { Field, ObjectType, Type } from '../model/index.js';
@@ -20,6 +19,7 @@ import {
     REVISION_FIELD,
 } from '../schema/constants.js';
 import { getMetaFieldName } from '../schema/names.js';
+import { memoize } from '../utils/memoize.js';
 import { isDefined } from '../utils/utils.js';
 import type { EnumTypeGenerator } from './enum-type-generator.js';
 import { createFieldNode } from './field-nodes.js';
@@ -67,7 +67,7 @@ export class OutputTypeGenerator {
         throw new Error(`Unsupported type kind: ${(type as Type).kind}`);
     }
 
-    @memorize()
+    @memoize()
     private generateObjectType(objectType: ObjectType): QueryNodeOutputType {
         const descriptionParts = [];
         if (objectType.description) {

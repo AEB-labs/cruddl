@@ -1,6 +1,5 @@
 import type { GraphQLEnumType, ThunkReadonlyArray } from 'graphql';
 import { GraphQLString, resolveReadonlyArrayThunk } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import type { Field, Type } from '../../model/index.js';
 import { EnumType, ScalarType } from '../../model/index.js';
 import type { QueryNode } from '../../query-tree/index.js';
@@ -13,6 +12,7 @@ import {
 import { INPUT_FIELD_EQUAL } from '../../schema/constants.js';
 import { getFilterTypeName } from '../../schema/names.js';
 import { GraphQLI18nString, GraphQLStringMap } from '../../schema/scalars/string-map.js';
+import { memoize } from '../../utils/memoize.js';
 import type { AnyValue } from '../../utils/utils.js';
 import type { EnumTypeGenerator } from '../enum-type-generator.js';
 import { TypedInputObjectType } from '../typed-input-object-type.js';
@@ -67,7 +67,7 @@ export class FilterObjectType extends TypedInputObjectType<FilterField> {
 export class FilterTypeGenerator {
     constructor(private enumTypeGenerator: EnumTypeGenerator) {}
 
-    @memorize()
+    @memoize()
     generate(type: Type): FilterObjectType {
         if (type instanceof ScalarType) {
             return this.generateFilterType(type.name, this.buildScalarFilterFields(type));
@@ -80,7 +80,7 @@ export class FilterTypeGenerator {
         );
     }
 
-    @memorize()
+    @memoize()
     private generateStringMapEntryFilterType(type: Type) {
         const keyName = type.name === GraphQLI18nString.name ? 'language' : 'key';
 

@@ -1,6 +1,6 @@
-import { memorize } from 'memorize-decorator';
 import type { SchemaOptions } from '../config/interfaces.js';
 import type { Model } from '../model/index.js';
+import { memoize } from '../utils/memoize.js';
 import { BillingTypeGenerator } from './billing-type-generator.js';
 import { CreateInputTypeGenerator } from './create-input-types/index.js';
 import { EnumTypeGenerator } from './enum-type-generator.js';
@@ -120,12 +120,12 @@ export class RootTypesGenerator {
         );
     }
 
-    @memorize()
+    @memoize()
     generateQueryType(model: Model): QueryNodeObjectType {
         return this.queryTypeGenerator.generate(model.rootNamespace);
     }
 
-    @memorize()
+    @memoize()
     generateMutationType(model: Model): QueryNodeObjectType {
         return this.mutationTypeGenerator.generate(model.rootNamespace);
     }

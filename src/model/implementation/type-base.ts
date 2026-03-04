@@ -1,7 +1,7 @@
 import type { NameNode, TypeDefinitionNode } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import pluralize from 'pluralize';
 import { MODULES_DIRECTIVE } from '../../schema/constants.js';
+import { memoize } from '../../utils/memoize.js';
 import type { TypeConfig, TypeKind } from '../config/index.js';
 import { FlexSearchLanguage } from '../config/index.js';
 import { ValidationMessage } from '../validation/index.js';
@@ -124,12 +124,12 @@ export abstract class TypeBase implements ModelComponent {
         return this.model.i18n.getTypeLocalization(this, resolutionOrder);
     }
 
-    @memorize()
+    @memoize()
     get namespace(): Namespace {
         return this.model.getNamespaceByPathOrThrow(this.namespacePath);
     }
 
-    @memorize()
+    @memoize()
     get label(): Record<string, string> {
         const res: Record<string, string> = {};
         for (const [lang, localization] of Object.entries(this.model.i18n.getTypeI18n(this))) {
@@ -140,7 +140,7 @@ export abstract class TypeBase implements ModelComponent {
         return res;
     }
 
-    @memorize()
+    @memoize()
     get labelPlural(): Record<string, string> {
         const res: Record<string, string> = {};
         for (const [lang, localization] of Object.entries(this.model.i18n.getTypeI18n(this))) {
@@ -151,7 +151,7 @@ export abstract class TypeBase implements ModelComponent {
         return res;
     }
 
-    @memorize()
+    @memoize()
     get hint(): Record<string, string> {
         const res: Record<string, string> = {};
         for (const [lang, localization] of Object.entries(this.model.i18n.getTypeI18n(this))) {
@@ -162,7 +162,7 @@ export abstract class TypeBase implements ModelComponent {
         return res;
     }
 
-    @memorize()
+    @memoize()
     get effectiveModuleSpecification(): EffectiveModuleSpecification {
         return new EffectiveModuleSpecification({
             // clauses being undefined is an error state, recover gracefully

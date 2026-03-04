@@ -1,4 +1,4 @@
-import { memorize } from 'memorize-decorator';
+import { memoize } from '../../utils/memoize.js';
 import type { LocationLike, MessageLocation } from '../validation/index.js';
 import { locationWithinStringArgument, ValidationMessage } from '../validation/index.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
@@ -50,17 +50,17 @@ export class FieldPath implements ModelComponent {
         this.location = config.location;
     }
 
-    @memorize()
+    @memoize()
     get fields(): ReadonlyArray<Field> | undefined {
         return this.traversePath(() => undefined);
     }
 
-    @memorize()
+    @memoize()
     get lastField(): Field | undefined {
         return this.fields && this.fields[this.fields.length - 1];
     }
 
-    @memorize()
+    @memoize()
     get type(): Type | undefined {
         return this.lastField ? this.lastField.type : undefined;
     }

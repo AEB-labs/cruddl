@@ -1,6 +1,6 @@
 import type { StringValueNode } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import type { QueryNode, VariableQueryNode } from '../../query-tree/index.js';
+import { memoize } from '../../utils/memoize.js';
 import { isDefined } from '../../utils/utils.js';
 
 import type { CollectFieldConfig } from '../config/index.js';
@@ -74,7 +74,7 @@ export class CollectPath {
         this.astNode = config.pathASTNode;
     }
 
-    @memorize()
+    @memoize()
     get segments(): ReadonlyArray<CollectPathSegment> {
         return this.traversePath(() => undefined);
     }
@@ -121,7 +121,7 @@ export class CollectPath {
         return segments[segments.length - 1].resultMayContainDuplicateEntities;
     }
 
-    @memorize()
+    @memoize()
     get traversesRootEntityTypes(): boolean {
         return this.segments.some((s) => s.field.type.isRootEntityType);
     }

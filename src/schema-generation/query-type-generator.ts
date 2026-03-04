@@ -1,9 +1,9 @@
-import { memorize } from 'memorize-decorator';
 import type { Namespace, RootEntityType } from '../model/index.js';
 import type { QueryNode } from '../query-tree/index.js';
 import { EntitiesQueryNode, FirstOfListQueryNode, ObjectQueryNode } from '../query-tree/index.js';
 import { QUERY_TYPE } from '../schema/constants.js';
 import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names.js';
+import { memoize } from '../utils/memoize.js';
 
 import type { FilterAugmentation } from './filter-augmentation.js';
 import type { FlexSearchGenerator } from './flex-search-generator.js';
@@ -32,7 +32,7 @@ export class QueryTypeGenerator {
         private readonly uniqueFieldArgumentsGenerator: UniqueFieldArgumentsGenerator,
     ) {}
 
-    @memorize()
+    @memoize()
     generate(namespace: Namespace): QueryNodeObjectType {
         const namespaceDesc = namespace.isRoot
             ? `the root namespace`

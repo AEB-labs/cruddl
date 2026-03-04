@@ -1,6 +1,5 @@
 import type { GraphQLInputType } from 'graphql';
 import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import type {
     CalcMutationsOperator,
     ChildEntityType,
@@ -17,6 +16,7 @@ import {
     getUpdateChildEntitiesFieldName,
     getUpdateInputTypeName,
 } from '../../schema/names.js';
+import { memoize } from '../../utils/memoize.js';
 import type { CreateInputTypeGenerator } from '../create-input-types/index.js';
 import type { EnumTypeGenerator } from '../enum-type-generator.js';
 import type { UpdateInputField } from './input-fields.js';
@@ -54,7 +54,7 @@ export class UpdateInputTypeGenerator {
         private readonly createInputTypeGenerator: CreateInputTypeGenerator,
     ) {}
 
-    @memorize()
+    @memoize()
     generate(type: RootEntityType | EntityExtensionType | ChildEntityType): UpdateObjectInputType {
         if (type.isRootEntityType) {
             return this.generateForRootEntityType(type);
@@ -68,14 +68,14 @@ export class UpdateInputTypeGenerator {
         throw new Error(`Unsupported type ${(type as any).kind} for update input type generation`);
     }
 
-    @memorize()
+    @memoize()
     generateForRootEntityType(type: RootEntityType): UpdateRootEntityInputType {
         return new UpdateRootEntityInputType(type, getUpdateInputTypeName(type.name), () =>
             type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
-    @memorize()
+    @memoize()
     generateUpdateAllRootEntitiesInputType(type: RootEntityType): UpdateRootEntityInputType {
         return new UpdateRootEntityInputType(type, getUpdateAllInputTypeName(type), () =>
             type.fields.flatMap((field: Field) =>
@@ -87,14 +87,14 @@ export class UpdateInputTypeGenerator {
         );
     }
 
-    @memorize()
+    @memoize()
     generateForEntityExtensionType(type: EntityExtensionType): UpdateEntityExtensionInputType {
         return new UpdateEntityExtensionInputType(type, getUpdateInputTypeName(type.name), () =>
             type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
-    @memorize()
+    @memoize()
     generateForChildEntityType(type: ChildEntityType): UpdateChildEntityInputType {
         return new UpdateChildEntityInputType(type, getUpdateInputTypeName(type.name), () =>
             type.fields.flatMap((field: Field) => this.generateFields(field)),

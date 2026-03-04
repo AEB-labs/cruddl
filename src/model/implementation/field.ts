@@ -1,6 +1,5 @@
 import type { ASTNode, DirectiveNode, FieldDefinitionNode } from 'graphql';
 import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import {
     ACCESS_GROUP_FIELD,
     CALC_MUTATIONS_OPERATORS,
@@ -21,6 +20,7 @@ import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time.js';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js';
 import { GraphQLI18nString } from '../../schema/scalars/string-map.js';
+import { memoize } from '../../utils/memoize.js';
 import { isDefined } from '../../utils/utils.js';
 import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
 import type { CalcMutationsOperator, FieldConfig, FlexSearchLanguage } from '../config/index.js';
@@ -200,7 +200,7 @@ export class Field implements ModelComponent {
         return this.defaultValue !== undefined;
     }
 
-    @memorize()
+    @memoize()
     get label(): Record<string, string> {
         const res: Record<string, string> = {};
         for (const [lang, localization] of Object.entries(this.model.i18n.getFieldI18n(this))) {
@@ -211,7 +211,7 @@ export class Field implements ModelComponent {
         return res;
     }
 
-    @memorize()
+    @memoize()
     get hint(): Record<string, string> {
         const res: Record<string, string> = {};
         for (const [lang, localization] of Object.entries(this.model.i18n.getFieldI18n(this))) {
@@ -222,7 +222,7 @@ export class Field implements ModelComponent {
         return res;
     }
 
-    @memorize()
+    @memoize()
     public get permissionProfile(): PermissionProfile | undefined {
         if (!this.input.permissions || !isDefined(this.input.permissions.permissionProfileName)) {
             return undefined;
@@ -261,7 +261,7 @@ export class Field implements ModelComponent {
         return relationSide.relation;
     }
 
-    @memorize()
+    @memoize()
     public get relationSide(): RelationSide | undefined {
         if (
             !this.isRelation ||
@@ -320,7 +320,7 @@ export class Field implements ModelComponent {
      *
      * If this is a reference without an explicit key field, returns this (reference) field
      */
-    @memorize()
+    @memoize()
     get referenceKeyField(): Field | undefined {
         if (!this.isReference) {
             return undefined;
@@ -344,7 +344,7 @@ export class Field implements ModelComponent {
     /**
      * A reference field within the same type that uses this field as its key field
      */
-    @memorize()
+    @memoize()
     get referenceField(): Field | undefined {
         return this.declaringType.fields.filter((f) => f.referenceKeyField === this)[0];
     }
@@ -353,7 +353,7 @@ export class Field implements ModelComponent {
         return this.model.i18n.getFieldLocalization(this, resolutionOrder);
     }
 
-    @memorize()
+    @memoize()
     get effectiveModuleSpecification(): EffectiveModuleSpecification {
         if (
             this.moduleSpecification?.all ||

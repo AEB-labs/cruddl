@@ -1,5 +1,5 @@
 import type { EnumValueDefinitionNode } from 'graphql';
-import { memorize } from 'memorize-decorator';
+import { memoize } from '../../utils/memoize.js';
 import type { EnumTypeConfig, EnumValueConfig } from '../config/index.js';
 import { TypeKind } from '../config/index.js';
 import type { ValidationContext } from '../validation/index.js';
@@ -93,7 +93,7 @@ export class EnumValue implements ModelComponent {
         }
     }
 
-    @memorize()
+    @memoize()
     get label(): Record<string, string> {
         const res: Record<string, string> = {};
         for (const [lang, localization] of Object.entries(this.model.i18n.getEnumValueI18n(this))) {
@@ -104,7 +104,7 @@ export class EnumValue implements ModelComponent {
         return res;
     }
 
-    @memorize()
+    @memoize()
     get hint(): Record<string, string> {
         const res: Record<string, string> = {};
         for (const [lang, localization] of Object.entries(this.model.i18n.getEnumValueI18n(this))) {

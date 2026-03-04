@@ -1,5 +1,5 @@
-import { memorize } from 'memorize-decorator';
 import type { ModelOptions } from '../../config/interfaces.js';
+import { memoize } from '../../utils/memoize.js';
 import { groupArray, isDefined, uniqBy } from '../../utils/utils.js';
 
 import type { ModelConfig } from '../config/index.js';
@@ -295,7 +295,7 @@ export class Model implements ModelComponent {
     /**
      * Gets a list of all relations between any
      */
-    @memorize()
+    @memoize()
     get relations(): ReadonlyArray<Relation> {
         const withDuplicates = this.rootEntityTypes.flatMap((entity) => entity.explicitRelations);
         return uniqBy(withDuplicates, (rel) => rel.identifier);

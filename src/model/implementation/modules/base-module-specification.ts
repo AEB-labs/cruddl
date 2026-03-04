@@ -1,5 +1,5 @@
 import type { ASTNode } from 'graphql';
-import { memorize } from 'memorize-decorator';
+import { memoize } from '../../../utils/memoize.js';
 import type {
     BaseModuleSpecificationConfig,
     ModuleSpecificationClauseConfig,
@@ -55,7 +55,7 @@ export class ModuleSpecificationClause implements ModelComponent {
         this.expression = config.expression;
     }
 
-    @memorize()
+    @memoize()
     get andCombinedModules(): ReadonlyArray<string> {
         return this.parse(new ValidationContext());
     }

@@ -1,14 +1,14 @@
 import type { GraphQLFieldConfigArgumentMap, GraphQLInputType } from 'graphql';
 import { GraphQLID } from 'graphql';
-import { memorize } from 'memorize-decorator';
 import type { RootEntityType, Type } from '../model/index.js';
 import { ID_FIELD } from '../schema/constants.js';
+import { memoize } from '../utils/memoize.js';
 import type { EnumTypeGenerator } from './enum-type-generator.js';
 
 export class UniqueFieldArgumentsGenerator {
     constructor(private readonly enumTypeGenerator: EnumTypeGenerator) {}
 
-    @memorize()
+    @memoize()
     getArgumentsForUniqueFields(rootEntityType: RootEntityType): GraphQLFieldConfigArgumentMap {
         // theoretically, we could make the id field non-null if there is no key field. However, this would be a breaking
         // change for everyone that specifies the id field as (non-null) variable - which are probably quite a lot of
