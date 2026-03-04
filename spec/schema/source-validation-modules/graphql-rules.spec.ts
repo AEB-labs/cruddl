@@ -1,11 +1,11 @@
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
-import type { ParsedProjectSource } from '../../../src/config/parsed-project.js';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';
 import { ValidationContext } from '../../../src/model/validation/index.js';
 import { ProjectSource } from '../../../src/project/source.js';
+import { parseProjectSource } from '../../../src/schema/parsing/parse-project-source.js';
+import type { ParsedProjectSource } from '../../../src/schema/parsing/parsed-project.js';
 import { GraphQLRulesValidator } from '../../../src/schema/preparation/source-validation-modules/graphql-rules.js';
-import { parseProjectSource } from '../../../src/schema/schema-builder.js';
 
 describe('graphql-rules validator', () => {
     const validator = new GraphQLRulesValidator();
