@@ -1,7 +1,7 @@
 import type { ParsedObjectProjectSource } from '../config/parsed-project.js';
 import type { BillingConfig } from './config/billing.js';
 
-export function parseBillingConfigs(source: ParsedObjectProjectSource): BillingConfig {
+export function extractBillingConfigs(source: ParsedObjectProjectSource): BillingConfig {
     if (!source.object || !source.object.billing || typeof source.object.billing !== 'object') {
         return { billingEntities: [] };
     }
