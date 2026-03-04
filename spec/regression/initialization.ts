@@ -1,7 +1,7 @@
 import { Database } from 'arangojs';
 import { existsSync, readFileSync } from 'fs';
 import type { ExecutionResult } from 'graphql';
-import stripJsonComments from 'strip-json-comments';
+import { parse as parseJSONC, printParseErrorCode, type ParseError } from 'jsonc-parser';
 import type { ArangoDBConfig } from '../../src/database/arangodb/index.js';
 import { isDefined } from '../../src/utils/utils.js';
 import { generateRandomString } from '../helpers/generate-random-string.js';
@@ -59,7 +59,7 @@ export async function initTestData(
         };
     }
 
-    const testData = JSON.parse(stripJsonComments(readFileSync(path, 'utf-8')));
+    const testData = parseJSONCWithErrors(readFileSync(path, 'utf-8'), path) as any;
     const ids = new Map<string, string>();
 
     function fillTemplateStrings(data: any): any {
@@ -144,6 +144,23 @@ export async function initTestData(
      }*/
 
     return { fillTemplateStrings };
+}
+
+function parseJSONCWithErrors(source: string, sourcePath: string): unknown {
+    const parseErrors: ParseError[] = [];
+    const parsed = parseJSONC(source, parseErrors, {
+        allowTrailingComma: false,
+        disallowComments: false,
+    });
+
+    if (parseErrors.length) {
+        const firstError = parseErrors[0];
+        throw new Error(
+            `Invalid JSONC in ${sourcePath} at offset ${firstError.offset}: ${printParseErrorCode(firstError.error)}`,
+        );
+    }
+
+    return parsed;
 }
 
 function wrapNamespaceForQuery(stuff: string, namespace: ReadonlyArray<string>) {
