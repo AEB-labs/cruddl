@@ -21,9 +21,14 @@ export interface ParsedGraphQLProjectSource extends ParsedProjectSourceBase {
 export interface ParsedObjectProjectSource extends ParsedProjectSourceBase {
     readonly kind: ParsedProjectSourceBaseKind.OBJECT;
     readonly object: PlainObject;
-    readonly pathLocationMap: { [path: string]: MessageLocation };
+    readonly pathLocationMap: PathLocationMap;
 }
 
+/**
+ * A mapping from JSON pointer paths to the location in the source file where that path is define
+ *
+ * JSON pointer syntax is defined in https://datatracker.ietf.org/doc/html/rfc6901
+ */
 export type PathLocationMap = { readonly [path: string]: MessageLocation };
 
 export enum ParsedProjectSourceBaseKind {
