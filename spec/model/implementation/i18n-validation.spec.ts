@@ -2,8 +2,8 @@ import { Source } from 'graphql';
 import { describe, expect, it } from 'vitest';
 import { createModel, ValidationContext } from '../../../src/model/index.js';
 import { Project } from '../../../src/project/project.js';
+import { parseProject } from '../../../src/schema/parsing/parse-project.js';
 import { validateParsedProjectSource } from '../../../src/schema/preparation/ast-validator.js';
-import { parseProject } from '../../../src/schema/schema-builder.js';
 
 const permissionProfiles = `{
   "permissionProfiles": {

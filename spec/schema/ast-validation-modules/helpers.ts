@@ -1,17 +1,17 @@
 import type { DocumentNode } from 'graphql';
 import { parse, Source } from 'graphql';
 import { expect } from 'vitest';
-import { ParsedProjectSourceBaseKind } from '../../../src/config/parsed-project.js';
 import { prettyPrint } from '../../../src/graphql/pretty-print.js';
 import type { PermissionProfileConfigMap, TimeToLiveConfig } from '../../../src/model/index.js';
 import { createModel, ValidationContext, ValidationResult } from '../../../src/model/index.js';
 import { ProjectSource } from '../../../src/project/source.js';
+import { parseProjectSource } from '../../../src/schema/parsing/parse-project-source.js';
+import { ParsedProjectSourceBaseKind } from '../../../src/schema/parsing/parsed-project.js';
 import {
     validateParsedProjectSource,
     validatePostMerge,
     validateSource,
 } from '../../../src/schema/preparation/ast-validator.js';
-import { parseProjectSource } from '../../../src/schema/schema-builder.js';
 
 export function assertValidatorRejects(
     source: string | DocumentNode,
