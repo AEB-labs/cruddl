@@ -5,7 +5,7 @@ import type { ModuleConfig } from './config/module.js';
 import type { ValidationContext } from './validation/index.js';
 import { ValidationMessage } from './validation/index.js';
 
-export function parseModuleConfigs(
+export function extractModuleConfigs(
     source: ParsedObjectProjectSource,
     options: ModelOptions,
     validationContext: ValidationContext,
