@@ -1,5 +1,5 @@
 import type { ModelOptions } from '../config/interfaces.js';
-import type { ParsedObjectProjectSource } from '../config/parsed-project.js';
+import type { ParsedObjectProjectSource } from '../schema/parsing/parsed-project.js';
 import { isReadonlyArray } from '../utils/utils.js';
 import type { ModuleConfig } from './config/module.js';
 import type { ValidationContext } from './validation/index.js';
