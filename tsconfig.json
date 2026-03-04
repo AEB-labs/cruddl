@@ -4,6 +4,5 @@
     "types": ["node"],
     "noEmit": true
   },
-  "exclude": ["node_modules", "dist"],
-  "include": ["index.ts", "src/**/*", "spec/**/*"]
+  "include": ["src/**/*"]
 }
