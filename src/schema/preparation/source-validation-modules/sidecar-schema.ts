@@ -1,6 +1,6 @@
-import type { ParsedProjectSource } from '../../../config/parsed-project.js';
-import { ParsedProjectSourceBaseKind } from '../../../config/parsed-project.js';
 import { ValidationMessage } from '../../../model/index.js';
+import type { ParsedProjectSource } from '../../parsing/parsed-project.js';
+import { ParsedProjectSourceBaseKind } from '../../parsing/parsed-project.js';
 import type { ParsedSourceValidator } from '../ast-validator.js';
 import validate from './schema/validate-schema.js';
 
