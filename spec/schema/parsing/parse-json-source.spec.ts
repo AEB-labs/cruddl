@@ -35,7 +35,7 @@ describe('parseJSONSource', () => {
         );
         expect(context.asResult().messages).to.have.lengthOf(1);
         expect(context.validationMessages[0].message).to.equal(
-            `Unknown character '"', expecting opening block '{' or '[', or maybe a comment`,
+            `JSON file should define an object (is string)`,
         );
         expect(parsed).to.be.undefined;
     });
@@ -61,8 +61,12 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', '{"a": \ntrue test'));
         expect(messages).toMatchObject([
             {
-                message: "Unknown Character 't', expecting a comma or a closing '}'",
+                message: "Unknown character 't', expecting a comma or a closing '}'",
                 location: { sourceName: 'test.json', _start: 12, _end: 16 },
+            },
+            {
+                message: "Closing brace '}' expected.",
+                location: { sourceName: 'test.json', _start: 16, _end: 16 },
             },
         ]);
     });
@@ -74,6 +78,10 @@ describe('parseJSONSource', () => {
                 message:
                     "Unknown character 'a', expecting opening block '{' or '[', or maybe a comment",
                 location: { sourceName: 'test.json', _start: 0, _end: 3 },
+            },
+            {
+                message: 'Value expected.',
+                location: { sourceName: 'test.json', _start: 3, _end: 3 },
             },
         ]);
     });
@@ -93,24 +101,32 @@ describe('parseJSONSource', () => {
         expect(messages).toMatchObject([]);
     });
 
-    // behavior of json-lint, not necessarily good
-    it('accepts input with control characters', () => {
+    it('rejects input with control characters', () => {
         const messages = getMessages(new ProjectSource('test.json', '{"a":"\u0001"}'));
-        expect(messages).toMatchObject([]);
+        expect(messages).toMatchObject([
+            {
+                message: 'Invalid character.',
+                location: { sourceName: 'test.json', _start: 5, _end: 9 },
+            },
+        ]);
     });
 
     it('rejects trailing commas in objects and arrays', () => {
         const objMessages = getMessages(new ProjectSource('test.json', '{"a": 1,}'));
         expect(objMessages).toMatchObject([
             {
-                message: "Unknown Character '}', expecting a string for key statement.",
+                message: 'Property name expected.',
+                location: { sourceName: 'test.json', _start: 8, _end: 9 },
+            },
+            {
+                message: 'Value expected.',
                 location: { sourceName: 'test.json', _start: 8, _end: 9 },
             },
         ]);
         const arrMessages = getMessages(new ProjectSource('test.json', '[1,2,]'));
         expect(arrMessages).toMatchObject([
             {
-                message: 'Unexpected End Of Array Error. Expecting a value statement.',
+                message: 'Value expected.',
                 location: { sourceName: 'test.json', _start: 5, _end: 6 },
             },
         ]);
@@ -120,8 +136,12 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', '{/* unterminated "a": 1}'));
         expect(messages).toMatchObject([
             {
-                message: "EOF Error, expecting closing '}'.",
-                location: { sourceName: 'test.json', _start: 25, _end: 24 },
+                message: 'Unexpected end of comment.',
+                location: { sourceName: 'test.json', _start: 1, _end: 24 },
+            },
+            {
+                message: "Closing brace '}' expected.",
+                location: { sourceName: 'test.json', _start: 24, _end: 24 },
             },
         ]);
     });
@@ -134,6 +154,10 @@ describe('parseJSONSource', () => {
                     "Unknown character 'a', expecting opening block '{' or '[', or maybe a comment",
                 location: { sourceName: 'test.json', _start: 0, _end: 3 },
             },
+            {
+                message: 'Value expected.',
+                location: { sourceName: 'test.json', _start: 3, _end: 3 },
+            },
         ]);
     });
 
@@ -141,7 +165,7 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', '{"a": true test}'));
         expect(messages).toMatchObject([
             {
-                message: "Unknown Character 't', expecting a comma or a closing '}'",
+                message: "Unknown character 't', expecting a comma or a closing '}'",
                 location: { sourceName: 'test.json', _start: 11, _end: 16 },
             },
         ]);
@@ -151,8 +175,12 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', '{1: 2}'));
         expect(messages).toMatchObject([
             {
-                message: "Unknown Character '1', expecting a string for key statement.",
+                message: 'Property name expected.',
                 location: { sourceName: 'test.json', _start: 1, _end: 6 },
+            },
+            {
+                message: 'Value expected.',
+                location: { sourceName: 'test.json', _start: 5, _end: 6 },
             },
         ]);
     });
@@ -161,7 +189,7 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', '{"a": }'));
         expect(messages).toMatchObject([
             {
-                message: "Unknown Character '}', expecting a value.",
+                message: 'Value expected.',
                 location: { sourceName: 'test.json', _start: 6, _end: 7 },
             },
         ]);
@@ -171,7 +199,7 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', '{"a" 1}'));
         expect(messages).toMatchObject([
             {
-                message: "Unknown Character '1', expecting a semicolon.",
+                message: "Colon ':' expected.",
                 location: { sourceName: 'test.json', _start: 5, _end: 7 },
             },
         ]);
@@ -181,7 +209,7 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', '{"a": 1 "b":2}'));
         expect(messages).toMatchObject([
             {
-                message: "Unknown Character '\"', expecting a comma or a closing '}'",
+                message: "Comma ',' expected.",
                 location: { sourceName: 'test.json', _start: 8, _end: 14 },
             },
         ]);
@@ -191,8 +219,8 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', '{"a":1'));
         expect(messages).toMatchObject([
             {
-                message: "EOF Error, expecting closing '}'.",
-                location: { sourceName: 'test.json', _start: 7, _end: 6 },
+                message: "Closing brace '}' expected.",
+                location: { sourceName: 'test.json', _start: 6, _end: 6 },
             },
         ]);
     });
@@ -201,7 +229,7 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', '[1,2'));
         expect(messages).toMatchObject([
             {
-                message: "EOF Error. Expecting closing ']'",
+                message: "Closing bracket ']' expected.",
                 location: { sourceName: 'test.json', _start: 4, _end: 4 },
             },
         ]);
@@ -211,9 +239,8 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', 'true false'));
         expect(messages).toMatchObject([
             {
-                message:
-                    "Unknown character 't', expecting opening block '{' or '[', or maybe a comment",
-                location: { sourceName: 'test.json', _start: 0, _end: 10 },
+                message: 'End of file expected.',
+                location: { sourceName: 'test.json', _start: 5, _end: 10 },
             },
         ]);
     });
@@ -222,8 +249,16 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', '{"a": /* x '));
         expect(messages).toMatchObject([
             {
-                message: "EOF Error, expecting closing '}'.",
-                location: { sourceName: 'test.json', _start: 13, _end: 11 },
+                message: 'Unexpected end of comment.',
+                location: { sourceName: 'test.json', _start: 6, _end: 11 },
+            },
+            {
+                message: 'Value expected.',
+                location: { sourceName: 'test.json', _start: 11, _end: 11 },
+            },
+            {
+                message: "Closing brace '}' expected.",
+                location: { sourceName: 'test.json', _start: 11, _end: 11 },
             },
         ]);
     });
@@ -232,7 +267,11 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', '{"a": "x'));
         expect(messages).toMatchObject([
             {
-                message: `EOF: No close string '"' found.`,
+                message: 'Unexpected end of string.',
+                location: { sourceName: 'test.json', _start: 6, _end: 8 },
+            },
+            {
+                message: "Closing brace '}' expected.",
                 location: { sourceName: 'test.json', _start: 8, _end: 8 },
             },
         ]);
@@ -242,8 +281,12 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', '{"a": 1e'));
         expect(messages).toMatchObject([
             {
-                message: "Unknown Character 'e', expecting a comma or a closing '}'",
-                location: { sourceName: 'test.json', _start: 7, _end: 8 },
+                message: 'Unexpected end of number.',
+                location: { sourceName: 'test.json', _start: 6, _end: 8 },
+            },
+            {
+                message: "Closing brace '}' expected.",
+                location: { sourceName: 'test.json', _start: 8, _end: 8 },
             },
         ]);
     });
@@ -252,8 +295,8 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', '{"a":"\\u12G4"}'));
         expect(messages).toMatchObject([
             {
-                message: "Invalid Reverse Solidus '\\' declaration.",
-                location: { sourceName: 'test.json', _start: 6, _end: 14 },
+                message: 'Invalid unicode escape sequence.',
+                location: { sourceName: 'test.json', _start: 5, _end: 14 },
             },
         ]);
     });
@@ -262,8 +305,8 @@ describe('parseJSONSource', () => {
         const messages = getMessages(new ProjectSource('test.json', '{"a":"\\x"}'));
         expect(messages).toMatchObject([
             {
-                message: "Invalid Reverse Solidus '\\' declaration.",
-                location: { sourceName: 'test.json', _start: 6, _end: 10 },
+                message: 'Invalid escape character.',
+                location: { sourceName: 'test.json', _start: 5, _end: 10 },
             },
         ]);
     });
