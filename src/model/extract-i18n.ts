@@ -7,60 +7,7 @@ import type {
     TypeLocalizationConfig,
 } from './config/index.js';
 
-function normalizeLocalizationBaseConfig(
-    fieldConfigs: { [name: string]: LocalizationBaseConfig | string } | undefined,
-    curYamlPath: string,
-    source: ParsedObjectProjectSource,
-): { [name: string]: LocalizationBaseConfig } | undefined {
-    if (!fieldConfigs) {
-        return undefined;
-    }
-
-    return mapValues(fieldConfigs, (fieldConfig, key) => {
-        if (typeof fieldConfig === 'string') {
-            return {
-                label: fieldConfig,
-                loc: source.pathLocationMap[curYamlPath + '/' + key],
-            };
-        }
-        return {
-            label: fieldConfig.label,
-            hint: fieldConfig.hint,
-            loc: source.pathLocationMap[curYamlPath + '/' + key],
-        };
-    });
-}
-
-function normalizeTypeConfig(
-    typeConfigs: { [name: string]: TypeLocalizationConfig } | undefined,
-    curYamlPath: string,
-    source: ParsedObjectProjectSource,
-): { [name: string]: TypeLocalizationConfig | TypeLocalizationConfig } {
-    if (!typeConfigs) {
-        return {};
-    }
-    return mapValues(typeConfigs, (typeConfig, key) => {
-        const typeYamlPath = curYamlPath + '/' + key;
-        return {
-            label: typeConfig.label,
-            labelPlural: typeConfig.labelPlural,
-            hint: typeConfig.hint,
-            fields: normalizeLocalizationBaseConfig(
-                typeConfig.fields,
-                typeYamlPath + '/fields',
-                source,
-            ),
-            values: normalizeLocalizationBaseConfig(
-                typeConfig.values,
-                typeYamlPath + '/values',
-                source,
-            ),
-            loc: source.pathLocationMap[typeYamlPath],
-        };
-    });
-}
-
-export function parseI18nConfigs(
+export function extractI18nConfigs(
     source: ParsedObjectProjectSource,
 ): ReadonlyArray<LocalizationConfig> {
     if (!source.object || !source.object.i18n || typeof source.object.i18n !== 'object') {
@@ -96,4 +43,57 @@ export function parseI18nConfigs(
             };
         })
         .filter(isDefined);
+}
+
+function normalizeLocalizationBaseConfig(
+    fieldConfigs: { [name: string]: LocalizationBaseConfig | string } | undefined,
+    curYamlPath: string,
+    source: ParsedObjectProjectSource,
+): { [name: string]: LocalizationBaseConfig } | undefined {
+    if (!fieldConfigs) {
+        return undefined;
+    }
+
+    return mapValues(fieldConfigs, (fieldConfig, key) => {
+        if (typeof fieldConfig === 'string') {
+            return {
+                label: fieldConfig,
+                loc: source.pathLocationMap[curYamlPath + '/' + key],
+            };
+        }
+        return {
+            label: fieldConfig.label,
+            hint: fieldConfig.hint,
+            loc: source.pathLocationMap[curYamlPath + '/' + key],
+        };
+    });
+}
+
+function normalizeTypeConfig(
+    typeConfigs: { [name: string]: TypeLocalizationConfig } | undefined,
+    curYamlPath: string,
+    source: ParsedObjectProjectSource,
+): { [name: string]: TypeLocalizationConfig } {
+    if (!typeConfigs) {
+        return {};
+    }
+    return mapValues(typeConfigs, (typeConfig, key) => {
+        const typeYamlPath = curYamlPath + '/' + key;
+        return {
+            label: typeConfig.label,
+            labelPlural: typeConfig.labelPlural,
+            hint: typeConfig.hint,
+            fields: normalizeLocalizationBaseConfig(
+                typeConfig.fields,
+                typeYamlPath + '/fields',
+                source,
+            ),
+            values: normalizeLocalizationBaseConfig(
+                typeConfig.values,
+                typeYamlPath + '/values',
+                source,
+            ),
+            loc: source.pathLocationMap[typeYamlPath],
+        };
+    });
 }
