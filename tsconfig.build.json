@@ -4,6 +4,10 @@
     "types": [],
     "outDir": "dist"
   },
-  "exclude": ["node_modules", "dist", "spec"],
-  "include": ["index.ts", "src/**/*"]
+  "files": [
+    "src/index.ts",
+    "src/core-exports.ts",
+    "src/database/arangodb/index.ts",
+    "src/database/inmemory/index.ts"
+  ]
 }
