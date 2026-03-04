@@ -1,12 +1,15 @@
 import type { DocumentNode } from 'graphql';
-import type { ParsedProject, ParsedProjectSource } from '../../src/config/parsed-project.js';
-import { ParsedProjectSourceBaseKind } from '../../src/config/parsed-project.js';
 import type {
     Model,
     NamespaceLocalizationConfig,
     PermissionProfileConfigMap,
 } from '../../src/model/index.js';
 import { createModel } from '../../src/model/index.js';
+import type {
+    ParsedProject,
+    ParsedProjectSource,
+} from '../../src/schema/parsing/parsed-project.js';
+import { ParsedProjectSourceBaseKind } from '../../src/schema/parsing/parsed-project.js';
 
 export function createSimpleModel(
     document: DocumentNode,
