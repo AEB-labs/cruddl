@@ -2,7 +2,7 @@ import type { ParsedObjectProjectSource } from '../config/parsed-project.js';
 import { isReadonlyArray } from '../utils/utils.js';
 import type { TimeToLiveConfig } from './config/index.js';
 
-export function parseTTLConfigs(
+export function extractTTLConfigs(
     source: ParsedObjectProjectSource,
 ): ReadonlyArray<TimeToLiveConfig> {
     if (!source.object || !source.object.timeToLive || !isReadonlyArray(source.object.timeToLive)) {
