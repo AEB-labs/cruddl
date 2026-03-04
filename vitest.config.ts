@@ -10,7 +10,7 @@ class RegressionLastSequencer {
     }
 
     sort(files: any[]): any[] {
-        const regressionSpecSuffix = '/spec/regression/regressions.spec.ts';
+        const regressionSpecSuffix = 'testing/regression-tests/regressions.spec.ts';
 
         const nonRegressionFiles = files.filter(
             (file) =>
@@ -36,8 +36,8 @@ export default defineConfig({
         isolate: false,
         fileParallelism: false,
         silent: 'passed-only',
-        include: ['spec/**/*.spec.ts'],
-        setupFiles: ['./spec/init.vitest.ts'],
+        include: ['src/**/*.spec.ts'],
+        setupFiles: ['./init.vitest.ts'],
         sequence: {
             sequencer: RegressionLastSequencer,
         },
