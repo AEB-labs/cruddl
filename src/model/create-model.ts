@@ -120,12 +120,12 @@ import type {
     TypeModuleSpecificationConfig,
 } from './config/module-specification.js';
 import type { ModuleConfig } from './config/module.js';
+import { extractBillingConfigs } from './extract-billing.js';
+import { extractI18nConfigs } from './extract-i18n.js';
+import { extractModuleConfigs } from './extract-modules.js';
+import { extractTTLConfigs } from './extract-ttl.js';
 import { Model } from './implementation/index.js';
 import { OrderDirection } from './implementation/order.js';
-import { parseBillingConfigs } from './parse-billing.js';
-import { parseI18nConfigs } from './parse-i18n.js';
-import { parseModuleConfigs } from './parse-modules.js';
-import { parseTTLConfigs } from './parse-ttl.js';
 import { ValidationContext, ValidationMessage } from './validation/index.js';
 
 export function createModel(parsedProject: ParsedProject, options: ModelOptions = {}): Model {
@@ -1175,7 +1175,7 @@ function extractI18n(parsedProject: ParsedProject): ReadonlyArray<LocalizationCo
     const objectSchemaParts = parsedProject.sources.filter(
         (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT,
     ) as ReadonlyArray<ParsedObjectProjectSource>;
-    return objectSchemaParts.flatMap((source) => parseI18nConfigs(source));
+    return objectSchemaParts.flatMap((source) => extractI18nConfigs(source));
 }
 
 function extractBilling(parsedProject: ParsedProject): BillingConfig {
@@ -1183,7 +1183,7 @@ function extractBilling(parsedProject: ParsedProject): BillingConfig {
         (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT,
     ) as ReadonlyArray<ParsedObjectProjectSource>;
     return objectSchemaParts
-        .map((source) => parseBillingConfigs(source))
+        .map((source) => extractBillingConfigs(source))
         .reduce(
             (previousValue, currentValue) => {
                 return {
@@ -1203,7 +1203,7 @@ function extractTimeToLive(parsedProject: ParsedProject): ReadonlyArray<TimeToLi
         (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT,
     ) as ReadonlyArray<ParsedObjectProjectSource>;
     return objectSchemaParts
-        .map((source) => parseTTLConfigs(source))
+        .map((source) => extractTTLConfigs(source))
         .reduce((previousValue, currentValue) => previousValue.concat(currentValue), []);
 }
 
@@ -1216,7 +1216,7 @@ function extractModules(
         (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT,
     ) as ReadonlyArray<ParsedObjectProjectSource>;
     return objectSchemaParts
-        .map((source) => parseModuleConfigs(source, options, validationContext))
+        .map((source) => extractModuleConfigs(source, options, validationContext))
         .reduce((previousValue, currentValue) => previousValue.concat(currentValue), []);
 }
 
