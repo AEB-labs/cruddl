@@ -1,10 +1,10 @@
-import jsonLint from 'json-lint';
 import { parse as JSONparse } from 'json-source-map';
+import { parse, type ParseError, printParseErrorCode } from 'jsonc-parser';
 import stripJsonComments from 'strip-json-comments';
 import type { ProjectOptions } from '../../config/interfaces.js';
 import { MessageLocation, ValidationContext, ValidationMessage } from '../../model/index.js';
 import { ProjectSource } from '../../project/source.js';
-import { isReadonlyArray, type PlainObject } from '../../utils/utils.js';
+import { type PlainObject } from '../../utils/utils.js';
 import { getNamespaceFromSourceName } from './namespace-from-source-name.js';
 import { type ParsedObjectProjectSource, ParsedProjectSourceBaseKind } from './parsed-project.js';
 
@@ -18,17 +18,26 @@ export function parseJSONSource(
     }
 
     // perform general JSON syntax check
-    const lintResult = jsonLint(projectSource.body, { comments: true });
-    if (lintResult.error) {
-        let loc: MessageLocation | undefined;
-        if (
-            typeof lintResult.line == 'number' &&
-            typeof lintResult.i == 'number' &&
-            typeof lintResult.character == 'number'
-        ) {
-            loc = new MessageLocation(projectSource, lintResult.i, projectSource.body.length);
+    const parseErrors: ParseError[] = [];
+    parse(projectSource.body, parseErrors, {
+        allowTrailingComma: false,
+        disallowComments: false,
+    });
+
+    if (parseErrors.length) {
+        for (const parseError of parseErrors) {
+            const loc = new MessageLocation(
+                projectSource,
+                parseError.offset,
+                projectSource.body.length,
+            );
+            validationContext.addMessage(
+                ValidationMessage.error(
+                    getMessageFromJSONSyntaxError(projectSource.body, parseError),
+                    loc,
+                ),
+            );
         }
-        validationContext.addMessage(ValidationMessage.error(lintResult.error, loc));
         // returning undefined will lead to ignoring this source file in future steps
         return undefined;
     }
@@ -50,10 +59,19 @@ export function parseJSONSource(
         );
     }
 
-    const data: PlainObject = parseResult.data;
+    const data = parseResult.data;
 
-    // arrays are not forbidden by json-lint
-    if (isReadonlyArray(data)) {
+    if (typeof data !== 'object') {
+        validationContext.addMessage(
+            ValidationMessage.error(
+                `JSON file should define an object (is ${typeof data})`,
+                new MessageLocation(projectSource, 0, projectSource.body.length),
+            ),
+        );
+        return undefined;
+    }
+
+    if (Array.isArray(data)) {
         validationContext.addMessage(
             ValidationMessage.error(
                 `JSON file should define an object (is array)`,
@@ -72,4 +90,49 @@ export function parseJSONSource(
         object: (data as PlainObject) || {},
         pathLocationMap: jsonPathLocationMap,
     };
+}
+
+export function getMessageFromJSONSyntaxError(source: string, error: ParseError): string {
+    const errorCode = printParseErrorCode(error.error);
+    const symbol = source[error.offset] ?? '';
+
+    switch (errorCode) {
+        case 'InvalidSymbol':
+            if (error.offset === 0) {
+                return `Unknown character '${symbol}', expecting opening block '{' or '[', or maybe a comment`;
+            }
+            return `Unknown character '${symbol}', expecting a comma or a closing '}'`;
+        case 'InvalidNumberFormat':
+            return 'Invalid number format.';
+        case 'PropertyNameExpected':
+            return 'Property name expected.';
+        case 'ValueExpected':
+            return 'Value expected.';
+        case 'ColonExpected':
+            return `Colon ':' expected.`;
+        case 'CommaExpected':
+            return `Comma ',' expected.`;
+        case 'CloseBraceExpected':
+            return `Closing brace '}' expected.`;
+        case 'CloseBracketExpected':
+            return `Closing bracket ']' expected.`;
+        case 'EndOfFileExpected':
+            return 'End of file expected.';
+        case 'InvalidCommentToken':
+            return 'Invalid comment token.';
+        case 'UnexpectedEndOfComment':
+            return 'Unexpected end of comment.';
+        case 'UnexpectedEndOfString':
+            return 'Unexpected end of string.';
+        case 'UnexpectedEndOfNumber':
+            return 'Unexpected end of number.';
+        case 'InvalidUnicode':
+            return 'Invalid unicode escape sequence.';
+        case 'InvalidEscapeCharacter':
+            return 'Invalid escape character.';
+        case 'InvalidCharacter':
+            return 'Invalid character.';
+        default:
+            return `JSON syntax error: ${errorCode}`;
+    }
 }
