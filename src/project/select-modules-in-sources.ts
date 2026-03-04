@@ -8,11 +8,6 @@ import type {
     TypeDefinitionNode,
 } from 'graphql';
 import { isTypeDefinitionNode, Kind, print } from 'graphql';
-import type {
-    ParsedGraphQLProjectSource,
-    ParsedObjectProjectSource,
-} from '../config/parsed-project.js';
-import { ParsedProjectSourceBaseKind } from '../config/parsed-project.js';
 import { isCommentOnlySource } from '../graphql/is-comment-only-source.js';
 import { parseModuleSpecificationExpression } from '../model/implementation/modules/expression-parser.js';
 import type { Model, RootEntityType } from '../model/index.js';
@@ -24,7 +19,12 @@ import {
     MODULES_IN_ARG,
     ROOT_ENTITY_DIRECTIVE,
 } from '../schema/constants.js';
-import { parseProjectSource } from '../schema/schema-builder.js';
+import { parseProjectSource } from '../schema/parsing/parse-project-source.js';
+import type {
+    ParsedGraphQLProjectSource,
+    ParsedObjectProjectSource,
+} from '../schema/parsing/parsed-project.js';
+import { ParsedProjectSourceBaseKind } from '../schema/parsing/parsed-project.js';
 import { findDirectiveWithName } from '../schema/schema-utils.js';
 import { isReadonlyArray } from '../utils/utils.js';
 import type { ProjectOptions } from './project.js';
