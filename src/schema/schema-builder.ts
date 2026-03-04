@@ -8,8 +8,7 @@ import { Project } from '../project/project.js';
 import { SchemaGenerator } from '../schema-generation/index.js';
 import { isDefined } from '../utils/utils.js';
 import { parseProject } from './parsing/parse-project.js';
-import type { ParsedProject } from './parsing/parsed-project.js';
-import { ParsedProjectSourceBaseKind } from './parsing/parsed-project.js';
+import { type ParsedProject, ParsedProjectSourceBaseKind } from './parsing/parsed-project.js';
 import {
     validateParsedProjectSource,
     validatePostMerge,
