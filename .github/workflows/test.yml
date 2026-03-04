@@ -33,3 +33,7 @@ jobs:
       - run: npm run knip:prod
       - run: npm run typecheck
       - run: npm test
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
