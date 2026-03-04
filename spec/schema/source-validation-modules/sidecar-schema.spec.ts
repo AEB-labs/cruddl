@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { ValidationMessage } from '../../../src/model/validation/index.js';
 import { Severity, ValidationContext } from '../../../src/model/validation/index.js';
 import { ProjectSource } from '../../../src/project/source.js';
+import { parseProjectSource } from '../../../src/schema/parsing/parse-project-source.js';
 import { SidecarSchemaValidator } from '../../../src/schema/preparation/source-validation-modules/sidecar-schema.js';
-import { parseProjectSource } from '../../../src/schema/schema-builder.js';
 
 const validValue = `{
     "permissionProfiles": {
