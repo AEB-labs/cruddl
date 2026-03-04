@@ -112,11 +112,9 @@
     "arangojs": "^8.1.0",
     "fast-equals": "^6.0.0",
     "graphql-tag": "^2.12.4",
-    "json-lint": "^0.1.0",
-    "json-source-map": "^0.6.1",
+    "jsonc-parser": "^3.3.1",
     "memorize-decorator": "^0.2.2",
     "pluralize": "^8.0.0",
-    "strip-json-comments": "^3.0.1",
     "tslib": "^2.4.0",
     "yaml": "^2.8.1",
     "yaml-ast-parser": "0.0.43"
