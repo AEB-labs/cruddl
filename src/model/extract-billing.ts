@@ -1,4 +1,4 @@
-import type { ParsedObjectProjectSource } from '../config/parsed-project.js';
+import type { ParsedObjectProjectSource } from '../schema/parsing/parsed-project.js';
 import type { BillingConfig } from './config/billing.js';
 
 export function extractBillingConfigs(source: ParsedObjectProjectSource): BillingConfig {

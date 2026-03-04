@@ -23,12 +23,6 @@ import {
     valueFromAST,
 } from 'graphql';
 import type { ModelOptions } from '../config/interfaces.js';
-import type {
-    ParsedGraphQLProjectSource,
-    ParsedObjectProjectSource,
-    ParsedProject,
-} from '../config/parsed-project.js';
-import { ParsedProjectSourceBaseKind } from '../config/parsed-project.js';
 import { getValueFromAST } from '../graphql/value-from-ast.js';
 import {
     ACCESS_FIELD_DIRECTIVE,
@@ -80,6 +74,12 @@ import {
     VALUE_ARG,
     VALUE_OBJECT_DIRECTIVE,
 } from '../schema/constants.js';
+import type {
+    ParsedGraphQLProjectSource,
+    ParsedObjectProjectSource,
+    ParsedProject,
+} from '../schema/parsing/parsed-project.js';
+import { ParsedProjectSourceBaseKind } from '../schema/parsing/parsed-project.js';
 import {
     findDirectiveWithName,
     getDeprecationReason,
