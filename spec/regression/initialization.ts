@@ -1,10 +1,10 @@
 import { Database } from 'arangojs';
 import { existsSync, readFileSync } from 'fs';
 import type { ExecutionResult } from 'graphql';
-import stripJsonComments from 'strip-json-comments';
 import type { ArangoDBConfig } from '../../src/database/arangodb/index.js';
 import { isDefined } from '../../src/utils/utils.js';
 import { generateRandomString } from '../helpers/generate-random-string.js';
+import { parseJSONCOrThrow } from '../utils/parse-jsonc-or-throw.js';
 import type { InitTestDataContext } from './init-test-data-context.js';
 
 const DATABASE_NAME = 'cruddl-test-temp';
@@ -59,7 +59,7 @@ export async function initTestData(
         };
     }
 
-    const testData = JSON.parse(stripJsonComments(readFileSync(path, 'utf-8')));
+    const testData = parseJSONCOrThrow(readFileSync(path, 'utf-8'), path) as any;
     const ids = new Map<string, string>();
 
     function fillTemplateStrings(data: any): any {

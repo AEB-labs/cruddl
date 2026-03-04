@@ -4,7 +4,6 @@ import type { GraphQLSchema, OperationDefinitionNode } from 'graphql';
 import { graphql, OperationTypeNode, parse } from 'graphql';
 import { unlinkSync } from 'node:fs';
 import { resolve } from 'path';
-import stripJsonComments from 'strip-json-comments';
 import { ConsoleLoggerProvider } from '../../src/config/console-logger.js';
 import type { RequestProfile } from '../../src/config/interfaces.js';
 import { ArangoDBAdapter } from '../../src/database/arangodb/index.js';
@@ -14,6 +13,7 @@ import type { IDGenerationInfo, IDGenerator } from '../../src/execution/executio
 import { loadProjectFromDir } from '../../src/project/project-from-fs.js';
 import type { ProjectOptions } from '../../src/project/project.js';
 import { ErrorWithCause } from '../../src/utils/error-with-cause.js';
+import { parseJSONCOrThrow } from '../utils/parse-jsonc-or-throw.js';
 import { InitTestDataContext } from './init-test-data-context.js';
 import type { TestDataEnvironment } from './initialization.js';
 import { createTempDatabase, initTestData, TEMP_DATABASE_CONFIG } from './initialization.js';
@@ -92,7 +92,10 @@ export class RegressionSuite {
     private async setUp() {
         const optionsPath = resolve(this.path, 'options.json');
         const options = existsSync(optionsPath)
-            ? JSON.parse(stripJsonComments(readFileSync(optionsPath, 'utf-8')))
+            ? parseJSONCOrThrow<Record<string, unknown>>(
+                  readFileSync(optionsPath, 'utf-8'),
+                  optionsPath,
+              )
             : {};
 
         this.idGenerator.resetToPhase('init');
@@ -253,7 +256,7 @@ export class RegressionSuite {
 
     private shouldIgnore(metaPath: string) {
         const meta: MetaOptions | undefined = existsSync(metaPath)
-            ? JSON.parse(stripJsonComments(readFileSync(metaPath, 'utf-8')))
+            ? parseJSONCOrThrow<MetaOptions>(readFileSync(metaPath, 'utf-8'), metaPath)
             : undefined;
         if (meta && meta.databases && meta.databases[this.databaseSpecifier]) {
             if (meta.databases[this.databaseSpecifier].ignore) {
@@ -302,18 +305,22 @@ export class RegressionSuite {
         this._isSetUpClean =
             this._isSetUpClean && !operations.some((op) => op.operation == 'mutation');
 
-        const expectedResultTemplate = JSON.parse(
-            stripJsonComments(readFileSync(resultPath, 'utf-8')),
+        const expectedResultTemplate = parseJSONCOrThrow<unknown>(
+            readFileSync(resultPath, 'utf-8'),
+            resultPath,
         );
         const expectedResult = this.testDataEnvironment.fillTemplateStrings(expectedResultTemplate);
-        const variableValues = existsSync(variablesPath)
-            ? JSON.parse(stripJsonComments(readFileSync(variablesPath, 'utf-8')))
+        const variableValues: Record<string, unknown> = existsSync(variablesPath)
+            ? parseJSONCOrThrow<Record<string, unknown>>(
+                  readFileSync(variablesPath, 'utf-8'),
+                  variablesPath,
+              )
             : {};
-        const context = existsSync(contextPath)
-            ? JSON.parse(stripJsonComments(readFileSync(contextPath, 'utf-8')))
+        const context: any = existsSync(contextPath)
+            ? parseJSONCOrThrow<any>(readFileSync(contextPath, 'utf-8'), contextPath)
             : {};
-        const meta = existsSync(metaPath)
-            ? JSON.parse(stripJsonComments(readFileSync(metaPath, 'utf-8')))
+        const meta: any = existsSync(metaPath)
+            ? parseJSONCOrThrow<any>(readFileSync(metaPath, 'utf-8'), metaPath)
             : {};
 
         let actualResult: Record<string, unknown> = {};
