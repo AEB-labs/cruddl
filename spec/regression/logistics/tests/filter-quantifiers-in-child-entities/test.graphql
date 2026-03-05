@@ -1,0 +1,75 @@
+fragment Item on DeliveryItem {
+    itemNumber
+    notes {
+        text
+        priority
+    }
+}
+
+query some {
+    allDeliveries(orderBy: deliveryNumber_ASC) {
+        items(filter: { notes_some: { priority_gt: 1 } }) {
+            ...Item
+        }
+    }
+}
+
+query every {
+    allDeliveries(orderBy: deliveryNumber_ASC) {
+        items(filter: { notes_every: { priority_gt: 1 } }) {
+            ...Item
+        }
+    }
+}
+
+query none {
+    allDeliveries(orderBy: deliveryNumber_ASC) {
+        items(filter: { notes_none: { priority_gt: 1 } }) {
+            ...Item
+        }
+    }
+}
+
+# uses special optimization with IN and array expansion
+query some_equals {
+    allDeliveries(orderBy: deliveryNumber_ASC) {
+        items(filter: { notes_some: { priority: 3 } }) {
+            ...Item
+        }
+    }
+}
+
+# should not use said optimization
+query every_equals {
+    allDeliveries(orderBy: deliveryNumber_ASC) {
+        items(filter: { notes_every: { priority: 3 } }) {
+            ...Item
+        }
+    }
+}
+
+# can be simplified to equals
+query some_like_simple {
+    allDeliveries(orderBy: deliveryNumber_ASC) {
+        items(filter: { notes_some: { text_like: "123" } }) {
+            ...Item
+        }
+    }
+}
+
+query some_like_complicated {
+    allDeliveries(orderBy: deliveryNumber_ASC) {
+        items(filter: { notes_some: { text_like: "othernote%" } }) {
+            ...Item
+        }
+    }
+}
+
+# can't use any of the optimizations because it uses multiple filters in one object
+query some_multiple {
+    allDeliveries(orderBy: deliveryNumber_ASC) {
+        items(filter: { notes_some: { priority_gt: 1, priority_lt: 2 } }) {
+            ...Item
+        }
+    }
+}
