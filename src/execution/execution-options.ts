@@ -1,6 +1,7 @@
 import { OperationDefinitionNode } from 'graphql';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthContext } from '../authorization/auth-basics';
+import { ChildEntityType, RootEntityType } from '../model';
 
 export type MutationMode = 'normal' | 'disallowed' | 'rollback';
 
@@ -205,6 +206,13 @@ export type IDGenerationTarget = 'root-entity' | 'child-entity';
 
 export interface IDGenerationInfo {
     readonly target: IDGenerationTarget;
+
+    // we can't easily pass the RootEntityType instance at runtime in the InMemoryAdapter,
+    // hence we only pass the name. For consistency, only pass the name in both root and child entity case
+    /**
+     * The name of the root or child entity type
+     */
+    readonly typeName: string;
 }
 
 export interface IDGenerator {

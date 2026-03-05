@@ -228,7 +228,10 @@ export class CreateChildEntityInputType extends CreateObjectInputType {
     getAdditionalProperties(value: PlainObject, context: FieldContext) {
         const now = context.clock.getCurrentTimestamp();
         return {
-            [ID_FIELD]: context.idGenerator.generateID({ target: 'child-entity' }),
+            [ID_FIELD]: context.idGenerator.generateID({
+                target: 'child-entity',
+                typeName: this.childEntityType.name,
+            }),
             [ENTITY_CREATED_AT]: now,
             [ENTITY_UPDATED_AT]: now,
         };
