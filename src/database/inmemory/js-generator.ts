@@ -976,7 +976,7 @@ register(CreateEntityQueryNode, (node, context) => {
     const idVar = js.variable('id');
     return jsExt.executingFunction(
         js`const ${objVar} = ${processNode(node.objectNode, context)};`,
-        js`const ${idVar} = support.generateID();`,
+        js`const ${idVar} = support.generateID(${node.rootEntityType.name});`,
         js`${objVar}.${js.identifier(ID_FIELD_NAME)} = ${idVar};`,
         js`${js.collection(getCollectionNameForRootEntity(node.rootEntityType))}.push(${objVar});`,
         js`return ${idVar};`,
