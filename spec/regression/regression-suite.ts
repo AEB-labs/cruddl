@@ -439,19 +439,19 @@ export class RegressionSuite {
 }
 
 class PredictableIDGenerator implements IDGenerator {
-    nextNumberPerTarget = new Map<string, number>();
+    nextNumberPerType = new Map<string, number>();
     phase = 'init';
 
-    generateID({ target }: IDGenerationInfo): string {
-        const number = this.nextNumberPerTarget.get(target) ?? 0;
-        this.nextNumberPerTarget.set(target, number + 1);
-        return `id_${this.phase}_${String(number).padStart(4, '0')}`;
+    generateID({ typeName }: IDGenerationInfo): string {
+        const number = this.nextNumberPerType.get(typeName) ?? 0;
+        this.nextNumberPerType.set(typeName, number + 1);
+        return `id_${this.phase}_${typeName}_${String(number).padStart(4, '0')}`;
     }
 
     resetToPhase(phase: string) {
         // we have separate phases for init and test because we sometimes skip init
         this.phase = phase;
-        this.nextNumberPerTarget = new Map();
+        this.nextNumberPerType = new Map();
     }
 }
 
