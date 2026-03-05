@@ -387,37 +387,133 @@
     }
   },
   "some_like_complicated": {
-    "errors": [
-      {
-        "message": "AQL: variable not found '1_' in ExecutorExpressionContext (exception location: arangod/Aql/ExecutorExpressionContext.cpp:70). Please report this error to arangodb.com [node #8: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #9: EnumerateListNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #15: CollectNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #26: SubqueryEndNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #23: SubqueryStartNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #3: EnumerateCollectionNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #5: SortNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #18: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #24: SubqueryEndNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #21: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #22: ReturnNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com (while executing)",
-        "locations": [
-          {
-            "line": 61,
-            "column": 5
-          }
-        ],
-        "path": ["allDeliveries"]
-      }
-    ],
     "data": {
-      "allDeliveries": null
+      "allDeliveries": [
+        {
+          "items": [
+            {
+              "itemNumber": "1001",
+              "notes": [
+                {
+                  "text": "note1",
+                  "priority": 1
+                },
+                {
+                  "text": "note2",
+                  "priority": 2
+                },
+                {
+                  "text": "othernote",
+                  "priority": 3
+                },
+                {
+                  "text": "123",
+                  "priority": 3
+                },
+                {
+                  "text": "1234",
+                  "priority": 1
+                },
+                {
+                  "text": "OthernoteCase",
+                  "priority": 2
+                },
+                {
+                  "text": "othernotf-boundary",
+                  "priority": 2
+                }
+              ]
+            },
+            {
+              "itemNumber": "1002",
+              "notes": [
+                {
+                  "text": "othernote-1002",
+                  "priority": 2
+                },
+                {
+                  "text": "note-high",
+                  "priority": 4
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "items": [
+            {
+              "itemNumber": "2002",
+              "notes": [
+                {
+                  "text": "123",
+                  "priority": 3
+                },
+                {
+                  "text": "othernote-special",
+                  "priority": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "items": [
+            {
+              "itemNumber": "3001",
+              "notes": [
+                {
+                  "text": "note-mid",
+                  "priority": 2
+                },
+                {
+                  "text": "note-low",
+                  "priority": 1
+                },
+                {
+                  "text": "othernotf-suffix",
+                  "priority": 1
+                },
+                {
+                  "text": "OTHERNOTE-UPPER",
+                  "priority": 1
+                }
+              ]
+            },
+            {
+              "itemNumber": "1002",
+              "notes": [
+                {
+                  "text": "othernoteXYZ",
+                  "priority": 1
+                },
+                {
+                  "text": "1234",
+                  "priority": 1
+                },
+                {
+                  "text": "0123",
+                  "priority": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   },
   "some_multiple": {
-    "errors": [
-      {
-        "message": "AQL: variable not found '1_' in ExecutorExpressionContext (exception location: arangod/Aql/ExecutorExpressionContext.cpp:70). Please report this error to arangodb.com [node #8: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #9: EnumerateListNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #15: CollectNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #26: SubqueryEndNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #23: SubqueryStartNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #3: EnumerateCollectionNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #5: SortNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #18: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #24: SubqueryEndNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #21: CalculationNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com [node #22: ReturnNode] (exception location: arangod/Aql/ExecutionBlockImpl.tpp:640). Please report this error to arangodb.com (while executing)",
-        "locations": [
-          {
-            "line": 70,
-            "column": 5
-          }
-        ],
-        "path": ["allDeliveries"]
-      }
-    ],
     "data": {
-      "allDeliveries": null
+      "allDeliveries": [
+        {
+          "items": []
+        },
+        {
+          "items": []
+        },
+        {
+          "items": []
+        }
+      ]
     }
   }
 }

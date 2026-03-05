@@ -4,23 +4,30 @@ RETURN {
     IN @@deliveries
     SORT (v_delivery1.`deliveryNumber`)
     RETURN {
-      "items": v_delivery1.`items`[* FILTER (FIRST(
-        FOR v_item1
-        IN (
-          FOR v_notes1
-          IN (IS_LIST(CURRENT.`notes`) ? CURRENT.`notes` : [])
-          FILTER (v_notes1.`text` >= UPPER(@var1) && v_notes1.`text` < LOWER(@var2))
-          RETURN v_notes1
-        )
-        COLLECT WITH COUNT INTO v_count1
-        RETURN v_count1
-      ) > @var3) RETURN {
-        "itemNumber": CURRENT.`itemNumber`,
-        "notes": CURRENT.`notes`[* RETURN {
-          "text": CURRENT.`text`,
-          "priority": CURRENT.`priority`
-        }]
-      }]
+      "items": (
+        FOR v_deliveryItem1
+        IN v_delivery1.`items`[*]
+        FILTER (FIRST(
+          FOR v_item1
+          IN (
+            FOR v_notes1
+            IN (IS_LIST(v_deliveryItem1.`notes`) ? v_deliveryItem1.`notes` : [])
+            FILTER (v_notes1.`text` >= UPPER(@var1) && v_notes1.`text` < LOWER(@var2))
+            RETURN v_notes1
+          )
+          COLLECT WITH COUNT INTO v_count1
+          RETURN v_count1
+        ) > @var3)
+        RETURN {
+          "itemNumber": v_deliveryItem1.`itemNumber`,
+          "notes": v_deliveryItem1.`notes`[* RETURN {
+            "text": CURRENT.`text`,
+            "priority": CURRENT.`priority`
+          }]
+        }
+      )
     }
   )
 }
+
+// Peak memory usage: 98304 bytes
