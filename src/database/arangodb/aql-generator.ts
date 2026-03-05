@@ -95,6 +95,8 @@ import {
 } from './arango-basics';
 import { getFlexSearchViewNameForRootEntity } from './schema-migration/arango-search-helpers';
 import { supportedAsArrayExpansion } from './traversal-helpers';
+import { isStringCaseInsensitive } from '../../utils/string-utils';
+import { canUseArrayExpansionOperatorForQuantifierFilter } from './quantifier-filter-helpers';
 
 enum AccessType {
     /**
@@ -1280,17 +1282,13 @@ register(SafeListQueryNode, (node, context) => {
 });
 
 register(QuantifierFilterNode, (node, context) => {
-    let { quantifier, conditionNode, listNode, itemVariable } = node;
-    conditionNode = simplifyBooleans(conditionNode);
-
-    const fastFragment = getQuantifierFilterUsingArrayComparisonOperator(
-        { quantifier, conditionNode, listNode, itemVariable },
-        context,
-    );
+    const fastFragment = getQuantifierFilterUsingArrayComparisonOperator(node, context);
     if (fastFragment) {
         return fastFragment;
     }
 
+    let { quantifier, conditionNode } = node;
+    conditionNode = simplifyBooleans(conditionNode);
     // reduce 'every' to 'none' so that count-based evaluation is possible
     if (quantifier === 'every') {
         quantifier = 'none';
@@ -1298,9 +1296,9 @@ register(QuantifierFilterNode, (node, context) => {
     }
 
     const filteredListNode = new TransformListQueryNode({
-        listNode,
+        listNode: node.listNode,
         filterNode: conditionNode,
-        itemVariable,
+        itemVariable: node.itemVariable,
     });
 
     const finalNode = new BinaryOperationQueryNode(
@@ -1315,17 +1313,7 @@ register(QuantifierFilterNode, (node, context) => {
 // that can utilize an index like "items[*].itemNumber" if possible
 // (specifically for something like items_some: {itemNumber: "abc"})
 function getQuantifierFilterUsingArrayComparisonOperator(
-    {
-        quantifier,
-        conditionNode,
-        listNode,
-        itemVariable,
-    }: {
-        quantifier: Quantifier;
-        conditionNode: QueryNode;
-        listNode: QueryNode;
-        itemVariable: VariableQueryNode;
-    },
+    node: QuantifierFilterNode,
     context: QueryContext,
 ): AQLFragment | undefined {
     // ArangoDB supports array comparison operators (e.g. field ALL > 5)
@@ -1335,65 +1323,20 @@ function getQuantifierFilterUsingArrayComparisonOperator(
     // quantifier filters with exactly one filter field that uses a comparison operator can be optimized with this
     // this simplifies the AQL expression a lot (no filtering-then-checking-length), and also enables early pruning
 
-    // only possible on lists that are field accesses (but we can handle safe lists below)
-    // note that needsSafeListWrapper will be set to false in some places below when we know that non-list
-    // values are no problem for the specific case
+    const feasibilityResult = canUseArrayExpansionOperatorForQuantifierFilter(node);
+    if (!feasibilityResult) {
+        return undefined;
+    }
+    const { operator, fields, valueNode } = feasibilityResult;
+    let listNode = node.listNode;
+    // will be set to false in some places below when we know that non-list values are no problem for the specific case
     let needsSafeListWrapper = false;
     if (listNode instanceof SafeListQueryNode) {
         needsSafeListWrapper = true;
         listNode = listNode.sourceNode;
     }
-    if (!(listNode instanceof FieldQueryNode)) {
-        return undefined;
-    }
 
-    if (!(conditionNode instanceof BinaryOperationQueryNode)) {
-        return undefined;
-    }
-
-    let operator: BinaryOperator;
-    switch (conditionNode.operator) {
-        case BinaryOperator.EQUAL:
-        case BinaryOperator.IN:
-        case BinaryOperator.UNEQUAL:
-        case BinaryOperator.LESS_THAN:
-        case BinaryOperator.LESS_THAN_OR_EQUAL:
-        case BinaryOperator.GREATER_THAN:
-        case BinaryOperator.GREATER_THAN_OR_EQUAL:
-            operator = conditionNode.operator;
-            break;
-
-        case BinaryOperator.LIKE:
-            // see if this really is a equals search so we can optimize it (only possible as long as it does not contain any case-specific characters)
-            if (
-                !(conditionNode.rhs instanceof LiteralQueryNode) ||
-                typeof conditionNode.rhs.value !== 'string'
-            ) {
-                return undefined;
-            }
-            const likePattern: string = conditionNode.rhs.value;
-            const { isLiteralPattern } = analyzeLikePatternPrefix(likePattern);
-            if (!isLiteralPattern || !isStringCaseInsensitive(likePattern)) {
-                return undefined;
-            }
-            operator = BinaryOperator.EQUAL;
-            break;
-
-        default:
-            return undefined;
-    }
-
-    let fields: Field[] = [];
-    let currentFieldNode = conditionNode.lhs;
-    while (currentFieldNode !== itemVariable) {
-        if (!(currentFieldNode instanceof FieldQueryNode)) {
-            return undefined;
-        }
-        fields.unshift(currentFieldNode.field); // we're traversing from back to front
-        currentFieldNode = currentFieldNode.objectNode;
-    }
-
-    const valueFrag = processNode(conditionNode.rhs, context);
+    const valueFrag = processNode(valueNode, context);
 
     // we do not know whether we will need a SafeListQueryNode here yet
     // (depends on needsSafeListWrapper, which can change below), so parametrize this
@@ -1413,7 +1356,7 @@ function getQuantifierFilterUsingArrayComparisonOperator(
 
     // The case of "field ANY == value" can further be optimized into "value IN field" which can use an array index
     // https://www.arangodb.com/docs/stable/indexing-index-basics.html#indexing-array-values
-    if (operator === BinaryOperator.EQUAL && quantifier === 'some') {
+    if (operator === BinaryOperator.EQUAL && node.quantifier === 'some') {
         // the IN operator does not complain if the rhs operand is not a list, it just yields false
         // so we do not need to care about the safe list wrapper
         needsSafeListWrapper = false;
@@ -1421,7 +1364,7 @@ function getQuantifierFilterUsingArrayComparisonOperator(
     }
 
     let quantifierFrag: AQLFragment;
-    switch (quantifier) {
+    switch (node.quantifier) {
         case 'some':
             quantifierFrag = aql`ANY`;
             // (non-list-value) ANY (some-expression) always yields false
@@ -1442,7 +1385,7 @@ function getQuantifierFilterUsingArrayComparisonOperator(
             // same reasoning as above - we need to keep the safe list wrapper
             break;
         default:
-            throw new Error(`Unexpected quantifier: ${quantifier}`);
+            throw new Error(`Unexpected quantifier: ${node.quantifier}`);
     }
 
     const operatorFrag = getAQLOperator(operator);
@@ -3241,10 +3184,6 @@ function getSimpleFollowEdgeFragment(
         AccessType.EXPLICIT_READ,
         context,
     )}`;
-}
-
-function isStringCaseInsensitive(str: string) {
-    return str.toLowerCase() === str.toUpperCase();
 }
 
 export function generateTokenizationQuery(

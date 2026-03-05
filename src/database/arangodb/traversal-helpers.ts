@@ -14,6 +14,8 @@ import {
 import { visitQueryNode } from '../../query-tree/visitor';
 import { VisitResult } from '../../utils/visitor';
 import { FlexSearchQueryNode } from '../../query-tree/flex-search';
+import { QuantifierFilterNode } from '../../query-tree/quantifiers';
+import { canUseArrayExpansionOperatorForQuantifierFilter } from './quantifier-filter-helpers';
 
 interface SupportedAsArrayExpansionOptions {
     /**
@@ -104,6 +106,10 @@ function mightGenerateSubquery(node: QueryNode) {
         node instanceof TraversalQueryNode // shouldn't occur because we handle that above
     ) {
         return true;
+    }
+
+    if (node instanceof QuantifierFilterNode) {
+        return !canUseArrayExpansionOperatorForQuantifierFilter(node);
     }
 
     if (node instanceof CountQueryNode) {
