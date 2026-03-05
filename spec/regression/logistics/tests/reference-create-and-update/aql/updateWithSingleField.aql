@@ -36,7 +36,7 @@ RETURN (IS_NULL(v_delivery1) ? null : {
   })
 })
 
-// Peak memory usage: 0 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 

@@ -1,0 +1,18 @@
+RETURN {
+  "allDeliveries": (
+    FOR v_delivery1
+    IN @@deliveries
+    SORT (v_delivery1.`deliveryNumber`)
+    RETURN {
+      "items": v_delivery1.`items`[* FILTER (@var1 IN CURRENT.`notes`[*].`text`) RETURN {
+        "itemNumber": CURRENT.`itemNumber`,
+        "notes": CURRENT.`notes`[* RETURN {
+          "text": CURRENT.`text`,
+          "priority": CURRENT.`priority`
+        }]
+      }]
+    }
+  )
+}
+
+// Peak memory usage: 65536 bytes

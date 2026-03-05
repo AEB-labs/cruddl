@@ -1,0 +1,8 @@
+{
+  "databases": {
+    // the test currently assert an arangodb-specific bugs - will be fixed in the next commit
+    "in-memory": {
+      "ignore": true
+    }
+  }
+}

@@ -73,6 +73,12 @@ type DeliveryItem @childEntity {
     handlingUnit: HandlingUnit @reference
     dgInfo: DangerousGoodsInfo @flexSearch
     description: I18nString @flexSearch @flexSearchFulltext
+    notes: [Note]
+}
+
+type Note @childEntity {
+    text: String
+    priority: Int
 }
 
 type ColorData @entityExtension {

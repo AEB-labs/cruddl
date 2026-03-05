@@ -121,7 +121,37 @@
             },
             "dgInfo": {
               "unNumber": "5435"
-            }
+            },
+            "notes": [
+              {
+                "text": "note1",
+                "priority": 1
+              },
+              {
+                "text": "note2",
+                "priority": 2
+              },
+              {
+                "text": "othernote",
+                "priority": 3
+              },
+              {
+                "text": "123",
+                "priority": 3
+              },
+              {
+                "text": "1234",
+                "priority": 1
+              },
+              {
+                "text": "OthernoteCase",
+                "priority": 2
+              },
+              {
+                "text": "othernotf-boundary",
+                "priority": 2
+              }
+            ]
           },
           {
             "itemNumber": "1002",
@@ -130,7 +160,17 @@
             "description": {
               "de": "Äpfel",
               "en": "Apples"
-            }
+            },
+            "notes": [
+              {
+                "text": "othernote-1002",
+                "priority": 2
+              },
+              {
+                "text": "note-high",
+                "priority": 4
+              }
+            ]
           }
         ],
         "totalValue": "EUR 1024.00",
@@ -149,7 +189,9 @@
         "aText": "foo bar",
         "sometimesNull": "1",
         "caseInsensitiveField": "Ä TEXT",
-        "colorData": { "packageColor": "red" },
+        "colorData": {
+          "packageColor": "red"
+        },
         "serialNumbers": ["12345", "67890"],
         "dispatchDate": "2001-01-02T03:00:00Z"
       },
@@ -173,12 +215,36 @@
           {
             "itemNumber": "2001",
             "quantity": 13,
-            "handlingUnit": "@{ids/Country/1}"
+            "handlingUnit": "@{ids/Country/1}",
             //wrong ID (Country instead of HandlingUnit) should not be resolved as reference
+            "notes": [
+              {
+                "text": "note-low",
+                "priority": 1
+              },
+              {
+                "text": "123 ",
+                "priority": 1
+              },
+              {
+                "text": "othernotf",
+                "priority": 1
+              }
+            ]
           },
           {
             "itemNumber": "2002",
-            "quantity": 18
+            "quantity": 18,
+            "notes": [
+              {
+                "text": "123",
+                "priority": 3
+              },
+              {
+                "text": "othernote-special",
+                "priority": 3
+              }
+            ]
           }
         ],
         "destinationCountryISOCode": "XX",
@@ -196,7 +262,9 @@
         },
         "sometimesNull": "2",
         "caseInsensitiveField": "ä text",
-        "colorData": { "packageColor": "blue" },
+        "colorData": {
+          "packageColor": "blue"
+        },
         "serialNumbers": ["54321"],
         "dispatchDate": "2001-01-02T04:00:00+01:00"
       },
@@ -212,11 +280,30 @@
         "items": [
           {
             "itemNumber": "3001",
-            "quantity": 3
+            "quantity": 3,
+            "notes": [
+              {
+                "text": "note-mid",
+                "priority": 2
+              },
+              {
+                "text": "note-low",
+                "priority": 1
+              },
+              {
+                "text": "othernotf-suffix",
+                "priority": 1
+              },
+              {
+                "text": "OTHERNOTE-UPPER",
+                "priority": 1
+              }
+            ]
           },
           {
             "itemNumber": "3002",
-            "quantity": 18
+            "quantity": 18,
+            "notes": []
           },
           {
             "itemNumber": "1001",
@@ -225,7 +312,17 @@
             "description": {
               "en": "Bananen",
               "de": "Bananas"
-            }
+            },
+            "notes": [
+              {
+                "text": "note-high-a",
+                "priority": 2
+              },
+              {
+                "text": "note-high-b",
+                "priority": 4
+              }
+            ]
           },
           {
             "itemNumber": "1002",
@@ -234,7 +331,21 @@
             "description": {
               "en": "Äpfel",
               "de": "Apples"
-            }
+            },
+            "notes": [
+              {
+                "text": "othernoteXYZ",
+                "priority": 1
+              },
+              {
+                "text": "1234",
+                "priority": 1
+              },
+              {
+                "text": "0123",
+                "priority": 1
+              }
+            ]
           }
         ],
         "destinationCountryISOCode": "US",
@@ -251,7 +362,9 @@
         },
         "sometimesNull": null,
         "caseInsensitiveField": "änother text",
-        "colorData": { "packageColor": "green" }
+        "colorData": {
+          "packageColor": "green"
+        }
       }
     ],
     "Forwarder": [

@@ -1954,6 +1954,16 @@
                 "deprecationReason": null
               },
               {
+                "name": "notes",
+                "description": null,
+                "deprecationReason": null
+              },
+              {
+                "name": "_notesMeta",
+                "description": null,
+                "deprecationReason": null
+              },
+              {
                 "name": "_cursor",
                 "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument.",
                 "deprecationReason": null
@@ -2007,6 +2017,306 @@
                 "deprecationReason": null
               }
             ],
+            "inputFields": null
+          },
+          {
+            "name": "Note",
+            "description": null,
+            "fields": [
+              {
+                "name": "id",
+                "description": "An auto-generated string that identifies this child entity uniquely within this collection of child entities",
+                "deprecationReason": null
+              },
+              {
+                "name": "createdAt",
+                "description": "The instant this object has been created",
+                "deprecationReason": null
+              },
+              {
+                "name": "updatedAt",
+                "description": "The instant this object has been updated the last time",
+                "deprecationReason": null
+              },
+              {
+                "name": "text",
+                "description": null,
+                "deprecationReason": null
+              },
+              {
+                "name": "priority",
+                "description": null,
+                "deprecationReason": null
+              },
+              {
+                "name": "_cursor",
+                "description": "Provides a value that can be supplied to the `after` argument for pagination. Depends on the value of the `orderBy` argument.",
+                "deprecationReason": null
+              }
+            ],
+            "inputFields": null
+          },
+          {
+            "name": "NoteFilter",
+            "description": "Filter type for Note.\n\nAll fields in this type are *and*-combined; see the `or` field for *or*-combination.",
+            "fields": null,
+            "inputFields": [
+              {
+                "name": "id",
+                "description": "Checks if `id` equals a specified value.\n\nIf an index exists on `id`, it can be used.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities",
+                "deprecationReason": null
+              },
+              {
+                "name": "id_not",
+                "description": "Checks if `id` does not equal a specified value\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities",
+                "deprecationReason": null
+              },
+              {
+                "name": "id_in",
+                "description": "Checks if `id` is equal to one of the specified values.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities",
+                "deprecationReason": null
+              },
+              {
+                "name": "id_not_in",
+                "description": "Checks if `id` is not equal to one of the specified values.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities",
+                "deprecationReason": null
+              },
+              {
+                "name": "id_lt",
+                "description": "Checks if `id` is less than a specified value.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities",
+                "deprecationReason": null
+              },
+              {
+                "name": "id_lte",
+                "description": "Checks if `id` is less or equal a specified value.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities",
+                "deprecationReason": null
+              },
+              {
+                "name": "id_gt",
+                "description": "Checks if `id` is greater than a specified value.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities",
+                "deprecationReason": null
+              },
+              {
+                "name": "id_gte",
+                "description": "Checks if `id` is greater or equal a specified value.\n\nAn auto-generated string that identifies this child entity uniquely within this collection of child entities",
+                "deprecationReason": null
+              },
+              {
+                "name": "createdAt",
+                "description": "Checks if `createdAt` equals a specified value.\n\nIf an index exists on `createdAt`, it can be used.\n\nThe instant this object has been created",
+                "deprecationReason": null
+              },
+              {
+                "name": "createdAt_not",
+                "description": "Checks if `createdAt` does not equal a specified value\n\nThe instant this object has been created",
+                "deprecationReason": null
+              },
+              {
+                "name": "createdAt_in",
+                "description": "Checks if `createdAt` is equal to one of the specified values.\n\nThe instant this object has been created",
+                "deprecationReason": null
+              },
+              {
+                "name": "createdAt_not_in",
+                "description": "Checks if `createdAt` is not equal to one of the specified values.\n\nThe instant this object has been created",
+                "deprecationReason": null
+              },
+              {
+                "name": "createdAt_lt",
+                "description": "Checks if `createdAt` is less than a specified value.\n\nThe instant this object has been created",
+                "deprecationReason": null
+              },
+              {
+                "name": "createdAt_lte",
+                "description": "Checks if `createdAt` is less or equal a specified value.\n\nThe instant this object has been created",
+                "deprecationReason": null
+              },
+              {
+                "name": "createdAt_gt",
+                "description": "Checks if `createdAt` is greater than a specified value.\n\nThe instant this object has been created",
+                "deprecationReason": null
+              },
+              {
+                "name": "createdAt_gte",
+                "description": "Checks if `createdAt` is greater or equal a specified value.\n\nThe instant this object has been created",
+                "deprecationReason": null
+              },
+              {
+                "name": "updatedAt",
+                "description": "Checks if `updatedAt` equals a specified value.\n\nIf an index exists on `updatedAt`, it can be used.\n\nThe instant this object has been updated the last time",
+                "deprecationReason": null
+              },
+              {
+                "name": "updatedAt_not",
+                "description": "Checks if `updatedAt` does not equal a specified value\n\nThe instant this object has been updated the last time",
+                "deprecationReason": null
+              },
+              {
+                "name": "updatedAt_in",
+                "description": "Checks if `updatedAt` is equal to one of the specified values.\n\nThe instant this object has been updated the last time",
+                "deprecationReason": null
+              },
+              {
+                "name": "updatedAt_not_in",
+                "description": "Checks if `updatedAt` is not equal to one of the specified values.\n\nThe instant this object has been updated the last time",
+                "deprecationReason": null
+              },
+              {
+                "name": "updatedAt_lt",
+                "description": "Checks if `updatedAt` is less than a specified value.\n\nThe instant this object has been updated the last time",
+                "deprecationReason": null
+              },
+              {
+                "name": "updatedAt_lte",
+                "description": "Checks if `updatedAt` is less or equal a specified value.\n\nThe instant this object has been updated the last time",
+                "deprecationReason": null
+              },
+              {
+                "name": "updatedAt_gt",
+                "description": "Checks if `updatedAt` is greater than a specified value.\n\nThe instant this object has been updated the last time",
+                "deprecationReason": null
+              },
+              {
+                "name": "updatedAt_gte",
+                "description": "Checks if `updatedAt` is greater or equal a specified value.\n\nThe instant this object has been updated the last time",
+                "deprecationReason": null
+              },
+              {
+                "name": "text",
+                "description": "Checks if `text` equals a specified string, case-sensitively.\n\nIf an index exists on `text`, it can be used.\n\nSee also `like` for a case-insensitive filter.",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_not",
+                "description": "Checks if `text` does not equal a specified string, case-sensitively.",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_in",
+                "description": "Checks if `text` is equal to one of the specified values.",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_not_in",
+                "description": "Checks if `text` is not equal to one of the specified values.",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_lt",
+                "description": "Checks if `text` is less than a specified value.",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_lte",
+                "description": "Checks if `text` is less or equal a specified value.",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_gt",
+                "description": "Checks if `text` is greater than a specified value.",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_gte",
+                "description": "Checks if `text` is greater or equal a specified value.",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_contains",
+                "description": "Checks if `text` contains a specified string, case-sensitively.",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_not_contains",
+                "description": "Checks if `text` does not contain a specified string, case-sensitively.",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_starts_with",
+                "description": "Checks if `text` starts with a specified string, case-sensitively.\n\nNever uses an index. Consider using `like` (with the `%` placeholder) for a case-insensitive filter that can use an index.",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_not_starts_with",
+                "description": "Checks if `text` does not start with a specified string, case-sensitively.\n\nNever uses an index. Consider using `not_like` (with the `%` placeholder) for a case-insensitive filter that can use an index.",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_ends_with",
+                "description": "Checks if `text` ends with a specified string, case-sensitively.",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_not_ends_with",
+                "description": "Checks if `text` does not end with a specified string, case-sensitively.",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_like",
+                "description": "Matches `text` against a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)\n\nIf an index exists on `text`, it can be used for the literal prefix (the part until the first placeholder).",
+                "deprecationReason": null
+              },
+              {
+                "name": "text_not_like",
+                "description": "Checks if `text` does *not* match a pattern case-insensitively with the following placeholders:\n\n- `%` matches any sequence of characters, including the empty string\n- `_` matches exactly one character\n- `\\` can be used to escape the placeholders (use `\\\\` for a literal backslash)",
+                "deprecationReason": null
+              },
+              {
+                "name": "priority",
+                "description": "Checks if `priority` equals a specified value.\n\nIf an index exists on `priority`, it can be used.",
+                "deprecationReason": null
+              },
+              {
+                "name": "priority_not",
+                "description": "Checks if `priority` does not equal a specified value",
+                "deprecationReason": null
+              },
+              {
+                "name": "priority_in",
+                "description": "Checks if `priority` is equal to one of the specified values.",
+                "deprecationReason": null
+              },
+              {
+                "name": "priority_not_in",
+                "description": "Checks if `priority` is not equal to one of the specified values.",
+                "deprecationReason": null
+              },
+              {
+                "name": "priority_lt",
+                "description": "Checks if `priority` is less than a specified value.",
+                "deprecationReason": null
+              },
+              {
+                "name": "priority_lte",
+                "description": "Checks if `priority` is less or equal a specified value.",
+                "deprecationReason": null
+              },
+              {
+                "name": "priority_gt",
+                "description": "Checks if `priority` is greater than a specified value.",
+                "deprecationReason": null
+              },
+              {
+                "name": "priority_gte",
+                "description": "Checks if `priority` is greater or equal a specified value.",
+                "deprecationReason": null
+              },
+              {
+                "name": "AND",
+                "description": "A field that checks if all filters in the list apply\n\nIf the list is empty, this filter applies to all objects.",
+                "deprecationReason": null
+              },
+              {
+                "name": "OR",
+                "description": "A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete `OR` field is *and*-combined with outer fields in the parent filter type.",
+                "deprecationReason": null
+              }
+            ]
+          },
+          {
+            "name": "NoteOrderBy",
+            "description": null,
+            "fields": null,
             "inputFields": null
           },
           {
@@ -2307,6 +2617,26 @@
               {
                 "name": "description_some",
                 "description": "Makes sure at least one of the entries in \"description\" has a value that matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `description` has at least one item.",
+                "deprecationReason": null
+              },
+              {
+                "name": "notes_some",
+                "description": "Makes sure at least one of the items in \"notes\" matches a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `notes` has at least one item.",
+                "deprecationReason": null
+              },
+              {
+                "name": "notes_every",
+                "description": "Makes sure all items in `notes` match a certain filter.",
+                "deprecationReason": null
+              },
+              {
+                "name": "notes_none",
+                "description": "Makes sure none of the items in `notes` match a certain filter.\n\nNote that you can specify the empty object for this filter to make sure `notes` has no items.",
+                "deprecationReason": null
+              },
+              {
+                "name": "notes_empty",
+                "description": "Checks if `notes` is an empty list (true) or a non-empty list (false).",
                 "deprecationReason": null
               },
               {
@@ -8088,6 +8418,28 @@
                 "name": "description",
                 "description": null,
                 "deprecationReason": null
+              },
+              {
+                "name": "notes",
+                "description": null,
+                "deprecationReason": null
+              }
+            ]
+          },
+          {
+            "name": "CreateNoteInput",
+            "description": "The create type for the child entity type `Note`.\n\nThe fields `id`, `createdAt`, and `updatedAt` are set automatically.",
+            "fields": null,
+            "inputFields": [
+              {
+                "name": "text",
+                "description": null,
+                "deprecationReason": null
+              },
+              {
+                "name": "priority",
+                "description": null,
+                "deprecationReason": null
               }
             ]
           },
@@ -8482,6 +8834,48 @@
               },
               {
                 "name": "description",
+                "description": null,
+                "deprecationReason": null
+              },
+              {
+                "name": "notes",
+                "description": "Deletes all `Notes` objects in list of `notes` and replaces it with the specified objects.\n\nCannot be combined with the add/update/delete fields for the same child entity list.",
+                "deprecationReason": null
+              },
+              {
+                "name": "addNotes",
+                "description": "Adds new `Notes` to the list of `notes`",
+                "deprecationReason": null
+              },
+              {
+                "name": "updateNotes",
+                "description": "Updates `Notes` in the list of `notes`",
+                "deprecationReason": null
+              },
+              {
+                "name": "removeNotes",
+                "description": "Deletes `Notes` by ids in the list of `notes`",
+                "deprecationReason": null
+              }
+            ]
+          },
+          {
+            "name": "UpdateNoteInput",
+            "description": "The update type for the child entity type `Note`.\n\nIf fields are omitted, their value is left unchanged. Explicitly set fields to `null` to clear their value.",
+            "fields": null,
+            "inputFields": [
+              {
+                "name": "id",
+                "description": "The `id` of the `Note` to be updated (does not change the `id`).",
+                "deprecationReason": null
+              },
+              {
+                "name": "text",
+                "description": null,
+                "deprecationReason": null
+              },
+              {
+                "name": "priority",
                 "description": null,
                 "deprecationReason": null
               }

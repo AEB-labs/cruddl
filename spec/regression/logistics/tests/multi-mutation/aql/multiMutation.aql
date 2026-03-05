@@ -82,7 +82,7 @@ RETURN (
   RETURN NEW._key
 )
 
-// Peak memory usage: 32768 bytes
+// Peak memory usage: 65536 bytes
 
 // ----------------------------------------------------------------
 
