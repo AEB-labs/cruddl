@@ -1,4 +1,4 @@
-import { ChildEntityType, Model, Type } from '../implementation';
+import type { ChildEntityType, Type } from '../implementation/index.js';
 
 export function collectEmbeddingEntityTypes(type: ChildEntityType): {
     readonly embeddingEntityTypes: ReadonlySet<Type>;

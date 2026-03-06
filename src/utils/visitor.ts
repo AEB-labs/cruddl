@@ -1,4 +1,4 @@
-import { isReadonlyArray } from './utils';
+import { isReadonlyArray } from './utils.js';
 
 export type VisitResult<T> = {
     /**

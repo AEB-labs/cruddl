@@ -1,10 +1,10 @@
-import { ModelOptions } from '../../config/interfaces';
-import { ValidationMessage } from '../validation';
-import { BillingConfig } from './billing';
-import { LocalizationConfig } from './i18n';
-import { NamespacedPermissionProfileConfigMap, TimeToLiveConfig } from './index';
-import { ModuleConfig } from './module';
-import { TypeConfig } from './type';
+import type { ModelOptions } from '../../config/interfaces.js';
+import type { ValidationMessage } from '../validation/index.js';
+import type { BillingConfig } from './billing.js';
+import type { LocalizationConfig } from './i18n.js';
+import type { NamespacedPermissionProfileConfigMap, TimeToLiveConfig } from './index.js';
+import type { ModuleConfig } from './module.js';
+import type { TypeConfig } from './type.js';
 
 export interface ModelConfig {
     readonly types: ReadonlyArray<TypeConfig>;

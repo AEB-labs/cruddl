@@ -1,14 +1,12 @@
-import {
-    defaultFieldResolver,
+import type {
     FragmentDefinitionNode,
     GraphQLFieldConfigMap,
     GraphQLFieldResolver,
-    GraphQLObjectType,
     GraphQLResolveInfo,
-    GraphQLSchema,
     OperationDefinitionNode,
 } from 'graphql';
-import { arrayToObject, objectValues } from '../utils/utils';
+import { defaultFieldResolver, GraphQLObjectType, GraphQLSchema } from 'graphql';
+import { isDefined } from '../utils/utils.js';
 
 export interface OperationParams {
     readonly schema: GraphQLSchema;
@@ -93,10 +91,10 @@ export function addOperationBasedResolvers({
                 type: field.type,
                 description: field.description,
                 deprecationReason: field.deprecationReason,
-                args: arrayToObject(field.args, (arg) => arg.name),
+                args: Object.fromEntries(field.args.map((arg) => [arg.name, arg])),
                 resolve: async (oldSource, args, context, info) => {
                     const newSource = await resolveOp(oldSource, args, context, info);
-                    if (newSource == undefined) {
+                    if (!isDefined(newSource)) {
                         return newSource;
                     }
                     return oldResolver(newSource, args, context, info);
@@ -119,7 +117,7 @@ export function addOperationBasedResolvers({
         mutation: mut ? convertType(mut) : undefined,
         subscription: sub ? convertType(sub) : undefined,
         directives: Array.from(schema.getDirectives()),
-        types: objectValues(schema.getTypeMap()).filter(
+        types: Object.values(schema.getTypeMap()).filter(
             (t) => t != mut && t != sub && t != schema.getQueryType(),
         ),
     });

@@ -1,22 +1,18 @@
+import type { GraphQLOutputType } from 'graphql';
 import {
     GraphQLEnumType,
     GraphQLInterfaceType,
     GraphQLList,
     GraphQLNonNull,
     GraphQLObjectType,
-    GraphQLOutputType,
     GraphQLScalarType,
     GraphQLUnionType,
     isListType,
     isNonNullType,
 } from 'graphql';
-import {
-    QueryNodeListType,
-    QueryNodeNonNullType,
-    QueryNodeObjectType,
-    QueryNodeOutputType,
-} from './definition';
-import { QueryNodeNullableType } from './index';
+import type { QueryNodeObjectType, QueryNodeOutputType } from './definition.js';
+import { QueryNodeListType, QueryNodeNonNullType } from './definition.js';
+import type { QueryNodeNullableType } from './index.js';
 
 export function isGraphQLOutputType(type: {}): type is GraphQLOutputType {
     return (

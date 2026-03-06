@@ -1,15 +1,16 @@
-import { Database } from 'arangojs';
-import { CollectionType } from 'arangojs/collection';
-import { NORM_CI_ANALYZER } from '../../../model/implementation/flex-search';
-import { ProjectOptions } from '../../../config/interfaces';
-import { Logger } from '../../../config/logging';
-import { Model, RootEntityType } from '../../../model';
+import type { Database } from 'arangojs';
+import { CollectionType } from 'arangojs/collection.js';
+import type { ProjectOptions } from '../../../config/interfaces.js';
+import type { Logger } from '../../../config/logging.js';
+import { NORM_CI_ANALYZER } from '../../../model/implementation/flex-search.js';
+import type { Model, RootEntityType } from '../../../model/index.js';
 import {
     billingCollectionName,
     getCollectionNameForRelation,
     getCollectionNameForRootEntity,
-} from '../arango-basics';
-import { ArangoDBConfig, getArangoDBLogger, initDatabase } from '../config';
+} from '../arango-basics.js';
+import type { ArangoDBConfig } from '../config.js';
+import { getArangoDBLogger, initDatabase } from '../config.js';
 import {
     areAnalyzersEqual,
     calculateRequiredArangoSearchViewCreateOperations,
@@ -17,22 +18,18 @@ import {
     calculateRequiredArangoSearchViewUpdateOperations,
     getFlexSearchViewNameForRootEntity,
     getRequiredViewsFromModel,
-} from './arango-search-helpers';
-import {
-    calculateRequiredIndexOperations,
-    getRequiredIndicesFromModel,
-    IndexDefinition,
-} from './index-helpers';
+} from './arango-search-helpers.js';
+import type { IndexDefinition } from './index-helpers.js';
+import { calculateRequiredIndexOperations, getRequiredIndicesFromModel } from './index-helpers.js';
+import type { CreateArangoSearchAnalyzerMigrationConfig, SchemaMigration } from './migrations.js';
 import {
     CreateArangoSearchAnalyzerMigration,
-    CreateArangoSearchAnalyzerMigrationConfig,
     CreateDocumentCollectionMigration,
     CreateEdgeCollectionMigration,
     CreateIndexMigration,
     DropIndexMigration,
-    SchemaMigration,
     UpdateArangoSearchAnalyzerMigration,
-} from './migrations';
+} from './migrations.js';
 
 export class SchemaAnalyzer {
     private readonly db: Database;

@@ -1,5 +1,6 @@
-import { Field } from '../implementation';
-import { ValidationContext, ValidationMessage } from '../validation';
+import type { Field } from '../implementation/index.js';
+import type { ValidationContext } from '../validation/index.js';
+import { ValidationMessage } from '../validation/index.js';
 
 /**
  * Checks whether @root and @parent are specified exactly when they are specified in the baseline field

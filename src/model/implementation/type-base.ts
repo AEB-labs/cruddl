@@ -1,17 +1,17 @@
-import { NameNode, TypeDefinitionNode } from 'graphql';
-import memorize from 'memorize-decorator';
+import type { NameNode, TypeDefinitionNode } from 'graphql';
+import { memorize } from 'memorize-decorator';
 import pluralize from 'pluralize';
-import { FlexSearchLanguage, TypeConfig, TypeKind } from '../config';
-import { ValidationMessage } from '../validation';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { TypeLocalization } from './i18n';
-import { Model } from './model';
-import { Namespace } from './namespace';
-import { EffectiveModuleSpecification } from './modules/effective-module-specification';
-import { MODULES_DIRECTIVE } from '../../schema/constants';
-import { TypeModuleSpecification } from './modules/type-module-specification';
-import { Type } from './type';
-import { WarningCode } from '../validation/suppress/message-codes';
+import { MODULES_DIRECTIVE } from '../../schema/constants.js';
+import type { TypeConfig, TypeKind } from '../config/index.js';
+import { FlexSearchLanguage } from '../config/index.js';
+import { ValidationMessage } from '../validation/index.js';
+import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import type { TypeLocalization } from './i18n.js';
+import type { Model } from './model.js';
+import { EffectiveModuleSpecification } from './modules/effective-module-specification.js';
+import { TypeModuleSpecification } from './modules/type-module-specification.js';
+import type { Namespace } from './namespace.js';
+import type { Type } from './type.js';
 
 export abstract class TypeBase implements ModelComponent {
     readonly name: string;

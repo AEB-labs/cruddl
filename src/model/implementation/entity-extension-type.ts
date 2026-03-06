@@ -1,9 +1,10 @@
-import { flatMap } from '../../utils/utils';
-import { ValidationContext, ValidationMessage } from '../validation';
-import { Field } from './field';
-import { ObjectTypeBase } from './object-type-base';
-import { EntityExtensionTypeConfig, TypeKind } from '../config';
-import { Model } from './model';
+import type { EntityExtensionTypeConfig } from '../config/index.js';
+import { TypeKind } from '../config/index.js';
+import type { ValidationContext } from '../validation/index.js';
+import { ValidationMessage } from '../validation/index.js';
+import type { Field } from './field.js';
+import type { Model } from './model.js';
+import { ObjectTypeBase } from './object-type-base.js';
 
 export class EntityExtensionType extends ObjectTypeBase {
     constructor(input: EntityExtensionTypeConfig, model: Model) {

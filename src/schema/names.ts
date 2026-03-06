@@ -1,5 +1,5 @@
-import { RootEntityType } from '../model/implementation';
-import { capitalize } from '../utils/utils';
+import type { RootEntityType } from '../model/implementation/index.js';
+import { capitalize } from '../utils/utils.js';
 import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX,
     ADD_EDGES_FIELD_PREFIX,
@@ -15,7 +15,7 @@ import {
     UPDATE_ALL_ENTITIES_FIELD_PREFIX,
     UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
     UPDATE_ENTITY_FIELD_PREFIX,
-} from './constants';
+} from './constants.js';
 
 export function getAllEntitiesFieldName(rootEntityType: RootEntityType) {
     return ALL_ENTITIES_FIELD_PREFIX + rootEntityType.pluralName;

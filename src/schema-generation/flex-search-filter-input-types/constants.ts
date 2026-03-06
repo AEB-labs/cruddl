@@ -1,13 +1,12 @@
-import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
-import { FlexSearchLanguage } from '../../model/config';
-import { BinaryOperator, BinaryOperatorWithAnalyzer, QueryNode } from '../../query-tree';
+import { GraphQLBoolean, GraphQLID, GraphQLString } from 'graphql';
+import type { QueryNode } from '../../query-tree/index.js';
+import { BinaryOperator, BinaryOperatorWithAnalyzer } from '../../query-tree/index.js';
 import {
     INPUT_FIELD_CONTAINS_ALL_PREFIXES,
     INPUT_FIELD_CONTAINS_ALL_WORDS,
     INPUT_FIELD_CONTAINS_ANY_PREFIX,
     INPUT_FIELD_CONTAINS_ANY_WORD,
     INPUT_FIELD_CONTAINS_PHRASE,
-    INPUT_FIELD_ENDS_WITH,
     INPUT_FIELD_EQUAL,
     INPUT_FIELD_GT,
     INPUT_FIELD_GTE,
@@ -20,15 +19,15 @@ import {
     INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX,
     INPUT_FIELD_NOT_CONTAINS_ANY_WORD,
     INPUT_FIELD_NOT_CONTAINS_PHRASE,
-    INPUT_FIELD_NOT_ENDS_WITH,
     INPUT_FIELD_NOT_IN,
     INPUT_FIELD_NOT_STARTS_WITH,
     INPUT_FIELD_STARTS_WITH,
-} from '../../schema/constants';
-import { GraphQLDateTime } from '../../schema/scalars/date-time';
-import { GraphQLLocalDate } from '../../schema/scalars/local-date';
-import { GraphQLLocalTime } from '../../schema/scalars/local-time';
-import { NUMERIC_FILTER_FIELDS } from '../filter-input-types/constants';
+} from '../../schema/constants.js';
+import { GraphQLDateTime } from '../../schema/scalars/date-time.js';
+import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
+import { GraphQLLocalTime } from '../../schema/scalars/local-time.js';
+import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js';
+import { NUMERIC_FILTER_FIELDS } from '../filter-input-types/constants.js';
 import {
     binaryNotOp,
     binaryNotOpWithAnalyzer,
@@ -36,8 +35,7 @@ import {
     binaryOpWithAnalyzer,
     notStartsWithOp,
     startsWithOp,
-} from '../utils/input-types';
-import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
+} from '../utils/input-types.js';
 
 export const SOME_PREFIX = 'some';
 

@@ -1,10 +1,10 @@
-import { AggregationOperator } from '../model/config';
-export { OrderDirection } from '../model/implementation/order';
-import { OrderDirection } from '../model/implementation/order';
-import { indent } from '../utils/utils';
-import { QueryNode } from './base';
-import { ConstBoolQueryNode } from './literals';
-import { VariableQueryNode } from './variables';
+import type { AggregationOperator } from '../model/config/index.js';
+import { OrderDirection } from '../model/implementation/order.js';
+import { indent, isDefined } from '../utils/utils.js';
+import { QueryNode } from './base.js';
+import { ConstBoolQueryNode } from './literals.js';
+import { VariableQueryNode } from './variables.js';
+export { OrderDirection } from '../model/implementation/order.js';
 
 /**
  * A node that evaluates to a list with query nodes as list entries
@@ -67,7 +67,7 @@ export class TransformListQueryNode extends QueryNode {
                         : `where ${this.filterNode.describe()}\n`) +
                     (this.orderBy.isUnordered() ? '' : `order by ${this.orderBy.describe()}\n`) +
                     (this.skip != 0 ? `skip ${this.skip}\n` : '') +
-                    (this.maxCount != undefined ? `limit ${this.maxCount}\n` : '') +
+                    (isDefined(this.maxCount) ? `limit ${this.maxCount}\n` : '') +
                     `as ${this.innerNode.describe()}`,
             )
         );

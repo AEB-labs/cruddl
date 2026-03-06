@@ -1,7 +1,9 @@
-import { DateTimeFormatter, Instant, ZonedDateTime, ZoneId } from '@js-joda/core';
-import { Clock } from '../execution/execution-options';
-import { Field, ScalarType } from '../model';
-import { TimeToLiveType } from '../model/implementation/time-to-live';
+import type { ZonedDateTime } from '@js-joda/core';
+import { DateTimeFormatter, Instant, ZoneId } from '@js-joda/core';
+import type { Clock } from '../execution/execution-options.js';
+import type { TimeToLiveType } from '../model/implementation/time-to-live.js';
+import type { Field, ScalarType } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -13,14 +15,13 @@ import {
     NullQueryNode,
     ObjectQueryNode,
     PropertySpecification,
-    QueryNode,
     TransformListQueryNode,
     VariableQueryNode,
-} from '../query-tree';
-import { generateDeleteAllQueryNode } from '../schema-generation';
-import { getScalarFilterValueNode } from '../schema-generation/filter-input-types/filter-fields';
-import { GraphQLLocalDate } from '../schema/scalars/local-date';
-import { decapitalize } from '../utils/utils';
+} from '../query-tree/index.js';
+import { getScalarFilterValueNode } from '../schema-generation/filter-input-types/filter-fields.js';
+import { generateDeleteAllQueryNode } from '../schema-generation/index.js';
+import { GraphQLLocalDate } from '../schema/scalars/local-date.js';
+import { decapitalize } from '../utils/utils.js';
 
 export interface GetQueryNodeArgs {
     readonly ttlType: TimeToLiveType;

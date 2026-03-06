@@ -1,15 +1,12 @@
 import {
-    ParsedProjectSource,
-    ParsedProjectSourceBaseKind,
-    PathLocationMap,
-} from '../../../config/parsed-project';
-import { ValidationMessage } from '../../../model';
-import {
     createRoleSpecifierEntry,
     InvalidRoleSpecifierError,
-} from '../../../model/implementation/permission-profile';
-import { flatMap, isReadonlyArray } from '../../../utils/utils';
-import { ParsedSourceValidator } from '../ast-validator';
+} from '../../../model/implementation/permission-profile.js';
+import { ValidationMessage } from '../../../model/index.js';
+import { isReadonlyArray } from '../../../utils/utils.js';
+import type { ParsedProjectSource, PathLocationMap } from '../../parsing/parsed-project.js';
+import { ParsedProjectSourceBaseKind } from '../../parsing/parsed-project.js';
+import type { ParsedSourceValidator } from '../ast-validator.js';
 
 export class PermissionProfileValidator implements ParsedSourceValidator {
     validate(source: ParsedProjectSource): ReadonlyArray<ValidationMessage> {
@@ -28,7 +25,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
             return [];
         }
 
-        return flatMap(Object.entries(data.permissionProfiles as any), ([name, profile]) =>
+        return Object.entries(data.permissionProfiles as any).flatMap(([name, profile]) =>
             this.validatePermissionProfile({
                 profile,
                 name,
@@ -50,7 +47,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
             return [];
         }
 
-        return flatMap(Object.entries(profile.permissions), ([index, permission]) =>
+        return Object.entries(profile.permissions).flatMap(([index, permission]) =>
             this.validatePermission({ permission, name, pathLocationMap, index }),
         );
     }

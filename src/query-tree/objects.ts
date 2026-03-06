@@ -1,6 +1,6 @@
-import { QueryNode } from './base';
-import { green } from '../utils/colors';
-import { indent } from '../utils/utils';
+import { green } from '../utils/colors.js';
+import { indent } from '../utils/utils.js';
+import { QueryNode } from './base.js';
 
 /**
  * A node that evaluates in a JSON-like object structure with properties and values

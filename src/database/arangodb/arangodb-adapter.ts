@@ -1,20 +1,22 @@
-import { Database } from 'arangojs';
-import { globalContext } from '../../config/global';
-import { ProjectOptions } from '../../config/interfaces';
-import { Logger } from '../../config/logging';
-import { DefaultClock, ExecutionOptions } from '../../execution/execution-options';
+import type { Database } from 'arangojs';
+import { globalContext } from '../../config/global.js';
+import type { ProjectOptions } from '../../config/interfaces.js';
+import type { Logger } from '../../config/logging.js';
+import type { ExecutionOptions } from '../../execution/execution-options.js';
 import {
     ConflictRetriesExhaustedError,
     TransactionCancelledError,
     TransactionTimeoutError,
-} from '../../execution/runtime-errors';
-import { Model } from '../../model';
-import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
-import { FlexSearchTokenization } from '../../query-tree/flex-search';
-import { Mutable } from '../../utils/util-types';
-import { objectValues, sleep, sleepInterruptible } from '../../utils/utils';
-import { getPreciseTime, Watch } from '../../utils/watch';
-import {
+} from '../../execution/runtime-errors.js';
+import { TransactionError } from '../../execution/transaction-error.js';
+import type { Model } from '../../model/index.js';
+import type { FlexSearchTokenization } from '../../query-tree/flex-search.js';
+import type { QueryNode } from '../../query-tree/index.js';
+import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query-tree/index.js';
+import type { Mutable } from '../../utils/util-types.js';
+import { isDefined, sleep, sleepInterruptible } from '../../utils/utils.js';
+import { getPreciseTime, Watch } from '../../utils/watch.js';
+import type {
     DatabaseAdapter,
     DatabaseAdapterTimings,
     ExecutionArgs,
@@ -22,29 +24,29 @@ import {
     ExecutionResult,
     FlexSearchTokenizable,
     TransactionStats,
-} from '../database-adapter';
-import { AQLCompoundQuery, aqlConfig, AQLExecutableQuery } from './aql';
-import { generateTokenizationQuery, getAQLQuery } from './aql-generator';
-import {
+} from '../database-adapter.js';
+import { generateTokenizationQuery, getAQLQuery } from './aql-generator.js';
+import type { AQLCompoundQuery, AQLExecutableQuery } from './aql.js';
+import { aqlConfig } from './aql.js';
+import type {
     RequestInstrumentation,
     RequestInstrumentationPhase,
-} from './arangojs-instrumentation/config';
-import { CancellationManager } from './cancellation-manager';
+} from './arangojs-instrumentation/config.js';
+import { CancellationManager } from './cancellation-manager.js';
+import type { ArangoDBConfig } from './config.js';
 import {
-    ArangoDBConfig,
     DEFAULT_RETRY_DELAY_BASE_MS,
     getArangoDBLogger,
     initDatabase,
     RETRY_DELAY_RANDOM_FRACTION,
-} from './config';
-import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes';
-import { hasRevisionAssertions } from './revision-helper';
-import { SchemaAnalyzer } from './schema-migration/analyzer';
-import { SchemaMigration } from './schema-migration/migrations';
-import { MigrationPerformer } from './schema-migration/performer';
-import { TransactionError } from '../../execution/transaction-error';
-import { ArangoDBVersion, ArangoDBVersionHelper } from './version-helper';
-import { v4 as uuid } from 'uuid';
+} from './config.js';
+import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes.js';
+import { hasRevisionAssertions } from './revision-helper.js';
+import { SchemaAnalyzer } from './schema-migration/analyzer.js';
+import type { SchemaMigration } from './schema-migration/migrations.js';
+import { MigrationPerformer } from './schema-migration/performer.js';
+import type { ArangoDBVersion } from './version-helper.js';
+import { ArangoDBVersionHelper } from './version-helper.js';
 
 const requestInstrumentationBodyKey = 'cruddlRequestInstrumentation';
 
@@ -144,8 +146,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
             const startTime = enableProfiling ? getPreciseTime() : 0;
 
+            // will be replaced with the validators (keep the exact syntax)
             let validators: { [name: string]: (validationData: any, result: any) => void } = {};
-            //inject_validators_here
 
             let timings: { [key: string]: number } | undefined = enableProfiling ? {} : undefined;
             let timingsTotal = 0;
@@ -310,13 +312,14 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 )}`,
         );
 
-        const allValidatorFunctionsObjectString = `validators = {${validatorProviders.join(
-            ',\n',
-        )}}`;
-
-        return String(arangoExecutionFunction).replace(
-            '//inject_validators_here',
-            allValidatorFunctionsObjectString,
+        return (
+            String(arangoExecutionFunction)
+                .replace(
+                    'let validators = {}',
+                    `let validators = {${validatorProviders.join(',\n')}}`,
+                )
+                // when running cruddl with tsx in this repo, esbuild is used, which emits __name() calls. This is not available in arangodb
+                .replace(/__name\([^)]*\);\s*/g, '')
         );
     }
 
@@ -583,7 +586,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         options: ExecutionOptions,
         aqlQuery: AQLCompoundQuery,
     ): Promise<TransactionResult> {
-        const transactionID = uuid();
+        const transactionID = crypto.randomUUID();
         const args: ArangoExecutionOptions = {
             queries: executableQueries,
             options: {
@@ -607,7 +610,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         let requestSentCallback: (() => void) | undefined;
         let requestSentPromise = new Promise<void>((resolve) => (requestSentCallback = resolve));
         let timeout: any | undefined;
-        if (options.transactionTimeoutMs != undefined) {
+        if (isDefined(options.transactionTimeoutMs)) {
             const ms = options.transactionTimeoutMs;
             // transactionTimeout is a timeout that should only be started when the request is actually sent to ArangoDB
             const timeoutPromise = requestSentPromise
@@ -735,7 +738,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 connecting -
                 receiving -
                 waiting;
-            const dbInternalTotal = objectValues<number>(databaseReportedTimings).reduce(
+            const dbInternalTotal = Object.values<number>(databaseReportedTimings).reduce(
                 (a, b) => a + b,
                 0,
             );

@@ -1,14 +1,15 @@
-import { GraphQLEnumType, GraphQLEnumValueConfig } from 'graphql';
-import { chain } from 'lodash';
-import memorize from 'memorize-decorator';
-import { Field, ObjectType, Type } from '../model';
-import { OrderClause, OrderDirection, PropertyAccessQueryNode, QueryNode } from '../query-tree';
-import { ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/constants';
-import { getOrderByTypeName } from '../schema/names';
-import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../schema/scalars/offset-date-time';
-import { flatMap } from '../utils/utils';
-import { createFieldNode } from './field-nodes';
-import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
+import type { GraphQLEnumValueConfig } from 'graphql';
+import { GraphQLEnumType } from 'graphql';
+import { memorize } from 'memorize-decorator';
+import type { Field, ObjectType } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
+import { OrderClause, OrderDirection } from '../query-tree/index.js';
+import { ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/constants.js';
+import { getOrderByTypeName } from '../schema/names.js';
+
+import { isDefined } from '../utils/utils.js';
+import { createFieldNode } from './field-nodes.js';
+import { getScalarFilterValueNode } from './filter-input-types/filter-fields.js';
 
 export class OrderByEnumType {
     constructor(
@@ -41,15 +42,15 @@ export class OrderByEnumType {
     getEnumType(): GraphQLEnumType {
         return new GraphQLEnumType({
             name: this.name,
-            values: chain(this.values)
-                .keyBy((value) => value.name)
-                .mapValues(
-                    (value): GraphQLEnumValueConfig => ({
+            values: Object.fromEntries(
+                this.values.map((value): [string, GraphQLEnumValueConfig] => [
+                    value.name,
+                    {
                         value: value.name,
                         deprecationReason: value.deprecationReason,
-                    }),
-                )
-                .value(),
+                    },
+                ]),
+            ),
         });
     }
 }
@@ -133,7 +134,7 @@ export class OrderByEnumGenerator {
         type: ObjectType,
         options?: RecursionOptions,
     ): ReadonlyArray<OrderByEnumValue> {
-        return flatMap(type.fields, (field) => this.getValuesForField(field, options));
+        return type.fields.flatMap((field) => this.getValuesForField(field, options));
     }
 
     private getValuesForField(
@@ -160,7 +161,7 @@ export class OrderByEnumGenerator {
                 ? rootEntityDepth + 1
                 : rootEntityDepth;
             if (
-                this.config.maxRootEntityDepth != undefined &&
+                isDefined(this.config.maxRootEntityDepth) &&
                 newRootEntityDepth > this.config.maxRootEntityDepth
             ) {
                 return [];

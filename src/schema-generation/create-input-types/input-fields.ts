@@ -1,12 +1,17 @@
-import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { ZonedDateTime } from '@js-joda/core';
-import { Field } from '../../model';
-import { GraphQLOffsetDateTime, serializeForStorage } from '../../schema/scalars/offset-date-time';
-import { AnyValue, isReadonlyArray, PlainObject } from '../../utils/utils';
-import { createGraphQLError } from '../graphql-errors';
-import { FieldContext } from '../query-node-object-type';
-import { TypedInputFieldBase, TypedInputObjectType } from '../typed-input-object-type';
-import { CreateObjectInputType } from './input-types';
+import type { GraphQLInputType } from 'graphql';
+import { GraphQLList, GraphQLNonNull } from 'graphql';
+import type { Field } from '../../model/index.js';
+import {
+    GraphQLOffsetDateTime,
+    serializeForStorage,
+} from '../../schema/scalars/offset-date-time.js';
+import type { AnyValue, PlainObject } from '../../utils/utils.js';
+import { isDefined, isReadonlyArray } from '../../utils/utils.js';
+import { createGraphQLError } from '../graphql-errors.js';
+import type { FieldContext } from '../query-node-object-type/index.js';
+import type { TypedInputFieldBase, TypedInputObjectType } from '../typed-input-object-type.js';
+import type { CreateObjectInputType } from './input-types.js';
 
 export interface FieldValidationContext extends FieldContext {
     readonly objectValue: PlainObject;
@@ -128,7 +133,7 @@ export class CreateObjectInputField extends BasicCreateInputField {
 
     protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
         value = super.coerceValue(value, context);
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return value;
         }
         return this.objectInputType.prepareValue(value as PlainObject, context);
@@ -136,7 +141,7 @@ export class CreateObjectInputField extends BasicCreateInputField {
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
         super.collectAffectedFields(value, fields, context);
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return;
         }
 
@@ -205,7 +210,7 @@ export class ObjectListCreateInputField extends BasicCreateInputField {
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
         super.collectAffectedFields(value, fields, context);
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return;
         }
         if (!isReadonlyArray(value)) {
@@ -223,7 +228,7 @@ export class ObjectListCreateInputField extends BasicCreateInputField {
 export class CreateEntityExtensionInputField extends CreateObjectInputField {
     protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
         // this should always be an object so the default values of entity extensions apply
-        return super.coerceValue(value == undefined ? {} : value, context);
+        return super.coerceValue(!isDefined(value) ? {} : value, context);
     }
 
     appliesToMissingFields() {

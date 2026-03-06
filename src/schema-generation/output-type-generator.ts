@@ -1,45 +1,48 @@
 import { GraphQLID, GraphQLNonNull, GraphQLString } from 'graphql';
-import { sortBy } from 'lodash';
-import memorize from 'memorize-decorator';
-import { FieldRequest } from '../graphql/query-distiller';
-import { isListTypeIgnoringNonNull } from '../graphql/schema-utils';
-import { Field, ObjectType, Type, TypeKind } from '../model';
+import { memorize } from 'memorize-decorator';
+import type { FieldRequest } from '../graphql/query-distiller.js';
+import { isListTypeIgnoringNonNull } from '../graphql/schema-utils.js';
+import type { Field, ObjectType, Type } from '../model/index.js';
+import { TypeKind } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     NullQueryNode,
     ObjectQueryNode,
     PropertySpecification,
-    QueryNode,
     RevisionQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
-} from '../query-tree';
+} from '../query-tree/index.js';
 import {
     CURSOR_FIELD,
     FLEX_SEARCH_ENTITIES_FIELD_PREFIX,
     ORDER_BY_ARG,
     REVISION_FIELD,
-} from '../schema/constants';
-import { getMetaFieldName } from '../schema/names';
-import { compact, flatMap } from '../utils/utils';
-import { EnumTypeGenerator } from './enum-type-generator';
-import { createFieldNode } from './field-nodes';
-import { FilterAugmentation } from './filter-augmentation';
-import { ListAugmentation } from './list-augmentation';
-import { MetaTypeGenerator } from './meta-type-generator';
-import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
-import {
+} from '../schema/constants.js';
+import { getMetaFieldName } from '../schema/names.js';
+import { isDefined } from '../utils/utils.js';
+import type { EnumTypeGenerator } from './enum-type-generator.js';
+import { createFieldNode } from './field-nodes.js';
+import type { FilterAugmentation } from './filter-augmentation.js';
+import type { ListAugmentation } from './list-augmentation.js';
+import type { MetaTypeGenerator } from './meta-type-generator.js';
+import type {
+    OrderByEnumGenerator,
+    OrderByEnumType,
+    OrderByEnumValue,
+} from './order-by-enum-generator.js';
+import type {
     FieldContext,
     QueryNodeField,
-    QueryNodeListType,
-    QueryNodeNonNullType,
     QueryNodeOutputType,
-} from './query-node-object-type';
-import { RootFieldHelper } from './root-field-helper';
+} from './query-node-object-type/index.js';
+import { QueryNodeListType, QueryNodeNonNullType } from './query-node-object-type/index.js';
+import type { RootFieldHelper } from './root-field-helper.js';
 import {
     getSortClausesForPrimarySort,
     orderArgMatchesPrimarySort,
-} from './utils/flex-search-utils';
-import { getOrderByValues } from './utils/pagination';
+} from './utils/flex-search-utils.js';
+import { getOrderByValues } from './utils/pagination.js';
 
 export class OutputTypeGenerator {
     constructor(
@@ -86,7 +89,7 @@ export class OutputTypeGenerator {
         const origFields = [...objectType.fields];
         origFields.filter((field) => field.isReference);
 
-        const fields = flatMap(objectType.fields, (field) => {
+        const fields = objectType.fields.flatMap((field) => {
             const nodeFields = this.createFields(field);
             if (field.isReference) {
                 const type = field.type;
@@ -107,13 +110,12 @@ export class OutputTypeGenerator {
 
         return [
             ...fields,
-            ...compact([
-                // include cursor fields in all types that could occur in lists and that can be ordered (unorderable types can't use cursor-based navigation)
-                this.createCursorField(objectType),
 
-                this.createRevisionField(objectType),
-            ]),
-        ];
+            // include cursor fields in all types that could occur in lists and that can be ordered (unorderable types can't use cursor-based navigation)
+            this.createCursorField(objectType),
+
+            this.createRevisionField(objectType),
+        ].filter(isDefined);
     }
 
     private createCursorField(objectType: ObjectType): QueryNodeField | undefined {
@@ -167,7 +169,7 @@ export class OutputTypeGenerator {
                 isAbsoluteOrderRequired: true,
             });
         }
-        const sortedClauses = sortBy(orderByValues, (clause) => clause.name);
+        const sortedClauses = [...orderByValues].sort((a, b) => a.name.localeCompare(b.name));
         const objectNode = new ObjectQueryNode(
             sortedClauses.map(
                 (clause) =>

@@ -1,25 +1,25 @@
-import memorize from 'memorize-decorator';
-import { Namespace, RootEntityType } from '../model';
-import { EntitiesQueryNode, FirstOfListQueryNode, ObjectQueryNode, QueryNode } from '../query-tree';
-import { QUERY_TYPE } from '../schema/constants';
-import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names';
-import { flatMap } from '../utils/utils';
-import { FilterAugmentation } from './filter-augmentation';
-import { FlexSearchGenerator } from './flex-search-generator';
-import { MetaFirstAugmentation } from './limit-augmentation';
-import { ListAugmentation } from './list-augmentation';
-import { MetaTypeGenerator } from './meta-type-generator';
-import { OutputTypeGenerator } from './output-type-generator';
-import {
+import { memorize } from 'memorize-decorator';
+import type { Namespace, RootEntityType } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
+import { EntitiesQueryNode, FirstOfListQueryNode, ObjectQueryNode } from '../query-tree/index.js';
+import { QUERY_TYPE } from '../schema/constants.js';
+import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names.js';
+
+import type { FilterAugmentation } from './filter-augmentation.js';
+import type { FlexSearchGenerator } from './flex-search-generator.js';
+import type { MetaFirstAugmentation } from './limit-augmentation.js';
+import type { ListAugmentation } from './list-augmentation.js';
+import type { MetaTypeGenerator } from './meta-type-generator.js';
+import { LimitTypeCheckType } from './order-by-and-pagination-augmentation.js';
+import type { OutputTypeGenerator } from './output-type-generator.js';
+import type {
     FieldContext,
     QueryNodeField,
-    QueryNodeListType,
-    QueryNodeNonNullType,
     QueryNodeObjectType,
-} from './query-node-object-type';
-import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator';
-import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
-import { LimitTypeCheckType } from './order-by-and-pagination-augmentation';
+} from './query-node-object-type/index.js';
+import { QueryNodeListType, QueryNodeNonNullType } from './query-node-object-type/index.js';
+import type { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator.js';
+import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field.js';
 
 export class QueryTypeGenerator {
     constructor(
@@ -44,7 +44,7 @@ export class QueryTypeGenerator {
 
         const fields = [
             ...namespaceFields,
-            ...flatMap(namespace.rootEntityTypes, (type) => this.getFields(type)),
+            ...namespace.rootEntityTypes.flatMap((type) => this.getFields(type)),
         ];
 
         return {

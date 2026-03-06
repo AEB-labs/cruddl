@@ -1,7 +1,8 @@
-import { DocumentNode, Kind } from 'graphql';
-import { ValidationMessage } from '../../../model';
-import { getObjectTypes } from '../../schema-utils';
-import { ASTValidator } from '../ast-validator';
+import type { DocumentNode } from 'graphql';
+import { Kind } from 'graphql';
+import { ValidationMessage } from '../../../model/index.js';
+import { getObjectTypes } from '../../schema-utils.js';
+import type { ASTValidator } from '../ast-validator.js';
 
 export const VALIDATION_ERROR_LISTS_OF_LISTS_NOT_ALLOWED = 'Lists of lists are not allowed.';
 

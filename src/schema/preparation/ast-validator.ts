@@ -1,16 +1,15 @@
-import { DocumentNode } from 'graphql';
-import { Model, ValidationMessage, ValidationResult } from '../../model';
-import { ProjectSource } from '../../project/source';
-import { flatMap } from '../../utils/utils';
-import { IndicesValidator } from './ast-validation-modules/indices-validator';
-import { KeyFieldValidator } from './ast-validation-modules/key-field-validator';
-import { NoListsOfListsValidator } from './ast-validation-modules/no-lists-of-lists-validator';
-import { NoUnusedNonRootObjectTypesValidator } from './ast-validation-modules/no-unused-non-root-object-types-validator';
-import { RolesOnNonRootEntityTypesValidator } from './ast-validation-modules/roles-on-non-root-entity-types';
-import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules';
-import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema';
-import { ParsedProjectSource } from '../../config/parsed-project';
-import { PermissionProfileValidator } from './source-validation-modules/permission-profile-validator';
+import type { DocumentNode } from 'graphql';
+import { Model, ValidationMessage, ValidationResult } from '../../model/index.js';
+import type { ProjectSource } from '../../project/source.js';
+import type { ParsedProjectSource } from '../parsing/parsed-project.js';
+import { IndicesValidator } from './ast-validation-modules/indices-validator.js';
+import { KeyFieldValidator } from './ast-validation-modules/key-field-validator.js';
+import { NoListsOfListsValidator } from './ast-validation-modules/no-lists-of-lists-validator.js';
+import { NoUnusedNonRootObjectTypesValidator } from './ast-validation-modules/no-unused-non-root-object-types-validator.js';
+import { RolesOnNonRootEntityTypesValidator } from './ast-validation-modules/roles-on-non-root-entity-types.js';
+import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules.js';
+import { PermissionProfileValidator } from './source-validation-modules/permission-profile-validator.js';
+import { SidecarSchemaValidator } from './source-validation-modules/sidecar-schema.js';
 
 const sourceValidators: ReadonlyArray<SourceValidator> = [];
 
@@ -42,19 +41,19 @@ export interface SourceValidator {
 
 export function validateSource(source: ProjectSource): ValidationResult {
     return new ValidationResult(
-        flatMap(sourceValidators, (validator) => validator.validate(source)),
+        sourceValidators.flatMap((validator) => validator.validate(source)),
     );
 }
 
 export function validateParsedProjectSource(source: ParsedProjectSource): ValidationResult {
     return new ValidationResult(
-        flatMap(parsedProjectSourceValidators, (validator) => validator.validate(source)),
+        parsedProjectSourceValidators.flatMap((validator) => validator.validate(source)),
     );
 }
 
 export function validatePostMerge(ast: DocumentNode, model: Model): ValidationResult {
     return new ValidationResult(
-        flatMap(postMergeValidators, (validator) => {
+        postMergeValidators.flatMap((validator) => {
             // All validators rely on a valid model except for the things they test.
             // That's why they allow them to throw errors due to a bad model.
             // To keep the validators simple, we just ignore these errors and

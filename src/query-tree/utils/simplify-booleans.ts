@@ -1,11 +1,11 @@
+import type { QueryNode } from '../base.js';
+import { ConstBoolQueryNode } from '../literals.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
-    ConstBoolQueryNode,
-    QueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
-} from '..';
+} from '../operators.js';
 
 /**
  * Simplifies a boolean expression (does not recurse into non-boolean-related nodes)

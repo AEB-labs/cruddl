@@ -1,6 +1,9 @@
-import { getNamedType, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { ZonedDateTime } from '@js-joda/core';
-import { EnumType, Field, ScalarType, Type, TypeKind } from '../../model';
+import type { GraphQLInputType } from 'graphql';
+import { getNamedType, GraphQLBoolean, GraphQLList, GraphQLNonNull } from 'graphql';
+import type { EnumType, Field, ScalarType, Type } from '../../model/index.js';
+import { TypeKind } from '../../model/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -11,24 +14,26 @@ import {
     LiteralQueryNode,
     ObjectEntriesQueryNode,
     PropertyAccessQueryNode,
-    QueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { QuantifierFilterNode } from '../../query-tree/quantifiers';
+} from '../../query-tree/index.js';
+import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
 import {
     AND_FILTER_FIELD,
     FILTER_FIELD_PREFIX_SEPARATOR,
     INPUT_FIELD_EQUAL,
     OR_FILTER_FIELD,
-} from '../../schema/constants';
-import { GraphQLOffsetDateTime, TIMESTAMP_PROPERTY } from '../../schema/scalars/offset-date-time';
-import { AnyValue, decapitalize, isReadonlyArray, PlainObject } from '../../utils/utils';
-import { createFieldNode } from '../field-nodes';
-import { TypedInputFieldBase } from '../typed-input-object-type';
-import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND, Quantifier } from './constants';
-import { FilterObjectType } from './generator';
-import { GraphQLBoolean } from 'graphql/index';
-import { QueryNodeResolveInfo } from '../query-node-object-type';
+} from '../../schema/constants.js';
+import {
+    GraphQLOffsetDateTime,
+    TIMESTAMP_PROPERTY,
+} from '../../schema/scalars/offset-date-time.js';
+import type { AnyValue, PlainObject } from '../../utils/utils.js';
+import { decapitalize, isDefined, isReadonlyArray } from '../../utils/utils.js';
+import { createFieldNode } from '../field-nodes.js';
+import type { TypedInputFieldBase } from '../typed-input-object-type.js';
+import type { Quantifier } from './constants.js';
+import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND } from './constants.js';
+import type { FilterObjectType } from './generator.js';
 
 export interface FilterField extends TypedInputFieldBase<FilterField> {
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode;
@@ -95,7 +100,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
     }
 
     get name() {
-        if (this.operatorPrefix == undefined) {
+        if (!isDefined(this.operatorPrefix)) {
             return this.field.name;
         }
         return this.field.name + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorPrefix;
@@ -105,7 +110,7 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         if (
             this.operatorPrefix &&
             OPERATORS_WITH_LIST_OPERAND.includes(this.operatorPrefix) &&
-            filterValue == null
+            !isDefined(filterValue)
         ) {
             return new ConstBoolQueryNode(true);
         }
@@ -142,7 +147,7 @@ export class StringMapEntryFilterField implements FilterField {
     }
 
     get name() {
-        if (this.operatorPrefix == undefined) {
+        if (!isDefined(this.operatorPrefix)) {
             return this.fieldName;
         }
         return this.fieldName + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorPrefix;
@@ -152,7 +157,7 @@ export class StringMapEntryFilterField implements FilterField {
         if (
             this.operatorPrefix &&
             OPERATORS_WITH_LIST_OPERAND.includes(this.operatorPrefix) &&
-            filterValue == null
+            !isDefined(filterValue)
         ) {
             return new ConstBoolQueryNode(true);
         }
@@ -251,7 +256,7 @@ export class EmptyListFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        if (filterValue == undefined) {
+        if (!isDefined(filterValue)) {
             // null means do not filter
             return ConstBoolQueryNode.TRUE;
         }
@@ -321,7 +326,7 @@ export class EntityExtensionFilterField implements FilterField {
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
-        if (filterValue == undefined) {
+        if (!isDefined(filterValue)) {
             // entity extensions can't ever be null, and null is always coerced to {}, so this filter just shouldn't have any effect
             return ConstBoolQueryNode.TRUE;
         }

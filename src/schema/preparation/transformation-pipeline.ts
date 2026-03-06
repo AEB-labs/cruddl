@@ -1,8 +1,9 @@
-import { DocumentNode } from 'graphql';
-import { ProjectOptions } from '../../config/interfaces';
-import { ParsedProject, ParsedProjectSourceBaseKind } from '../../config/parsed-project';
-import { DatabaseAdapter } from '../../database/database-adapter';
-import { AddNamespacesToTypesTransformer } from './pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer';
+import type { DocumentNode } from 'graphql';
+import type { ProjectOptions } from '../../config/interfaces.js';
+import type { DatabaseAdapter } from '../../database/database-adapter.js';
+import type { ParsedProject } from '../parsing/parsed-project.js';
+import { ParsedProjectSourceBaseKind } from '../parsing/parsed-project.js';
+import { AddNamespacesToTypesTransformer } from './pre-merge-ast-transformation-modules/add-namespaces-to-types-transformer.js';
 
 const preMergePipeline: ReadonlyArray<ASTTransformer> = [new AddNamespacesToTypesTransformer()];
 

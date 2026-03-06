@@ -1,15 +1,20 @@
 import { print } from 'graphql';
-import { applyAuthorizationToQueryTree } from '../authorization/execution';
-import { globalContext } from '../config/global';
-import { RequestProfile } from '../config/interfaces';
-import {
+import { applyAuthorizationToQueryTree } from '../authorization/execution.js';
+import { globalContext } from '../config/global.js';
+import type { RequestProfile } from '../config/interfaces.js';
+import type {
     DatabaseAdapter,
     ExecutionPlan,
     FlexSearchTokenizable,
     TransactionStats,
-} from '../database/database-adapter';
-import { OperationParams } from '../graphql/operation-based-resolvers';
-import { distillOperation } from '../graphql/query-distiller';
+} from '../database/database-adapter.js';
+import type { OperationParams } from '../graphql/operation-based-resolvers.js';
+import { distillOperation } from '../graphql/query-distiller.js';
+import type { FlexSearchTokenization } from '../query-tree/flex-search.js';
+import {
+    FlexSearchComplexOperatorQueryNode,
+    FlexSearchQueryNode,
+} from '../query-tree/flex-search.js';
 import {
     BinaryOperator,
     ObjectQueryNode,
@@ -17,23 +22,22 @@ import {
     PropertySpecification,
     QueryNode,
     WithPreExecutionQueryNode,
-} from '../query-tree';
-import {
-    FlexSearchComplexOperatorQueryNode,
-    FlexSearchQueryNode,
-    FlexSearchTokenization,
-} from '../query-tree/flex-search';
-import { evaluateQueryStatically } from '../query-tree/utils';
-import {
-    buildConditionalObjectQueryNode,
+} from '../query-tree/index.js';
+import { evaluateQueryStatically } from '../query-tree/utils/index.js';
+import type {
     FieldContext,
     QueryNodeObjectType,
+} from '../schema-generation/query-node-object-type/index.js';
+import {
+    buildConditionalObjectQueryNode,
     SelectionToken,
-} from '../schema-generation/query-node-object-type';
-import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
-import { getPreciseTime, Watch } from '../utils/watch';
-import { DefaultClock, ExecutionOptions, UUIDGenerator } from './execution-options';
-import { ExecutionResult } from './execution-result';
+} from '../schema-generation/query-node-object-type/index.js';
+import type { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
+import { isDefined } from '../utils/utils.js';
+import { getPreciseTime, Watch } from '../utils/watch.js';
+import type { ExecutionOptions } from './execution-options.js';
+import { DefaultClock, UUIDGenerator } from './execution-options.js';
+import type { ExecutionResult } from './execution-result.js';
 
 export class OperationResolver {
     constructor(private context: SchemaTransformationContext) {}
@@ -181,7 +185,7 @@ export class OperationResolver {
             logger.trace('Result: ' + JSON.stringify(data, undefined, '  '));
         }
         let profile: RequestProfile | undefined;
-        if (watch && topLevelWatch && start != undefined) {
+        if (watch && topLevelWatch && isDefined(start)) {
             // equivalent to (profileConsumer || options.recordPlan || options.recordTimings) but pleases typescript
             const preparation = {
                 ...(dbAdapterTimings ? dbAdapterTimings.preparation : {}),

@@ -1,4 +1,4 @@
-import {
+import type {
     ArgumentNode,
     ASTNode,
     FieldNode,
@@ -7,9 +7,6 @@ import {
     GraphQLNamedType,
     GraphQLNonNull,
     GraphQLType,
-    isListType,
-    isNonNullType,
-    Kind,
     ListTypeNode,
     NamedTypeNode,
     NonNullTypeNode,
@@ -18,9 +15,9 @@ import {
     TypeNode,
     ValueNode,
     VariableDefinitionNode,
-    visit,
 } from 'graphql';
-import { compact, flatMap } from '../utils/utils';
+import { isListType, isNonNullType, Kind, visit } from 'graphql';
+import { isDefined } from '../utils/utils.js';
 
 /**
  * Creates a field node with a name and an optional alias
@@ -327,7 +324,7 @@ export function expandSelections(
         }
     }
 
-    return flatMap(selections, expandSelection);
+    return selections.flatMap(expandSelection);
 }
 
 /*
@@ -411,13 +408,15 @@ export function collectFieldNodesInPath(
                 } to have sub-selection but it does not`,
             );
         }
-        const matchingFieldNodes = flatMap(currentSelectionSets, (selSet) =>
+        const matchingFieldNodes = currentSelectionSets.flatMap((selSet) =>
             findNodesByAliasInSelections(selSet.selections, alias, fragments),
         );
         if (!matchingFieldNodes.length) {
             throw new Error(`Field ${alias} expected but not found`);
         }
-        currentSelectionSets = compact(matchingFieldNodes.map((node) => node.selectionSet));
+        currentSelectionSets = matchingFieldNodes
+            .map((node) => node.selectionSet)
+            .filter(isDefined);
         // those matching nodes all need to be compatible - except their selection sets (which will be merged)
         // As the consumer probably does not care about the selection set (this function here is there to process them, after all), this is probably ok
         fieldNodesInPath.push(matchingFieldNodes[0]);

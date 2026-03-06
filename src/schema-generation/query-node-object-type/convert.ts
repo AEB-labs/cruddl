@@ -1,24 +1,16 @@
-import {
+import type {
     GraphQLFieldConfig,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLObjectType,
+    GraphQLFieldConfigMap,
     GraphQLOutputType,
-    resolveReadonlyArrayThunk,
+    ThunkReadonlyArray,
 } from 'graphql';
-import { ThunkReadonlyArray } from 'graphql/type/definition';
-import { chain, uniq, uniqBy } from 'lodash';
-import memorize from 'memorize-decorator';
-import { SchemaTransformationContext } from '../../schema/preparation/transformation-pipeline';
-import {
-    QueryNodeField,
-    QueryNodeListType,
-    QueryNodeNonNullType,
-    QueryNodeObjectType,
-    QueryNodeOutputType,
-} from './definition';
-import { getFieldResolver } from './field-resolver';
-import { isGraphQLOutputType } from './utils';
+import { GraphQLList, GraphQLNonNull, GraphQLObjectType, resolveReadonlyArrayThunk } from 'graphql';
+import { memorize } from 'memorize-decorator';
+import type { SchemaTransformationContext } from '../../schema/preparation/transformation-pipeline.js';
+import type { QueryNodeField, QueryNodeObjectType, QueryNodeOutputType } from './definition.js';
+import { QueryNodeListType, QueryNodeNonNullType } from './definition.js';
+import { getFieldResolver } from './field-resolver.js';
+import { isGraphQLOutputType } from './utils.js';
 
 export class QueryNodeObjectTypeConverter {
     constructor(private readonly context: SchemaTransformationContext) {}
@@ -28,19 +20,19 @@ export class QueryNodeObjectTypeConverter {
         return new GraphQLObjectType({
             name: type.name,
             description: type.description,
-            fields: () =>
-                chain(resolveAndCheckFields(type.fields, type.name))
-                    .keyBy((field) => field.name)
-                    .mapValues(
-                        (field): GraphQLFieldConfig<any, any> => ({
-                            description: field.description,
-                            deprecationReason: field.deprecationReason,
-                            args: field.args,
-                            resolve: getFieldResolver(this.context, field.transformResult),
-                            type: this.convertToGraphQLType(field.type),
-                        }),
-                    )
-                    .value(),
+            fields: () => {
+                const fields = resolveAndCheckFields(type.fields, type.name);
+                return fields.reduce<GraphQLFieldConfigMap<any, any>>((result, field) => {
+                    result[field.name] = {
+                        description: field.description,
+                        deprecationReason: field.deprecationReason,
+                        args: field.args,
+                        resolve: getFieldResolver(this.context, field.transformResult),
+                        type: this.convertToGraphQLType(field.type),
+                    } as GraphQLFieldConfig<any, any>;
+                    return result;
+                }, {});
+            },
         });
     }
 
@@ -66,13 +58,18 @@ function resolveAndCheckFields(
     typeName: string,
 ): ReadonlyArray<QueryNodeField> {
     const fields = resolveReadonlyArrayThunk(fieldsThunk);
-    if (uniqBy(fields, (f) => f.name).length !== fields.length) {
+    const seenFieldNames = new Set<string>();
+    const duplicateFieldNames = new Set<string>();
+    for (const field of fields) {
+        if (seenFieldNames.has(field.name)) {
+            duplicateFieldNames.add(field.name);
+            continue;
+        }
+        seenFieldNames.add(field.name);
+    }
+    if (duplicateFieldNames.size) {
         throw new Error(
-            `Output type "${typeName}" has duplicate fields: ${uniq(
-                fields
-                    .filter((f) => fields.find((f2) => f2 !== f && f2.name === f.name))
-                    .map((f) => f.name),
-            ).join(', ')})`,
+            `Output type "${typeName}" has duplicate fields: ${Array.from(duplicateFieldNames).join(', ')})`,
         );
     }
     return fields;

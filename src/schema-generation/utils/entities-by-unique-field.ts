@@ -1,5 +1,4 @@
-import { GraphQLFieldConfigArgumentMap, GraphQLID } from 'graphql';
-import { RootEntityType, ScalarType, Type } from '../../model';
+import type { RootEntityType } from '../../model/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -7,12 +6,12 @@ import {
     LiteralQueryNode,
     TransformListQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { ID_FIELD, REVISION_FIELD } from '../../schema/constants';
-import { decapitalize, objectEntries } from '../../utils/utils';
-import { createFieldNode } from '../field-nodes';
-import { createGraphQLError } from '../graphql-errors';
-import { FieldContext } from '../query-node-object-type';
+} from '../../query-tree/index.js';
+import { ID_FIELD } from '../../schema/constants.js';
+import { decapitalize, isDefined } from '../../utils/utils.js';
+import { createFieldNode } from '../field-nodes.js';
+import { createGraphQLError } from '../graphql-errors.js';
+import type { FieldContext } from '../query-node-object-type/index.js';
 
 export function getEntitiesByUniqueFieldQuery(
     rootEntityType: RootEntityType,
@@ -25,8 +24,8 @@ export function getEntitiesByUniqueFieldQuery(
         const id = args[ID_FIELD];
         const key = args[rootEntityType.keyField.name];
 
-        if (id != undefined) {
-            if (key != undefined) {
+        if (isDefined(id)) {
+            if (isDefined(key)) {
                 throw createGraphQLError(
                     `Only one of the arguments "${ID_FIELD}" and "${rootEntityType.keyField.name}" may be specified`,
                     context,
@@ -35,7 +34,7 @@ export function getEntitiesByUniqueFieldQuery(
             fieldName = ID_FIELD;
             value = id;
         } else {
-            if (key == undefined) {
+            if (!isDefined(key)) {
                 throw createGraphQLError(
                     `One of the arguments "${ID_FIELD}" and "${rootEntityType.keyField.name}" is required`,
                     context,
@@ -46,7 +45,7 @@ export function getEntitiesByUniqueFieldQuery(
         }
     } else {
         const id = args[ID_FIELD];
-        if (id == undefined) {
+        if (!isDefined(id)) {
             throw createGraphQLError(`Argument "${ID_FIELD}" is required`, context);
         }
         fieldName = ID_FIELD;

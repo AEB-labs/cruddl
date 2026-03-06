@@ -1,17 +1,21 @@
-import { GraphQLID, GraphQLInputFieldConfigMap } from 'graphql';
-import { ThunkReadonlyArray } from 'graphql/type/definition';
-import { groupBy } from 'lodash';
-import {
+import type { GraphQLInputFieldConfigMap, ThunkReadonlyArray } from 'graphql';
+import { GraphQLID } from 'graphql';
+import type {
     ChildEntityType,
     EntityExtensionType,
     Field,
     ObjectType,
     RootEntityType,
-} from '../../model';
+} from '../../model/index.js';
+import type {
+    ChildEntityUpdate,
+    PreExecQueryParms,
+    QueryNode,
+    RuntimeErrorQueryNode,
+} from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
-    ChildEntityUpdate,
     ConcatListsQueryNode,
     ConditionalQueryNode,
     DynamicPropertyAccessQueryNode,
@@ -19,9 +23,6 @@ import {
     LiteralQueryNode,
     MergeObjectsQueryNode,
     ObjectQueryNode,
-    PreExecQueryParms,
-    QueryNode,
-    RuntimeErrorQueryNode,
     SafeListQueryNode,
     SetFieldQueryNode,
     TransformListQueryNode,
@@ -29,33 +30,26 @@ import {
     UnaryOperator,
     UpdateChildEntitiesQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { ENTITY_UPDATED_AT, ID_FIELD, REVISION_FIELD } from '../../schema/constants';
+} from '../../query-tree/index.js';
+import { ENTITY_UPDATED_AT, ID_FIELD, REVISION_FIELD } from '../../schema/constants.js';
 import {
     getAddChildEntitiesFieldName,
     getRemoveChildEntitiesFieldName,
     getReplaceChildEntitiesFieldName,
     getUpdateChildEntitiesFieldName,
-} from '../../schema/names';
-import {
-    AnyValue,
-    decapitalize,
-    flatMap,
-    joinWithAnd,
-    objectEntries,
-    PlainObject,
-} from '../../utils/utils';
-import { createGraphQLError } from '../graphql-errors';
-import { FieldContext } from '../query-node-object-type';
-import { TypedInputObjectType } from '../typed-input-object-type';
+} from '../../schema/names.js';
+import type { AnyValue, PlainObject } from '../../utils/utils.js';
+import { decapitalize, groupArray, joinWithAnd } from '../../utils/utils.js';
+import { createGraphQLError } from '../graphql-errors.js';
+import type { FieldContext } from '../query-node-object-type/index.js';
+import { TypedInputObjectType } from '../typed-input-object-type.js';
+import type { UpdateInputField, UpdateInputFieldContext } from './input-fields.js';
 import {
     AddChildEntitiesInputField,
     ReplaceChildEntitiesInputField,
     UpdateChildEntitiesInputField,
-    UpdateInputField,
-    UpdateInputFieldContext,
-} from './input-fields';
-import { isRelationUpdateField } from './relation-fields';
+} from './input-fields.js';
+import { isRelationUpdateField } from './relation-fields.js';
 
 function getCurrentISODate() {
     return new Date().toISOString();
@@ -85,10 +79,8 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
     ): ReadonlyArray<SetFieldQueryNode> {
         const applicableFields = this.getApplicableInputFields(value);
         const regularProperties = [
-            ...flatMap(applicableFields, (field) =>
-                field.getProperties(value[field.name], context),
-            ),
-            ...flatMap(this.childEntityFields, (field) =>
+            ...applicableFields.flatMap((field) => field.getProperties(value[field.name], context)),
+            ...this.childEntityFields.flatMap((field) =>
                 this.getChildEntityProperties(value, field, context),
             ),
         ];
@@ -101,7 +93,7 @@ export class UpdateObjectInputType extends TypedInputObjectType<UpdateInputField
     check(value: PlainObject, context: FieldContext): RuntimeErrorQueryNode | undefined {
         const applicableFields = this.getApplicableInputFields(value);
         const fields = applicableFields.filter((f) => f.field.type.isScalarType);
-        const groups = objectEntries(groupBy(fields, (f) => f.field.name));
+        const groups = [...groupArray(fields, (f) => f.field.name).entries()];
         const duplicateGroups = groups.filter(([key, value]) => value.length > 1);
         const firstDuplicateGroup: [string, ReadonlyArray<UpdateInputField>] = duplicateGroups[0];
         if (!firstDuplicateGroup) {
@@ -353,7 +345,7 @@ export class UpdateRootEntityInputType extends UpdateObjectInputType {
         const relationFields = this.fields
             .filter(isRelationUpdateField)
             .filter((field) => field.appliesToMissingFields() || field.name in input);
-        return flatMap(relationFields, (field) =>
+        return relationFields.flatMap((field) =>
             field.getStatements(input[field.name], idNode, context),
         );
     }

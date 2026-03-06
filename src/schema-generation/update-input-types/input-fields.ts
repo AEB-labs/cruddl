@@ -1,34 +1,42 @@
-import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
 import { ZonedDateTime } from '@js-joda/core';
-import { CalcMutationsOperator, Field } from '../../model';
+import type { GraphQLInputType } from 'graphql';
+import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
+import type { CalcMutationsOperator, Field } from '../../model/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     LiteralQueryNode,
     MergeObjectsQueryNode,
     ObjectQueryNode,
-    QueryNode,
     SetFieldQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
-} from '../../query-tree';
+} from '../../query-tree/index.js';
 import {
     getAddChildEntitiesFieldName,
     getRemoveChildEntitiesFieldName,
     getReplaceChildEntitiesFieldName,
     getUpdateChildEntitiesFieldName,
-} from '../../schema/names';
-import { GraphQLOffsetDateTime, serializeForStorage } from '../../schema/scalars/offset-date-time';
-import { AnyValue, isReadonlyArray, PlainObject } from '../../utils/utils';
-import { CreateChildEntityInputType, CreateObjectInputType } from '../create-input-types';
-import { createFieldNode } from '../field-nodes';
-import { FieldContext } from '../query-node-object-type';
-import { TypedInputFieldBase, TypedInputObjectType } from '../typed-input-object-type';
+} from '../../schema/names.js';
 import {
+    GraphQLOffsetDateTime,
+    serializeForStorage,
+} from '../../schema/scalars/offset-date-time.js';
+import type { AnyValue, PlainObject } from '../../utils/utils.js';
+import { isDefined, isReadonlyArray } from '../../utils/utils.js';
+import type {
+    CreateChildEntityInputType,
+    CreateObjectInputType,
+} from '../create-input-types/index.js';
+import { createFieldNode } from '../field-nodes.js';
+import type { FieldContext } from '../query-node-object-type/index.js';
+import type { TypedInputFieldBase, TypedInputObjectType } from '../typed-input-object-type.js';
+import type {
     UpdateChildEntityInputType,
     UpdateEntityExtensionInputType,
     UpdateObjectInputType,
-} from './input-types';
+} from './input-types.js';
 
 export interface UpdateInputFieldContext extends FieldContext {
     currentEntityNode: QueryNode;
@@ -200,7 +208,7 @@ export class UpdateValueObjectInputField extends BasicUpdateInputField {
 
     protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
         value = super.coerceValue(value, context);
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return value;
         }
         return this.objectInputType.prepareValue(value as PlainObject, context);
@@ -208,7 +216,7 @@ export class UpdateValueObjectInputField extends BasicUpdateInputField {
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
         super.collectAffectedFields(value, fields, context);
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return;
         }
 
@@ -246,7 +254,7 @@ export class UpdateValueObjectListInputField extends BasicUpdateInputField {
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
         super.collectAffectedFields(value, fields, context);
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return;
         }
         if (!isReadonlyArray(value)) {
@@ -279,7 +287,7 @@ export class UpdateEntityExtensionInputField implements UpdateInputField {
 
     getProperties(value: AnyValue, context: UpdateInputFieldContext) {
         // setting to null is the same as setting to {} - does not change anything (entity extensions can't be null)
-        if (value == null || Object.keys(value as object).length === 0) {
+        if (!isDefined(value) || Object.keys(value as object).length === 0) {
             return [];
         }
 
@@ -310,7 +318,7 @@ export class UpdateEntityExtensionInputField implements UpdateInputField {
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: UpdateInputFieldContext) {
         fields.add(this.field);
-        if (value != undefined) {
+        if (isDefined(value)) {
             this.objectInputType.collectAffectedFields(value as PlainObject, fields, context);
         }
     }
@@ -362,7 +370,7 @@ export class ReplaceChildEntitiesInputField extends AbstractChildEntityInputFiel
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
         super.collectAffectedFields(value, fields, context);
-        if (value != undefined) {
+        if (isDefined(value)) {
             this.createInputType.collectAffectedFields(value as PlainObject, fields, context);
         }
     }
@@ -385,7 +393,7 @@ export class AddChildEntitiesInputField extends AbstractChildEntityInputField {
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
         super.collectAffectedFields(value, fields, context);
-        if (value != undefined) {
+        if (isDefined(value)) {
             this.createInputType.collectAffectedFields(value as PlainObject, fields, context);
         }
     }
@@ -408,7 +416,7 @@ export class UpdateChildEntitiesInputField extends AbstractChildEntityInputField
 
     collectAffectedFields(value: AnyValue, fields: Set<Field>, context: FieldContext) {
         super.collectAffectedFields(value, fields, context);
-        if (value != undefined) {
+        if (isDefined(value)) {
             this.updateInputType.collectAffectedFields(value as PlainObject, fields, context);
         }
     }

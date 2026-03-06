@@ -1,26 +1,27 @@
-import { I18N_GENERIC, I18N_LOCALE } from '../../meta-schema/constants';
+import { I18N_GENERIC, I18N_LOCALE } from '../../meta-schema/constants.js';
 import {
     arrayStartsWith,
     capitalize,
-    compact,
     decapitalize,
     groupArray,
+    isDefined,
     mapFirstDefined,
     mapValues,
-} from '../../utils/utils';
-import {
+} from '../../utils/utils.js';
+import type {
     LocalizationBaseConfig,
     LocalizationConfig,
     NamespaceLocalizationConfig,
     TypeLocalizationConfig,
-} from '../config';
-import { MessageLocation, ValidationMessage } from '../validation';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { EnumValue } from './enum-type';
-import { Field } from './field';
-import { Model } from './model';
-import { Type } from './type';
-import { TypeBase } from './type-base';
+} from '../config/index.js';
+import type { MessageLocation } from '../validation/index.js';
+import { ValidationMessage } from '../validation/index.js';
+import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import type { EnumValue } from './enum-type.js';
+import type { Field } from './field.js';
+import type { Model } from './model.js';
+import type { TypeBase } from './type-base.js';
+import type { Type } from './type.js';
 
 export class ModelI18n implements ModelComponent {
     private readonly languageLocalizationProvidersByLanguage: ReadonlyMap<
@@ -119,16 +120,16 @@ export class ModelI18n implements ModelComponent {
     private getResolutionProviders(
         resolutionOrder: ReadonlyArray<string>,
     ): ReadonlyArray<LocalizationProvider> {
-        return compact(
-            resolutionOrder.map((providerName) => {
+        return resolutionOrder
+            .map((providerName) => {
                 switch (providerName) {
                     case I18N_GENERIC:
                         return new GenericLocalizationProvider();
                     default:
                         return this.languageLocalizationProvidersByLanguage.get(providerName);
                 }
-            }),
-        );
+            })
+            .filter(isDefined);
     }
 
     /**
@@ -287,9 +288,9 @@ class ModelLocalizationProvider implements LocalizationProvider {
 
     localizeType(type: TypeBase): TypeLocalization {
         const matchingNamespaces = this.getMatchingNamespaces(type.namespacePath);
-        const matchingTypeLocalizations = compact(
-            matchingNamespaces.map((ns) => ns.getTypeLocalization(type.name)),
-        );
+        const matchingTypeLocalizations = matchingNamespaces
+            .map((ns) => ns.getTypeLocalization(type.name))
+            .filter(isDefined);
         return {
             label: mapFirstDefined(matchingTypeLocalizations, (t) => t.label),
             labelPlural: mapFirstDefined(matchingTypeLocalizations, (t) => t.labelPlural),
@@ -600,7 +601,7 @@ class GenericLocalizationProvider implements LocalizationProvider {
 }
 
 function generateGenericName(name: string | undefined): string | undefined {
-    if (name == undefined) {
+    if (!isDefined(name)) {
         return undefined;
     }
     return capitalize(

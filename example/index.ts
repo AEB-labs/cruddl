@@ -1,5 +1,6 @@
+import { ApolloServer } from '@apollo/server';
+import { startStandaloneServer } from '@apollo/server/standalone';
 import { ArangoDBAdapter, Project } from 'cruddl';
-import { ApolloServer } from 'apollo-server';
 
 // arangodb --starter.local --starter.mode=single  --starter.port=8529
 const db = new ArangoDBAdapter({
@@ -58,7 +59,7 @@ const project = new Project({
             }),
         },
     ],
-    getExecutionOptions: ({ context }) => ({ authContext: { authRoles: ['users'] } }),
+    getExecutionOptions: ({}) => ({ authContext: { authRoles: ['users'] } }),
     getOperationIdentifier: ({ context }) => context as object, // each operation is executed with a unique context object
 });
 
@@ -67,9 +68,12 @@ try {
     db.updateSchema(project.getModel()); // create missing collections
     const server = new ApolloServer({
         schema,
-        context: ({ req }) => req, // pass request as context so we have a unique context object for each operation
     });
-    server.listen(4000, () => console.log('Server is running on http://localhost:4000/'));
+    const { url } = await startStandaloneServer(server, {
+        listen: { port: 4000 },
+        context: async ({ req }) => req,
+    });
+    console.log(`Server started on ${url}`);
 } catch (error: any) {
     console.log("Did you create the 'test' database?");
     console.log(error.stack);

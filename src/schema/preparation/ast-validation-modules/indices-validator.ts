@@ -1,13 +1,13 @@
-import { ASTValidator } from '../ast-validator';
-import { DocumentNode } from 'graphql';
-import { ValidationMessage } from '../../../model';
+import type { DocumentNode } from 'graphql';
+import { ValidationMessage } from '../../../model/index.js';
+import { INDEX_DIRECTIVE, UNIQUE_DIRECTIVE } from '../../constants.js';
 import {
     findDirectiveWithName,
     getChildEntityTypes,
     getEntityExtensionTypes,
     getValueObjectTypes,
-} from '../../schema-utils';
-import { INDEX_DIRECTIVE, UNIQUE_DIRECTIVE } from '../../constants';
+} from '../../schema-utils.js';
+import type { ASTValidator } from '../ast-validator.js';
 
 export const VALIDATION_ERROR_INDICES_ONLY_ON_ROOT_ENTITIES =
     'Indices are only allowed in root entity fields. You can add indices to fields of embedded objects with @rootEntities(indices: [...]).';

@@ -1,5 +1,5 @@
-import { ValidateFunction } from 'ajv';
+import type { ValidateFunction } from 'ajv';
 
-declare const validate: ValidateFunction;
+declare const validate10: ValidateFunction;
 
-export = validate;
+export default validate10;

@@ -1,23 +1,29 @@
-import { GraphQLSchema } from 'graphql';
-import memorize from 'memorize-decorator';
-import { ProjectOptions } from '../config/interfaces';
-import { DEFAULT_LOGGER_PROVIDER, LoggerProvider } from '../config/logging';
-import { DatabaseAdapter } from '../database/database-adapter';
-import { DefaultClock, ExecutionOptions } from '../execution/execution-options';
-import { TransactionTimeoutError } from '../execution/runtime-errors';
-import { SchemaExecutor } from '../execution/schema-executor';
-import { TransactionError } from '../execution/transaction-error';
-import { getMetaSchema } from '../meta-schema/meta-schema';
-import { Model, TimeToLiveType, ValidationResult } from '../model';
-import { checkModel } from '../model/compatibility-check/check-model';
-import { ListQueryNode, QueryNode } from '../query-tree';
-import { createSchema, getModel, validateSchema } from '../schema/schema-builder';
-import { ModuleSelectionOptions, selectModulesInProject } from './select-modules-in-sources';
-import { ProjectSource, SourceLike, SourceType } from './source';
-import { TTLInfo, getQueryNodeForTTLType, getTTLInfoQueryNode } from './time-to-live';
-import { isReadonlyArray } from '../utils/utils';
+import type { GraphQLSchema } from 'graphql';
+import { memorize } from 'memorize-decorator';
+import { DEFAULT_LOGGER_PROVIDER } from '../config/console-logger.js';
+import type { ProjectOptions } from '../config/interfaces.js';
+import type { LoggerProvider } from '../config/logging.js';
+import type { DatabaseAdapter } from '../database/database-adapter.js';
+import type { ExecutionOptions } from '../execution/execution-options.js';
+import { DefaultClock } from '../execution/execution-options.js';
+import { TransactionTimeoutError } from '../execution/runtime-errors.js';
+import { SchemaExecutor } from '../execution/schema-executor.js';
+import { TransactionError } from '../execution/transaction-error.js';
+import { getMetaSchema } from '../meta-schema/meta-schema.js';
+import { checkModel } from '../model/compatibility-check/check-model.js';
+import type { Model, TimeToLiveType, ValidationResult } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
+import { ListQueryNode } from '../query-tree/index.js';
+import { createSchema, getModel, validateSchema } from '../schema/schema-builder.js';
+import { isReadonlyArray } from '../utils/utils.js';
+import type { ModuleSelectionOptions } from './select-modules-in-sources.js';
+import { selectModulesInProject } from './select-modules-in-sources.js';
+import type { SourceLike, SourceType } from './source.js';
+import { ProjectSource } from './source.js';
+import type { TTLInfo } from './time-to-live.js';
+import { getQueryNodeForTTLType, getTTLInfoQueryNode } from './time-to-live.js';
 
-export { ProjectOptions };
+export type { ProjectOptions };
 
 // do not import ArangoDB. Code smell however.
 const ERROR_RESOURCE_LIMIT = 32;

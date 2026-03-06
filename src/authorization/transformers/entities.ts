@@ -1,20 +1,20 @@
+import { FlexSearchQueryNode } from '../../query-tree/flex-search.js';
+import type { EntitiesQueryNode, EntityFromIdQueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConditionalQueryNode,
-    EntitiesQueryNode,
-    EntityFromIdQueryNode,
     NullQueryNode,
     PERMISSION_DENIED_ERROR,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { FlexSearchQueryNode } from '../../query-tree/flex-search';
-import { AccessOperation, AuthContext } from '../auth-basics';
-import { PermissionResult } from '../permission-descriptors';
-import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';
+} from '../../query-tree/index.js';
+import type { AuthContext } from '../auth-basics.js';
+import { AccessOperation } from '../auth-basics.js';
+import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model.js';
+import { PermissionResult } from '../permission-descriptors.js';
 
 export function transformEntitiesQueryNode(node: EntitiesQueryNode, authContext: AuthContext) {
     const permissionDescriptor = getPermissionDescriptorOfRootEntityType(node.rootEntityType);

@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": [],
+    "outDir": "dist"
+  },
+  "files": [
+    "src/index.ts",
+    "src/core-exports.ts",
+    "src/database/arangodb/index.ts",
+    "src/database/inmemory/index.ts"
+  ]
+}

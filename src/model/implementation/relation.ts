@@ -1,4 +1,5 @@
-import { Field, RelationDeleteAction, RootEntityType } from '../index';
+import type { Field, RootEntityType } from '../index.js';
+import { RelationDeleteAction } from '../index.js';
 
 enum RelationFieldSide {
     FROM_SIDE = 'FROM_SIDE',

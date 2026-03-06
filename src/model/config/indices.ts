@@ -1,13 +1,12 @@
-import {
+import type {
     ArgumentNode,
     DirectiveNode,
     EnumValueNode,
-    IntValueNode,
     ObjectValueNode,
     StringValueNode,
     ValueNode,
 } from 'graphql';
-import { OrderDirection } from '../implementation/order';
+import type { OrderDirection } from '../implementation/order.js';
 
 export interface IndexDefinitionConfig {
     readonly name?: string;

@@ -1,18 +1,16 @@
-import { StringValueNode } from 'graphql';
-import memorize from 'memorize-decorator';
-import { QueryNode, VariableQueryNode } from '../../query-tree';
-import { flatMap } from '../../utils/utils';
-import { CollectFieldConfig } from '../config';
-import { Field } from './field';
-import {
-    locationWithinStringArgument,
-    MessageLocation,
-    ValidationContext,
-    ValidationMessage,
-} from '../validation';
-import { Multiplicity, RelationSide } from './relation';
-import { RootEntityType } from './root-entity-type';
-import { ObjectType, Type } from './type';
+import type { StringValueNode } from 'graphql';
+import { memorize } from 'memorize-decorator';
+import type { QueryNode, VariableQueryNode } from '../../query-tree/index.js';
+import { isDefined } from '../../utils/utils.js';
+
+import type { CollectFieldConfig } from '../config/index.js';
+import type { MessageLocation, ValidationContext } from '../validation/index.js';
+import { locationWithinStringArgument, ValidationMessage } from '../validation/index.js';
+import type { Field } from './field.js';
+import type { RelationSide } from './relation.js';
+import { Multiplicity } from './relation.js';
+import type { RootEntityType } from './root-entity-type.js';
+import type { ObjectType, Type } from './type.js';
 
 interface PathSegmentBase {
     readonly kind: 'field' | 'relation' | 'collect';
@@ -82,7 +80,7 @@ export class CollectPath {
     }
 
     getFlatSegments(): ReadonlyArray<FieldSegment | RelationSegment> {
-        return flatMap(this.segments, (seg) =>
+        return this.segments.flatMap((seg) =>
             seg.kind === 'collect' ? seg.path.getFlatSegments() : [seg],
         );
     }
@@ -337,7 +335,7 @@ export class CollectPath {
                     return [];
                 }
 
-                if (minDepth != undefined) {
+                if (isDefined(minDepth)) {
                     if (field.type !== currentType) {
                         addMessage(
                             ValidationMessage.error(
@@ -347,7 +345,7 @@ export class CollectPath {
                         );
                         return [];
                     }
-                    if (maxDepth == undefined) {
+                    if (!isDefined(maxDepth)) {
                         maxDepth = minDepth;
                     } else if (maxDepth < minDepth) {
                         addMessage(
@@ -409,7 +407,7 @@ export class CollectPath {
                     location: segmentLocation,
                 });
             } else {
-                if (minDepth != undefined) {
+                if (isDefined(minDepth)) {
                     addMessage(
                         ValidationMessage.error(
                             `A depth specifier is only valid for relation fields, and field "${currentType.name}.${field.name}" is not a relation.`,
@@ -454,8 +452,8 @@ function parseSegmentSpecifier(
     const [, /* field{1,2} */ fieldName /* {1,2} */, , minDepth /* ,2 */, , maxDepth] = matches;
     return {
         fieldName,
-        minDepth: minDepth != undefined ? Number(minDepth) : undefined,
-        maxDepth: maxDepth != undefined ? Number(maxDepth) : undefined,
+        minDepth: isDefined(minDepth) ? Number(minDepth) : undefined,
+        maxDepth: isDefined(maxDepth) ? Number(maxDepth) : undefined,
     };
 }
 

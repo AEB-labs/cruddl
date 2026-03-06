@@ -1,6 +1,6 @@
-import { QueryNode } from './base';
-import { VariableQueryNode } from './variables';
-import { indent } from '../utils/utils';
+import { indent } from '../utils/utils.js';
+import { QueryNode } from './base.js';
+import type { VariableQueryNode } from './variables.js';
 
 export interface UpdateChildEntitiesQueryNodeParams {
     /**

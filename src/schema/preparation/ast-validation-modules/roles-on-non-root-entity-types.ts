@@ -1,8 +1,8 @@
-import { ASTValidator } from '../ast-validator';
-import { DocumentNode } from 'graphql';
-import { ValidationMessage } from '../../../model';
-import { findDirectiveWithName, getObjectTypes } from '../../schema-utils';
-import { ROLES_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../constants';
+import type { DocumentNode } from 'graphql';
+import { ValidationMessage } from '../../../model/index.js';
+import { ROLES_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../constants.js';
+import { findDirectiveWithName, getObjectTypes } from '../../schema-utils.js';
+import type { ASTValidator } from '../ast-validator.js';
 
 export const VALIDATION_ERROR_ROLES_ON_NON_ROOT_ENTITY_TYPE =
     '@roles is only allowed on fields and on root entity types.';

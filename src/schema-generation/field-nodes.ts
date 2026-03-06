@@ -1,32 +1,32 @@
-import { AggregationOperator, RootEntityType } from '../model';
-import { Field } from '../model/implementation';
-import { getEffectiveCollectSegments } from '../model/implementation/collect-path';
+import { getEffectiveCollectSegments } from '../model/implementation/collect-path.js';
+import type { Field } from '../model/implementation/index.js';
+import type { RootEntityType } from '../model/index.js';
+import { AggregationOperator } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     AggregationQueryNode,
     BasicType,
     BinaryOperationQueryNode,
     BinaryOperator,
     ConditionalQueryNode,
-    CountQueryNode,
     EntitiesQueryNode,
     FieldQueryNode,
     FirstOfListQueryNode,
     FollowEdgeQueryNode,
     NullQueryNode,
     ObjectQueryNode,
-    QueryNode,
     RootEntityIDQueryNode,
     SafeListQueryNode,
     TransformListQueryNode,
     TraversalQueryNode,
     TypeCheckQueryNode,
     VariableQueryNode,
-} from '../query-tree';
-import { ID_FIELD } from '../schema/constants';
-import { GraphQLOffsetDateTime } from '../schema/scalars/offset-date-time';
-import { getScalarFilterValueNode } from './filter-input-types/filter-fields';
-import { and } from './utils/input-types';
-import { decapitalize } from '../utils/utils';
+} from '../query-tree/index.js';
+import { ID_FIELD } from '../schema/constants.js';
+import { GraphQLOffsetDateTime } from '../schema/scalars/offset-date-time.js';
+import { decapitalize } from '../utils/utils.js';
+import { getScalarFilterValueNode } from './filter-input-types/filter-fields.js';
+import { and } from './utils/input-types.js';
 
 export interface CreateFieldNodeOptions {
     readonly skipNullFallbackForEntityExtensions?: boolean;

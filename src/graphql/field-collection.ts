@@ -1,12 +1,6 @@
-import {
-    DirectiveNode,
-    FieldNode,
-    FragmentDefinitionNode,
-    GraphQLIncludeDirective,
-    GraphQLSkipDirective,
-    SelectionNode,
-} from 'graphql';
-import { getArgumentValues } from './argument-values';
+import type { DirectiveNode, FieldNode, FragmentDefinitionNode, SelectionNode } from 'graphql';
+import { GraphQLIncludeDirective, GraphQLSkipDirective } from 'graphql';
+import { getArgumentValues } from './argument-values.js';
 
 /**
  * Collects all fields selected by the given selection node

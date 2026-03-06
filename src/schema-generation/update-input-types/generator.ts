@@ -1,23 +1,25 @@
-import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { flatMap } from 'lodash';
-import memorize from 'memorize-decorator';
-import {
+import type { GraphQLInputType } from 'graphql';
+import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
+import { memorize } from 'memorize-decorator';
+import type {
     CalcMutationsOperator,
     ChildEntityType,
     EntityExtensionType,
     Field,
     RootEntityType,
-} from '../../model';
-import { CALC_MUTATIONS_OPERATORS, CalcMutationOperator, ID_FIELD } from '../../schema/constants';
+} from '../../model/index.js';
+import type { CalcMutationOperator } from '../../schema/constants.js';
+import { CALC_MUTATIONS_OPERATORS, ID_FIELD } from '../../schema/constants.js';
 import {
     getAddChildEntitiesFieldName,
     getRemoveChildEntitiesFieldName,
     getUpdateAllInputTypeName,
     getUpdateChildEntitiesFieldName,
     getUpdateInputTypeName,
-} from '../../schema/names';
-import { CreateInputTypeGenerator } from '../create-input-types';
-import { EnumTypeGenerator } from '../enum-type-generator';
+} from '../../schema/names.js';
+import type { CreateInputTypeGenerator } from '../create-input-types/index.js';
+import type { EnumTypeGenerator } from '../enum-type-generator.js';
+import type { UpdateInputField } from './input-fields.js';
 import {
     AddChildEntitiesInputField,
     BasicListUpdateInputField,
@@ -29,23 +31,22 @@ import {
     UpdateChildEntitiesInputField,
     UpdateEntityExtensionInputField,
     UpdateFilterInputField,
-    UpdateInputField,
     UpdateValueObjectInputField,
     UpdateValueObjectListInputField,
-} from './input-fields';
+} from './input-fields.js';
+import type { UpdateObjectInputType } from './input-types.js';
 import {
     UpdateChildEntityInputType,
     UpdateEntityExtensionInputType,
-    UpdateObjectInputType,
     UpdateRootEntityInputType,
-} from './input-types';
+} from './input-types.js';
 import {
     AddEdgesInputField,
     CreateAndAddEdgesInputField,
     CreateAndSetEdgeInputField,
     RemoveEdgesInputField,
     SetEdgeInputField,
-} from './relation-fields';
+} from './relation-fields.js';
 
 export class UpdateInputTypeGenerator {
     constructor(
@@ -70,14 +71,14 @@ export class UpdateInputTypeGenerator {
     @memorize()
     generateForRootEntityType(type: RootEntityType): UpdateRootEntityInputType {
         return new UpdateRootEntityInputType(type, getUpdateInputTypeName(type.name), () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
     @memorize()
     generateUpdateAllRootEntitiesInputType(type: RootEntityType): UpdateRootEntityInputType {
         return new UpdateRootEntityInputType(type, getUpdateAllInputTypeName(type), () =>
-            flatMap(type.fields, (field: Field) =>
+            type.fields.flatMap((field: Field) =>
                 this.generateFields(field, {
                     skipID: true,
                     skipRelations: true, // can't do this properly at the moment because it would need a dynamic number of pre-execs
@@ -89,14 +90,14 @@ export class UpdateInputTypeGenerator {
     @memorize()
     generateForEntityExtensionType(type: EntityExtensionType): UpdateEntityExtensionInputType {
         return new UpdateEntityExtensionInputType(type, getUpdateInputTypeName(type.name), () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
     @memorize()
     generateForChildEntityType(type: ChildEntityType): UpdateChildEntityInputType {
         return new UpdateChildEntityInputType(type, getUpdateInputTypeName(type.name), () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 

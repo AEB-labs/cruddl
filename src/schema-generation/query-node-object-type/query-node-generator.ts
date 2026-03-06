@@ -1,6 +1,7 @@
 import { resolveReadonlyArrayThunk } from 'graphql';
-import { DefaultClock, UUIDGenerator } from '../../execution/execution-options';
-import { FieldRequest, FieldSelection } from '../../graphql/query-distiller';
+import { DefaultClock, UUIDGenerator } from '../../execution/execution-options.js';
+import type { FieldRequest, FieldSelection } from '../../graphql/query-distiller.js';
+import type { QueryNode, TraversalQueryNodeParams } from '../../query-tree/index.js';
 import {
     BasicType,
     ConditionalQueryNode,
@@ -11,22 +12,21 @@ import {
     ObjectQueryNode,
     PreExecQueryParms,
     PropertySpecification,
-    QueryNode,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     TraversalQueryNode,
-    TraversalQueryNodeParams,
     TypeCheckQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode,
-} from '../../query-tree';
-import { groupByEquivalence } from '../../utils/group-by-equivalence';
-import { RequireAllProperties } from '../../utils/util-types';
-import { decapitalize, flatMap } from '../../utils/utils';
-import { FieldContext, SelectionToken } from './context';
-import { QueryNodeField, QueryNodeObjectType } from './definition';
-import { extractQueryTreeObjectType, isListTypeIgnoringNonNull } from './utils';
+} from '../../query-tree/index.js';
+import { groupByEquivalence } from '../../utils/group-by-equivalence.js';
+import type { RequireAllProperties } from '../../utils/util-types.js';
+import { decapitalize } from '../../utils/utils.js';
+import type { FieldContext } from './context.js';
+import { SelectionToken } from './context.js';
+import type { QueryNodeField, QueryNodeObjectType } from './definition.js';
+import { extractQueryTreeObjectType, isListTypeIgnoringNonNull } from './utils.js';
 
 export function createRootFieldContext(
     options: Partial<
@@ -112,7 +112,7 @@ function buildObjectQueryNode(
     });
     const variableAssignments: [VariableQueryNode, QueryNode][] = [];
     let resultNode: QueryNode = new ObjectQueryNode(
-        flatMap(distinctFieldRequests, (selections) => {
+        distinctFieldRequests.flatMap((selections) => {
             const fieldRequest = selections[0].fieldRequest;
             if (fieldRequest.fieldName === '__typename') {
                 return selections.map(

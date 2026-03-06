@@ -1,26 +1,30 @@
-import { groupBy, uniqBy } from 'lodash';
-import memorize from 'memorize-decorator';
-import { ModelOptions } from '../../config/interfaces';
-import { flatMap, objectEntries, objectValues } from '../../utils/utils';
-import { ModelConfig, TypeKind } from '../config';
-import { NamespacedPermissionProfileConfigMap } from '../index';
-import { ValidationMessage, ValidationResult } from '../validation';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { BillingEntityType } from './billing';
-import { builtInTypeNames, createBuiltInTypes } from './built-in-types';
-import { ChildEntityType } from './child-entity-type';
-import { EntityExtensionType } from './entity-extension-type';
-import { EnumType } from './enum-type';
-import { ModelI18n } from './i18n';
-import { Namespace } from './namespace';
-import { PermissionProfile } from './permission-profile';
-import { Relation } from './relation';
-import { RootEntityType } from './root-entity-type';
-import { ScalarType } from './scalar-type';
-import { TimeToLiveType } from './time-to-live';
-import { createType, InvalidType, ObjectType, Type } from './type';
-import { ValueObjectType } from './value-object-type';
-import { ModuleDeclaration } from './modules/module-declaration';
+import { memorize } from 'memorize-decorator';
+import type { ModelOptions } from '../../config/interfaces.js';
+import { groupArray, isDefined, uniqBy } from '../../utils/utils.js';
+
+import type { ModelConfig } from '../config/index.js';
+import { TypeKind } from '../config/index.js';
+import type { NamespacedPermissionProfileConfigMap } from '../index.js';
+import type { ValidationResult } from '../validation/index.js';
+import { ValidationMessage } from '../validation/index.js';
+import type { ModelComponent } from '../validation/validation-context.js';
+import { ValidationContext } from '../validation/validation-context.js';
+import { BillingEntityType } from './billing.js';
+import { builtInTypeNames, createBuiltInTypes } from './built-in-types.js';
+import type { ChildEntityType } from './child-entity-type.js';
+import type { EntityExtensionType } from './entity-extension-type.js';
+import type { EnumType } from './enum-type.js';
+import { ModelI18n } from './i18n.js';
+import { ModuleDeclaration } from './modules/module-declaration.js';
+import { Namespace } from './namespace.js';
+import { PermissionProfile } from './permission-profile.js';
+import type { Relation } from './relation.js';
+import type { RootEntityType } from './root-entity-type.js';
+import type { ScalarType } from './scalar-type.js';
+import { TimeToLiveType } from './time-to-live.js';
+import type { ObjectType, Type } from './type.js';
+import { createType, InvalidType } from './type.js';
+import type { ValueObjectType } from './value-object-type.js';
 
 export class Model implements ModelComponent {
     private readonly typeMap: ReadonlyMap<string, Type>;
@@ -48,7 +52,9 @@ export class Model implements ModelComponent {
             ...this.builtInTypes,
             ...input.types.map((typeInput) => createType(typeInput, this)),
         ];
-        this.permissionProfiles = flatMap(input.permissionProfiles || [], createPermissionProfiles);
+        this.permissionProfiles = (input.permissionProfiles || []).flatMap(
+            createPermissionProfiles,
+        );
         this.rootNamespace = new Namespace({
             parent: undefined,
             path: [],
@@ -101,7 +107,7 @@ export class Model implements ModelComponent {
     }
 
     private validateDuplicateTypes(context: ValidationContext) {
-        const duplicateTypes = objectValues(groupBy(this.types, (type) => type.name)).filter(
+        const duplicateTypes = [...groupArray(this.types, (type) => type.name).values()].filter(
             (types) => types.length > 1,
         );
         for (const types of duplicateTypes) {
@@ -132,7 +138,7 @@ export class Model implements ModelComponent {
     }
 
     private validateDuplicateModules(context: ValidationContext) {
-        const duplicateModules = objectValues(groupBy(this.modules, (type) => type.name)).filter(
+        const duplicateModules = [...groupArray(this.modules, (type) => type.name).values()].filter(
             (types) => types.length > 1,
         );
         for (const modules of duplicateModules) {
@@ -280,7 +286,7 @@ export class Model implements ModelComponent {
 
     getNamespaceByPathOrThrow(path: ReadonlyArray<string>): Namespace {
         const result = this.getNamespaceByPath(path);
-        if (result == undefined) {
+        if (!isDefined(result)) {
             throw new Error(`Namespace ` + path.join('.') + ` does not exist`);
         }
         return result;
@@ -291,7 +297,7 @@ export class Model implements ModelComponent {
      */
     @memorize()
     get relations(): ReadonlyArray<Relation> {
-        const withDuplicates = flatMap(this.rootEntityTypes, (entity) => entity.explicitRelations);
+        const withDuplicates = this.rootEntityTypes.flatMap((entity) => entity.explicitRelations);
         return uniqBy(withDuplicates, (rel) => rel.identifier);
     }
 
@@ -306,7 +312,7 @@ export class Model implements ModelComponent {
 function createPermissionProfiles(
     map: NamespacedPermissionProfileConfigMap,
 ): ReadonlyArray<PermissionProfile> {
-    return objectEntries(map.profiles).map(
+    return Object.entries(map.profiles).map(
         ([name, profile]) => new PermissionProfile(name, map.namespacePath || [], profile),
     );
 }

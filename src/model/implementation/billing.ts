@@ -1,13 +1,14 @@
 import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
-import memorize from 'memorize-decorator';
-import { GraphQLInt53 } from '../../schema/scalars/int53';
-import { BillingEntityCategoryMappingConfig, BillingEntityConfig } from '../config/billing';
-import { ValidationMessage } from '../validation';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { Field } from './field';
-import { FieldPath } from './field-path';
-import { Model } from './model';
-import { RootEntityType } from './root-entity-type';
+import { memorize } from 'memorize-decorator';
+import { GraphQLInt53 } from '../../schema/scalars/int53.js';
+import { isDefined } from '../../utils/utils.js';
+import type { BillingEntityCategoryMappingConfig, BillingEntityConfig } from '../config/billing.js';
+import { ValidationMessage } from '../validation/index.js';
+import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import { FieldPath } from './field-path.js';
+import type { Field } from './field.js';
+import type { Model } from './model.js';
+import type { RootEntityType } from './root-entity-type.js';
 
 export class BillingEntityType implements ModelComponent {
     readonly quantityFieldPath: FieldPath | undefined;
@@ -128,8 +129,8 @@ export class BillingEntityType implements ModelComponent {
             return;
         }
 
-        if (this.input.category != undefined) {
-            if (this.input.categoryMapping != undefined) {
+        if (isDefined(this.input.category)) {
+            if (isDefined(this.input.categoryMapping)) {
                 context.addMessage(
                     ValidationMessage.error(
                         `"category" and "categoryMapping" cannot be combined.`,
@@ -146,7 +147,7 @@ export class BillingEntityType implements ModelComponent {
             return;
         }
 
-        if (this.input.categoryMapping == undefined || !this.categoryMappingFieldPath) {
+        if (!isDefined(this.input.categoryMapping) || !this.categoryMappingFieldPath) {
             return;
         }
 

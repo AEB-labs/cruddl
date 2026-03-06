@@ -1,4 +1,4 @@
-import { Database } from 'arangojs';
+import type { Database } from 'arangojs';
 
 export interface ArangoDBVersion {
     readonly major: number;

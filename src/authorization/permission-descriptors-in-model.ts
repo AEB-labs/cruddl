@@ -1,11 +1,11 @@
-import { Field, RootEntityType } from '../model';
+import type { Field, RootEntityType } from '../model/index.js';
+import type { PermissionDescriptor } from './permission-descriptors.js';
 import {
     AlwaysDenyPermissionDescriptor,
     AlwaysGrantPermissionDescriptor,
-    PermissionDescriptor,
     ProfileBasedPermissionDescriptor,
     StaticPermissionDescriptor,
-} from './permission-descriptors';
+} from './permission-descriptors.js';
 
 export function getPermissionDescriptorOfRootEntityType(
     rootEntityType: RootEntityType,

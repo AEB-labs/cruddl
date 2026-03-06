@@ -1,38 +1,38 @@
-import { GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { flatMap } from 'lodash';
-import memorize from 'memorize-decorator';
-import {
+import type { GraphQLInputType } from 'graphql';
+import { GraphQLList, GraphQLNonNull } from 'graphql';
+import { memorize } from 'memorize-decorator';
+import type {
     ChildEntityType,
     EntityExtensionType,
     Field,
     ObjectType,
     RootEntityType,
     ValueObjectType,
-} from '../../model';
-import { EnumTypeGenerator } from '../enum-type-generator';
+} from '../../model/index.js';
+import type { EnumTypeGenerator } from '../enum-type-generator.js';
+import type { CreateInputField } from './input-fields.js';
 import {
     BasicCreateInputField,
     BasicListCreateInputField,
     CreateEntityExtensionInputField,
-    CreateInputField,
     CreateObjectInputField,
     CreateReferenceInputField,
     DummyCreateInputField,
     ObjectListCreateInputField,
-} from './input-fields';
+} from './input-fields.js';
+import type { CreateObjectInputType } from './input-types.js';
 import {
     CreateChildEntityInputType,
     CreateEntityExtensionInputType,
-    CreateObjectInputType,
     CreateRootEntityInputType,
     ValueObjectInputType,
-} from './input-types';
+} from './input-types.js';
 import {
     AddEdgesCreateInputField,
     CreateAndAddEdgesCreateInputField,
     CreateAndSetEdgeCreateInputField,
     SetEdgeCreateInputField,
-} from './relation-fields';
+} from './relation-fields.js';
 
 export class CreateInputTypeGenerator {
     constructor(private readonly enumTypeGenerator: EnumTypeGenerator) {}
@@ -54,28 +54,28 @@ export class CreateInputTypeGenerator {
     @memorize()
     generateForRootEntityType(type: RootEntityType): CreateRootEntityInputType {
         return new CreateRootEntityInputType(type, () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
     @memorize()
     generateForChildEntityType(type: ChildEntityType): CreateChildEntityInputType {
         return new CreateChildEntityInputType(type, () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
     @memorize()
     generateForEntityExtensionType(type: EntityExtensionType): CreateObjectInputType {
         return new CreateEntityExtensionInputType(type, () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 
     @memorize()
     generateForValueObjectType(type: ValueObjectType): CreateObjectInputType {
         return new ValueObjectInputType(type, () =>
-            flatMap(type.fields, (field: Field) => this.generateFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFields(field)),
         );
     }
 

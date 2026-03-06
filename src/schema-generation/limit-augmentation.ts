@@ -1,32 +1,8 @@
-import { GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
-import { Type } from '../model';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConcatListsQueryNode,
-    ConstBoolQueryNode,
-    LiteralQueryNode,
-    OrderDirection,
-    OrderSpecification,
-    QueryNode,
-    RuntimeErrorQueryNode,
-    TransformListQueryNode,
-    VariableQueryNode,
-} from '../query-tree';
-import {
-    AFTER_ARG,
-    CURSOR_FIELD,
-    FIRST_ARG,
-    ID_FIELD,
-    ORDER_BY_ARG,
-    ORDER_BY_ASC_SUFFIX,
-    SKIP_ARG,
-} from '../schema/constants';
-import { decapitalize } from '../utils/utils';
-import { and } from './utils/input-types';
-import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
-import { QueryNodeField } from './query-node-object-type';
-import { getOrderByValues } from './utils/pagination';
+import { GraphQLInt } from 'graphql';
+import { TransformListQueryNode, VariableQueryNode } from '../query-tree/index.js';
+import { FIRST_ARG } from '../schema/constants.js';
+import { isDefined } from '../utils/utils.js';
+import type { QueryNodeField } from './query-node-object-type/index.js';
 
 /**
  * Augments meta fields with a "first" argument
@@ -45,7 +21,7 @@ export class MetaFirstAugmentation {
             resolve: (sourceNode, args, info) => {
                 const listNode = schemaField.resolve(sourceNode, args, info);
                 const maxCount: number | undefined = args[FIRST_ARG];
-                if (maxCount == undefined) {
+                if (!isDefined(maxCount)) {
                     return listNode;
                 }
 

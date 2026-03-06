@@ -1,4 +1,4 @@
-import { MessageLocation } from '../validation';
+import type { MessageLocation } from '../validation/index.js';
 
 export interface LocalizationConfig extends NamespaceLocalizationConfig {
     readonly language: string;

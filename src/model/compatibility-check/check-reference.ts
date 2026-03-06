@@ -1,5 +1,6 @@
-import { Field } from '../implementation';
-import { ValidationContext, ValidationMessage } from '../validation';
+import type { Field } from '../implementation/index.js';
+import type { ValidationContext } from '../validation/index.js';
+import { ValidationMessage } from '../validation/index.js';
 
 /**
  * Checks whether the @reference directives on the field and on the baseline field match

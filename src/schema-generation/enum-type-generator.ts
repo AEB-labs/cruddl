@@ -1,7 +1,7 @@
-import { GraphQLEnumType, GraphQLEnumValueConfig } from 'graphql';
-import { chain } from 'lodash';
-import memorize from 'memorize-decorator';
-import { EnumType } from '../model';
+import type { GraphQLEnumValueConfig } from 'graphql';
+import { GraphQLEnumType } from 'graphql';
+import { memorize } from 'memorize-decorator';
+import type { EnumType } from '../model/index.js';
 
 export class EnumTypeGenerator {
     @memorize()
@@ -9,16 +9,16 @@ export class EnumTypeGenerator {
         return new GraphQLEnumType({
             name: enumType.name,
             description: enumType.description,
-            values: chain(enumType.values)
-                .keyBy((value) => value.value)
-                .mapValues(
-                    (value): GraphQLEnumValueConfig => ({
+            values: Object.fromEntries(
+                enumType.values.map((value): [string, GraphQLEnumValueConfig] => [
+                    value.value,
+                    {
                         value: value.value,
                         description: value.description,
                         deprecationReason: value.deprecationReason,
-                    }),
-                )
-                .value(),
+                    },
+                ]),
+            ),
         });
     }
 }

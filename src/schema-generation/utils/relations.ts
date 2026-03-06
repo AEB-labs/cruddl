@@ -1,11 +1,8 @@
-import {
-    Field,
-    Multiplicity,
-    RelationDeleteAction,
-    RelationSide,
-    RootEntityType,
-} from '../../model';
-import { RelationSegment } from '../../model/implementation/collect-path';
+import type { RelationSegment } from '../../model/implementation/collect-path.js';
+import type { FieldPath } from '../../model/implementation/field-path.js';
+import type { Field, RelationSide, RootEntityType } from '../../model/index.js';
+import { Multiplicity, RelationDeleteAction } from '../../model/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     AddEdgesQueryNode,
     BinaryOperationQueryNode,
@@ -23,17 +20,16 @@ import {
     NOT_FOUND_ERROR,
     PartialEdgeIdentifier,
     PreExecQueryParms,
-    QueryNode,
     RemoveEdgesQueryNode,
     SetEdgeQueryNode,
     TraversalQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { PlainObject } from '../../utils/utils';
-import { CreateRootEntityInputType } from '../create-input-types';
-import { FieldContext } from '../query-node-object-type';
-import { mapToIDNodesWithOptimizations } from './map';
-import { FieldPath } from '../../model/implementation/field-path';
+} from '../../query-tree/index.js';
+import type { PlainObject } from '../../utils/utils.js';
+import { isDefined } from '../../utils/utils.js';
+import type { CreateRootEntityInputType } from '../create-input-types/index.js';
+import type { FieldContext } from '../query-node-object-type/index.js';
+import { mapToIDNodesWithOptimizations } from './map.js';
 
 /**
  * Gets a statement that deletes existing outgoing edges and creates a new one, but does not check existing
@@ -71,7 +67,7 @@ export function getSetEdgeStatements(
 ): ReadonlyArray<PreExecQueryParms> {
     const relationSide = sourceField.getRelationSideOrThrow();
 
-    if (targetID == undefined) {
+    if (!isDefined(targetID)) {
         // remove edge
         return [
             new PreExecQueryParms({

@@ -1,3 +1,4 @@
+import { Field } from '../../model/implementation/field.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -5,12 +6,11 @@ import {
     LiteralQueryNode,
     QueryNode,
     SafeListQueryNode,
-} from '../../query-tree';
-import { analyzeLikePatternPrefix } from '../like-helpers';
-import { QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { simplifyBooleans } from '../../query-tree/utils';
-import { isStringCaseInsensitive } from '../../utils/string-utils';
-import { Field } from '../../model';
+} from '../../query-tree/index.js';
+import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
+import { simplifyBooleans } from '../../query-tree/utils/simplify-booleans.js';
+import { isStringCaseInsensitive } from '../../utils/string-utils.js';
+import { analyzeLikePatternPrefix } from '../like-helpers.js';
 
 export interface CanUseArrayExpansionOperatorForQuantifierFilterResult {
     /**

@@ -1,6 +1,14 @@
-import { compact } from 'lodash';
-import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../model/implementation/flex-search';
-import { AggregationOperator, Relation, RelationSide, RootEntityType } from '../../model';
+import type { Clock, IDGenerator } from '../../execution/execution-options.js';
+import { DefaultClock, UUIDGenerator } from '../../execution/execution-options.js';
+import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../model/implementation/flex-search.js';
+import type { Relation, RelationSide, RootEntityType } from '../../model/index.js';
+import { AggregationOperator } from '../../model/index.js';
+import {
+    FlexSearchComplexOperatorQueryNode,
+    FlexSearchFieldExistsQueryNode,
+    FlexSearchQueryNode,
+} from '../../query-tree/flex-search.js';
+import type { QueryNode, QueryResultValidator } from '../../query-tree/index.js';
 import {
     AddEdgesQueryNode,
     AggregationQueryNode,
@@ -40,8 +48,6 @@ import {
     OrderDirection,
     OrderSpecification,
     PropertyAccessQueryNode,
-    QueryNode,
-    QueryResultValidator,
     RemoveEdgesQueryNode,
     RootEntityIDQueryNode,
     RUNTIME_ERROR_CODE_PROPERTY,
@@ -59,20 +65,16 @@ import {
     VariableAssignmentQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode,
-} from '../../query-tree';
-import {
-    FlexSearchComplexOperatorQueryNode,
-    FlexSearchFieldExistsQueryNode,
-    FlexSearchQueryNode,
-} from '../../query-tree/flex-search';
-import { QuantifierFilterNode } from '../../query-tree/quantifiers';
-import { createFieldPathNode } from '../../schema-generation/field-path-node';
-import { not } from '../../schema-generation/utils/input-types';
-import { Constructor, decapitalize } from '../../utils/utils';
-import { likePatternToRegExp } from '../like-helpers';
-import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
-import { js, JSCompoundQuery, JSFragment, JSQueryResultVariable, JSVariable } from './js';
-import { Clock, DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
+} from '../../query-tree/index.js';
+import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
+import { createFieldPathNode } from '../../schema-generation/field-path-node.js';
+import { not } from '../../schema-generation/utils/input-types.js';
+import type { Constructor } from '../../utils/utils.js';
+import { decapitalize, isDefined } from '../../utils/utils.js';
+import { likePatternToRegExp } from '../like-helpers.js';
+import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics.js';
+import type { JSFragment } from './js.js';
+import { js, JSCompoundQuery, JSQueryResultVariable, JSVariable } from './js.js';
 
 const ID_FIELD_NAME = 'id';
 
@@ -415,7 +417,7 @@ function getPaginationFrag({
     readonly maxCount?: number;
     readonly skip?: number;
 }): JSFragment {
-    if (maxCount != undefined) {
+    if (isDefined(maxCount)) {
         return js`.slice(${skip}, ${skip + maxCount})`;
     }
     if (skip > 0) {
@@ -1104,10 +1106,10 @@ register(RemoveEdgesQueryNode, (node, context) => {
     const toIDs = node.edgeFilter.toIDsNode
         ? processNode(node.edgeFilter.toIDsNode, context)
         : undefined;
-    const edgeRemovalCriteria = compact([
+    const edgeRemovalCriteria = [
         fromIDs ? js`${fromIDs}.includes(${edgeVar}._from)` : undefined,
         toIDs ? js`${toIDs}.includes(${edgeVar}._to)` : undefined,
-    ]);
+    ].filter(isDefined);
     const edgeShouldStay = js`!(${js.join(edgeRemovalCriteria, js` && `)})`;
 
     return jsExt.executingFunction(
@@ -1301,14 +1303,14 @@ register(ConfirmForBillingQueryNode, (node, context) => {
 register(SetEdgeQueryNode, (node, context) => {
     const coll = getCollectionForRelation(node.relation, context);
     const edgeVar = js.variable('edge');
-    const edgeRemovalCriteria = compact([
+    const edgeRemovalCriteria = [
         node.existingEdge.fromIDNode
             ? js`${edgeVar}._from == ${processNode(node.existingEdge.fromIDNode, context)}`
             : undefined,
         node.existingEdge.toIDNode
             ? js`${edgeVar}._to == ${processNode(node.existingEdge.toIDNode, context)}`
             : undefined,
-    ]);
+    ].filter(isDefined);
     const edgeShouldStay = js`!(${js.join(edgeRemovalCriteria, js` && `)})`;
 
     return jsExt.executingFunction(

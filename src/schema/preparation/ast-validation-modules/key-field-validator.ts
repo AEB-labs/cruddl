@@ -1,8 +1,9 @@
-import { ASTValidator } from '../ast-validator';
-import { DocumentNode } from 'graphql';
-import { ValidationMessage } from '../../../model';
-import { getObjectTypes } from '../../schema-utils';
-import { KEY_FIELD_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../constants';
+import type { DocumentNode } from 'graphql';
+import { ValidationMessage } from '../../../model/index.js';
+import { isDefined } from '../../../utils/utils.js';
+import { KEY_FIELD_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../constants.js';
+import { getObjectTypes } from '../../schema-utils.js';
+import type { ASTValidator } from '../ast-validator.js';
 
 export const VALIDATION_ERROR_INVALID_OBJECT_TYPE =
     'A @key field can only be declared on root entities.';
@@ -15,7 +16,7 @@ export class KeyFieldValidator implements ASTValidator {
             const keyFields = (objectTypeDefinition.fields || [])
                 .filter(
                     (field) =>
-                        field.directives != undefined &&
+                        isDefined(field.directives) &&
                         field.directives.some(
                             (directive) => directive.name.value === KEY_FIELD_DIRECTIVE,
                         ),
@@ -23,7 +24,7 @@ export class KeyFieldValidator implements ASTValidator {
                 .forEach((keyField) => {
                     counter++;
                     if (
-                        objectTypeDefinition.directives != undefined &&
+                        isDefined(objectTypeDefinition.directives) &&
                         !objectTypeDefinition.directives.some(
                             (directive) => directive.name.value === ROOT_ENTITY_DIRECTIVE,
                         )

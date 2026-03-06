@@ -1,7 +1,7 @@
-export * from './type';
-export * from './model';
-export * from './field';
-export * from './indices';
-export * from './permissions';
-export * from './i18n';
-export * from './time-to-live';
+export * from './field.js';
+export type * from './i18n.js';
+export type * from './indices.js';
+export type * from './model.js';
+export type * from './permissions.js';
+export type * from './time-to-live.js';
+export * from './type.js';

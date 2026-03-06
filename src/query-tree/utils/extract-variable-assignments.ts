@@ -1,19 +1,17 @@
+import type { QueryNode } from '../base.js';
+import { FirstOfListQueryNode } from '../lists.js';
+import { ObjectQueryNode, PropertySpecification } from '../objects.js';
 import {
     BinaryOperationQueryNode,
     ConditionalQueryNode,
-    FieldQueryNode,
-    FirstOfListQueryNode,
-    HoistableQueryNode,
-    ObjectQueryNode,
-    OrderClause,
-    OrderSpecification,
-    PropertySpecification,
-    QueryNode,
-    RootEntityIDQueryNode,
     UnaryOperationQueryNode,
+} from '../operators.js';
+import { FieldQueryNode, RootEntityIDQueryNode } from '../queries.js';
+import {
+    HoistableQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-} from '..';
+} from '../variables.js';
 
 /**
  * Traverses recursively through Unary/Binary operations, extracts all variable definitions and

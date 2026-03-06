@@ -1,11 +1,12 @@
-export { Config as ArangoJSConfig } from 'arangojs/connection';
-export { CreateCollectionOptions } from 'arangojs/collection';
-export { ArangoDBAdapter } from './arangodb-adapter';
-export { ArangoDBConfig, KeyGeneratorType } from './config';
-export * from './schema-migration/migrations';
+export type { CreateCollectionOptions } from 'arangojs/collection.js';
+export type { Config as ArangoJSConfig } from 'arangojs/connection.js';
+export { TransactionError } from '../../execution/transaction-error.js';
+export { ArangoDBAdapter } from './arangodb-adapter.js';
+export type { ArangoDBConfig, KeyGeneratorType } from './config.js';
+export type { ArangoSearchConfiguration } from './schema-migration/arango-search-helpers.js';
 export {
-    IndexDefinition,
     describeIndex,
     getIndexDescriptor,
-} from './schema-migration/index-helpers';
-export { TransactionError } from '../../execution/transaction-error';
+    type IndexDefinition,
+} from './schema-migration/index-helpers.js';
+export * from './schema-migration/migrations.js';

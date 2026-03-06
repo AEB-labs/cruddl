@@ -1,6 +1,6 @@
-import { blue, cyan, magenta } from '../../utils/colors';
-import { QueryResultValidator } from '../../query-tree';
-import { arrayToObject, flatMap } from '../../utils/utils';
+import type { QueryResultValidator } from '../../query-tree/index.js';
+import { blue, cyan, magenta } from '../../utils/colors.js';
+import { isDefined } from '../../utils/utils.js';
 
 function stringify(val: any) {
     if (val === undefined) {
@@ -74,7 +74,7 @@ export class AQLCodeBuildingContext {
 
     getOrAddVariable(token: AQLVariable): string {
         const existingBinding = this.variableBindings.get(token);
-        if (existingBinding != undefined) {
+        if (isDefined(existingBinding)) {
             return existingBinding;
         }
         const safeLabel = AQLCodeBuildingContext.getSafeLabel(token.label);
@@ -450,7 +450,7 @@ export class AQLCompoundQuery extends AQLFragment {
     private getExecutableQueriesRecursive(
         resultVarToNameMap: Map<AQLQueryResultVariable, string>,
     ): ReadonlyArray<AQLExecutableQuery> {
-        const executableQueries = flatMap(this.preExecQueries, (aqlQuery) =>
+        const executableQueries = this.preExecQueries.flatMap((aqlQuery) =>
             aqlQuery.getExecutableQueriesRecursive(resultVarToNameMap),
         );
 
