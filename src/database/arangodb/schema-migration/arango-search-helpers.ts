@@ -1,6 +1,6 @@
 import { OffsetDateTime } from '@js-joda/core';
 import type { Database } from 'arangojs';
-import type { AnalyzerDescription, CreateAnalyzerOptions } from 'arangojs/analyzer.js';
+import type { AnalyzerDescription, CreateAnalyzerOptions } from 'arangojs/analyzers';
 import type {
     ArangoSearchViewLink,
     ArangoSearchViewLinkOptions,
@@ -10,7 +10,7 @@ import type {
     TierConsolidationPolicy,
     View,
     ViewProperties,
-} from 'arangojs/view.js';
+} from 'arangojs/views';
 import { deepEqual } from 'fast-equals';
 import type { FieldPath } from '../../../model/implementation/field-path.js';
 import { IDENTITY_ANALYZER } from '../../../model/implementation/flex-search.js';

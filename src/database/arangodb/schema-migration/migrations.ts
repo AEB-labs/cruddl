@@ -1,8 +1,8 @@
-import type { CreateAnalyzerOptions } from 'arangojs/analyzer.js';
+import type { CreateAnalyzerOptions } from 'arangojs/analyzers';
 import type {
     ArangoSearchViewPropertiesOptions,
     CreateArangoSearchViewOptions,
-} from 'arangojs/view.js';
+} from 'arangojs/views';
 import type { Relation } from '../../../model/implementation/index.js';
 import type { IndexDefinition } from './index-helpers.js';
 import { describeIndex, getIndexDescriptor } from './index-helpers.js';

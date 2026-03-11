@@ -1,5 +1,5 @@
 import type { Database } from 'arangojs';
-import { CollectionType } from 'arangojs/collection.js';
+import { CollectionType } from 'arangojs/collections';
 import type { ProjectOptions } from '../../../config/interfaces.js';
 import type { Logger } from '../../../config/logging.js';
 import { NORM_CI_ANALYZER } from '../../../model/implementation/flex-search.js';
