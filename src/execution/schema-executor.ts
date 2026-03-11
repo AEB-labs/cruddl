@@ -1,24 +1,25 @@
-import {
+import type {
     DocumentNode,
     FragmentDefinitionNode,
     GraphQLSchema,
     OperationDefinitionNode,
     VariableDefinitionNode,
 } from 'graphql';
-import { getVariableValues } from 'graphql/execution/values';
-import { globalContext } from '../config/global';
-import { DatabaseAdapter } from '../database/database-adapter';
-import { resolveSelections } from '../graphql/field-collection';
-import { extractOperation } from '../graphql/operations';
-import { Project } from '../project/project';
-import { InvalidProjectError } from '../project/invalid-project-error';
-import { QueryNodeObjectType, SchemaGenerator } from '../schema-generation';
-import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
-import { validateAndPrepareSchema } from '../schema/schema-builder';
-import { arrayToObject } from '../utils/utils';
-import { ExecutionOptions } from './execution-options';
-import { ExecutionResult } from './execution-result';
-import { OperationResolver } from './operation-resolver';
+import { getVariableValues } from 'graphql';
+import { globalContext } from '../config/global.js';
+import type { DatabaseAdapter } from '../database/database-adapter.js';
+import { resolveSelections } from '../graphql/field-collection.js';
+import { extractOperation } from '../graphql/operations.js';
+import { InvalidProjectError } from '../project/invalid-project-error.js';
+import type { Project } from '../project/project.js';
+import type { QueryNodeObjectType } from '../schema-generation/index.js';
+import { SchemaGenerator } from '../schema-generation/index.js';
+import type { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
+import { validateAndPrepareSchema } from '../schema/schema-builder.js';
+
+import type { ExecutionOptions } from './execution-options.js';
+import type { ExecutionResult } from './execution-result.js';
+import { OperationResolver } from './operation-resolver.js';
 
 type ValidationResult =
     | { readonly canExecute: false; errorMessage: string }
@@ -140,7 +141,7 @@ export class SchemaExecutor {
         const fragments = args.document.definitions.filter(
             (def) => def.kind === 'FragmentDefinition',
         ) as ReadonlyArray<FragmentDefinitionNode>;
-        const fragmentMap = arrayToObject(fragments, (fr) => fr.name.value);
+        const fragmentMap = Object.fromEntries(fragments.map((fr) => [fr.name.value, fr]));
         const rootSelections = resolveSelections(operation.selectionSet.selections, {
             fragments: fragmentMap,
             variableValues: args.variableValues || {},

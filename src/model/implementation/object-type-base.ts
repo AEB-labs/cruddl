@@ -1,14 +1,13 @@
-import { groupBy } from 'lodash';
-import memorize from 'memorize-decorator';
-import { objectValues } from '../../utils/utils';
-import { FieldConfig, ObjectTypeConfig } from '../config';
-import { Severity, ValidationContext, ValidationMessage } from '../validation';
-import { Field, SystemFieldConfig } from './field';
-import { Model } from './model';
-import { EffectiveModuleSpecification } from './modules/effective-module-specification';
-import { ObjectType } from './type';
-import { TypeBase } from './type-base';
-import { DirectiveNode } from 'graphql/index';
+import type { DirectiveNode } from 'graphql';
+import { groupArray, isDefined } from '../../utils/utils.js';
+import type { FieldConfig, ObjectTypeConfig } from '../config/index.js';
+import type { ValidationContext } from '../validation/index.js';
+import { ValidationMessage } from '../validation/index.js';
+import type { SystemFieldConfig } from './field.js';
+import { Field } from './field.js';
+import type { Model } from './model.js';
+import { TypeBase } from './type-base.js';
+import type { ObjectType } from './type.js';
 
 export abstract class ObjectTypeBase extends TypeBase {
     readonly fields: ReadonlyArray<Field>;
@@ -132,9 +131,9 @@ export abstract class ObjectTypeBase extends TypeBase {
     }
 
     private validateDuplicateFields(context: ValidationContext) {
-        const duplicateFields = objectValues(groupBy(this.fields, (field) => field.name)).filter(
-            (fields) => fields.length > 1,
-        );
+        const duplicateFields = Array.from(
+            groupArray(this.fields, (field) => field.name).values(),
+        ).filter((fields) => fields.length > 1);
         for (const fields of duplicateFields) {
             for (const field of fields) {
                 if (field.isSystemField) {
@@ -158,7 +157,7 @@ export abstract class ObjectTypeBase extends TypeBase {
 
     getFieldOrThrow(name: string): Field {
         const field = this.getField(name);
-        if (field == undefined) {
+        if (!isDefined(field)) {
             throw new Error(`Field "${this.name}.${name}" is not declared`);
         }
         return field;

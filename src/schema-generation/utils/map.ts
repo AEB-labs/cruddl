@@ -1,16 +1,16 @@
-import { RootEntityType } from '../../model/implementation';
+import type { RootEntityType } from '../../model/implementation/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     EntityFromIdQueryNode,
     ListQueryNode,
     LiteralQueryNode,
-    QueryNode,
     RootEntityIDQueryNode,
     TransformListQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { isReadonlyArray } from '../../utils/utils';
+} from '../../query-tree/index.js';
+import { isDefined, isReadonlyArray } from '../../utils/utils.js';
 
 export function getMapNode(listNode: QueryNode, projection: (itemNode: QueryNode) => QueryNode) {
     if (listNode instanceof ListQueryNode) {
@@ -64,7 +64,7 @@ export function mapToIDNodesWithOptimizations(listNode: QueryNode): QueryNode {
                     filterNode.rhs instanceof LiteralQueryNode &&
                     isReadonlyArray(filterNode.rhs.value)
                 ) {
-                    if (listNode.maxCount == undefined) {
+                    if (!isDefined(listNode.maxCount)) {
                         return filterNode.rhs;
                     } else if (listNode.orderBy.isUnordered()) {
                         return new LiteralQueryNode(

@@ -1,27 +1,24 @@
-import {
+import { deepEqual } from 'fast-equals';
+import type {
     DocumentNode,
     FieldNode,
     FragmentDefinitionNode,
-    getNamedType,
     GraphQLCompositeType,
     GraphQLField,
-    GraphQLObjectType,
     GraphQLOutputType,
     GraphQLSchema,
-    isCompositeType,
     OperationDefinitionNode,
     OperationTypeNode,
     SelectionNode,
-    TypeNameMetaFieldDef,
 } from 'graphql';
-import { isEqual } from 'lodash';
-import { blue, cyan, green } from '../utils/colors';
-import { arrayToObject, flatMap, groupArray, indent, INDENTATION } from '../utils/utils';
-import { getArgumentValues } from './argument-values';
-import { resolveSelections } from './field-collection';
-import { getAliasOrName } from './language-utils';
-import { extractOperation } from './operations';
-import { getOperationRootType } from './schema-utils';
+import { getNamedType, GraphQLObjectType, isCompositeType, TypeNameMetaFieldDef } from 'graphql';
+import { blue, cyan, green } from '../utils/colors.js';
+import { groupArray, indent, INDENTATION } from '../utils/utils.js';
+import { getArgumentValues } from './argument-values.js';
+import { resolveSelections } from './field-collection.js';
+import { getAliasOrName } from './language-utils.js';
+import { extractOperation } from './operations.js';
+import { getOperationRootType } from './schema-utils.js';
 
 interface FieldRequestParams {
     readonly field: GraphQLField<unknown, unknown>;
@@ -62,7 +59,7 @@ export class FieldRequest {
             this.parentType !== other.parentType ||
             this.schema !== other.schema ||
             this.selectionSet.length !== other.selectionSet.length ||
-            !isEqual(this.args, other.args)
+            !deepEqual(this.args, other.args)
         ) {
             return false;
         }
@@ -182,11 +179,12 @@ export function distillQuery(
     return distillOperation({
         schema,
         operation: extractOperation(document, operationName),
-        fragments: arrayToObject(
-            document.definitions.filter(
-                (def) => def.kind == 'FragmentDefinition',
-            ) as ReadonlyArray<FragmentDefinitionNode>,
-            (def) => def.name.value,
+        fragments: Object.fromEntries(
+            (
+                document.definitions.filter(
+                    (def) => def.kind == 'FragmentDefinition',
+                ) as ReadonlyArray<FragmentDefinitionNode>
+            ).map((def) => [def.name.value, def]),
         ),
         variableValues,
     });
@@ -260,7 +258,7 @@ function buildFieldRequest(
     let selections: ReadonlyArray<FieldSelection> = [];
     const compositeFieldType = unwrapToCompositeType(fieldDef.type);
     if (compositeFieldType) {
-        const childFieldNodes = flatMap(fieldNodes, (node) =>
+        const childFieldNodes = fieldNodes.flatMap((node) =>
             node.selectionSet ? node.selectionSet.selections : [],
         );
         selections = distillSelections(childFieldNodes, compositeFieldType, context);

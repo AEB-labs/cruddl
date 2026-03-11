@@ -1,13 +1,9 @@
-import {
-    FieldPathQueryNode,
-    FieldQueryNode,
-    PERMISSION_DENIED_ERROR,
-    QueryNode,
-    RuntimeErrorQueryNode,
-} from '../../query-tree';
-import { AccessOperation, AuthContext } from '../auth-basics';
-import { PermissionResult } from '../permission-descriptors';
-import { getPermissionDescriptorOfField } from '../permission-descriptors-in-model';
+import type { FieldPathQueryNode, FieldQueryNode, QueryNode } from '../../query-tree/index.js';
+import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/index.js';
+import type { AuthContext } from '../auth-basics.js';
+import { AccessOperation } from '../auth-basics.js';
+import { getPermissionDescriptorOfField } from '../permission-descriptors-in-model.js';
+import { PermissionResult } from '../permission-descriptors.js';
 
 export function transformFieldQueryNode(node: FieldQueryNode, authContext: AuthContext): QueryNode {
     const permissionDescriptor = getPermissionDescriptorOfField(node.field);

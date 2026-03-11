@@ -1,7 +1,23 @@
-import { Clock, DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
-import { AggregationOperator, Field, Relation, RootEntityType } from '../../model';
-import { FieldSegment } from '../../model/implementation/collect-path';
-import { IDENTITY_ANALYZER } from '../../model/implementation/flex-search';
+import type { Clock, IDGenerator } from '../../execution/execution-options.js';
+import { DefaultClock, UUIDGenerator } from '../../execution/execution-options.js';
+import type { FieldSegment } from '../../model/implementation/collect-path.js';
+import { IDENTITY_ANALYZER } from '../../model/implementation/flex-search.js';
+import type { Field, Relation, RootEntityType } from '../../model/index.js';
+import { AggregationOperator } from '../../model/index.js';
+import {
+    FlexSearchComplexOperatorQueryNode,
+    FlexSearchFieldExistsQueryNode,
+    FlexSearchQueryNode,
+    FlexSearchStartsWithQueryNode,
+} from '../../query-tree/flex-search.js';
+import type {
+    EdgeIdentifier,
+    OrderSpecification,
+    PartialEdgeIdentifier,
+    QueryNode,
+    QueryResultValidator,
+    SetFieldQueryNode,
+} from '../../query-tree/index.js';
 import {
     AddEdgesQueryNode,
     AggregationQueryNode,
@@ -21,7 +37,6 @@ import {
     DeleteEntitiesQueryNode,
     DeleteEntitiesResultValue,
     DynamicPropertyAccessQueryNode,
-    EdgeIdentifier,
     EntitiesIdentifierKind,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
@@ -39,11 +54,7 @@ import {
     ObjectQueryNode,
     OperatorWithAnalyzerQueryNode,
     OrderDirection,
-    OrderSpecification,
-    PartialEdgeIdentifier,
     PropertyAccessQueryNode,
-    QueryNode,
-    QueryResultValidator,
     RemoveEdgesQueryNode,
     RevisionQueryNode,
     RootEntityIDQueryNode,
@@ -52,7 +63,6 @@ import {
     RuntimeErrorQueryNode,
     SafeListQueryNode,
     SetEdgeQueryNode,
-    SetFieldQueryNode,
     TransformListQueryNode,
     TraversalQueryNode,
     TypeCheckQueryNode,
@@ -63,40 +73,35 @@ import {
     VariableAssignmentQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode,
-} from '../../query-tree';
-import {
-    FlexSearchComplexOperatorQueryNode,
-    FlexSearchFieldExistsQueryNode,
-    FlexSearchQueryNode,
-    FlexSearchStartsWithQueryNode,
-} from '../../query-tree/flex-search';
-import { Quantifier, QuantifierFilterNode } from '../../query-tree/quantifiers';
+} from '../../query-tree/index.js';
+import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
 import {
     extractVariableAssignments,
     getReferencedVariables,
     simplifyBooleans,
-} from '../../query-tree/utils';
-import { not } from '../../schema-generation/utils/input-types';
-import { Constructor, decapitalize, isReadonlyArray } from '../../utils/utils';
-import { FlexSearchTokenizable } from '../database-adapter';
-import { analyzeLikePatternPrefix } from '../like-helpers';
+} from '../../query-tree/utils/index.js';
+import { not } from '../../schema-generation/utils/input-types.js';
+import { isStringCaseInsensitive } from '../../utils/string-utils.js';
+import type { Constructor } from '../../utils/utils.js';
+import { decapitalize, isDefined, isReadonlyArray } from '../../utils/utils.js';
+import type { FlexSearchTokenizable } from '../database-adapter.js';
+import { analyzeLikePatternPrefix } from '../like-helpers.js';
+import type { AQLFragment } from './aql.js';
 import {
     aql,
     AQLCollection,
     AQLCompoundQuery,
-    AQLFragment,
     AQLQueryResultVariable,
     AQLVariable,
-} from './aql';
+} from './aql.js';
 import {
     billingCollectionName,
     getCollectionNameForRelation,
     getCollectionNameForRootEntity,
-} from './arango-basics';
-import { getFlexSearchViewNameForRootEntity } from './schema-migration/arango-search-helpers';
-import { supportedAsArrayExpansion } from './traversal-helpers';
-import { isStringCaseInsensitive } from '../../utils/string-utils';
-import { canUseArrayExpansionOperatorForQuantifierFilter } from './quantifier-filter-helpers';
+} from './arango-basics.js';
+import { canUseArrayExpansionOperatorForQuantifierFilter } from './quantifier-filter-helpers.js';
+import { getFlexSearchViewNameForRootEntity } from './schema-migration/arango-search-helpers.js';
+import { supportedAsArrayExpansion } from './traversal-helpers.js';
 
 enum AccessType {
     /**
@@ -690,7 +695,7 @@ interface LimitClauseArgs {
 function generateLimitClause({ skip = 0, maxCount }: LimitClauseArgs): AQLFragment | undefined {
     // Todo use something like aql.integer() which validates the number is an integer and within range
     // (that way, we don't have so many bound parameters)
-    if (maxCount != undefined) {
+    if (isDefined(maxCount)) {
         if (skip === 0) {
             return aql`LIMIT ${maxCount}`;
         } else {
@@ -975,7 +980,7 @@ register(BinaryOperationQueryNode, (node, context) => {
     if (
         node.operator === BinaryOperator.UNEQUAL &&
         (node.rhs instanceof NullQueryNode ||
-            (node.rhs instanceof LiteralQueryNode && node.rhs.value == undefined)) &&
+            (node.rhs instanceof LiteralQueryNode && !isDefined(node.rhs.value))) &&
         !context.getExtension(inFlexSearchFilterSymbol)
     ) {
         return aql`(${lhs} > NULL)`;

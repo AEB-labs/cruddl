@@ -1,35 +1,35 @@
-import {
+import type {
     DirectiveNode,
     FieldDefinitionNode,
-    isTypeDefinitionNode,
-    Kind,
     ListValueNode,
     Location,
     ObjectValueNode,
-    print,
     StringValueNode,
     TypeDefinitionNode,
 } from 'graphql';
-import {
-    ParsedGraphQLProjectSource,
-    ParsedObjectProjectSource,
-    ParsedProjectSourceBaseKind,
-} from '../config/parsed-project';
-import { IndexField, Model, RootEntityType, ValidationMessage } from '../model';
-import { parseModuleSpecificationExpression } from '../model/implementation/modules/expression-parser';
-import { ValidationContext } from '../model/validation/validation-context';
+import { isTypeDefinitionNode, Kind, print } from 'graphql';
+import { isCommentOnlySource } from '../graphql/is-comment-only-source.js';
+import { parseModuleSpecificationExpression } from '../model/implementation/modules/expression-parser.js';
+import type { Model, RootEntityType } from '../model/index.js';
+import { IndexField, ValidationMessage } from '../model/index.js';
+import { ValidationContext } from '../model/validation/validation-context.js';
 import {
     INDICES_ARG,
     MODULES_DIRECTIVE,
     MODULES_IN_ARG,
     ROOT_ENTITY_DIRECTIVE,
-} from '../schema/constants';
-import { parseProjectSource } from '../schema/schema-builder';
-import { findDirectiveWithName } from '../schema/schema-utils';
-import { Project, ProjectOptions } from './project';
-import { ProjectSource } from './source';
-import { isReadonlyArray } from '../utils/utils';
-import { isCommentOnlySource } from '../graphql/is-comment-only-source';
+} from '../schema/constants.js';
+import { parseProjectSource } from '../schema/parsing/parse-project-source.js';
+import type {
+    ParsedGraphQLProjectSource,
+    ParsedObjectProjectSource,
+} from '../schema/parsing/parsed-project.js';
+import { ParsedProjectSourceBaseKind } from '../schema/parsing/parsed-project.js';
+import { findDirectiveWithName } from '../schema/schema-utils.js';
+import { isReadonlyArray } from '../utils/utils.js';
+import type { ProjectOptions } from './project.js';
+import { Project } from './project.js';
+import { ProjectSource } from './source.js';
 
 export interface ModuleSelectionOptions {
     /**

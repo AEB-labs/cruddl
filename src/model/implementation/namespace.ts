@@ -1,12 +1,11 @@
-import { groupBy } from 'lodash';
-import memorize from 'memorize-decorator';
-import { DEFAULT_PERMISSION_PROFILE } from '../../schema/constants';
-import { capitalize, objectValues } from '../../utils/utils';
-import { ValidationMessage } from '../validation';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { PermissionProfile } from './permission-profile';
-import { RootEntityType } from './root-entity-type';
-import { Type } from './type';
+import { memorize } from 'memorize-decorator';
+import { DEFAULT_PERMISSION_PROFILE } from '../../schema/constants.js';
+import { capitalize, groupArray, isDefined } from '../../utils/utils.js';
+import { ValidationMessage } from '../validation/index.js';
+import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import type { PermissionProfile } from './permission-profile.js';
+import type { RootEntityType } from './root-entity-type.js';
+import type { Type } from './type.js';
 
 export class Namespace implements ModelComponent {
     public readonly types: ReadonlyArray<Type>;
@@ -44,7 +43,7 @@ export class Namespace implements ModelComponent {
         const childNamespaceNames = new Set(
             allPaths
                 .map((path) => path[this.path.length]) // extract next segment
-                .filter((name) => name != undefined),
+                .filter((name) => isDefined(name)),
         );
         const childNamespaceMap = new Map<string, Namespace>();
         for (const childName of childNamespaceNames.values()) {
@@ -133,7 +132,7 @@ export class Namespace implements ModelComponent {
     }
 
     get isRoot(): boolean {
-        return this.parent == undefined;
+        return !isDefined(this.parent);
     }
 
     private extractNextSegment(type: Type) {
@@ -195,7 +194,7 @@ export class Namespace implements ModelComponent {
 
     getPermissionProfileOrThrow(name: string): PermissionProfile {
         const profile = this.getPermissionProfile(name);
-        if (profile == undefined) {
+        if (!isDefined(profile)) {
             throw new Error(
                 `Permission profile "${name}" does not exist in namespace ${this.dotSeparatedPath}`,
             );
@@ -218,8 +217,8 @@ export class Namespace implements ModelComponent {
     }
 
     validate(context: ValidationContext) {
-        const duplicateProfiles = objectValues(
-            groupBy(this.permissionProfiles, (type) => type.name),
+        const duplicateProfiles = Array.from(
+            groupArray(this.permissionProfiles, (type) => type.name).values(),
         ).filter((types) => types.length > 1);
         for (const profiles of duplicateProfiles) {
             for (const profile of profiles) {

@@ -1,6 +1,6 @@
-import { cyan, magenta } from '../../utils/colors';
-import { QueryResultValidator } from '../../query-tree';
-import { arrayToObject, flatMap } from '../../utils/utils';
+import type { QueryResultValidator } from '../../query-tree/index.js';
+import { cyan, magenta } from '../../utils/colors.js';
+import { isDefined } from '../../utils/utils.js';
 
 function stringify(val: any) {
     if (val === undefined) {
@@ -62,7 +62,7 @@ export class JSCodeBuildingContext {
 
     getOrAddVariable(token: JSVariable): string {
         const existingBinding = this.variableBindings.get(token);
-        if (existingBinding != undefined) {
+        if (isDefined(existingBinding)) {
             return existingBinding;
         }
         const safeLabel = JSCodeBuildingContext.getSafeLabel(token.label);
@@ -77,8 +77,11 @@ export class JSCodeBuildingContext {
     }
 
     getBoundValueMap() {
-        return arrayToObject(this.boundValues, (_, index) =>
-            JSCodeBuildingContext.getBoundValueName(index),
+        return Object.fromEntries(
+            this.boundValues.map((value, index) => [
+                JSCodeBuildingContext.getBoundValueName(index),
+                value,
+            ]),
         );
     }
 
@@ -374,7 +377,7 @@ export class JSCompoundQuery extends JSFragment {
     private getExecutableQueriesRecursive(
         resultVarToNameMap: Map<JSQueryResultVariable, string>,
     ): ReadonlyArray<JSExecutableQuery> {
-        const executableQueries = flatMap(this.preExecQueries, (JSQuery) =>
+        const executableQueries = this.preExecQueries.flatMap((JSQuery) =>
             JSQuery.getExecutableQueriesRecursive(resultVarToNameMap),
         );
 

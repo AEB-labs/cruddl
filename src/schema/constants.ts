@@ -1,4 +1,4 @@
-import { numberTypeNames } from '../model/implementation/built-in-types';
+import { numberTypeNames } from '../model/implementation/built-in-types.js';
 
 export const WILDCARD_CHARACTER = '*';
 

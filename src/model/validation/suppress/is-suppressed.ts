@@ -1,8 +1,8 @@
-import { MessageCode } from './message-codes';
-import { SUPPRESS_DIRECTIVE } from '../../../schema/constants';
-import { Kind } from 'graphql/index';
-import { AstNodeWithDirectives, Severity } from '../message';
-import { getSuppressArgName } from './utils';
+import { Kind } from 'graphql';
+import { SUPPRESS_DIRECTIVE } from '../../../schema/constants.js';
+import type { AstNodeWithDirectives, Severity } from '../message.js';
+import type { MessageCode } from './message-codes.js';
+import { getSuppressArgName } from './utils.js';
 
 export function isSuppressed(
     severity: Severity,

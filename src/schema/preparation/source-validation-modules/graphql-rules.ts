@@ -1,27 +1,22 @@
+import type { DocumentNode, GraphQLError, Location, ValidationRule } from 'graphql';
 import {
     buildASTSchema,
-    DocumentNode,
-    GraphQLError,
     Kind,
+    KnownArgumentNamesRule,
     KnownDirectivesRule,
-    Location,
+    ProvidedRequiredArgumentsRule,
     UniqueArgumentNamesRule,
     UniqueDirectivesPerLocationRule,
-    UniqueEnumValueNamesRule,
     validate,
-    ValidationRule,
     ValuesOfCorrectTypeRule,
     VariablesInAllowedPositionRule,
 } from 'graphql';
-import gql from 'graphql-tag';
-import { KnownArgumentNamesOnDirectivesRule } from 'graphql/validation/rules/KnownArgumentNamesRule';
-import { ProvidedRequiredArgumentsOnDirectivesRule } from 'graphql/validation/rules/ProvidedRequiredArgumentsRule';
-import { validateSDL } from 'graphql/validation/validate';
-import { SDLValidationRule } from 'graphql/validation/ValidationContext';
-import { ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../config/parsed-project';
-import { ValidationMessage } from '../../../model';
-import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base';
-import { ParsedSourceValidator } from '../ast-validator';
+import { gql } from 'graphql-tag';
+import { ValidationMessage } from '../../../model/index.js';
+import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base.js';
+import type { ParsedProjectSource } from '../../parsing/parsed-project.js';
+import { ParsedProjectSourceBaseKind } from '../../parsing/parsed-project.js';
+import type { ParsedSourceValidator } from '../ast-validator.js';
 
 // Only include rules that are relevant for schema files
 // there is a non-public export specifiedSDLRules, but we only include those relevant for us. Some rules apply to
@@ -30,14 +25,12 @@ import { ParsedSourceValidator } from '../ast-validator';
 const rules: ReadonlyArray<ValidationRule> = [
     KnownDirectivesRule,
     UniqueDirectivesPerLocationRule,
-    KnownArgumentNamesOnDirectivesRule,
+    KnownArgumentNamesRule, // KnownArgumentNamesRule would be more accurate but it's internal
     UniqueArgumentNamesRule,
     ValuesOfCorrectTypeRule,
-    ProvidedRequiredArgumentsOnDirectivesRule,
+    ProvidedRequiredArgumentsRule, // ProvidedRequiredArgumentsOnDirectivesRule would be more accurate but it's internal
     VariablesInAllowedPositionRule,
 ];
-
-const sdlRules: ReadonlyArray<SDLValidationRule> = [UniqueEnumValueNamesRule];
 
 export class GraphQLRulesValidator implements ParsedSourceValidator {
     validate(source: ParsedProjectSource): ReadonlyArray<ValidationMessage> {
@@ -47,11 +40,7 @@ export class GraphQLRulesValidator implements ParsedSourceValidator {
 
         let ast = source.document;
 
-        const results = [
-            ...validate(coreSchema, ast, rules),
-            // TODO validateSDL is internal. Do we need the SDL rule?
-            ...validateSDL(ast, undefined, sdlRules),
-        ];
+        const results = [...validate(coreSchema, ast, rules)];
 
         return results.map((error) =>
             ValidationMessage.error(error.message, getMessageLocation(error)),

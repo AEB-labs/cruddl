@@ -1,5 +1,6 @@
-import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
-import { BinaryOperator, QueryNode } from '../../query-tree';
+import { GraphQLBoolean, GraphQLID, GraphQLString } from 'graphql';
+import type { QueryNode } from '../../query-tree/index.js';
+import { BinaryOperator } from '../../query-tree/index.js';
 import {
     INPUT_FIELD_CONTAINS,
     INPUT_FIELD_ENDS_WITH,
@@ -20,12 +21,12 @@ import {
     INPUT_FIELD_NOT_STARTS_WITH,
     INPUT_FIELD_SOME,
     INPUT_FIELD_STARTS_WITH,
-} from '../../schema/constants';
-import { GraphQLDateTime } from '../../schema/scalars/date-time';
-import { GraphQLLocalDate } from '../../schema/scalars/local-date';
-import { GraphQLLocalTime } from '../../schema/scalars/local-time';
-import { binaryNotOp, binaryOp } from '../utils/input-types';
-import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time';
+} from '../../schema/constants.js';
+import { GraphQLDateTime } from '../../schema/scalars/date-time.js';
+import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
+import { GraphQLLocalTime } from '../../schema/scalars/local-time.js';
+import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js';
+import { binaryNotOp, binaryOp } from '../utils/input-types.js';
 
 export const FILTER_OPERATORS: {
     [suffix: string]: (fieldNode: QueryNode, valueNode: QueryNode) => QueryNode;

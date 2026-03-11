@@ -1,15 +1,15 @@
-import { Field, RelationSide, RootEntityType } from '../model';
-import {
+import type {
     CollectPathSegment,
     FieldSegment,
     RelationSegment,
-} from '../model/implementation/collect-path';
-import { blue } from '../utils/colors';
-import { QueryNode } from './base';
-import { EntitiesIdentifierKind } from './mutations';
-import { VariableQueryNode } from './variables';
-import { indent } from '../utils/utils';
-import { OrderSpecification } from './lists';
+} from '../model/implementation/collect-path.js';
+import type { Field, RelationSide, RootEntityType } from '../model/index.js';
+import { blue } from '../utils/colors.js';
+import { indent, isDefined } from '../utils/utils.js';
+import { QueryNode } from './base.js';
+import { OrderSpecification } from './lists.js';
+import { EntitiesIdentifierKind } from './mutations.js';
+import { VariableQueryNode } from './variables.js';
 
 export class EntityFromIdQueryNode extends QueryNode {
     constructor(
@@ -349,7 +349,7 @@ export class TraversalQueryNode extends QueryNode {
                     (this.filterNode ? `\nwith filter: ${this.filterNode.describe()}` : '') +
                     (!this.orderBy.isUnordered() ? `\norder by: ${this.orderBy.describe()}` : '') +
                     (this.skip != 0 ? `skip ${this.skip}\n` : '') +
-                    (this.maxCount != undefined ? `limit ${this.maxCount}\n` : '') +
+                    (isDefined(this.maxCount) ? `limit ${this.maxCount}\n` : '') +
                     (this.preserveNullValues ? `preserving null values\n` : '') +
                     (this.innerNode ? `\nas ${this.innerNode.describe()}` : ''),
             ) +

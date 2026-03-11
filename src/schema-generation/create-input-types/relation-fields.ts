@@ -1,17 +1,20 @@
-import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { Field, Multiplicity } from '../../model';
-import { PreExecQueryParms, QueryNode } from '../../query-tree';
-import { getCreateRelatedEntityFieldName } from '../../schema/names';
-import { AnyValue, isReadonlyArray, PlainObject } from '../../utils/utils';
-import { FieldContext } from '../query-node-object-type';
+import type { GraphQLInputType } from 'graphql';
+import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
+import type { Field } from '../../model/index.js';
+import { Multiplicity } from '../../model/index.js';
+import type { PreExecQueryParms, QueryNode } from '../../query-tree/index.js';
+import { getCreateRelatedEntityFieldName } from '../../schema/names.js';
+import type { AnyValue, PlainObject } from '../../utils/utils.js';
+import { isDefined, isReadonlyArray } from '../../utils/utils.js';
+import type { FieldContext } from '../query-node-object-type/index.js';
 import {
     getAddEdgesStatements,
     getCreateAndAddEdgesStatements,
     getCreateAndSetEdgeStatements,
     getSetEdgeStatements,
-} from '../utils/relations';
-import { CreateInputField, FieldValidationContext } from './input-fields';
-import { CreateRootEntityInputType } from './input-types';
+} from '../utils/relations.js';
+import type { CreateInputField, FieldValidationContext } from './input-fields.js';
+import type { CreateRootEntityInputType } from './input-types.js';
 
 export abstract class AbstractRelationCreateInputField implements CreateInputField {
     readonly description: string;
@@ -62,7 +65,7 @@ export class SetEdgeCreateInputField extends AbstractRelationCreateInputField {
     }
 
     getStatements(targetID: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
-        if (targetID == undefined) {
+        if (!isDefined(targetID)) {
             return [];
         }
 
@@ -85,7 +88,7 @@ export class AddEdgesCreateInputField extends AbstractRelationCreateInputField {
     }
 
     getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return [];
         }
         if (!isReadonlyArray(value)) {
@@ -119,7 +122,7 @@ export class CreateAndAddEdgesCreateInputField extends AbstractRelationCreateInp
         sourceIDNode: QueryNode,
         context: FieldContext,
     ): ReadonlyArray<PreExecQueryParms> {
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return [];
         }
         if (!isReadonlyArray(value)) {
@@ -159,7 +162,7 @@ export class CreateAndSetEdgeCreateInputField extends AbstractRelationCreateInpu
         sourceIDNode: QueryNode,
         context: FieldContext,
     ): ReadonlyArray<PreExecQueryParms> {
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return [];
         }
         if (isReadonlyArray(value)) {

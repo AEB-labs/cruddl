@@ -1,19 +1,17 @@
-import { Type } from '../../model';
+import type { Type } from '../../model/index.js';
+import type { QueryNode, TraversalQueryNodeParams } from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConstBoolQueryNode,
-    QueryNode,
     TransformListQueryNode,
     TraversalQueryNode,
-    TraversalQueryNodeParams,
     VariableQueryNode,
-} from '../../query-tree';
-import { simplifyBooleans } from '../../query-tree/utils';
-import { FILTER_ARG } from '../../schema/constants';
-import { decapitalize } from '../../utils/utils';
-import { FilterObjectType } from '../filter-input-types';
-import { RequireAllProperties } from '../../utils/util-types';
+} from '../../query-tree/index.js';
+import { simplifyBooleans } from '../../query-tree/utils/index.js';
+import type { RequireAllProperties } from '../../utils/util-types.js';
+import { decapitalize } from '../../utils/utils.js';
+import type { FilterObjectType } from '../filter-input-types/index.js';
 
 interface BuildFilteredListNodeParams {
     readonly listNode: QueryNode;

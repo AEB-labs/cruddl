@@ -1,5 +1,4 @@
-import { GraphQLError } from 'graphql';
-import { RequestProfile } from '../config/interfaces';
+import type { RequestProfile } from '../config/interfaces.js';
 
 export interface ExecutionResult {
     readonly data?: any;

@@ -1,5 +1,6 @@
-import { Kind, ValueNode } from 'graphql';
-import { PlainObject } from '../utils/utils';
+import type { ValueNode } from 'graphql';
+import { Kind } from 'graphql';
+import type { PlainObject } from '../utils/utils.js';
 
 /**
  * Gets the value of a ValueNode

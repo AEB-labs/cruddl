@@ -1,9 +1,9 @@
-import { MODULES_DIRECTIVE, MODULES_IN_ARG } from '../../../schema/constants';
-import { TypeModuleSpecificationConfig } from '../../config/module-specification';
-import { ValidationMessage } from '../../validation';
-import { ValidationContext } from '../../validation/validation-context';
-import { Type } from '../type';
-import { BaseModuleSpecification } from './base-module-specification';
+import { MODULES_DIRECTIVE, MODULES_IN_ARG } from '../../../schema/constants.js';
+import type { TypeModuleSpecificationConfig } from '../../config/module-specification.js';
+import { ValidationMessage } from '../../validation/index.js';
+import type { ValidationContext } from '../../validation/validation-context.js';
+import type { Type } from '../type.js';
+import { BaseModuleSpecification } from './base-module-specification.js';
 
 export class TypeModuleSpecification extends BaseModuleSpecification {
     readonly includeAllFields: boolean;

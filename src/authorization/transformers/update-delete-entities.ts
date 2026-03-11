@@ -1,3 +1,4 @@
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
@@ -11,7 +12,6 @@ import {
     ObjectQueryNode,
     PERMISSION_DENIED_ERROR,
     PreExecQueryParms,
-    QueryNode,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     UnaryOperationQueryNode,
@@ -19,11 +19,12 @@ import {
     UpdateEntitiesQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode,
-} from '../../query-tree';
-import { decapitalize } from '../../utils/utils';
-import { AccessOperation, AuthContext } from '../auth-basics';
-import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors';
-import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model';
+} from '../../query-tree/index.js';
+import { decapitalize } from '../../utils/utils.js';
+import type { AuthContext } from '../auth-basics.js';
+import { AccessOperation } from '../auth-basics.js';
+import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model.js';
+import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors.js';
 
 type Action = 'update' | 'delete';
 

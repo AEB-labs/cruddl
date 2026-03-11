@@ -1,22 +1,25 @@
-import { GraphQLID, GraphQLInputType, GraphQLList, GraphQLNonNull } from 'graphql';
-import { Field, Multiplicity } from '../../model';
-import { PreExecQueryParms, QueryNode, SetFieldQueryNode } from '../../query-tree';
+import type { GraphQLInputType } from 'graphql';
+import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
+import type { Field } from '../../model/index.js';
+import { Multiplicity } from '../../model/index.js';
+import type { PreExecQueryParms, QueryNode, SetFieldQueryNode } from '../../query-tree/index.js';
 import {
     getAddRelationFieldName,
     getCreateRelatedEntityFieldName,
     getRemoveRelationFieldName,
-} from '../../schema/names';
-import { AnyValue, isReadonlyArray, PlainObject } from '../../utils/utils';
-import { CreateRootEntityInputType } from '../create-input-types';
-import { FieldContext } from '../query-node-object-type';
+} from '../../schema/names.js';
+import type { AnyValue, PlainObject } from '../../utils/utils.js';
+import { isDefined, isReadonlyArray } from '../../utils/utils.js';
+import type { CreateRootEntityInputType } from '../create-input-types/index.js';
+import type { FieldContext } from '../query-node-object-type/index.js';
 import {
     getAddEdgesStatements,
     getCreateAndAddEdgesStatements,
     getCreateAndSetEdgeStatements,
     getRemoveEdgesStatements,
     getSetEdgeStatements,
-} from '../utils/relations';
-import { UpdateInputField } from './input-fields';
+} from '../utils/relations.js';
+import type { UpdateInputField } from './input-fields.js';
 
 export abstract class AbstractRelationUpdateInputField implements UpdateInputField {
     readonly description: string;
@@ -86,7 +89,7 @@ export class AddEdgesInputField extends AbstractRelationUpdateInputField {
     }
 
     getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return [];
         }
         if (!isReadonlyArray(value)) {
@@ -111,7 +114,7 @@ export class RemoveEdgesInputField extends AbstractRelationUpdateInputField {
     }
 
     getStatements(value: AnyValue, sourceIDNode: QueryNode): ReadonlyArray<PreExecQueryParms> {
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return [];
         }
         if (!isReadonlyArray(value)) {
@@ -144,7 +147,7 @@ export class CreateAndAddEdgesInputField extends AbstractRelationUpdateInputFiel
         sourceIDNode: QueryNode,
         context: FieldContext,
     ): ReadonlyArray<PreExecQueryParms> {
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return [];
         }
         if (!isReadonlyArray(value)) {
@@ -184,7 +187,7 @@ export class CreateAndSetEdgeInputField extends AbstractRelationUpdateInputField
         sourceIDNode: QueryNode,
         context: FieldContext,
     ): ReadonlyArray<PreExecQueryParms> {
-        if (value == undefined) {
+        if (!isDefined(value)) {
             return [];
         }
         if (isReadonlyArray(value)) {

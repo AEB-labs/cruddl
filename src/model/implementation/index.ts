@@ -1,18 +1,24 @@
-export { Model } from './model';
-export { Type, ObjectType } from './type';
-export { RootEntityType } from './root-entity-type';
-export { ChildEntityType } from './child-entity-type';
-export { ValueObjectType } from './value-object-type';
-export { EntityExtensionType } from './entity-extension-type';
-export { ScalarType } from './scalar-type';
-export { EnumType, EnumValue } from './enum-type';
-export { Field } from './field';
-export { Namespace } from './namespace';
-export { Index, IndexField } from './indices';
-export { RolesSpecifier } from './roles-specifier';
-export { PermissionProfile, Permission, RoleSpecifier } from './permission-profile';
-export { Relation, RelationSide, Multiplicity } from './relation';
-export { ModelI18n, NamespaceLocalization, TypeLocalization, FieldLocalization } from './i18n';
-export { CollectPath, CollectPathSegment } from './collect-path';
-export { BillingEntityType } from './billing';
-export { TimeToLiveType } from './time-to-live';
+export { BillingEntityType } from './billing.js';
+export { ChildEntityType } from './child-entity-type.js';
+export { CollectPath, type CollectPathSegment } from './collect-path.js';
+export { EntityExtensionType } from './entity-extension-type.js';
+export { EnumType, EnumValue } from './enum-type.js';
+export { Field } from './field.js';
+export {
+    ModelI18n,
+    NamespaceLocalization,
+    type FieldLocalization,
+    type TypeLocalization,
+} from './i18n.js';
+export { Index, IndexField } from './indices.js';
+export { Model } from './model.js';
+export { EffectiveModuleSpecification } from './modules/effective-module-specification.js';
+export { Namespace } from './namespace.js';
+export { Permission, PermissionProfile, RoleSpecifier } from './permission-profile.js';
+export { Multiplicity, Relation, RelationSide } from './relation.js';
+export { RolesSpecifier } from './roles-specifier.js';
+export { RootEntityType } from './root-entity-type.js';
+export { ScalarType } from './scalar-type.js';
+export { TimeToLiveType } from './time-to-live.js';
+export type { ObjectType, Type } from './type.js';
+export { ValueObjectType } from './value-object-type.js';

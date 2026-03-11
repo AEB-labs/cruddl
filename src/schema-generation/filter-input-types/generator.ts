@@ -1,34 +1,34 @@
-import { GraphQLEnumType, GraphQLString, resolveReadonlyArrayThunk } from 'graphql';
-import { ThunkReadonlyArray } from 'graphql/type/definition';
-import { flatMap } from 'lodash';
-import memorize from 'memorize-decorator';
-import { EnumType, Field, ScalarType, Type } from '../../model/index';
+import type { GraphQLEnumType, ThunkReadonlyArray } from 'graphql';
+import { GraphQLString, resolveReadonlyArrayThunk } from 'graphql';
+import { memorize } from 'memorize-decorator';
+import type { Field, Type } from '../../model/index.js';
+import { EnumType, ScalarType } from '../../model/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConstBoolQueryNode,
     NullQueryNode,
-    QueryNode,
-} from '../../query-tree';
-import { INPUT_FIELD_EQUAL } from '../../schema/constants';
-import { getFilterTypeName } from '../../schema/names';
-import { GraphQLI18nString, GraphQLStringMap } from '../../schema/scalars/string-map';
-import { AnyValue, objectEntries } from '../../utils/utils';
-import { EnumTypeGenerator } from '../enum-type-generator';
-import { TypedInputObjectType } from '../typed-input-object-type';
-import { and } from '../utils/input-types';
+} from '../../query-tree/index.js';
+import { INPUT_FIELD_EQUAL } from '../../schema/constants.js';
+import { getFilterTypeName } from '../../schema/names.js';
+import { GraphQLI18nString, GraphQLStringMap } from '../../schema/scalars/string-map.js';
+import type { AnyValue } from '../../utils/utils.js';
+import type { EnumTypeGenerator } from '../enum-type-generator.js';
+import { TypedInputObjectType } from '../typed-input-object-type.js';
+import { and } from '../utils/input-types.js';
 import {
     ENUM_FILTER_FIELDS,
     FILTER_FIELDS_BY_TYPE,
     FILTER_OPERATORS,
     NUMERIC_FILTER_FIELDS,
     QUANTIFIERS,
-} from './constants';
+} from './constants.js';
+import type { FilterField } from './filter-fields.js';
 import {
     AndFilterField,
     EmptyListFilterField,
     EntityExtensionFilterField,
-    FilterField,
     NestedObjectFilterField,
     OrFilterField,
     QuantifierFilterField,
@@ -36,7 +36,7 @@ import {
     ScalarOrEnumFilterField,
     StringMapEntryFilterField,
     StringMapSomeValueFilterField,
-} from './filter-fields';
+} from './filter-fields.js';
 
 export class FilterObjectType extends TypedInputObjectType<FilterField> {
     constructor(typeName: string, fields: ThunkReadonlyArray<FilterField>, description?: string) {
@@ -57,7 +57,7 @@ export class FilterObjectType extends TypedInputObjectType<FilterField> {
                 NullQueryNode.NULL,
             );
         }
-        const filterNodes = objectEntries(filterValue as any).map(([name, value]) =>
+        const filterNodes = Object.entries(filterValue as any).map(([name, value]) =>
             this.getFieldOrThrow(name).getFilterNode(sourceNode, value),
         );
         return filterNodes.reduce(and, ConstBoolQueryNode.TRUE);
@@ -76,7 +76,7 @@ export class FilterTypeGenerator {
             return this.generateFilterType(type.name, this.buildEnumFilterFields(type));
         }
         return this.generateFilterType(type.name, () =>
-            flatMap(type.fields, (field: Field) => this.generateFieldFilterFields(field)),
+            type.fields.flatMap((field: Field) => this.generateFieldFilterFields(field)),
         );
     }
 

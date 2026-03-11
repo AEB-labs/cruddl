@@ -1,16 +1,16 @@
-import { RootEntityType } from '../model';
+import type { FieldPath } from '../model/implementation/field-path.js';
+import type { RootEntityType } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     DeleteEntitiesQueryNode,
     DeleteEntitiesResultValue,
     EntitiesIdentifierKind,
     PreExecQueryParms,
-    QueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode,
-} from '../query-tree';
-import { mapToIDNodesUnoptimized } from './utils/map';
-import { getPreEntityRemovalStatements } from './utils/relations';
-import { FieldPath } from '../model/implementation/field-path';
+} from '../query-tree/index.js';
+import { mapToIDNodesUnoptimized } from './utils/map.js';
+import { getPreEntityRemovalStatements } from './utils/relations.js';
 
 export interface GenerateDeleteAllQueryNodeOptions {
     readonly resultValue?: DeleteEntitiesResultValue;

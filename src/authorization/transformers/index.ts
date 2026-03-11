@@ -1,3 +1,5 @@
+import { FlexSearchQueryNode } from '../../query-tree/flex-search.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     AffectedFieldInfoQueryNode,
     CreateEntitiesQueryNode,
@@ -8,27 +10,25 @@ import {
     FieldPathQueryNode,
     FieldQueryNode,
     FollowEdgeQueryNode,
-    QueryNode,
     TraversalQueryNode,
     UpdateEntitiesQueryNode,
-} from '../../query-tree';
-import { FlexSearchQueryNode } from '../../query-tree/flex-search';
-import { AuthContext } from '../auth-basics';
-import { transformAffectedFieldInfoQueryNode } from './affected-field-info';
-import { transformCreateEntitiesQueryNode } from './create-entities';
-import { transformCreateEntityQueryNode } from './create-entity';
+} from '../../query-tree/index.js';
+import type { AuthContext } from '../auth-basics.js';
+import { transformAffectedFieldInfoQueryNode } from './affected-field-info.js';
+import { transformCreateEntitiesQueryNode } from './create-entities.js';
+import { transformCreateEntityQueryNode } from './create-entity.js';
 import {
     transformEntitiesQueryNode,
     transformEntityFromIdQueryNode,
     transformFlexSearchQueryNode,
-} from './entities';
-import { transformFieldPathQueryNode, transformFieldQueryNode } from './field';
-import { transformFollowEdgeQueryNode } from './follow-edge';
-import { transformTraversalQueryNode } from './traversal';
+} from './entities.js';
+import { transformFieldPathQueryNode, transformFieldQueryNode } from './field.js';
+import { transformFollowEdgeQueryNode } from './follow-edge.js';
+import { transformTraversalQueryNode } from './traversal.js';
 import {
     transformDeleteEntitiesQueryNode,
     transformUpdateEntitiesQueryNode,
-} from './update-delete-entities';
+} from './update-delete-entities.js';
 
 type TransformFunction<T extends QueryNode> = (node: T, authContext: AuthContext) => QueryNode;
 

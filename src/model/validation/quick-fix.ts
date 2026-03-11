@@ -1,4 +1,4 @@
-import { ChangeSet } from '../change-set/change-set';
+import { ChangeSet } from '../change-set/change-set.js';
 
 export interface QuickFixParams {
     /**

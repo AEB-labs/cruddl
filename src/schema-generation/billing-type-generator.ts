@@ -1,12 +1,12 @@
 import { GraphQLBoolean, GraphQLID } from 'graphql';
-import memorize from 'memorize-decorator';
-import { RootEntityType } from '../model/implementation';
+import { memorize } from 'memorize-decorator';
+import type { RootEntityType } from '../model/implementation/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     BILLING_KEY_FIELD_NOT_FILLED_ERROR,
     BinaryOperationQueryNode,
     BinaryOperator,
     ConfirmForBillingQueryNode,
-    CreateBillingEntityQueryNode,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
     ErrorIfNotTruthyResultValidator,
@@ -15,22 +15,21 @@ import {
     LiteralQueryNode,
     NOT_FOUND_ERROR,
     PreExecQueryParms,
-    QueryNode,
     RootEntityIDQueryNode,
     TransformListQueryNode,
     UpdateEntitiesQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode,
-} from '../query-tree';
-import { BILLING_MUTATION_INPUT_ARG } from '../schema/constants';
-import { getConfirmForBillingFieldName } from '../schema/names';
-import { OutputTypeGenerator } from './output-type-generator';
-import { QueryNodeField } from './query-node-object-type';
+} from '../query-tree/index.js';
+import { BILLING_MUTATION_INPUT_ARG } from '../schema/constants.js';
+import { getConfirmForBillingFieldName } from '../schema/names.js';
+import type { OutputTypeGenerator } from './output-type-generator.js';
+import type { QueryNodeField } from './query-node-object-type/index.js';
 import {
     createBillingEntityCategoryNode,
     createBillingEntityQuantityNode,
-} from './utils/billing-nodes';
+} from './utils/billing-nodes.js';
 
 export class BillingTypeGenerator {
     constructor(readonly outputTypeGenerator: OutputTypeGenerator) {}

@@ -1,3 +1,3 @@
-export * from './generator';
-export * from './input-types';
-export * from './input-fields';
+export * from './generator.js';
+export * from './input-fields.js';
+export * from './input-types.js';

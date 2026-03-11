@@ -1,6 +1,8 @@
 import { GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
-import { ExecutionOptions } from '../execution/execution-options';
-import { Type } from '../model';
+import type { ExecutionOptions } from '../execution/execution-options.js';
+import type { Type } from '../model/index.js';
+import { FlexSearchQueryNode } from '../query-tree/flex-search.js';
+import type { QueryNode, TraversalQueryNodeParams } from '../query-tree/index.js';
 import {
     ARGUMENT_OUT_OF_RANGE_ERROR,
     BinaryOperationQueryNode,
@@ -15,16 +17,13 @@ import {
     OrderDirection,
     OrderSpecification,
     PreExecQueryParms,
-    QueryNode,
     RuntimeError,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
     TraversalQueryNode,
-    TraversalQueryNodeParams,
     VariableQueryNode,
     WithPreExecutionQueryNode,
-} from '../query-tree';
-import { FlexSearchQueryNode } from '../query-tree/flex-search';
+} from '../query-tree/index.js';
 import {
     AFTER_ARG,
     CURSOR_FIELD,
@@ -36,22 +35,26 @@ import {
     ORDER_BY_ARG,
     ORDER_BY_ASC_SUFFIX,
     SKIP_ARG,
-} from '../schema/constants';
-import { decapitalize } from '../utils/utils';
+} from '../schema/constants.js';
+import type { RequireAllProperties } from '../utils/util-types.js';
+import { decapitalize, isDefined } from '../utils/utils.js';
 import {
     FlexSearchScalarOrEnumFilterField,
     resolveFilterField,
-} from './flex-search-filter-input-types/filter-fields';
-import { OrderByEnumGenerator, OrderByEnumType, OrderByEnumValue } from './order-by-enum-generator';
-import { QueryNodeField } from './query-node-object-type';
-import { RootFieldHelper } from './root-field-helper';
-import { and, binaryOp, binaryOpWithAnalyzer } from './utils/input-types';
-import { getOrderByValues } from './utils/pagination';
+} from './flex-search-filter-input-types/filter-fields.js';
+import type {
+    OrderByEnumGenerator,
+    OrderByEnumType,
+    OrderByEnumValue,
+} from './order-by-enum-generator.js';
+import type { QueryNodeField } from './query-node-object-type/index.js';
+import type { RootFieldHelper } from './root-field-helper.js';
 import {
     getSortClausesForPrimarySort,
     orderArgMatchesPrimarySort,
-} from './utils/flex-search-utils';
-import { RequireAllProperties } from '../utils/util-types';
+} from './utils/flex-search-utils.js';
+import { and, binaryOp, binaryOpWithAnalyzer } from './utils/input-types.js';
+import { getOrderByValues } from './utils/pagination.js';
 
 export enum LimitTypeCheckType {
     RESULT_VALIDATOR = 'RESULT_VALIDATOR',
@@ -188,7 +191,7 @@ export class OrderByAndPaginationAugmentation {
                     listNode.orderBy.isUnordered() &&
                     // TODO aql-perf it's probably better to throw instead of checking because two LIMITs in a row is probably bad
                     listNode.skip === 0 &&
-                    listNode.maxCount == undefined &&
+                    !isDefined(listNode.maxCount) &&
                     // TODO aql-perf why is this condition necessary?
                     listNode.innerNode === listNode.itemVariable
                 ) {
@@ -308,7 +311,7 @@ export class OrderByAndPaginationAugmentation {
 
                 if (
                     orderBy.isUnordered() &&
-                    maxCount == undefined &&
+                    !isDefined(maxCount) &&
                     (!paginationFilter || paginationFilter === ConstBoolQueryNode.TRUE)
                 ) {
                     return originalListNode;
@@ -318,7 +321,7 @@ export class OrderByAndPaginationAugmentation {
                     !(listNode instanceof FlexSearchQueryNode) &&
                     !(listNode instanceof TraversalQueryNode) && // does not make use of indices for sorting
                     !skip &&
-                    maxCount != undefined &&
+                    isDefined(maxCount) &&
                     orderBy.clauses.length > 1 &&
                     afterArg &&
                     type.isRootEntityType &&

@@ -1,4 +1,4 @@
-import { QueryNode } from './base';
+import { QueryNode } from './base.js';
 
 /**
  * A node that performs an operation with one operand

@@ -1,9 +1,9 @@
-import { Type } from '../model';
-import { FILTER_ARG } from '../schema/constants';
-import { FilterTypeGenerator } from './filter-input-types';
-import { QueryNodeField } from './query-node-object-type';
-import { RootFieldHelper } from './root-field-helper';
-import { buildFilteredListNode } from './utils/filtering';
+import type { Type } from '../model/index.js';
+import { FILTER_ARG } from '../schema/constants.js';
+import type { FilterTypeGenerator } from './filter-input-types/index.js';
+import type { QueryNodeField } from './query-node-object-type/index.js';
+import type { RootFieldHelper } from './root-field-helper.js';
+import { buildFilteredListNode } from './utils/filtering.js';
 
 /**
  * Augments list fields with filter features

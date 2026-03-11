@@ -1,13 +1,8 @@
-import memorize from 'memorize-decorator';
-import { FieldRequest } from '../graphql/query-distiller';
-import { Field, ObjectType } from '../model';
-import {
-    NOT_SUPPORTED_ERROR,
-    PropertyAccessQueryNode,
-    QueryNode,
-    RuntimeErrorQueryNode,
-} from '../query-tree';
-import { FieldContext, SelectionToken } from './query-node-object-type';
+import type { Field } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
+import { NOT_SUPPORTED_ERROR, RuntimeErrorQueryNode } from '../query-tree/index.js';
+import type { FieldContext } from './query-node-object-type/index.js';
+import { SelectionToken } from './query-node-object-type/index.js';
 
 export interface ProcessFieldResult {
     /**

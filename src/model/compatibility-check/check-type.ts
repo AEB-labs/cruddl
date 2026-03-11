@@ -1,8 +1,9 @@
-import { Type } from '../implementation';
-import { ValidationContext, ValidationMessage } from '../validation';
-import { checkEnumType } from './check-enum-type';
-import { checkObjectType } from './check-object-type';
-import { describeTypeKind } from './utils';
+import type { Type } from '../implementation/index.js';
+import type { ValidationContext } from '../validation/index.js';
+import { ValidationMessage } from '../validation/index.js';
+import { checkEnumType } from './check-enum-type.js';
+import { checkObjectType } from './check-object-type.js';
+import { describeTypeKind } from './utils.js';
 
 export function checkType(typeToCheck: Type, baselineType: Type, context: ValidationContext) {
     if (typeToCheck.kind !== baselineType.kind) {

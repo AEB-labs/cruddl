@@ -1,21 +1,20 @@
-import { uniq } from 'lodash';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     ConditionalQueryNode,
     FirstOfListQueryNode,
+    FLEX_SEARCH_TOO_MANY_OBJECTS,
     ListQueryNode,
     ObjectQueryNode,
     PreExecQueryParms,
     PropertySpecification,
-    QueryNode,
-    FLEX_SEARCH_TOO_MANY_OBJECTS,
     RuntimeErrorQueryNode,
     TransformListQueryNode,
+    TraversalQueryNode,
     VariableAssignmentQueryNode,
     WithPreExecutionQueryNode,
-    TraversalQueryNode,
-} from '../query-tree';
-import { visitQueryNode } from '../query-tree/visitor';
-import { VisitResult } from '../utils/visitor';
+} from '../query-tree/index.js';
+import { visitQueryNode } from '../query-tree/visitor.js';
+import type { VisitResult } from '../utils/visitor.js';
 
 /**
  * Moves RuntimeErrorQueryNodes up to its their deepest ancestor that is an output node, i.e., its value directly occurs
@@ -82,7 +81,9 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
                     if (errors.length == 1) {
                         return errors[0];
                     } else {
-                        let uniqueErrorMessages = uniq(errors.map((err) => err.message));
+                        let uniqueErrorMessages = Array.from(
+                            new Set(errors.map((err) => err.message)),
+                        );
                         const code = errors.some((value) => value.code !== errors[0].code)
                             ? undefined
                             : errors[0].code;

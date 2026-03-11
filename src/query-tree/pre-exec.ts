@@ -1,7 +1,7 @@
-import { compact, indent } from '../utils/utils';
-import { QueryNode } from './base';
-import { QueryResultValidator } from './validation';
-import { VariableQueryNode } from './variables';
+import { indent, isDefined } from '../utils/utils.js';
+import { QueryNode } from './base.js';
+import type { QueryResultValidator } from './validation.js';
+import type { VariableQueryNode } from './variables.js';
 
 export class PreExecQueryParms extends QueryNode {
     constructor(params: {
@@ -58,7 +58,7 @@ export class WithPreExecutionQueryNode extends QueryNode {
         preExecQueries: ReadonlyArray<PreExecQueryParms | undefined>;
     }) {
         super();
-        this.preExecQueries = compact(params.preExecQueries);
+        this.preExecQueries = params.preExecQueries.filter(isDefined);
         this.resultNode = params.resultNode;
     }
 

@@ -1,4 +1,4 @@
-import { ASTNode } from 'graphql';
+import type { ASTNode } from 'graphql';
 
 export interface ModuleSpecificationClauseConfig {
     readonly expression: string;

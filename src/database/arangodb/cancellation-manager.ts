@@ -1,5 +1,5 @@
-import { Database } from 'arangojs';
-import { ERROR_QUERY_NOT_FOUND } from './error-codes';
+import type { Database } from 'arangojs';
+import { ERROR_QUERY_NOT_FOUND } from './error-codes.js';
 
 interface CancellationManagerConfig {
     readonly database: Database;

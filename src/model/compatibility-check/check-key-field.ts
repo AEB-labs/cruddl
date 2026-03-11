@@ -1,7 +1,7 @@
-import { ID_FIELD } from '../../schema/constants';
-import { Field } from '../implementation/field';
-import { ValidationMessage } from '../validation/message';
-import { ValidationContext } from '../validation/validation-context';
+import { ID_FIELD } from '../../schema/constants.js';
+import type { Field } from '../implementation/field.js';
+import { ValidationMessage } from '../validation/message.js';
+import type { ValidationContext } from '../validation/validation-context.js';
 
 /**
  * If the baseline field is annotated with @key, checks whether the field is annotated with @key, too

@@ -1,17 +1,17 @@
-import { ThunkReadonlyArray } from 'graphql/type/definition';
-import { Field } from '../../model';
+import type { ThunkReadonlyArray } from 'graphql';
+import type { Field } from '../../model/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConstBoolQueryNode,
     NullQueryNode,
-    QueryNode,
-} from '../../query-tree';
-import { AnyValue, objectEntries } from '../../utils/utils';
-import { QueryNodeResolveInfo } from '../query-node-object-type';
-import { TypedInputObjectType } from '../typed-input-object-type';
-import { and } from '../utils/input-types';
-import { FlexSearchFilterField } from './filter-fields';
+} from '../../query-tree/index.js';
+import type { AnyValue } from '../../utils/utils.js';
+import type { QueryNodeResolveInfo } from '../query-node-object-type/index.js';
+import { TypedInputObjectType } from '../typed-input-object-type.js';
+import { and } from '../utils/input-types.js';
+import type { FlexSearchFilterField } from './filter-fields.js';
 
 export class FlexSearchFilterObjectType extends TypedInputObjectType<FlexSearchFilterField> {
     getFilterNode(
@@ -27,7 +27,7 @@ export class FlexSearchFilterObjectType extends TypedInputObjectType<FlexSearchF
                 NullQueryNode.NULL,
             );
         }
-        const filterNodes = objectEntries(filterValue as any).map(([name, value]) =>
+        const filterNodes = Object.entries(filterValue as any).map(([name, value]) =>
             this.getFieldOrThrow(name).getFilterNode(sourceNode, value, path, info),
         );
         return filterNodes.reduce(and, ConstBoolQueryNode.TRUE);

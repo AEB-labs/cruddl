@@ -1,13 +1,10 @@
 import { GraphQLSchema } from 'graphql';
-import { OperationResolver } from '../execution/operation-resolver';
-import {
-    addOperationBasedResolvers,
-    AddOperationBasedResolversParams,
-} from '../graphql/operation-based-resolvers';
-import { Model } from '../model';
-import { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline';
-import { QueryNodeObjectTypeConverter } from './query-node-object-type';
-import { RootTypesGenerator } from './root-types-generator';
+import { OperationResolver } from '../execution/operation-resolver.js';
+import { addOperationBasedResolvers } from '../graphql/operation-based-resolvers.js';
+import type { Model } from '../model/index.js';
+import type { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
+import { QueryNodeObjectTypeConverter } from './query-node-object-type/index.js';
+import { RootTypesGenerator } from './root-types-generator.js';
 
 export class SchemaGenerator {
     private readonly rootTypesGenerator: RootTypesGenerator;
@@ -22,8 +19,8 @@ export class SchemaGenerator {
 
     generate(model: Model) {
         const { queryType, mutationType, dumbSchema } = this.generateTypesAndDumbSchema(model);
-        // somehow didn't work when inlined - maybe a ts-node caching issue
-        const options: AddOperationBasedResolversParams = {
+
+        return addOperationBasedResolvers({
             schema: dumbSchema,
             getOperationIdentifier: this.context.getOperationIdentifier,
             operationResolver: async (op) => {
@@ -49,8 +46,7 @@ export class SchemaGenerator {
                 }
                 throw error;
             },
-        };
-        return addOperationBasedResolvers(options);
+        });
     }
 
     generateTypesAndDumbSchema(model: Model) {

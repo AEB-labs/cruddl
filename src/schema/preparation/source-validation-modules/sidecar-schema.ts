@@ -1,7 +1,8 @@
-import { ParsedProjectSource, ParsedProjectSourceBaseKind } from '../../../config/parsed-project';
-import { ValidationMessage } from '../../../model';
-import { ParsedSourceValidator } from '../ast-validator';
-import validate from './schema/validate-schema';
+import { ValidationMessage } from '../../../model/index.js';
+import type { ParsedProjectSource } from '../../parsing/parsed-project.js';
+import { ParsedProjectSourceBaseKind } from '../../parsing/parsed-project.js';
+import type { ParsedSourceValidator } from '../ast-validator.js';
+import validate from './schema/validate-schema.js';
 
 export class SidecarSchemaValidator implements ParsedSourceValidator {
     validate(source: ParsedProjectSource): ReadonlyArray<ValidationMessage> {

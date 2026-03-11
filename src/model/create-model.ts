@@ -1,10 +1,17 @@
-import {
+import type {
     ArgumentNode,
     DirectiveNode,
     EnumTypeDefinitionNode,
     EnumValueDefinitionNode,
     EnumValueNode,
     FieldDefinitionNode,
+    ObjectTypeDefinitionNode,
+    ObjectValueNode,
+    StringValueNode,
+    TypeDefinitionNode,
+    ValueNode,
+} from 'graphql';
+import {
     GraphQLBoolean,
     GraphQLEnumType,
     GraphQLInputObjectType,
@@ -13,21 +20,10 @@ import {
     GraphQLNonNull,
     GraphQLString,
     Kind,
-    ObjectTypeDefinitionNode,
-    ObjectValueNode,
-    StringValueNode,
-    TypeDefinitionNode,
     valueFromAST,
-    ValueNode,
 } from 'graphql';
-import { ModelOptions } from '../config/interfaces';
-import {
-    ParsedGraphQLProjectSource,
-    ParsedObjectProjectSource,
-    ParsedProject,
-    ParsedProjectSourceBaseKind,
-} from '../config/parsed-project';
-import { getValueFromAST } from '../graphql/value-from-ast';
+import type { ModelOptions } from '../config/interfaces.js';
+import { getValueFromAST } from '../graphql/value-from-ast.js';
 import {
     ACCESS_FIELD_DIRECTIVE,
     BUSINESS_OBJECT_DIRECTIVE,
@@ -77,7 +73,13 @@ import {
     UNIQUE_DIRECTIVE,
     VALUE_ARG,
     VALUE_OBJECT_DIRECTIVE,
-} from '../schema/constants';
+} from '../schema/constants.js';
+import type {
+    ParsedGraphQLProjectSource,
+    ParsedObjectProjectSource,
+    ParsedProject,
+} from '../schema/parsing/parsed-project.js';
+import { ParsedProjectSourceBaseKind } from '../schema/parsing/parsed-project.js';
 import {
     findDirectiveWithName,
     getDeprecationReason,
@@ -85,9 +87,10 @@ import {
     getNodeByName,
     getTypeNameIgnoringNonNullAndList,
     hasDirectiveWithName,
-} from '../schema/schema-utils';
-import { compact, flatMap, mapValues } from '../utils/utils';
-import {
+} from '../schema/schema-utils.js';
+import { isDefined, mapValues } from '../utils/utils.js';
+import type { BillingConfig } from './config/billing.js';
+import type {
     AggregationOperator,
     CalcMutationsOperator,
     CollectFieldConfig,
@@ -110,22 +113,20 @@ import {
     TimeToLiveConfig,
     TypeConfig,
     TypeConfigBase,
-    TypeKind,
-} from './config';
-import { BillingConfig } from './config/billing';
-import { ModuleConfig } from './config/module';
-import {
+} from './config/index.js';
+import { TypeKind } from './config/index.js';
+import type {
     FieldModuleSpecificationConfig,
     TypeModuleSpecificationConfig,
-} from './config/module-specification';
-import { Model } from './implementation';
-import { OrderDirection } from './implementation/order';
-import { parseBillingConfigs } from './parse-billing';
-import { parseI18nConfigs } from './parse-i18n';
-import { parseModuleConfigs } from './parse-modules';
-import { parseTTLConfigs } from './parse-ttl';
-import { ValidationContext, ValidationMessage } from './validation';
-import { WarningCode } from './validation/suppress/message-codes';
+} from './config/module-specification.js';
+import type { ModuleConfig } from './config/module.js';
+import { extractBillingConfigs } from './extract-billing.js';
+import { extractI18nConfigs } from './extract-i18n.js';
+import { extractModuleConfigs } from './extract-modules.js';
+import { extractTTLConfigs } from './extract-ttl.js';
+import { Model } from './implementation/index.js';
+import { OrderDirection } from './implementation/order.js';
+import { ValidationContext, ValidationMessage } from './validation/index.js';
 
 export function createModel(parsedProject: ParsedProject, options: ModelOptions = {}): Model {
     const validationContext = new ValidationContext();
@@ -168,9 +169,9 @@ function createTypeInputs(
     const graphQLSchemaParts = parsedProject.sources.filter(
         (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.GRAPHQL,
     ) as ReadonlyArray<ParsedGraphQLProjectSource>;
-    return flatMap(graphQLSchemaParts, (schemaPart) =>
-        compact(
-            schemaPart.document.definitions.map((definition) => {
+    return graphQLSchemaParts.flatMap((schemaPart) =>
+        schemaPart.document.definitions
+            .map((definition) => {
                 // Only look at object types and enums (scalars are not supported yet, they need to be implemented somehow, e.g. via regex check)
                 if (
                     definition.kind != Kind.OBJECT_TYPE_DEFINITION &&
@@ -212,8 +213,8 @@ function createTypeInputs(
                     default:
                         return undefined;
                 }
-            }),
-        ),
+            })
+            .filter(isDefined),
     );
 }
 
@@ -719,8 +720,8 @@ function getCalcMutationOperators(
     if (calcMutationsArg.value.kind === Kind.ENUM) {
         return [calcMutationsArg.value.value as CalcMutationsOperator];
     } else if (calcMutationsArg.value.kind === Kind.LIST) {
-        return compact(
-            calcMutationsArg.value.values.map((val) => {
+        return calcMutationsArg.value.values
+            .map((val) => {
                 if (val.kind !== Kind.ENUM) {
                     context.addMessage(
                         ValidationMessage.error(
@@ -732,8 +733,8 @@ function getCalcMutationOperators(
                 } else {
                     return val.value as CalcMutationsOperator;
                 }
-            }),
-        );
+            })
+            .filter(isDefined);
     } else {
         context.addMessage(
             ValidationMessage.error(
@@ -771,8 +772,8 @@ function createRootEntityBasedIndices(
     if (indicesArg.value.kind === Kind.OBJECT) {
         return [buildIndexDefinitionFromObjectValue(indicesArg.value)];
     } else if (indicesArg.value.kind === Kind.LIST) {
-        return compact(
-            indicesArg.value.values.map((val) => {
+        return indicesArg.value.values
+            .map((val) => {
                 if (val.kind !== Kind.OBJECT) {
                     context.addMessage(
                         ValidationMessage.error(VALIDATION_ERROR_INVALID_ARGUMENT_TYPE, val.loc),
@@ -780,8 +781,8 @@ function createRootEntityBasedIndices(
                     return undefined;
                 }
                 return buildIndexDefinitionFromObjectValue(val);
-            }),
-        );
+            })
+            .filter(isDefined);
     } else {
         context.addMessage(
             ValidationMessage.error(VALIDATION_ERROR_INVALID_ARGUMENT_TYPE, indicesArg.loc),
@@ -795,8 +796,8 @@ function createFieldBasedIndices(
     context: ValidationContext,
     unique: boolean,
 ): ReadonlyArray<IndexDefinitionConfig> {
-    return compact(
-        (definition.fields || []).map((field): IndexDefinitionConfig | undefined => {
+    return (definition.fields || [])
+        .map((field): IndexDefinitionConfig | undefined => {
             let indexDirective = findDirectiveWithName(
                 field,
                 unique ? UNIQUE_DIRECTIVE : INDEX_DIRECTIVE,
@@ -832,8 +833,8 @@ function createFieldBasedIndices(
                 sparse,
                 fieldASTNodes: [indexDirective],
             };
-        }),
-    );
+        })
+        .filter(isDefined);
 }
 
 function buildIndexDefinitionFromObjectValue(
@@ -968,8 +969,8 @@ function getRolesOfArg(rolesArg: ArgumentNode | undefined, context: ValidationCo
     let roles: ReadonlyArray<string> | undefined = undefined;
     if (rolesArg) {
         if (rolesArg.value.kind === Kind.LIST) {
-            roles = compact(
-                rolesArg.value.values.map((val) => {
+            roles = rolesArg.value.values
+                .map((val) => {
                     if (val.kind !== Kind.STRING) {
                         context.addMessage(
                             ValidationMessage.error(
@@ -981,8 +982,8 @@ function getRolesOfArg(rolesArg: ArgumentNode | undefined, context: ValidationCo
                     } else {
                         return val.value;
                     }
-                }),
-            );
+                })
+                .filter(isDefined);
         } else if (rolesArg.value.kind === Kind.STRING) {
             roles = [rolesArg.value.value];
         } else {
@@ -1127,8 +1128,8 @@ function getCollectConfig(
 function extractPermissionProfiles(
     parsedProject: ParsedProject,
 ): ReadonlyArray<NamespacedPermissionProfileConfigMap> {
-    return compact(
-        parsedProject.sources.map((source): NamespacedPermissionProfileConfigMap | undefined => {
+    return parsedProject.sources
+        .map((source): NamespacedPermissionProfileConfigMap | undefined => {
             if (source.kind !== ParsedProjectSourceBaseKind.OBJECT) {
                 return undefined;
             }
@@ -1166,15 +1167,15 @@ function extractPermissionProfiles(
                 namespacePath: source.namespacePath,
                 profiles,
             };
-        }),
-    );
+        })
+        .filter(isDefined);
 }
 
 function extractI18n(parsedProject: ParsedProject): ReadonlyArray<LocalizationConfig> {
     const objectSchemaParts = parsedProject.sources.filter(
         (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT,
     ) as ReadonlyArray<ParsedObjectProjectSource>;
-    return flatMap(objectSchemaParts, (source) => parseI18nConfigs(source));
+    return objectSchemaParts.flatMap((source) => extractI18nConfigs(source));
 }
 
 function extractBilling(parsedProject: ParsedProject): BillingConfig {
@@ -1182,7 +1183,7 @@ function extractBilling(parsedProject: ParsedProject): BillingConfig {
         (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT,
     ) as ReadonlyArray<ParsedObjectProjectSource>;
     return objectSchemaParts
-        .map((source) => parseBillingConfigs(source))
+        .map((source) => extractBillingConfigs(source))
         .reduce(
             (previousValue, currentValue) => {
                 return {
@@ -1202,7 +1203,7 @@ function extractTimeToLive(parsedProject: ParsedProject): ReadonlyArray<TimeToLi
         (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT,
     ) as ReadonlyArray<ParsedObjectProjectSource>;
     return objectSchemaParts
-        .map((source) => parseTTLConfigs(source))
+        .map((source) => extractTTLConfigs(source))
         .reduce((previousValue, currentValue) => previousValue.concat(currentValue), []);
 }
 
@@ -1215,7 +1216,7 @@ function extractModules(
         (parsedSource) => parsedSource.kind === ParsedProjectSourceBaseKind.OBJECT,
     ) as ReadonlyArray<ParsedObjectProjectSource>;
     return objectSchemaParts
-        .map((source) => parseModuleConfigs(source, options, validationContext))
+        .map((source) => extractModuleConfigs(source, options, validationContext))
         .reduce((previousValue, currentValue) => previousValue.concat(currentValue), []);
 }
 

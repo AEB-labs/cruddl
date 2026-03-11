@@ -1,20 +1,22 @@
-import { Kind, TypeDefinitionNode } from 'graphql';
-import { prettyPrint } from '../../graphql/pretty-print';
-import { MODULES_DIRECTIVE } from '../../schema/constants';
-import { AppendChange, ChangeSet, YamlAddInMapChange } from '../change-set/change-set';
-import { TypeKind } from '../config';
-import { Model, ModelI18n, Type } from '../implementation';
-import { QuickFix, ValidationContext, ValidationMessage, ValidationResult } from '../validation';
-import { generateYamlAddInMapChangesForEnumValueI18n } from './check-enum-type';
-import { generateYamlAddInMapChangesForFieldI18n } from './check-object-type';
-import { checkType } from './check-type';
-import { getRequiredBySuffix } from './describe-module-specification';
+import type { TypeDefinitionNode } from 'graphql';
+import { Kind } from 'graphql';
+import { prettyPrint } from '../../graphql/pretty-print.js';
+import { MODULES_DIRECTIVE } from '../../schema/constants.js';
+import { AppendChange, ChangeSet, YamlAddInMapChange } from '../change-set/change-set.js';
+import { TypeKind } from '../config/index.js';
+import type { Model, ModelI18n, Type } from '../implementation/index.js';
+import type { ValidationResult } from '../validation/index.js';
+import { QuickFix, ValidationContext, ValidationMessage } from '../validation/index.js';
+import { generateYamlAddInMapChangesForEnumValueI18n } from './check-enum-type.js';
+import { generateYamlAddInMapChangesForFieldI18n } from './check-object-type.js';
+import { checkType } from './check-type.js';
+import { getRequiredBySuffix } from './describe-module-specification.js';
 import {
     getTypeLocalizationConfigs,
     getYamlNodePairAtPath,
     patchBeforeCommentFromParentMap,
     safeParseDocument,
-} from './utils';
+} from './utils.js';
 
 /**
  * Checks whether a model (modelToCheck) can be used in a place where another model (baselineModel) is expected.

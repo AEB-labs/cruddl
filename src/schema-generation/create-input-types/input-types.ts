@@ -1,14 +1,13 @@
-import { ThunkReadonlyArray } from 'graphql/type/definition';
-import { fromPairs, toPairs } from 'lodash';
-import { v4 as uuid } from 'uuid';
-import {
+import type { ThunkReadonlyArray } from 'graphql';
+import type {
     ChildEntityType,
     EntityExtensionType,
     Field,
     ObjectType,
     RootEntityType,
     ValueObjectType,
-} from '../../model';
+} from '../../model/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     AffectedFieldInfoQueryNode,
     CreateBillingEntityQueryNode,
@@ -18,21 +17,20 @@ import {
     ListItemQueryNode,
     LiteralQueryNode,
     PreExecQueryParms,
-    QueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants';
-import { getCreateInputTypeName, getValueObjectInputTypeName } from '../../schema/names';
-import { flatMap, PlainObject } from '../../utils/utils';
-import { FieldContext } from '../query-node-object-type';
-import { TypedInputObjectType } from '../typed-input-object-type';
+} from '../../query-tree/index.js';
+import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants.js';
+import { getCreateInputTypeName, getValueObjectInputTypeName } from '../../schema/names.js';
+import type { PlainObject } from '../../utils/utils.js';
+import type { FieldContext } from '../query-node-object-type/index.js';
+import { TypedInputObjectType } from '../typed-input-object-type.js';
 import {
     createBillingEntityCategoryNode,
     createBillingEntityQuantityNode,
-} from '../utils/billing-nodes';
-import { CreateInputField } from './input-fields';
-import { isRelationCreateField } from './relation-fields';
+} from '../utils/billing-nodes.js';
+import type { CreateInputField } from './input-fields.js';
+import { isRelationCreateField } from './relation-fields.js';
 
 export class CreateObjectInputType extends TypedInputObjectType<CreateInputField> {
     constructor(
@@ -51,12 +49,12 @@ export class CreateObjectInputType extends TypedInputObjectType<CreateInputField
         }
 
         const properties = [
-            ...flatMap(applicableFields, (field) =>
-                toPairs(field.getProperties(value[field.name], context)),
+            ...applicableFields.flatMap((field) =>
+                Object.entries(field.getProperties(value[field.name], context)),
             ),
-            ...toPairs(this.getAdditionalProperties(value, context)),
+            ...Object.entries(this.getAdditionalProperties(value, context)),
         ];
-        return fromPairs(properties);
+        return Object.fromEntries(properties);
     }
 
     protected getAdditionalProperties(value: PlainObject, context: FieldContext): PlainObject {
@@ -164,7 +162,7 @@ export class CreateRootEntityInputType extends CreateObjectInputType {
         const relationFields = this.fields
             .filter(isRelationCreateField)
             .filter((field) => field.appliesToMissingFields() || field.name in input);
-        return flatMap(relationFields, (field) =>
+        return relationFields.flatMap((field) =>
             field.getStatements(input[field.name], idNode, context),
         );
     }

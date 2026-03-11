@@ -1,12 +1,13 @@
-import { EnumValueDefinitionNode } from 'graphql';
-import { EnumTypeConfig, EnumValueConfig, TypeKind } from '../config';
-import { ValidationContext, ValidationMessage } from '../validation';
-import { ModelComponent } from '../validation/validation-context';
-import { EnumValueLocalization } from './i18n';
-import { Model } from './model';
-import { TypeBase } from './type-base';
-import memorize from 'memorize-decorator';
-import { WarningCode } from '../validation/suppress/message-codes';
+import type { EnumValueDefinitionNode } from 'graphql';
+import { memorize } from 'memorize-decorator';
+import type { EnumTypeConfig, EnumValueConfig } from '../config/index.js';
+import { TypeKind } from '../config/index.js';
+import type { ValidationContext } from '../validation/index.js';
+import { ValidationMessage } from '../validation/index.js';
+import type { ModelComponent } from '../validation/validation-context.js';
+import type { EnumValueLocalization } from './i18n.js';
+import type { Model } from './model.js';
+import { TypeBase } from './type-base.js';
 
 export class EnumType extends TypeBase {
     constructor(input: EnumTypeConfig, model: Model) {
@@ -27,6 +28,22 @@ export class EnumType extends TypeBase {
 
     validate(context: ValidationContext) {
         super.validate(context);
+
+        // validate unique enum values
+        const valueSet = new Set<string>();
+        for (const value of this.values) {
+            if (valueSet.has(value.value)) {
+                context.addMessage(
+                    ValidationMessage.error(
+                        `Enum value "${this.name}.${value.value}" can only be defined once.`,
+                        value.astNode,
+                    ),
+                );
+            } else {
+                valueSet.add(value.value);
+            }
+        }
+
         for (const value of this.values) {
             value.validate(context);
         }

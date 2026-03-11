@@ -1,15 +1,16 @@
-import { GraphQLEnumType, GraphQLString, resolveReadonlyArrayThunk } from 'graphql';
-import { ThunkReadonlyArray } from 'graphql/type/definition';
-import memorize from 'memorize-decorator';
-import { EnumType, Field, ObjectType, ScalarType, Type } from '../../model';
+import type { GraphQLEnumType, ThunkReadonlyArray } from 'graphql';
+import { GraphQLString, resolveReadonlyArrayThunk } from 'graphql';
+import { memorize } from 'memorize-decorator';
+import type { Field, ObjectType, Type } from '../../model/index.js';
+import { EnumType, ScalarType } from '../../model/index.js';
+import { FlexSearchComplexOperatorQueryNode } from '../../query-tree/flex-search.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     BinaryOperator,
     BinaryOperatorWithAnalyzer,
     LiteralQueryNode,
-    QueryNode,
     RuntimeErrorQueryNode,
-} from '../../query-tree';
-import { FlexSearchComplexOperatorQueryNode } from '../../query-tree/flex-search';
+} from '../../query-tree/index.js';
 import {
     INPUT_FIELD_CONTAINS_ALL_PREFIXES,
     INPUT_FIELD_CONTAINS_ALL_WORDS,
@@ -22,42 +23,42 @@ import {
     INPUT_FIELD_NOT_CONTAINS_ANY_PREFIX,
     INPUT_FIELD_NOT_CONTAINS_ANY_WORD,
     INPUT_FIELD_NOT_CONTAINS_PHRASE,
-} from '../../schema/constants';
-import { getFlexSearchFilterTypeName } from '../../schema/names';
-import { GraphQLI18nString } from '../../schema/scalars/string-map';
-import { flatMap } from '../../utils/utils';
-import { EnumTypeGenerator } from '../enum-type-generator';
+} from '../../schema/constants.js';
+import { getFlexSearchFilterTypeName } from '../../schema/names.js';
+import { GraphQLI18nString } from '../../schema/scalars/string-map.js';
+
+import type { EnumTypeGenerator } from '../enum-type-generator.js';
 import {
     ENUM_FILTER_FIELDS,
     FILTER_OPERATORS,
     NUMERIC_FILTER_FIELDS,
-} from '../filter-input-types/constants';
+} from '../filter-input-types/constants.js';
 import {
     binaryNotOpWithAnalyzer,
     binaryOpWithAnalyzer,
     noAnalyzerWasSuppliedError,
     not,
-} from '../utils/input-types';
+} from '../utils/input-types.js';
 import {
     FLEX_SEARCH_FILTER_FIELDS_BY_TYPE,
     FLEX_SEARCH_FILTER_OPERATORS,
     STRING_FLEX_SEARCH_FILTER_FIELDS,
     STRING_FLEX_SEARCH_FILTER_OPERATORS,
     STRING_TEXT_ANALYZER_FILTER_FIELDS,
-} from './constants';
+} from './constants.js';
+import type { FlexSearchFilterField } from './filter-fields.js';
 import {
     FlexSearchAndFilterField,
     FlexSearchEmptyListFilterField,
     FlexSearchEntityExtensionFilterField,
-    FlexSearchFilterField,
     FlexSearchI18nStringLocalizedFilterField,
     FlexSearchNestedObjectFilterField,
     FlexSearchOrFilterField,
     FlexSearchScalarOrEnumFieldFilterField,
     FlexSearchScalarOrEnumFilterField,
     I18nStringLocalizedFilterLanguageField,
-} from './filter-fields';
-import { FlexSearchFilterObjectType } from './filter-types';
+} from './filter-fields.js';
+import { FlexSearchFilterObjectType } from './filter-types.js';
 
 export class FlexSearchFilterTypeGenerator {
     constructor(private enumTypeGenerator: EnumTypeGenerator) {}
@@ -67,13 +68,13 @@ export class FlexSearchFilterTypeGenerator {
         const flexSearchFilterObjectType = this.generateFlexSearchFilterType(
             type,
             () => {
-                return flatMap(
-                    type.fields.filter(
+                return type.fields
+                    .filter(
                         (value) => value.isFlexSearchIndexed || value.isFlexSearchFulltextIndexed,
-                    ),
-                    (field: Field) =>
+                    )
+                    .flatMap((field: Field) =>
                         this.generateFieldFlexSearchFilterFields(field, isAggregation),
-                );
+                    );
             },
             isAggregation,
         );

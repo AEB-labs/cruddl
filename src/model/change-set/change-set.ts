@@ -1,7 +1,7 @@
-import { Location } from 'graphql';
-import { ProjectSource } from '../../project/source';
-import { MessageLocation } from '../validation/location';
-import { Pair } from 'yaml';
+import type { Location } from 'graphql';
+import type { Pair } from 'yaml';
+import type { ProjectSource } from '../../project/source.js';
+import { MessageLocation } from '../validation/location.js';
 
 export type Change = TextChange | AppendChange | YamlAddInMapChange;
 

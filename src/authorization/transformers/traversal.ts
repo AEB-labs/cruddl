@@ -1,20 +1,20 @@
-import { RelationSegment } from '../../model/implementation/collect-path';
+import type { RelationSegment } from '../../model/implementation/collect-path.js';
+import type { QueryNode, TraversalQueryNodeParams } from '../../query-tree/index.js';
 import {
     PERMISSION_DENIED_ERROR,
-    QueryNode,
     RuntimeErrorQueryNode,
     TraversalQueryNode,
-    TraversalQueryNodeParams,
     VariableQueryNode,
-} from '../../query-tree';
-import { AccessOperation, AuthContext } from '../auth-basics';
-import { PermissionResult } from '../permission-descriptors';
+} from '../../query-tree/index.js';
+import type { RequireAllProperties } from '../../utils/util-types.js';
+import { decapitalize } from '../../utils/utils.js';
+import type { AuthContext } from '../auth-basics.js';
+import { AccessOperation } from '../auth-basics.js';
 import {
     getPermissionDescriptorOfField,
     getPermissionDescriptorOfRootEntityType,
-} from '../permission-descriptors-in-model';
-import { decapitalize } from '../../utils/utils';
-import { RequireAllProperties } from '../../utils/util-types';
+} from '../permission-descriptors-in-model.js';
+import { PermissionResult } from '../permission-descriptors.js';
 
 export function transformTraversalQueryNode(
     node: TraversalQueryNode,

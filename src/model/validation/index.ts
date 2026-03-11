@@ -1,10 +1,10 @@
 export {
-    LocationLike,
     MessageLocation,
     SourcePosition,
     locationWithinStringArgument,
-} from './location';
-export { Severity, ValidationMessage, ValidationMessageOptions } from './message';
-export { QuickFix, QuickFixParams } from './quick-fix';
-export { ValidationResult } from './result';
-export { ValidationContext } from './validation-context';
+    type LocationLike,
+} from './location.js';
+export { Severity, ValidationMessage, type ValidationMessageOptions } from './message.js';
+export { QuickFix, type QuickFixParams } from './quick-fix.js';
+export { ValidationResult } from './result.js';
+export { ValidationContext } from './validation-context.js';

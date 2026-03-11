@@ -1,24 +1,25 @@
 import { GraphQLBoolean } from 'graphql';
-import { BillingEntityType } from '../../model';
+import type { BillingEntityType } from '../../model/index.js';
+import type { QueryNode } from '../../query-tree/index.js';
 import {
     ConditionalQueryNode,
     ConstBoolQueryNode,
     CountQueryNode,
     LiteralQueryNode,
     NullQueryNode,
-    QueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-} from '../../query-tree';
-import { objectEntries } from '../../utils/utils';
-import { createFieldPathNode } from '../field-path-node';
-import { equal } from './input-types';
+} from '../../query-tree/index.js';
+
+import { isDefined } from '../../utils/utils.js';
+import { createFieldPathNode } from '../field-path-node.js';
+import { equal } from './input-types.js';
 
 export function createBillingEntityCategoryNode(
     billingEntityConfig: BillingEntityType,
     entityNode: QueryNode,
 ) {
-    if (billingEntityConfig.category != undefined) {
+    if (isDefined(billingEntityConfig.category)) {
         return new LiteralQueryNode(billingEntityConfig.category);
     }
     if (
@@ -32,7 +33,7 @@ export function createBillingEntityCategoryNode(
     const valueNode = createFieldPathNode(billingEntityConfig.categoryMappingFieldPath, entityNode);
     const valueVar = new VariableQueryNode('categoryMappingSource');
     let node: QueryNode = new LiteralQueryNode(billingEntityConfig.categoryMapping.defaultValue);
-    for (const [key, value] of objectEntries(billingEntityConfig.categoryMapping.values)) {
+    for (const [key, value] of Object.entries(billingEntityConfig.categoryMapping.values)) {
         let keyNode: QueryNode = new LiteralQueryNode(key);
         if (billingEntityConfig.categoryMappingFieldPath.type.name === GraphQLBoolean.name) {
             if (key === 'true') {

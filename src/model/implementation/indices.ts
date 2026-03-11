@@ -1,12 +1,14 @@
-import { IndexDefinitionConfig, TypeKind } from '../config';
-import { RootEntityType } from './root-entity-type';
-import { ModelComponent, ValidationContext } from '../validation/validation-context';
-import { Field } from './field';
-import { Type } from './type';
-import { locationWithinStringArgument, ValidationMessage } from '../validation';
-import { DirectiveNode, ObjectValueNode, StringValueNode } from 'graphql';
-import { SCALAR_JSON } from '../../schema/constants';
-import memorize from 'memorize-decorator';
+import type { DirectiveNode, ObjectValueNode, StringValueNode } from 'graphql';
+import { memorize } from 'memorize-decorator';
+import { SCALAR_JSON } from '../../schema/constants.js';
+import { isDefined } from '../../utils/utils.js';
+import type { IndexDefinitionConfig } from '../config/index.js';
+import { TypeKind } from '../config/index.js';
+import { ValidationMessage } from '../validation/index.js';
+import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import type { Field } from './field.js';
+import type { RootEntityType } from './root-entity-type.js';
+import type { Type } from './type.js';
 
 export class IndexField implements ModelComponent {
     readonly path: ReadonlyArray<string>;
@@ -184,7 +186,7 @@ export class Index implements ModelComponent {
     ) {
         this.name = input.name;
         this.unique = input.unique || false;
-        this.sparse = input.sparse != undefined ? input.sparse : this.unique;
+        this.sparse = isDefined(input.sparse) ? input.sparse : this.unique;
         this.fields = (input.fields || []).map(
             (fieldPath, index) =>
                 new IndexField(

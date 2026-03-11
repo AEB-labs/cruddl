@@ -1,37 +1,35 @@
-import { Database } from 'arangojs';
-import { AnalyzerDescription, CreateAnalyzerOptions } from 'arangojs/analyzer';
-import {
+import { OffsetDateTime } from '@js-joda/core';
+import type { Database } from 'arangojs';
+import type { AnalyzerDescription, CreateAnalyzerOptions } from 'arangojs/analyzers';
+import type {
     ArangoSearchViewLink,
     ArangoSearchViewLinkOptions,
-    ArangoSearchViewProperties,
     ArangoSearchViewPropertiesOptions,
     BytesAccumConsolidationPolicy,
     CreateArangoSearchViewOptions,
     TierConsolidationPolicy,
     View,
     ViewProperties,
-} from 'arangojs/view';
-import deepEqual from 'deep-equal';
-import { isEqual } from 'lodash';
-import { Field, Model, RootEntityType } from '../../../model';
-import { IDENTITY_ANALYZER } from '../../../model/implementation/flex-search';
-import { OrderDirection } from '../../../model/implementation/order';
-import { ID_FIELD } from '../../../schema/constants';
-import { GraphQLI18nString } from '../../../schema/scalars/string-map';
-import { getCollectionNameForRootEntity } from '../arango-basics';
+} from 'arangojs/views';
+import { deepEqual } from 'fast-equals';
+import type { FieldPath } from '../../../model/implementation/field-path.js';
+import { IDENTITY_ANALYZER } from '../../../model/implementation/flex-search.js';
+import { OrderDirection } from '../../../model/implementation/order.js';
+import type { Field, Model, RootEntityType } from '../../../model/index.js';
+import { ID_FIELD } from '../../../schema/constants.js';
+import {
+    GraphQLOffsetDateTime,
+    TIMESTAMP_PROPERTY,
+} from '../../../schema/scalars/offset-date-time.js';
+import { GraphQLI18nString } from '../../../schema/scalars/string-map.js';
+import { getCollectionNameForRootEntity } from '../arango-basics.js';
+import type { SchemaMigration } from './migrations.js';
 import {
     CreateArangoSearchViewMigration,
     DropArangoSearchViewMigration,
     RecreateArangoSearchViewMigration,
-    SchemaMigration,
     UpdateArangoSearchViewMigration,
-} from './migrations';
-import {
-    GraphQLOffsetDateTime,
-    TIMESTAMP_PROPERTY,
-} from '../../../schema/scalars/offset-date-time';
-import { FieldPath } from '../../../model/implementation/field-path';
-import { OffsetDateTime } from '@js-joda/core';
+} from './migrations.js';
 
 export const FLEX_SEARCH_VIEW_PREFIX = 'flex_view_';
 
@@ -307,14 +305,14 @@ export function isEqualProperties(
     }
 
     return (
-        isEqual(definitionProperties.links, viewProperties.links) &&
-        isEqual(definitionProperties.primarySort, viewProperties.primarySort) &&
-        isEqual(definitionProperties.commitIntervalMsec, viewProperties.commitIntervalMsec) &&
-        isEqual(
+        deepEqual(definitionProperties.links, viewProperties.links) &&
+        deepEqual(definitionProperties.primarySort, viewProperties.primarySort) &&
+        deepEqual(definitionProperties.commitIntervalMsec, viewProperties.commitIntervalMsec) &&
+        deepEqual(
             definitionProperties.consolidationIntervalMsec,
             viewProperties.consolidationIntervalMsec,
         ) &&
-        isEqual(definitionProperties.cleanupIntervalStep, viewProperties.cleanupIntervalStep) &&
+        deepEqual(definitionProperties.cleanupIntervalStep, viewProperties.cleanupIntervalStep) &&
         consolidationPolicyMatches(
             definitionProperties.consolidationPolicy,
             viewProperties.consolidationPolicy,
@@ -342,7 +340,7 @@ function consolidationPolicyMatches(
         return true;
     }
 
-    return isEqual(expected, actual);
+    return deepEqual(expected, actual);
 }
 
 function isRecreateRequired(
@@ -354,7 +352,7 @@ function isRecreateRequired(
         return true;
     }
 
-    return !isEqual(definitionProperties.primarySort, viewProperties.primarySort);
+    return !deepEqual(definitionProperties.primarySort, viewProperties.primarySort);
 }
 
 export async function calculateRequiredArangoSearchViewUpdateOperations(

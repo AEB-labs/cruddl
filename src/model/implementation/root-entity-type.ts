@@ -1,5 +1,6 @@
-import { ArgumentNode, GraphQLID, GraphQLString } from 'graphql';
-import memorize from 'memorize-decorator';
+import type { ArgumentNode } from 'graphql';
+import { GraphQLID, GraphQLString } from 'graphql';
+import { memorize } from 'memorize-decorator';
 import {
     ACCESS_FIELD_DIRECTIVE,
     ACCESS_GROUP_FIELD,
@@ -7,36 +8,34 @@ import {
     FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
     FLEX_SEARCH_INDEXED_DIRECTIVE,
     ID_FIELD,
-    MODULES_DIRECTIVE,
     SCALAR_INT,
     SCALAR_STRING,
-} from '../../schema/constants';
-import { GraphQLInt53 } from '../../schema/scalars/int53';
-import { GraphQLLocalDate } from '../../schema/scalars/local-date';
-import { compact } from '../../utils/utils';
-import {
+} from '../../schema/constants.js';
+import { GraphQLInt53 } from '../../schema/scalars/int53.js';
+import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
+import { isDefined } from '../../utils/utils.js';
+import type {
     FlexSearchPerformanceParams,
     FlexSearchPrimarySortClauseConfig,
     IndexDefinitionConfig,
     PermissionsConfig,
     RootEntityTypeConfig,
-    TypeKind,
-} from '../config';
-import { QuickFix, ValidationContext, ValidationMessage } from '../validation';
-import { Field, SystemFieldConfig } from './field';
-import { FieldPath } from './field-path';
-import { FlexSearchPrimarySortClause } from './flex-search';
-import { Index } from './indices';
-import { Model } from './model';
-import { ObjectTypeBase } from './object-type-base';
-import { OrderDirection } from './order';
-import { PermissionProfile } from './permission-profile';
-import { Relation, RelationSide } from './relation';
-import { RolesSpecifier } from './roles-specifier';
-import { ScalarType } from './scalar-type';
-import { TimeToLiveType } from './time-to-live';
-import { EffectiveModuleSpecification } from './modules/effective-module-specification';
-import { WarningCode } from '../validation/suppress/message-codes';
+} from '../config/index.js';
+import { TypeKind } from '../config/index.js';
+import { ValidationContext, ValidationMessage } from '../validation/index.js';
+import { FieldPath } from './field-path.js';
+import type { Field, SystemFieldConfig } from './field.js';
+import { FlexSearchPrimarySortClause } from './flex-search.js';
+import { Index } from './indices.js';
+import type { Model } from './model.js';
+import { EffectiveModuleSpecification } from './modules/effective-module-specification.js';
+import { ObjectTypeBase } from './object-type-base.js';
+import { OrderDirection } from './order.js';
+import type { PermissionProfile } from './permission-profile.js';
+import type { Relation, RelationSide } from './relation.js';
+import { RolesSpecifier } from './roles-specifier.js';
+import type { ScalarType } from './scalar-type.js';
+import type { TimeToLiveType } from './time-to-live.js';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};
@@ -185,8 +184,8 @@ export class RootEntityType extends ObjectTypeBase {
     }
 
     get permissionProfile(): PermissionProfile | undefined {
-        if (this.permissions.permissionProfileName == undefined) {
-            if (this.permissions.roles != undefined) {
+        if (!isDefined(this.permissions.permissionProfileName)) {
+            if (isDefined(this.permissions.roles)) {
                 // if @roles is specified, this root entity explicitly does not have a permission profile
                 return undefined;
             }
@@ -201,7 +200,7 @@ export class RootEntityType extends ObjectTypeBase {
      * (as opposed to the relation only existing because a different type has a relation field to this root entity)
      */
     get explicitRelations(): ReadonlyArray<Relation> {
-        return compact(this.fields.map((field) => field.relation));
+        return this.fields.map((field) => field.relation).filter(isDefined);
     }
 
     /**
@@ -248,7 +247,7 @@ export class RootEntityType extends ObjectTypeBase {
     }
 
     private validateKeyField(context: ValidationContext) {
-        if (this.input.keyFieldName == undefined) {
+        if (!isDefined(this.input.keyFieldName)) {
             return;
         }
         const astNode = this.input.keyFieldASTNode || this.astNode;
@@ -294,7 +293,7 @@ export class RootEntityType extends ObjectTypeBase {
 
     private validatePermissions(context: ValidationContext) {
         const permissions = this.permissions;
-        if (permissions.permissionProfileName != undefined && permissions.roles != undefined) {
+        if (isDefined(permissions.permissionProfileName) && isDefined(permissions.roles)) {
             const message = `Permission profile and explicit role specifiers cannot be combined.`;
             context.addMessage(
                 ValidationMessage.error(
@@ -308,7 +307,7 @@ export class RootEntityType extends ObjectTypeBase {
         }
 
         if (
-            permissions.permissionProfileName != undefined &&
+            isDefined(permissions.permissionProfileName) &&
             !this.namespace.getPermissionProfile(permissions.permissionProfileName)
         ) {
             context.addMessage(

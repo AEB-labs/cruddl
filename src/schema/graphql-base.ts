@@ -1,17 +1,12 @@
-import {
-    DocumentNode,
-    EnumTypeDefinitionNode,
-    EnumValueDefinitionNode,
-    Kind,
-    TypeKind,
-} from 'graphql';
-import gql from 'graphql-tag';
+import type { DocumentNode, EnumTypeDefinitionNode, EnumValueDefinitionNode } from 'graphql';
+import { Kind } from 'graphql';
+import { gql } from 'graphql-tag';
+import type { MessageCodes } from '../model/validation/suppress/message-codes.js';
 import {
     COMPATIBILITY_ISSUE_CODES,
     INFO_CODES,
-    MessageCodes,
     WARNING_CODES,
-} from '../model/validation/suppress/message-codes';
+} from '../model/validation/suppress/message-codes.js';
 
 const directivesBase: DocumentNode = gql`
     "Declares a type for root-level objects with ids that are stored directly in the data base"

@@ -1,22 +1,24 @@
-import { globalContext } from '../../config/global';
-import { ProjectOptions } from '../../config/interfaces';
-import { DEFAULT_LOGGER_PROVIDER, Logger } from '../../config/logging';
-import { Model } from '../../model';
-import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS, QueryNode } from '../../query-tree';
-import { FlexSearchTokenization } from '../../query-tree/flex-search';
-import {
+import { DEFAULT_LOGGER_PROVIDER } from '../../config/console-logger.js';
+import { globalContext } from '../../config/global.js';
+import type { ProjectOptions } from '../../config/interfaces.js';
+import type { Logger } from '../../config/logging.js';
+import type { IDGenerator } from '../../execution/execution-options.js';
+import { DefaultClock, UUIDGenerator } from '../../execution/execution-options.js';
+import type { Model } from '../../model/index.js';
+import type { FlexSearchTokenization } from '../../query-tree/flex-search.js';
+import type { QueryNode } from '../../query-tree/index.js';
+import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query-tree/index.js';
+import { isDefined, isReadonlyArray } from '../../utils/utils.js';
+import type {
     DatabaseAdapter,
     ExecutionArgs,
     ExecutionResult,
     FlexSearchTokenizable,
-} from '../database-adapter';
-import { likePatternToRegExp } from '../like-helpers';
-import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics';
-import { JSCompoundQuery, JSExecutableQuery } from './js';
-import { getJSQuery } from './js-generator';
-import { v4 as uuid } from 'uuid';
-import { DefaultClock, IDGenerator, UUIDGenerator } from '../../execution/execution-options';
-import { isReadonlyArray } from '../../utils/utils';
+} from '../database-adapter.js';
+import { likePatternToRegExp } from '../like-helpers.js';
+import { getCollectionNameForRelation, getCollectionNameForRootEntity } from './inmemory-basics.js';
+import { getJSQuery } from './js-generator.js';
+import type { JSCompoundQuery, JSExecutableQuery } from './js.js';
 
 export class InMemoryDB {
     collections: { [name: string]: ReadonlyArray<any> } = {};
@@ -57,13 +59,13 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 lhs: string | boolean | number | null | undefined | any,
                 rhs: string | boolean | number | null | undefined | any,
             ): number {
-                if (lhs == undefined) {
-                    if (rhs == undefined) {
+                if (!isDefined(lhs)) {
+                    if (!isDefined(rhs)) {
                         return 0;
                     }
                     return -1;
                 }
-                if (rhs == undefined) {
+                if (!isDefined(rhs)) {
                     return 1;
                 }
 

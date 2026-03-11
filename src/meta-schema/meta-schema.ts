@@ -1,25 +1,30 @@
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { IResolvers } from '@graphql-tools/utils';
-import { GraphQLResolveInfo, GraphQLSchema } from 'graphql';
-import gql from 'graphql-tag';
-import { AccessOperation } from '../authorization/auth-basics';
-import { PermissionResult } from '../authorization/permission-descriptors';
+import type { IResolvers } from '@graphql-tools/utils';
+import type { GraphQLResolveInfo, GraphQLSchema } from 'graphql';
+import { gql } from 'graphql-tag';
+import { AccessOperation } from '../authorization/auth-basics.js';
 import {
     getPermissionDescriptorOfField,
     getPermissionDescriptorOfRootEntityType,
-} from '../authorization/permission-descriptors-in-model';
-import { CRUDDL_VERSION } from '../cruddl-version';
-import { ExecutionOptionsCallbackArgs } from '../execution/execution-options';
-import { EnumValue, Field, RootEntityType, Type, TypeKind } from '../model';
-import { OrderDirection } from '../model/implementation/order';
-import { Project } from '../project/project';
-import { GraphQLI18nString } from '../schema/scalars/string-map';
-import { compact, flatMap } from '../utils/utils';
-import { I18N_GENERIC, I18N_LOCALE } from './constants';
+} from '../authorization/permission-descriptors-in-model.js';
+import { PermissionResult } from '../authorization/permission-descriptors.js';
+import { CRUDDL_VERSION } from '../cruddl-version.js';
+import type { ExecutionOptionsCallbackArgs } from '../execution/execution-options.js';
+import { OrderDirection } from '../model/implementation/order.js';
+import type { EnumValue, RootEntityType, Type } from '../model/index.js';
+import { Field, TypeKind } from '../model/index.js';
+import type { Project } from '../project/project.js';
+import { GraphQLI18nString } from '../schema/scalars/string-map.js';
+import { isDefined } from '../utils/utils.js';
+import { I18N_GENERIC, I18N_LOCALE } from './constants.js';
 
 const resolutionOrderDescription = JSON.stringify(
     'The order in which languages and other localization providers are queried for a localization. You can specify languages as defined in the schema as well as the following special identifiers:\n\n- `_LOCALE`: The language defined by the GraphQL request (might be a list of languages, e.g. ["de_DE", "de", "en"])\n- `_GENERIC`: is auto-generated localization from field and type names (e. G. `orderDate` => `Order date`)\n\nThe default `resolutionOrder` is `["_LOCALE", "_GENERIC"]` (if not specified).',
 );
+
+interface Context {
+    readonly locale: string;
+}
 
 // noinspection GraphQLUnresolvedReference
 const typeDefs = gql`
@@ -575,7 +580,7 @@ const typeDefs = gql`
  */
 export function getMetaSchema(project: Project): GraphQLSchema {
     const model = project.getModel();
-    const resolvers: IResolvers<{}, { locale: string }> = {
+    const resolvers: IResolvers<{}, Context> = {
         Query: {
             types: () => model.types,
             type: (_, { name }) => model.getType(name),
@@ -683,11 +688,9 @@ export function getMetaSchema(project: Project): GraphQLSchema {
             resolutionOrder = [I18N_LOCALE, I18N_GENERIC];
         }
         // replace _LOCALE
-        return compact(
-            flatMap(resolutionOrder, (l) =>
-                l === I18N_LOCALE ? getLocaleFromContext(contextArgs) : [l],
-            ),
-        );
+        return resolutionOrder
+            .flatMap((l) => (l === I18N_LOCALE ? getLocaleFromContext(contextArgs) : [l]))
+            .filter(isDefined);
     }
 
     function localizeType(
@@ -836,7 +839,7 @@ export function getMetaSchema(project: Project): GraphQLSchema {
         };
     }
 
-    return makeExecutableSchema({
+    return makeExecutableSchema<Context>({
         typeDefs,
         resolvers,
     });

@@ -1,7 +1,9 @@
-'use strict';
-module.exports = validate20;
-module.exports.default = validate20;
-const schema22 = {
+import * as __func2Module from 'ajv/dist/runtime/ucs2length';
+const func2 = __func2Module?.default?.default ?? __func2Module?.default ?? __func2Module;
+('use strict');
+export const validate = validate10;
+export default validate10;
+const schema11 = {
     $schema: 'http://json-schema.org/draft-07/schema#',
     description: 'Sidecar file for schema definitions',
     type: 'object',
@@ -206,12 +208,12 @@ const schema22 = {
 const pattern0 = new RegExp('^[a-zA-Z0-9]+$', 'u');
 const pattern4 = new RegExp('^[a-zA-Z0-9_-]+$', 'u');
 const pattern14 = new RegExp('^([a-zA-Z0-9_-]|\\.)+$', 'u');
-const schema23 = {
+const schema12 = {
     type: 'object',
     additionalProperties: false,
     properties: { permissions: { type: 'array', items: { $ref: '#/definitions/Permission' } } },
 };
-const schema24 = {
+const schema13 = {
     type: 'object',
     required: ['roles', 'access'],
     additionalProperties: false,
@@ -239,7 +241,7 @@ const schema24 = {
     },
 };
 const pattern2 = new RegExp('.+', 'u');
-const schema25 = {
+const schema14 = {
     type: 'object',
     required: ['field'],
     properties: { field: { type: 'string' } },
@@ -249,19 +251,18 @@ const schema25 = {
         { $ref: '#/definitions/PermissionRestrictionWithClaim' },
     ],
 };
-const schema26 = { type: 'object', required: ['value'], properties: { value: {} } };
-const schema27 = {
+const schema15 = { type: 'object', required: ['value'], properties: { value: {} } };
+const schema16 = {
     type: 'object',
     required: ['valueTemplate'],
     properties: { valueTemplate: { type: 'string' } },
 };
-const schema28 = {
+const schema17 = {
     type: 'object',
     required: ['claim'],
     properties: { claim: { type: 'string', minLength: 1 } },
 };
-const func4 = require('ajv/dist/runtime/ucs2length').default;
-function validate23(
+function validate13(
     data,
     { instancePath = '', parentData, parentDataProperty, rootData = data } = {},
 ) {
@@ -386,7 +387,7 @@ function validate23(
             if (data.claim !== undefined) {
                 let data1 = data.claim;
                 if (typeof data1 === 'string') {
-                    if (func4(data1) < 1) {
+                    if (func2(data1) < 1) {
                         const err6 = {
                             instancePath: instancePath + '/claim',
                             schemaPath:
@@ -517,10 +518,10 @@ function validate23(
         }
         errors++;
     }
-    validate23.errors = vErrors;
+    validate13.errors = vErrors;
     return errors === 0;
 }
-function validate22(
+function validate12(
     data,
     { instancePath = '', parentData, parentDataProperty, rootData = data } = {},
 ) {
@@ -684,7 +685,7 @@ function validate22(
                     instancePath: instancePath + '/access',
                     schemaPath: '#/properties/access/oneOf/0/enum',
                     keyword: 'enum',
-                    params: { allowedValues: schema24.properties.access.oneOf[0].enum },
+                    params: { allowedValues: schema13.properties.access.oneOf[0].enum },
                     message: 'must be equal to one of the allowed values',
                 };
                 if (vErrors === null) {
@@ -748,7 +749,7 @@ function validate22(
                             schemaPath: '#/properties/access/oneOf/1/items/enum',
                             keyword: 'enum',
                             params: {
-                                allowedValues: schema24.properties.access.oneOf[1].items.enum,
+                                allowedValues: schema13.properties.access.oneOf[1].items.enum,
                             },
                             message: 'must be equal to one of the allowed values',
                         };
@@ -885,7 +886,7 @@ function validate22(
                 const len3 = data6.length;
                 for (let i3 = 0; i3 < len3; i3++) {
                     if (
-                        !validate23(data6[i3], {
+                        !validate13(data6[i3], {
                             instancePath: instancePath + '/restrictions/' + i3,
                             parentData: data6,
                             parentDataProperty: i3,
@@ -894,8 +895,8 @@ function validate22(
                     ) {
                         vErrors =
                             vErrors === null
-                                ? validate23.errors
-                                : vErrors.concat(validate23.errors);
+                                ? validate13.errors
+                                : vErrors.concat(validate13.errors);
                         errors = vErrors.length;
                     }
                 }
@@ -930,10 +931,10 @@ function validate22(
         }
         errors++;
     }
-    validate22.errors = vErrors;
+    validate12.errors = vErrors;
     return errors === 0;
 }
-function validate21(
+function validate11(
     data,
     { instancePath = '', parentData, parentDataProperty, rootData = data } = {},
 ) {
@@ -963,7 +964,7 @@ function validate21(
                 const len0 = data0.length;
                 for (let i0 = 0; i0 < len0; i0++) {
                     if (
-                        !validate22(data0[i0], {
+                        !validate12(data0[i0], {
                             instancePath: instancePath + '/permissions/' + i0,
                             parentData: data0,
                             parentDataProperty: i0,
@@ -972,8 +973,8 @@ function validate21(
                     ) {
                         vErrors =
                             vErrors === null
-                                ? validate22.errors
-                                : vErrors.concat(validate22.errors);
+                                ? validate12.errors
+                                : vErrors.concat(validate12.errors);
                         errors = vErrors.length;
                     }
                 }
@@ -1008,10 +1009,10 @@ function validate21(
         }
         errors++;
     }
-    validate21.errors = vErrors;
+    validate11.errors = vErrors;
     return errors === 0;
 }
-const schema29 = {
+const schema18 = {
     type: 'object',
     additionalProperties: false,
     properties: {
@@ -1029,13 +1030,13 @@ const schema29 = {
         },
     },
 };
-const schema31 = {
+const schema20 = {
     type: 'object',
     additionalProperties: false,
     properties: { label: { type: 'string' }, hint: { type: 'string' } },
 };
 const pattern6 = new RegExp('^[a-zA-Z0-9_]+$', 'u');
-const schema30 = {
+const schema19 = {
     type: 'object',
     additionalProperties: false,
     properties: {
@@ -1060,12 +1061,12 @@ const schema30 = {
         hint: { type: 'string' },
     },
 };
-const schema32 = {
+const schema21 = {
     type: 'object',
     additionalProperties: false,
     properties: { label: { type: 'string' }, hint: { type: 'string' } },
 };
-function validate28(
+function validate18(
     data,
     { instancePath = '', parentData, parentDataProperty, rootData = data } = {},
 ) {
@@ -1493,10 +1494,10 @@ function validate28(
         }
         errors++;
     }
-    validate28.errors = vErrors;
+    validate18.errors = vErrors;
     return errors === 0;
 }
-function validate27(
+function validate17(
     data,
     { instancePath = '', parentData, parentDataProperty, rootData = data } = {},
 ) {
@@ -1526,7 +1527,7 @@ function validate27(
                 for (const key1 in data0) {
                     if (pattern6.test(key1)) {
                         if (
-                            !validate28(data0[key1], {
+                            !validate18(data0[key1], {
                                 instancePath:
                                     instancePath +
                                     '/types/' +
@@ -1538,8 +1539,8 @@ function validate27(
                         ) {
                             vErrors =
                                 vErrors === null
-                                    ? validate28.errors
-                                    : vErrors.concat(validate28.errors);
+                                    ? validate18.errors
+                                    : vErrors.concat(validate18.errors);
                             errors = vErrors.length;
                         }
                     }
@@ -1740,10 +1741,10 @@ function validate27(
         }
         errors++;
     }
-    validate27.errors = vErrors;
+    validate17.errors = vErrors;
     return errors === 0;
 }
-function validate20(
+function validate10(
     data,
     { instancePath = '', parentData, parentDataProperty, rootData = data } = {},
 ) {
@@ -1813,7 +1814,7 @@ function validate20(
                 for (const key2 in data0) {
                     if (pattern0.test(key2)) {
                         if (
-                            !validate21(data0[key2], {
+                            !validate11(data0[key2], {
                                 instancePath:
                                     instancePath +
                                     '/permissionProfiles/' +
@@ -1825,8 +1826,8 @@ function validate20(
                         ) {
                             vErrors =
                                 vErrors === null
-                                    ? validate21.errors
-                                    : vErrors.concat(validate21.errors);
+                                    ? validate11.errors
+                                    : vErrors.concat(validate11.errors);
                             errors = vErrors.length;
                         }
                     }
@@ -1870,7 +1871,7 @@ function validate20(
                 for (const key4 in data2) {
                     if (pattern4.test(key4)) {
                         if (
-                            !validate27(data2[key4], {
+                            !validate17(data2[key4], {
                                 instancePath:
                                     instancePath +
                                     '/i18n/' +
@@ -1882,8 +1883,8 @@ function validate20(
                         ) {
                             vErrors =
                                 vErrors === null
-                                    ? validate27.errors
-                                    : vErrors.concat(validate27.errors);
+                                    ? validate17.errors
+                                    : vErrors.concat(validate17.errors);
                             errors = vErrors.length;
                         }
                     }
@@ -2738,6 +2739,6 @@ function validate20(
         }
         errors++;
     }
-    validate20.errors = vErrors;
+    validate10.errors = vErrors;
     return errors === 0;
 }

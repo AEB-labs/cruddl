@@ -1,10 +1,11 @@
-import { ModuleConfig } from '../../config/module';
-import { MessageLocation, ValidationMessage } from '../../validation';
-import { ModelComponent, ValidationContext } from '../../validation/validation-context';
+import type { ModuleConfig } from '../../config/module.js';
+import type { MessageLocation } from '../../validation/index.js';
+import { ValidationMessage } from '../../validation/index.js';
+import type { ModelComponent, ValidationContext } from '../../validation/validation-context.js';
 import {
-    MODULE_IDENTIFIER_PATTERN,
     ALLOWD_MODULE_IDENTIFIER_CHARACTERS_DESCRIPTION,
-} from './patterns';
+    MODULE_IDENTIFIER_PATTERN,
+} from './patterns.js';
 
 /**
  * A module that can be assigned to types and fields

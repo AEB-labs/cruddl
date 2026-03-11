@@ -1,8 +1,9 @@
-import { GraphQLFieldConfigArgumentMap, GraphQLID, GraphQLInputType, GraphQLType } from 'graphql';
-import memorize from 'memorize-decorator';
-import { RootEntityType, ScalarType, Type } from '../model';
-import { ID_FIELD } from '../schema/constants';
-import { EnumTypeGenerator } from './enum-type-generator';
+import type { GraphQLFieldConfigArgumentMap, GraphQLInputType } from 'graphql';
+import { GraphQLID } from 'graphql';
+import { memorize } from 'memorize-decorator';
+import type { RootEntityType, Type } from '../model/index.js';
+import { ID_FIELD } from '../schema/constants.js';
+import type { EnumTypeGenerator } from './enum-type-generator.js';
 
 export class UniqueFieldArgumentsGenerator {
     constructor(private readonly enumTypeGenerator: EnumTypeGenerator) {}

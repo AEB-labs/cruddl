@@ -1,7 +1,7 @@
 import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
-import { flatMap } from 'lodash';
-import memorize from 'memorize-decorator';
-import { Namespace, RootEntityType } from '../model';
+import { memorize } from 'memorize-decorator';
+import type { Namespace, RootEntityType } from '../model/index.js';
+import type { QueryNode } from '../query-tree/index.js';
 import {
     AffectedFieldInfoQueryNode,
     BinaryOperationQueryNode,
@@ -19,7 +19,6 @@ import {
     NullQueryNode,
     ObjectQueryNode,
     PreExecQueryParms,
-    QueryNode,
     RootEntityIDQueryNode,
     TransformListQueryNode,
     UnknownValueQueryNode,
@@ -27,8 +26,13 @@ import {
     VariableAssignmentQueryNode,
     VariableQueryNode,
     WithPreExecutionQueryNode,
-} from '../query-tree';
-import { ID_FIELD, MUTATION_INPUT_ARG, MUTATION_TYPE, REVISION_FIELD } from '../schema/constants';
+} from '../query-tree/index.js';
+import {
+    ID_FIELD,
+    MUTATION_INPUT_ARG,
+    MUTATION_TYPE,
+    REVISION_FIELD,
+} from '../schema/constants.js';
 import {
     getCreateEntitiesFieldName,
     getCreateEntityFieldName,
@@ -38,37 +42,43 @@ import {
     getUpdateAllEntitiesFieldName,
     getUpdateEntitiesFieldName,
     getUpdateEntityFieldName,
-} from '../schema/names';
-import { PlainObject, compact, decapitalize } from '../utils/utils';
-import { BillingTypeGenerator } from './billing-type-generator';
-import { CreateInputTypeGenerator, CreateRootEntityInputType } from './create-input-types';
-import { generateDeleteAllQueryNode } from './delete-all-generator';
-import { createGraphQLError } from './graphql-errors';
-import { ListAugmentation } from './list-augmentation';
-import { OutputTypeGenerator } from './output-type-generator';
-import {
+} from '../schema/names.js';
+import type { PlainObject } from '../utils/utils.js';
+import { decapitalize, isDefined } from '../utils/utils.js';
+import type { BillingTypeGenerator } from './billing-type-generator.js';
+import type {
+    CreateInputTypeGenerator,
+    CreateRootEntityInputType,
+} from './create-input-types/index.js';
+import { generateDeleteAllQueryNode } from './delete-all-generator.js';
+import { createGraphQLError } from './graphql-errors.js';
+import type { ListAugmentation } from './list-augmentation.js';
+import { LimitTypeCheckType } from './order-by-and-pagination-augmentation.js';
+import type { OutputTypeGenerator } from './output-type-generator.js';
+import type {
     FieldContext,
     QueryNodeField,
+    QueryNodeObjectType,
+} from './query-node-object-type/index.js';
+import {
     QueryNodeListType,
     QueryNodeNonNullType,
-    QueryNodeObjectType,
     makeNonNullableList,
-} from './query-node-object-type';
-import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator';
-import {
+} from './query-node-object-type/index.js';
+import type { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator.js';
+import type {
     UpdateInputFieldContext,
     UpdateInputTypeGenerator,
     UpdateRootEntityInputType,
-} from './update-input-types';
+} from './update-input-types/index.js';
 import {
     createBillingEntityCategoryNode,
     createBillingEntityQuantityNode,
-} from './utils/billing-nodes';
-import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field';
-import { getFilterNode } from './utils/filtering';
-import { mapToIDNodesUnoptimized } from './utils/map';
-import { getPreEntityRemovalStatements } from './utils/relations';
-import { LimitTypeCheckType } from './order-by-and-pagination-augmentation';
+} from './utils/billing-nodes.js';
+import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field.js';
+import { getFilterNode } from './utils/filtering.js';
+import { mapToIDNodesUnoptimized } from './utils/map.js';
+import { getPreEntityRemovalStatements } from './utils/relations.js';
 
 export class MutationTypeGenerator {
     constructor(
@@ -92,7 +102,7 @@ export class MutationTypeGenerator {
                 }),
             );
 
-        const rootEntityFields = flatMap(namespace.rootEntityTypes, (type) =>
+        const rootEntityFields = namespace.rootEntityTypes.flatMap((type) =>
             this.generateFields(type),
         );
         const namespaceDesc = namespace.isRoot
@@ -109,7 +119,7 @@ export class MutationTypeGenerator {
     private generateFields(rootEntityType: RootEntityType): ReadonlyArray<QueryNodeField> {
         const canCreatePluralFields = rootEntityType.name !== rootEntityType.pluralName;
 
-        return compact([
+        return [
             this.generateCreateField(rootEntityType),
             canCreatePluralFields ? this.generateCreateManyField(rootEntityType) : undefined,
             this.generateUpdateField(rootEntityType),
@@ -119,7 +129,7 @@ export class MutationTypeGenerator {
             canCreatePluralFields ? this.generateDeleteManyField(rootEntityType) : undefined,
             this.generateDeleteAllField(rootEntityType),
             this.billingTypeGenerator.getMutationField(rootEntityType),
-        ]);
+        ].filter(isDefined);
     }
 
     private generateCreateField(rootEntityType: RootEntityType): QueryNodeField {
@@ -259,7 +269,7 @@ export class MutationTypeGenerator {
             ids.add(inputID);
         }
 
-        const statements = flatMap(inputs, (input) =>
+        const statements = inputs.flatMap((input) =>
             this.getUpdateStatements(rootEntityType, input, inputType, fieldContext),
         );
         const resultNode = new ListQueryNode(

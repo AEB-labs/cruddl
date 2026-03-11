@@ -2,15 +2,6 @@ export type PlainObject = { [key: string]: AnyValue };
 export type AnyValue = unknown;
 export type Constructor<T> = { new (...args: ReadonlyArray<any>): T };
 
-export function flatMap<TOut, TIn>(
-    arr: ReadonlyArray<TIn>,
-    f: (t: TIn) => ReadonlyArray<TOut>,
-): ReadonlyArray<TOut> {
-    return arr.reduce((ys: any, x: any) => {
-        return ys.concat(f.call(null, x));
-    }, []);
-}
-
 /**
  * Maps an array and returns the first defined result. Undefined elements in array will be ignored.
  * @param {ReadonlyArray<TIn>} array.
@@ -22,21 +13,15 @@ export function mapFirstDefined<TIn, TOut>(
     fn: (t: TIn) => TOut,
 ) {
     for (const i of array) {
-        if (i == undefined) {
+        if (!isDefined(i)) {
             continue;
         }
         const out = fn(i);
-        if (out != undefined) {
+        if (isDefined(out)) {
             return out;
         }
     }
     return undefined;
-}
-
-export function flatten<T>(arr: ReadonlyArray<ReadonlyArray<T>>): ReadonlyArray<T> {
-    return arr.reduce((ys: any, x: any) => {
-        return ys.concat(x);
-    }, []);
 }
 
 /**
@@ -87,6 +72,29 @@ export function groupArray<TItem, TKey>(
     return map;
 }
 
+/**
+ * Returns a deduplicated array based on a key function, preserving the first occurrence of each unique key
+ * @param items the input items
+ * @param keyFn a function that computes the key value of an item
+ * @returns {ReadonlyArray<TItem>} an array containing only the first occurrence of each unique key
+ */
+export function uniqBy<TItem, TKey>(
+    items: ReadonlyArray<TItem>,
+    keyFn: (item: TItem) => TKey,
+): ReadonlyArray<TItem> {
+    const seen = new Set<TKey>();
+    const result: TItem[] = [];
+    for (const item of items) {
+        const key = keyFn(item);
+        if (seen.has(key)) {
+            continue;
+        }
+        seen.add(key);
+        result.push(item);
+    }
+    return result;
+}
+
 export const INDENTATION = '  ';
 
 /**
@@ -127,27 +135,11 @@ export function takeRandomSample<T>(arr: ReadonlyArray<T>): T | undefined {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-export function arrayToObject<TValue>(
-    array: ReadonlyArray<TValue>,
-    keyFn: (item: TValue, index: number) => string,
-): { [name: string]: TValue } {
-    const result: { [name: string]: TValue } = {};
-    for (let i = 0; i < array.length; i++) {
-        result[keyFn(array[i], i)] = array[i];
-    }
-    return result;
-}
-
-export function compact<T>(arr: ReadonlyArray<T | undefined | null>): ReadonlyArray<T> {
-    return arr.filter((a) => a != undefined) as ReadonlyArray<T>;
-}
-
-export function objectValues<T>(obj: { [name: string]: T }): ReadonlyArray<T> {
-    return Object.keys(obj).map((i) => obj[i]);
-}
-
-export function objectEntries<T>(obj: { [name: string]: T }): [string, T][] {
-    return Object.keys(obj).map((k): [string, T] => [k, obj[k]]);
+/**
+ * Checks whether a value is neither null nor undefined
+ */
+export function isDefined<T>(value?: T | undefined | null): value is T {
+    return value !== null && value !== undefined;
 }
 
 export function mapValues<TIn, TOut>(
