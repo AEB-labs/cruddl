@@ -1,4 +1,4 @@
-import type { ArangoSearchViewProperties, TierConsolidationPolicy } from 'arangojs/view.js';
+import type { ArangoSearchViewProperties, TierConsolidationPolicy } from 'arangojs/views';
 import { deepEqual } from 'fast-equals';
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
