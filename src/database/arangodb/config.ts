@@ -1,10 +1,9 @@
-import type { Database } from 'arangojs';
-import type { CreateCollectionOptions } from 'arangojs/collection.js';
-import type { Config } from 'arangojs/connection.js';
+import { Database } from 'arangojs';
+import type { CreateCollectionOptions } from 'arangojs/collections';
+import type { ConfigOptions } from 'arangojs/configuration';
 import { DEFAULT_LOGGER_PROVIDER } from '../../config/console-logger.js';
 import type { ProjectOptions } from '../../config/interfaces.js';
 import type { Logger } from '../../config/logging.js';
-import { CustomDatabase } from './arangojs-instrumentation/custom-database.js';
 import type { ArangoSearchConfiguration } from './schema-migration/arango-search-helpers.js';
 
 export declare type KeyGeneratorType = 'traditional' | 'autoincrement' | 'uuid' | 'padded';
@@ -16,7 +15,7 @@ export interface ArangoDBConfig {
     /**
      * Additional configuration options that will be passed to the ArangoJS Database constructor
      */
-    readonly arangoJSConfig?: Partial<Config>;
+    readonly arangoJSConfig?: Partial<ConfigOptions>;
 
     readonly url: string;
     readonly user?: string;
@@ -77,17 +76,17 @@ export interface ArangoDBConfig {
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {
-    const db = new CustomDatabase({
-        ...(config.arangoJSConfig ? config.arangoJSConfig : {}),
+    const arangoJSConfig = config.arangoJSConfig ?? {};
+    const db = new Database({
+        ...arangoJSConfig,
         url: config.url,
         databaseName: config.databaseName,
+        auth: config.user
+            ? { username: config.user, password: config.password }
+            : config.authToken
+              ? { token: config.authToken }
+              : arangoJSConfig.auth,
     });
-    if (config.user) {
-        db.useBasicAuth(config.user, config.password);
-    }
-    if (config.authToken) {
-        db.useBearerAuth(config.authToken);
-    }
     return db;
 }
 

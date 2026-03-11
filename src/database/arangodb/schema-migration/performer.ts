@@ -1,5 +1,5 @@
 import type { Database } from 'arangojs';
-import { CollectionType } from 'arangojs/collection.js';
+import { CollectionType } from 'arangojs/collections';
 import type { ArangoDBConfig } from '../config.js';
 import { initDatabase } from '../config.js';
 import {

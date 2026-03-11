@@ -1,4 +1,4 @@
-import type { ArangoSearchViewProperties } from 'arangojs/view.js';
+import type { ArangoSearchViewProperties } from 'arangojs/views';
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
 import {

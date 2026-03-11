@@ -15,6 +15,8 @@ import { createFastApp } from './fast-server.js';
 const port = 3000;
 const databaseName = 'cruddl';
 const databaseURL = 'http://root:@localhost:8529';
+const databaseUser = 'root';
+const databasePassword = '';
 
 export async function start() {
     let db;
@@ -24,6 +26,8 @@ export async function start() {
         db = new ArangoDBAdapter({
             databaseName,
             url: databaseURL,
+            user: databaseUser,
+            password: databasePassword,
             doNonMandatoryMigrations: true,
             createIndicesInBackground: true,
         });
