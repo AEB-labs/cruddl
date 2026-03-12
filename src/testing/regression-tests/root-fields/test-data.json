@@ -30,11 +30,27 @@
             "children": [
               {
                 "name": "r2c1g1",
-                "payload": "@{randomString(10000)}"
+                "payload": "@{randomString(10000)}",
+                "children": [
+                  {
+                    "name": "r2c1g1g1"
+                  },
+                  {
+                    "name": "r2c1g1g2"
+                  }
+                ]
               },
               {
                 "name": "r2c1g2",
-                "payload": "@{randomString(10000)}"
+                "payload": "@{randomString(10000)}",
+                "children": [
+                  {
+                    "name": "r2c1g2g1"
+                  },
+                  {
+                    "name": "r2c1g2g2"
+                  }
+                ]
               }
             ],
             "extension": {

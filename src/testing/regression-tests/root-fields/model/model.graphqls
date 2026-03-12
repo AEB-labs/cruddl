@@ -25,6 +25,13 @@ type Grandchild @childEntity {
     payload: String
     parent: Child @parent
     root: Root @root
+    children: [GreatGrandchild]
+}
+
+type GreatGrandchild @childEntity {
+    name: String
+    parent: Grandchild @parent
+    root: Root @root
 }
 
 type ExtensionGrandchild @childEntity {
