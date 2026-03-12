@@ -24,10 +24,26 @@
             "name": "r2c1",
             "children": [
               {
-                "name": "r2c1g1"
+                "name": "r2c1g1",
+                "children": [
+                  {
+                    "name": "r2c1g1g1"
+                  },
+                  {
+                    "name": "r2c1g1g2"
+                  }
+                ]
               },
               {
-                "name": "r2c1g2"
+                "name": "r2c1g2",
+                "children": [
+                  {
+                    "name": "r2c1g2g1"
+                  },
+                  {
+                    "name": "r2c1g2g2"
+                  }
+                ]
               }
             ],
             "extension": {
