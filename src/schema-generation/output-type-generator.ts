@@ -242,6 +242,23 @@ export class OutputTypeGenerator {
         }
     }
 
+    private createMetaField(field: Field): QueryNodeField {
+        if (!field.type.isObjectType) {
+            throw new Error(`Can only create meta field for object types`);
+        }
+
+        const metaType = this.metaTypeGenerator.generate();
+        const plainField: QueryNodeField = {
+            name: getMetaFieldName(field.name),
+            type: new QueryNodeNonNullType(metaType),
+            skipNullCheck: true, // meta fields should never be null
+            description: field.description,
+            isPure: true,
+            resolve: (sourceNode, args, info) => this.resolveField(field, sourceNode, info),
+        };
+        return this.filterAugmentation.augment(plainField, field.type);
+    }
+
     private resolveField(
         field: Field,
         sourceNode: QueryNode,
@@ -258,22 +275,5 @@ export class OutputTypeGenerator {
             skipNullFallbackForEntityExtensions: true,
             captureRootEntitiesOnCollectFields: rootHelperResult.captureRootEntitiesOnCollectFields,
         });
-    }
-
-    private createMetaField(field: Field): QueryNodeField {
-        if (!field.type.isObjectType) {
-            throw new Error(`Can only create meta field for object types`);
-        }
-
-        const metaType = this.metaTypeGenerator.generate();
-        const plainField: QueryNodeField = {
-            name: getMetaFieldName(field.name),
-            type: new QueryNodeNonNullType(metaType),
-            skipNullCheck: true, // meta fields should never be null
-            description: field.description,
-            isPure: true,
-            resolve: (sourceNode) => createFieldNode(field, sourceNode),
-        };
-        return this.filterAugmentation.augment(plainField, field.type);
     }
 }

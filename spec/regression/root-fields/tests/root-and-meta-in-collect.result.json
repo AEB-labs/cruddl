@@ -1,0 +1,84 @@
+{
+  "createEdge": {
+    "data": {
+      "updateRoot2": {
+        "name": null
+      }
+    }
+  },
+  "q": {
+    "data": {
+      "allRoot2s": [
+        {
+          "name": null,
+          "rootGrandchildren": [
+            {
+              "name": "r1c1g1",
+              "root": {
+                "name": "r1"
+              },
+              "children": [],
+              "_childrenMeta": {
+                "count": 0
+              }
+            },
+            {
+              "name": "r2c1g1",
+              "root": {
+                "name": "r2"
+              },
+              "children": [
+                {
+                  "name": "r2c1g1g1"
+                },
+                {
+                  "name": "r2c1g1g2"
+                }
+              ],
+              "_childrenMeta": {
+                "count": 2
+              }
+            },
+            {
+              "name": "r2c1g2",
+              "root": {
+                "name": "r2"
+              },
+              "children": [
+                {
+                  "name": "r2c1g2g1"
+                },
+                {
+                  "name": "r2c1g2g2"
+                }
+              ],
+              "_childrenMeta": {
+                "count": 2
+              }
+            },
+            {
+              "name": "r2c2g1",
+              "root": {
+                "name": "r2"
+              },
+              "children": [],
+              "_childrenMeta": {
+                "count": 0
+              }
+            },
+            {
+              "name": "r2c2g2",
+              "root": {
+                "name": "r2"
+              },
+              "children": [],
+              "_childrenMeta": {
+                "count": 0
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
