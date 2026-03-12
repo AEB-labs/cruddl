@@ -1,0 +1,36 @@
+WITH @@roots
+RETURN {
+  "allRoot2s": (
+    FOR v_root21
+    IN @@root2s
+    RETURN {
+      "name": v_root21.`name`,
+      "rootGrandchildren": (
+        FOR v_root1, v_edge1, v_path1 IN @var1..@var2 OUTBOUND v_root21 @@root2s_roots
+        FILTER v_root1._key != null
+        LET v_root2 = NOEVAL({
+          "name": v_root1.`name`
+        })
+        FOR v_item1 IN v_root1.`children`[*].`children`[*][**]
+        SORT (v_item1.`name`)
+        RETURN {
+          "name": v_item1.`name`,
+          "root": v_root2,
+          "children": v_item1.`children`[* RETURN {
+            "name": CURRENT.`name`
+          }],
+          @var3: {
+            "count": FIRST(
+              FOR v_item2
+              IN (IS_LIST(v_item1.`children`) ? v_item1.`children` : [])
+              COLLECT WITH COUNT INTO v_count1
+              RETURN v_count1
+            )
+          }
+        }
+      )
+    }
+  )
+}
+
+// Peak memory usage: 229376 bytes
