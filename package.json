@@ -29,22 +29,22 @@
     },
     "./arangodb": {
       "import": {
-        "types": "./dist/esm/src/database/arangodb/index.d.ts",
-        "default": "./dist/esm/src/database/arangodb/index.js"
+        "types": "./dist/esm/database/arangodb/index.d.ts",
+        "default": "./dist/esm/database/arangodb/index.js"
       },
       "require": {
-        "types": "./dist/cjs/src/database/arangodb/index.d.ts",
-        "default": "./dist/cjs/src/database/arangodb/index.js"
+        "types": "./dist/cjs/database/arangodb/index.d.ts",
+        "default": "./dist/cjs/database/arangodb/index.js"
       }
     },
     "./inmemory": {
       "import": {
-        "types": "./dist/esm/src/database/inmemory/index.d.ts",
-        "default": "./dist/esm/src/database/inmemory/index.js"
+        "types": "./dist/esm/database/inmemory/index.d.ts",
+        "default": "./dist/esm/database/inmemory/index.js"
       },
       "require": {
-        "types": "./dist/cjs/src/database/inmemory/index.d.ts",
-        "default": "./dist/cjs/src/database/inmemory/index.js"
+        "types": "./dist/cjs/database/inmemory/index.d.ts",
+        "default": "./dist/cjs/database/inmemory/index.js"
       }
     },
     "./package.json": "./package.json"
@@ -55,9 +55,9 @@
     "typecheck": "tsc -p tsconfig.test.json && tsc -p tsconfig.build.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:dropdb": "tsx ./spec/regression/drop-test-db.ts",
-    "test:perf": "tsx ./spec/performance/index.ts",
-    "dev-server": "tsx ./spec/dev/start.ts",
+    "test:dropdb": "tsx src/testing/regression-tests/drop-test-db.ts",
+    "test:perf": "tsx src/testing/performance-tests/index.ts",
+    "dev-server": "tsx ./src/dev-server/start.ts",
     "arangodb:start": "arangodb --starter.mode=single --starter.local --starter.port=8528 --starter.data-dir=./db start",
     "arangodb:stop": "arangodb --starter.mode=single --starter.local --starter.port=8528 --starter.data-dir=./db stop",
     "compile-json-schema": "node scripts/compile-json-schema.js",
