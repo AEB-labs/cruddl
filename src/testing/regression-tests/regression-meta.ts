@@ -32,7 +32,7 @@ interface MetaConfig {
     readonly timeoutInMs?: number;
 }
 
-const DEFAULT_TEST_TIMEOUT_IN_MS = 10_000;
+const DEFAULT_TEST_TIMEOUT_IN_MS = 5_000;
 
 export interface ResolvedTestMeta {
     readonly waitForArangoSearch: boolean;

@@ -29,7 +29,7 @@ Each suite lives in `src/testing/regression-tests/<suite>/` and contains:
 | `databases.<db>.versions.<v>.ignore` | boolean | Skip for a specific database version                                | Independent (same as above)                  |
 | `node.versions.<v>.ignore`           | boolean | Skip for a specific Node.js major version                           | Independent (same as above)                  |
 | `waitForArangoSearch`                | boolean | Wait for ArangoSearch views to sync before queries (default: false) | Test overrides suite                         |
-| `timeoutInMs`                        | number  | Test timeout in milliseconds (default: 10000)                       | Test overrides suite                         |
+| `timeoutInMs`                        | number  | Test timeout in milliseconds (default: 5000)                        | Test overrides suite                         |
 
 Example — skip in-memory and wait for ArangoSearch:
 
