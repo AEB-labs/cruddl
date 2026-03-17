@@ -44,7 +44,7 @@ describe('regression tests', async () => {
                             continue;
                         }
 
-                        it(testName, { timeout: 10_000 }, async () => {
+                        it(testName, { timeout: suite.getTestTimeout(testName) }, async () => {
                             const result = await suite.runTest(testName);
                             expect(result.actualResult).to.deep.equal(result.expectedResult);
 
