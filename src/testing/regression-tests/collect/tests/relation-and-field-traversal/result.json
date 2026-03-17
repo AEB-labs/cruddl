@@ -38,6 +38,9 @@
             "itemNumber": "DI1.2.2"
           }
         ],
+        "_allItemsMeta": {
+          "count": 8
+        },
         "allDeliveryContents": [
           {
             "deliveryContentNumber": "DC2.1"
@@ -54,7 +57,10 @@
           {
             "deliveryContentNumber": "DC1.3"
           }
-        ]
+        ],
+        "_allDeliveryContentsMeta": {
+          "count": 5
+        }
       }
     }
   },
@@ -74,7 +80,10 @@
           {
             "itemNumber": "DI1.2.2"
           }
-        ]
+        ],
+        "_allItemsMeta": {
+          "count": 4
+        }
       }
     }
   },
@@ -225,7 +234,13 @@
           {
             "deliveryContentNumber": "DC1.1"
           }
-        ]
+        ],
+        "_allItemsMeta": {
+          "count": 4
+        },
+        "_allDeliveryContentsMeta": {
+          "count": 2
+        }
       }
     }
   },
@@ -239,7 +254,10 @@
           {
             "itemNumber": "DI1.2.1"
           }
-        ]
+        ],
+        "_allItemsMeta": {
+          "count": 2
+        }
       }
     }
   },

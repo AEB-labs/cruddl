@@ -9,8 +9,16 @@ RETURN {
   "Delivery": (IS_NULL(v_delivery1) ? null : {
     "allItems": v_delivery1.`deliveryContents`[*].`items`[*][** FILTER (RIGHT(CURRENT.`itemNumber`, LENGTH(@var3)) == @var4) RETURN {
       "itemNumber": CURRENT.`itemNumber`
-    }]
+    }],
+    @var5: {
+      "count": FIRST(
+        FOR v_item1
+        IN v_delivery1.`deliveryContents`[*].`items`[*][** FILTER (RIGHT(CURRENT.`itemNumber`, LENGTH(@var6)) == @var7)]
+        COLLECT WITH COUNT INTO v_count1
+        RETURN v_count1
+      )
+    }
   })
 }
 
-// Peak memory usage: 163840 bytes
+// Peak memory usage: 262144 bytes

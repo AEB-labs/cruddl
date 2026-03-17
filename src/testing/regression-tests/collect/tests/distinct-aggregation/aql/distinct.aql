@@ -26,8 +26,26 @@ RETURN {
         "warehouse": v_warehouseSlot1.`warehouse`,
         "level": v_warehouseSlot1.`level`
       }
-    )
+    ),
+    @var5: {
+      "count": FIRST(
+        FOR v_item2
+        IN (
+          FOR v_item3
+          IN (
+            FOR v_root2, v_edge2, v_path2 IN @var6..@var7 OUTBOUND v_delivery1 @@deliveries_handlingUnits
+            FILTER v_root2._key != null
+            RETURN v_root2.`warehouseSlot`
+          )
+          FILTER v_item3 != null
+          COLLECT v_distinct2 = v_item3
+          RETURN v_distinct2
+        )
+        COLLECT WITH COUNT INTO v_count1
+        RETURN v_count1
+      )
+    }
   })
 }
 
-// Peak memory usage: 196608 bytes
+// Peak memory usage: 327680 bytes

@@ -34,6 +34,9 @@ query to_1toN_nToN {
         allOuterHandlingUnits(orderBy: handlingUnitNumber_ASC) {
             number: handlingUnitNumber
         }
+        _allOuterHandlingUnitsMeta {
+            count
+        }
     }
 }
 
@@ -41,6 +44,9 @@ query to_1toN_1ToN {
     Shipment(shipmentNumber: "S1") {
         allInvoices(orderBy: invoiceNumber_ASC) {
             number: invoiceNumber
+        }
+        _allInvoicesMeta {
+            count
         }
     }
 }
@@ -50,6 +56,9 @@ query to_1toN_1to1 {
         allOrders(orderBy: orderNumber_ASC) {
             number: orderNumber
         }
+        _allOrdersMeta {
+            count
+        }
     }
 }
 
@@ -57,6 +66,9 @@ query to_1to1_ntoN {
     Order(orderNumber: "O1") {
         allOuterHandlingUnits(orderBy: handlingUnitNumber_ASC) {
             number: handlingUnitNumber
+        }
+        _allOuterHandlingUnitsMeta {
+            count
         }
     }
 }

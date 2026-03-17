@@ -16,15 +16,41 @@ RETURN {
       }]
       RETURN v_item1
     ),
+    @var7: {
+      "count": FIRST(
+        FOR v_item2
+        IN (
+          FOR v_root2, v_edge2, v_path2 IN @var8..@var9 OUTBOUND v_shipment1 @@shipments_deliveries
+          FILTER v_root2._key != null
+          FOR v_item3 IN v_root2.`deliveryContents`[*].`items`[*][** FILTER (RIGHT(CURRENT.`itemNumber`, LENGTH(@var10)) == @var11)]
+          RETURN v_item3
+        )
+        COLLECT WITH COUNT INTO v_count1
+        RETURN v_count1
+      )
+    },
     "allDeliveryContents": (
-      FOR v_root2, v_edge2, v_path2 IN @var7..@var8 OUTBOUND v_shipment1 @@shipments_deliveries
-      FILTER v_root2._key != null
-      FOR v_item2 IN v_root2.`deliveryContents`[* FILTER (RIGHT(CURRENT.`deliveryContentNumber`, LENGTH(@var9)) == @var10) RETURN {
+      FOR v_root3, v_edge3, v_path3 IN @var12..@var13 OUTBOUND v_shipment1 @@shipments_deliveries
+      FILTER v_root3._key != null
+      FOR v_item4 IN v_root3.`deliveryContents`[* FILTER (RIGHT(CURRENT.`deliveryContentNumber`, LENGTH(@var14)) == @var15) RETURN {
         "deliveryContentNumber": CURRENT.`deliveryContentNumber`
       }]
-      RETURN v_item2
-    )
+      RETURN v_item4
+    ),
+    @var16: {
+      "count": FIRST(
+        FOR v_item5
+        IN (
+          FOR v_root4, v_edge4, v_path4 IN @var17..@var18 OUTBOUND v_shipment1 @@shipments_deliveries
+          FILTER v_root4._key != null
+          FOR v_item6 IN v_root4.`deliveryContents`[* FILTER (RIGHT(CURRENT.`deliveryContentNumber`, LENGTH(@var19)) == @var20)]
+          RETURN v_item6
+        )
+        COLLECT WITH COUNT INTO v_count2
+        RETURN v_count2
+      )
+    }
   })
 }
 
-// Peak memory usage: 262144 bytes
+// Peak memory usage: 327680 bytes

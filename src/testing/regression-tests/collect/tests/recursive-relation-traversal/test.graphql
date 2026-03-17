@@ -78,6 +78,9 @@ query direct0to1 {
         allHandlingUnits0to1(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
         }
+        _allHandlingUnits0to1Meta {
+            count
+        }
     }
 }
 
@@ -85,6 +88,9 @@ query direct0to2 {
     Delivery(deliveryNumber: "D1") {
         allHandlingUnits0to2(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
+        }
+        _allHandlingUnits0to2Meta {
+            count
         }
     }
 }
@@ -94,6 +100,9 @@ query direct1to1 {
         allHandlingUnits1to1(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
         }
+        _allHandlingUnits1to1Meta {
+            count
+        }
     }
 }
 
@@ -101,6 +110,9 @@ query direct1to2 {
     Delivery(deliveryNumber: "D1") {
         allHandlingUnits1to2(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
+        }
+        _allHandlingUnits1to2Meta {
+            count
         }
     }
 }
@@ -110,6 +122,9 @@ query direct2to2 {
         allHandlingUnits2to2(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
         }
+        _allHandlingUnits2to2Meta {
+            count
+        }
     }
 }
 
@@ -118,6 +133,9 @@ query direct3to3 {
         allHandlingUnits3to3(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
         }
+        _allHandlingUnits3to3Meta {
+            count
+        }
     }
 }
 
@@ -125,6 +143,9 @@ query indirect {
     Shipment(shipmentNumber: "S1") {
         allHandlingUnits(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
+        }
+        _allHandlingUnitsMeta {
+            count
         }
     }
 }

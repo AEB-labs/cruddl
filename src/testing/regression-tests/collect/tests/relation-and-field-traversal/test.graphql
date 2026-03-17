@@ -17,8 +17,14 @@ query relationToN_fieldsToN {
         allItems {
             itemNumber
         }
+        _allItemsMeta {
+            count
+        }
         allDeliveryContents {
             deliveryContentNumber
+        }
+        _allDeliveryContentsMeta {
+            count
         }
     }
 }
@@ -27,6 +33,9 @@ query relationTo1_fieldsToN {
     Order(orderNumber: "O1") {
         allItems {
             itemNumber
+        }
+        _allItemsMeta {
+            count
         }
     }
 }
@@ -93,8 +102,14 @@ query relationToN_fieldsToN_filter {
         allItems(filter: { itemNumber_ends_with: "1" }) {
             itemNumber
         }
+        _allItemsMeta(filter: { itemNumber_ends_with: "1" }) {
+            count
+        }
         allDeliveryContents(filter: { deliveryContentNumber_ends_with: "1" }) {
             deliveryContentNumber
+        }
+        _allDeliveryContentsMeta(filter: { deliveryContentNumber_ends_with: "1" }) {
+            count
         }
     }
 }
@@ -103,6 +118,9 @@ query relationTo1_fieldsToN_filter {
     Order(orderNumber: "O1") {
         allItems(filter: { itemNumber_ends_with: "1" }) {
             itemNumber
+        }
+        _allItemsMeta(filter: { itemNumber_ends_with: "1" }) {
+            count
         }
     }
 }

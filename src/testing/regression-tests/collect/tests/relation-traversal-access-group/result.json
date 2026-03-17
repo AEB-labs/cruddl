@@ -19,14 +19,20 @@
           {
             "number": "H3"
           }
-        ]
+        ],
+        "_allOuterHandlingUnitsMeta": {
+          "count": 1
+        }
       }
     }
   },
   "to_1toN_1ToN": {
     "data": {
       "Shipment": {
-        "allInvoices": []
+        "allInvoices": [],
+        "_allInvoicesMeta": {
+          "count": 0
+        }
       }
     }
   },
@@ -37,7 +43,10 @@
           {
             "number": "O2"
           }
-        ]
+        ],
+        "_allOrdersMeta": {
+          "count": 1
+        }
       }
     }
   },

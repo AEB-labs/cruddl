@@ -33,8 +33,29 @@ RETURN {
       RETURN {
         "number": v_handlingUnit1.`handlingUnitNumber`
       }
-    )
+    ),
+    @var10: {
+      "count": FIRST(
+        FOR v_item3
+        IN (
+          FOR v_item4
+          IN (
+            FOR v_node3, v_edge3, v_path3 IN @var11..@var12 OUTBOUND v_shipment1 @@shipments_deliveries
+            FILTER (v_node3.`accessGroup` IN @var13)
+            FOR v_node4, v_edge4, v_path4 IN @var14..@var15 OUTBOUND v_node3 @@deliveries_handlingUnits
+            FILTER (v_node4.`accessGroup` IN @var16)
+            FILTER v_node4._key != null
+            RETURN v_node4
+          )
+          FILTER v_item4 != null
+          COLLECT v_distinct2 = v_item4
+          RETURN v_distinct2
+        )
+        COLLECT WITH COUNT INTO v_count1
+        RETURN v_count1
+      )
+    }
   })
 }
 
-// Peak memory usage: 131072 bytes
+// Peak memory usage: 262144 bytes

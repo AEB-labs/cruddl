@@ -36,7 +36,10 @@
           {
             "handlingUnitNumber": "H4"
           }
-        ]
+        ],
+        "_allOuterHandlingUnitsMeta": {
+          "count": 4
+        }
       }
     }
   },

@@ -22,7 +22,10 @@
             "warehouse": "South",
             "level": 1
           }
-        ]
+        ],
+        "_allWarehouseSlotsMeta": {
+          "count": 3
+        }
       }
     }
   }

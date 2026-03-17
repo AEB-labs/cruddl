@@ -16,8 +16,21 @@ RETURN {
       RETURN {
         "handlingUnitNumber": v_node2.`handlingUnitNumber`
       }
-    )
+    ),
+    @var7: {
+      "count": FIRST(
+        FOR v_item1
+        IN (
+          FOR v_node3, v_edge3, v_path3 IN @var8..@var9 OUTBOUND v_delivery1 @@deliveries_handlingUnits
+          FOR v_node4, v_edge4, v_path4 IN @var10..@var11 OUTBOUND v_node3 @@handlingUnits_childHandlingUnits
+          FILTER v_node4._key != null
+          RETURN v_node4
+        )
+        COLLECT WITH COUNT INTO v_count1
+        RETURN v_count1
+      )
+    }
   })
 }
 
-// Peak memory usage: 196608 bytes
+// Peak memory usage: 294912 bytes
