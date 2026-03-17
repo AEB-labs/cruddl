@@ -16,7 +16,30 @@ Each suite lives in `src/testing/regression-tests/<suite>/` and contains:
     -   `vars.json` — _(optional)_ variables
     -   `context.json` — _(optional)_ per-test auth context override
     -   `aql/` — _(ArangoDB only)_ expected AQL files per operation
--   `meta.json` — _(optional)_ controls which databases/versions to skip
+-   `meta.json` — _(optional)_ suite-level or test-level metadata (see below)
+
+## `meta.json` Reference
+
+`meta.json` can appear at both suite level (`<suite>/meta.json`) and test level
+(`<suite>/tests/<test>/meta.json`). All fields are optional.
+
+| Field                                | Type    | Description                                                         | Override logic                               |
+| ------------------------------------ | ------- | ------------------------------------------------------------------- | -------------------------------------------- |
+| `databases.<db>.ignore`              | boolean | Skip this suite/test for the given database adapter                 | Independent: suite skips all, test skips one |
+| `databases.<db>.versions.<v>.ignore` | boolean | Skip for a specific database version                                | Independent (same as above)                  |
+| `node.versions.<v>.ignore`           | boolean | Skip for a specific Node.js major version                           | Independent (same as above)                  |
+| `waitForArangoSearch`                | boolean | Wait for ArangoSearch views to sync before queries (default: false) | Test overrides suite                         |
+
+Example — skip in-memory and wait for ArangoSearch:
+
+```json
+{
+    "databases": {
+        "in-memory": { "ignore": true }
+    },
+    "waitForArangoSearch": true
+}
+```
 
 ## Environment Variables
 
