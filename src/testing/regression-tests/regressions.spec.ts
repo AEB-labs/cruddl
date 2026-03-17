@@ -1,7 +1,7 @@
 import { readdirSync, statSync } from 'fs';
 import { resolve } from 'path';
 import { describe, expect, it } from 'vitest';
-import { likePatternToRegExp } from '../../database/like-helpers.js';
+import { getRegressionOptions } from './regression-options.js';
 import type { RegressionSuiteOptions } from './regression-suite.js';
 import { RegressionSuite } from './regression-suite.js';
 
@@ -15,29 +15,15 @@ describe('regression tests', async () => {
         .filter((name) => statSync(resolve(regressionRootDir, name)).isDirectory())
         .filter((dir) => only.length === 0 || only.includes(dir));
 
-    const databases: ('in-memory' | 'arangodb')[] = process.argv.includes('--db=in-memory')
-        ? ['in-memory']
-        : process.argv.includes('--db=arangodb')
-          ? ['arangodb']
-          : ['in-memory', 'arangodb'];
-
-    const filterArg = process.argv.find((arg) => arg.startsWith('--regression-tests='));
-    let testNameFilter = (name: string) => true;
-    if (filterArg) {
-        const pattern = filterArg.substr('--regression-tests='.length);
-        const regex = likePatternToRegExp(pattern, { singleWildcardChar: '?', wildcardChar: '*' });
-        testNameFilter = (name) => !!name.match(regex);
-    }
+    const { databases, testNameFilter, saveActualAsExpected, trace } = getRegressionOptions();
 
     for (const database of databases) {
         describe(`for ${database}`, async () => {
             for (const suiteName of dirs) {
                 const suitePath = resolve(regressionRootDir, suiteName);
-                // run npm test -- --save-actual-as-expected to replace the .result file with the actual contents
-                // (first npm test run still marked as failure, subsequent runs will pass)
                 const options: RegressionSuiteOptions = {
-                    saveActualAsExpected: process.argv.includes('--save-actual-as-expected'),
-                    trace: process.argv.includes('--log-trace'),
+                    saveActualAsExpected,
+                    trace,
                     database,
                 };
                 const suite = new RegressionSuite(suitePath, options);
@@ -70,7 +56,7 @@ describe('regression tests', async () => {
                                 // is *expected* to exist or not, that's why this looks inverted here
                                 if (aqlResult.actual !== null && aqlResult.expected === null) {
                                     throw new Error(
-                                        `AQL file at "${aqlFileName}" missing (run with --save-actual-as-expected to create it)`,
+                                        `AQL file at "${aqlFileName}" missing (run with CRUDDL_UPDATE_EXPECTED=true to create it)`,
                                     );
                                 } else if (
                                     aqlResult.expected !== null &&
@@ -82,7 +68,7 @@ describe('regression tests', async () => {
                                 } else {
                                     expect(aqlResult.actual).to.equal(
                                         aqlResult.expected,
-                                        `AQL of operation ${aqlResult.operationName} does not match expected AQL in "${aqlFileName}" (run with --save-actual-as-expected to update the file)`,
+                                        `AQL of operation ${aqlResult.operationName} does not match expected AQL in "${aqlFileName}" (run with CRUDDL_UPDATE_EXPECTED=true to update the file)`,
                                     );
                                 }
                             }
