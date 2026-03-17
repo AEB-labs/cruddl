@@ -120,17 +120,21 @@ this, you can import the core symbols from `cruddl/core` and the `InMemoryAdapte
 For consistency, tests shall be run against a single arangodb node:
 
 1. npm i
-2. npm run start_arangodb
+2. npm run arangodb:start
 3. ensure you have access to console at http://localhost:8529
 4. npm run test
 
-When done, stop the instance with `npm run stop_arangodb`
+When done, stop the instance with `npm run arangodb:stop`
+
+See the [regression tests guide](docs/regression-tests.md) for details on running, filtering, and
+updating regression tests.
 
 ## Documentation
 
 -   [Modelling guide](docs/modelling.md)
 -   [GraphQL API](docs/api.md)
 -   [I18n](docs/i18n.md)
+-   [Regression tests](docs/regression-tests.md)
 
 ## Supported versions
 
