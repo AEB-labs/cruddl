@@ -244,6 +244,10 @@ export class RegressionSuite {
         return this.getMeta().shouldIgnoreTest(name);
     }
 
+    getTestTimeout(name: string): number {
+        return this.getMeta().resolveTestMeta(name).timeoutInMs;
+    }
+
     async runTest(name: string): Promise<RunTestResult> {
         if (!this._isSetUpClean) {
             await this.setUp();

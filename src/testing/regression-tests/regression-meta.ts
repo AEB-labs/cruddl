@@ -28,10 +28,15 @@ interface MetaConfig {
     };
     /** Wait for ArangoSearch views to sync before executing queries (default: false) */
     readonly waitForArangoSearch?: boolean;
+    /** Test timeout in milliseconds */
+    readonly timeoutInMs?: number;
 }
+
+const DEFAULT_TEST_TIMEOUT_IN_MS = 10_000;
 
 export interface ResolvedTestMeta {
     readonly waitForArangoSearch: boolean;
+    readonly timeoutInMs: number;
 }
 
 function readMeta(filePath: string): MetaConfig {
@@ -58,6 +63,8 @@ export class RegressionMeta {
         return {
             waitForArangoSearch:
                 testMeta.waitForArangoSearch ?? suiteMeta.waitForArangoSearch ?? false,
+            timeoutInMs:
+                testMeta.timeoutInMs ?? suiteMeta.timeoutInMs ?? DEFAULT_TEST_TIMEOUT_IN_MS,
         };
     }
 
