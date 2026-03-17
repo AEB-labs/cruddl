@@ -15,7 +15,10 @@
           {
             "itemNumber": "DI1.2.2"
           }
-        ]
+        ],
+        "_allItemsMeta": {
+          "count": 4
+        }
       }
     }
   },
@@ -71,7 +74,10 @@
           {
             "itemNumber": "DI1.2.1"
           }
-        ]
+        ],
+        "_allItemsMeta": {
+          "count": 2
+        }
       }
     }
   },

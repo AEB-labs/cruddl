@@ -20,5 +20,8 @@ query distinct {
             warehouse
             level
         }
+        _allWarehouseSlotsMeta {
+            count
+        }
     }
 }

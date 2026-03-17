@@ -28,7 +28,10 @@
           {
             "number": "H4"
           }
-        ]
+        ],
+        "_allOuterHandlingUnitsMeta": {
+          "count": 4
+        }
       }
     }
   },
@@ -48,7 +51,10 @@
           {
             "number": "I6"
           }
-        ]
+        ],
+        "_allInvoicesMeta": {
+          "count": 4
+        }
       }
     }
   },
@@ -62,7 +68,10 @@
           {
             "number": "O2"
           }
-        ]
+        ],
+        "_allOrdersMeta": {
+          "count": 2
+        }
       }
     }
   },
@@ -79,7 +88,10 @@
           {
             "number": "H4"
           }
-        ]
+        ],
+        "_allOuterHandlingUnitsMeta": {
+          "count": 3
+        }
       }
     }
   }

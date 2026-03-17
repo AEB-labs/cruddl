@@ -44,6 +44,9 @@ query distinct {
         allOuterHandlingUnits(orderBy: handlingUnitNumber_ASC) {
             handlingUnitNumber
         }
+        _allOuterHandlingUnitsMeta {
+            count
+        }
     }
 }
 

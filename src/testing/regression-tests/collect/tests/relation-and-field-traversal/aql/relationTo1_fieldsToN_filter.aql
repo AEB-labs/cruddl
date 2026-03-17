@@ -14,8 +14,20 @@ RETURN {
         "itemNumber": CURRENT.`itemNumber`
       }]
       RETURN v_item1
-    )
+    ),
+    @var7: {
+      "count": FIRST(
+        FOR v_item2
+        IN (
+          FOR v_root2, v_edge2, v_path2 IN @var8..@var9 INBOUND v_order1 @@deliveries_order
+          FOR v_item3 IN v_root2.`deliveryContents`[*].`items`[*][** FILTER (RIGHT(CURRENT.`itemNumber`, LENGTH(@var10)) == @var11)]
+          RETURN v_item3
+        )
+        COLLECT WITH COUNT INTO v_count1
+        RETURN v_count1
+      )
+    }
   })
 }
 
-// Peak memory usage: 131072 bytes
+// Peak memory usage: 196608 bytes

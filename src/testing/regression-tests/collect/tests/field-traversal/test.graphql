@@ -3,6 +3,9 @@ query fieldsToN {
         allItems {
             itemNumber
         }
+        _allItemsMeta {
+            count
+        }
     }
 }
 
@@ -33,6 +36,9 @@ query fieldsToN_filter {
     Delivery(deliveryNumber: "D1") {
         allItems(filter: { itemNumber_ends_with: "1" }) {
             itemNumber
+        }
+        _allItemsMeta(filter: { itemNumber_ends_with: "1" }) {
+            count
         }
     }
 }

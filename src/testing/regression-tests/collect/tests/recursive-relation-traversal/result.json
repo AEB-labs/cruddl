@@ -43,7 +43,10 @@
           {
             "handlingUnitNumber": "H2.2"
           }
-        ]
+        ],
+        "_allHandlingUnits0to1Meta": {
+          "count": 6
+        }
       }
     }
   },
@@ -84,7 +87,10 @@
           {
             "handlingUnitNumber": "H2.2"
           }
-        ]
+        ],
+        "_allHandlingUnits0to2Meta": {
+          "count": 11
+        }
       }
     }
   },
@@ -104,7 +110,10 @@
           {
             "handlingUnitNumber": "H2.2"
           }
-        ]
+        ],
+        "_allHandlingUnits1to1Meta": {
+          "count": 4
+        }
       }
     }
   },
@@ -139,7 +148,10 @@
           {
             "handlingUnitNumber": "H2.2"
           }
-        ]
+        ],
+        "_allHandlingUnits1to2Meta": {
+          "count": 9
+        }
       }
     }
   },
@@ -162,14 +174,20 @@
           {
             "handlingUnitNumber": "H2.1.1"
           }
-        ]
+        ],
+        "_allHandlingUnits2to2Meta": {
+          "count": 5
+        }
       }
     }
   },
   "direct3to3": {
     "data": {
       "Delivery": {
-        "allHandlingUnits3to3": []
+        "allHandlingUnits3to3": [],
+        "_allHandlingUnits3to3Meta": {
+          "count": 0
+        }
       }
     }
   },
@@ -222,7 +240,10 @@
           {
             "handlingUnitNumber": "H3.2"
           }
-        ]
+        ],
+        "_allHandlingUnitsMeta": {
+          "count": 15
+        }
       }
     }
   }
