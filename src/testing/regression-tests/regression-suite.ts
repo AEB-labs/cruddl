@@ -17,11 +17,7 @@ import { parseJSONCOrThrow } from '../utils/parse-jsonc-or-throw.js';
 import { InitTestDataContext } from './init-test-data-context.js';
 import type { TestDataEnvironment } from './initialization.js';
 import { createTempDatabase, initTestData, TEMP_DATABASE_CONFIG } from './initialization.js';
-
-interface TestResult {
-    readonly actualResult: any;
-    readonly expectedResult: any;
-}
+import { RegressionMeta } from './regression-meta.js';
 
 type DatabaseSpecifier = 'arangodb' | 'in-memory';
 
@@ -29,26 +25,6 @@ export interface RegressionSuiteOptions {
     readonly saveActualAsExpected?: boolean;
     readonly trace?: boolean;
     readonly database?: DatabaseSpecifier;
-}
-
-interface MetaOptions {
-    readonly databases?: {
-        readonly [database: string]: {
-            readonly ignore?: boolean;
-            readonly versions: {
-                readonly [version: string]: {
-                    readonly ignore?: boolean;
-                };
-            };
-        };
-    };
-    readonly node?: {
-        readonly versions: {
-            readonly [version: string]: {
-                readonly ignore?: boolean;
-            };
-        };
-    };
 }
 
 export interface AqlResult {
@@ -76,6 +52,7 @@ export class RegressionSuite {
     private databaseVersion: string | undefined;
     private nodeVersion: string;
     private lastProfile: RequestProfile | undefined;
+    private meta: RegressionMeta | undefined;
 
     constructor(
         private readonly path: string,
@@ -246,35 +223,25 @@ export class RegressionSuite {
         return readdirSync(resolve(this.path, 'tests'));
     }
 
-    shouldIgnoreSuite() {
-        return this.shouldIgnore(resolve(this.path, 'meta.json'));
+    private getMeta(): RegressionMeta {
+        if (!this.meta) {
+            this.meta = new RegressionMeta(
+                this.path,
+                this.testsPath,
+                this.databaseSpecifier,
+                this.databaseVersion,
+                this.nodeVersion,
+            );
+        }
+        return this.meta;
     }
 
-    shouldIgnoreTest(name: string) {
-        return this.shouldIgnore(resolve(this.testsPath, name, 'meta.json'));
+    shouldIgnoreSuite(): boolean {
+        return this.getMeta().shouldIgnoreSuite();
     }
 
-    private shouldIgnore(metaPath: string) {
-        const meta: MetaOptions | undefined = existsSync(metaPath)
-            ? parseJSONCOrThrow<MetaOptions>(readFileSync(metaPath, 'utf-8'), metaPath)
-            : undefined;
-        if (meta && meta.databases && meta.databases[this.databaseSpecifier]) {
-            if (meta.databases[this.databaseSpecifier].ignore) {
-                return true;
-            }
-            if (
-                this.databaseVersion &&
-                meta.databases[this.databaseSpecifier].versions &&
-                meta.databases[this.databaseSpecifier].versions[this.databaseVersion] &&
-                meta.databases[this.databaseSpecifier].versions[this.databaseVersion].ignore
-            ) {
-                return true;
-            }
-        }
-        if (meta?.node?.versions[this.nodeVersion]?.ignore) {
-            return true;
-        }
-        return false;
+    shouldIgnoreTest(name: string): boolean {
+        return this.getMeta().shouldIgnoreTest(name);
     }
 
     async runTest(name: string): Promise<RunTestResult> {
@@ -291,7 +258,6 @@ export class RegressionSuite {
         const resultPath = resolve(this.testsPath, name, 'result.json');
         const variablesPath = resolve(this.testsPath, name, 'vars.json');
         let contextPath = resolve(this.testsPath, name, 'context.json');
-        const metaPath = resolve(this.testsPath, name, 'meta.json');
         if (!existsSync(contextPath)) {
             contextPath = resolve(this.path, 'default-context.json');
         }
@@ -319,9 +285,7 @@ export class RegressionSuite {
         const context: any = existsSync(contextPath)
             ? parseJSONCOrThrow<any>(readFileSync(contextPath, 'utf-8'), contextPath)
             : {};
-        const meta: any = existsSync(metaPath)
-            ? parseJSONCOrThrow<any>(readFileSync(metaPath, 'utf-8'), metaPath)
-            : {};
+        const meta = this.getMeta().resolveTestMeta(name);
 
         let actualResult: Record<string, unknown> = {};
         let arangoSearchPending = true;
