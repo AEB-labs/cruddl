@@ -87,7 +87,7 @@ export function calculateRequiredIndexOperations(
                 indexDefinitionsEqual(index, requiredIndex),
             );
             indicesToDelete = indicesToDelete.filter((index) => index !== existingIndex);
-            if (!!existingIndex) {
+            if (existingIndex) {
                 return undefined;
             }
             return requiredIndex;

@@ -12,5 +12,5 @@ import { print } from 'graphql';
 export function prettyPrint(node: ASTNode): string {
     // not using prettier at the moment because it's async and it would add it as a dependency
     const printed = print(node);
-    return printed.replace(/^((  )+)/gm, '$1$1');
+    return printed.replace(/^(( {2})+)/gm, '$1$1');
 }
