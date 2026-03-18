@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { IndexField, Model, RootEntityType, TypeKind } from '../index.js';
+import { TypeKind } from '../config/type.js';
+import { IndexField } from './indices.js';
+import { Model } from './model.js';
+import { RootEntityType } from './root-entity-type.js';
 
 describe('IndexField', () => {
     const model = new Model({

@@ -1,6 +1,6 @@
 import type { FlexSearchPrimarySortClause } from '../../model/implementation/flex-search.js';
 import { OrderDirection } from '../../model/implementation/order.js';
-import type { RootEntityType } from '../../model/index.js';
+import type { RootEntityType } from '../../model/implementation/root-entity-type.js';
 import type { OrderByEnumType, OrderByEnumValue } from '../order-by-enum-generator.js';
 
 export function orderArgMatchesPrimarySort(

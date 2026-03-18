@@ -1,7 +1,7 @@
 import { memorize } from 'memorize-decorator';
 import { DEFAULT_PERMISSION_PROFILE } from '../../schema/constants.js';
 import { capitalize, groupArray, isDefined } from '../../utils/utils.js';
-import { ValidationMessage } from '../validation/index.js';
+import { ValidationMessage } from '../validation/message.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
 import type { PermissionProfile } from './permission-profile.js';
 import type { RootEntityType } from './root-entity-type.js';

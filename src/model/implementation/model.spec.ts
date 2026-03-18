@@ -4,8 +4,10 @@ import {
     expectToBeValid,
     validate,
 } from '../../testing/utils/model-validation-utils.js';
-import type { NamespacedPermissionProfileConfigMap } from '../index.js';
-import { Model, Severity, TypeKind } from '../index.js';
+import type { NamespacedPermissionProfileConfigMap } from '../config/permissions.js';
+import { TypeKind } from '../config/type.js';
+import { Severity } from '../validation/message.js';
+import { Model } from './model.js';
 
 describe('Model', () => {
     const permissionProfiles: ReadonlyArray<NamespacedPermissionProfileConfigMap> = [

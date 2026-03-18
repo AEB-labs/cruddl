@@ -1,7 +1,7 @@
 import { ZonedDateTime } from '@js-joda/core';
 import type { GraphQLInputType } from 'graphql';
 import { GraphQLList, GraphQLNonNull } from 'graphql';
-import type { Field } from '../../model/index.js';
+import type { Field } from '../../model/implementation/field.js';
 import {
     GraphQLOffsetDateTime,
     serializeForStorage,
@@ -9,7 +9,7 @@ import {
 import type { AnyValue, PlainObject } from '../../utils/utils.js';
 import { isDefined, isReadonlyArray } from '../../utils/utils.js';
 import { createGraphQLError } from '../graphql-errors.js';
-import type { FieldContext } from '../query-node-object-type/index.js';
+import type { FieldContext } from '../query-node-object-type/context.js';
 import type { TypedInputFieldBase, TypedInputObjectType } from '../typed-input-object-type.js';
 import type { CreateObjectInputType } from './input-types.js';
 

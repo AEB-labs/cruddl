@@ -1,36 +1,29 @@
 import type { GraphQLInputFieldConfigMap, ThunkReadonlyArray } from 'graphql';
 import { GraphQLID } from 'graphql';
-import type {
-    ChildEntityType,
-    EntityExtensionType,
-    Field,
-    ObjectType,
-    RootEntityType,
-} from '../../model/index.js';
-import type {
-    ChildEntityUpdate,
-    PreExecQueryParms,
-    QueryNode,
-    RuntimeErrorQueryNode,
-} from '../../query-tree/index.js';
+import type { ChildEntityType } from '../../model/implementation/child-entity-type.js';
+import type { EntityExtensionType } from '../../model/implementation/entity-extension-type.js';
+import type { Field } from '../../model/implementation/field.js';
+import type { RootEntityType } from '../../model/implementation/root-entity-type.js';
+import type { ObjectType } from '../../model/implementation/type.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import type { ChildEntityUpdate } from '../../query-tree/child-entities.js';
+import { UpdateChildEntitiesQueryNode } from '../../query-tree/child-entities.js';
+import type { RuntimeErrorQueryNode } from '../../query-tree/errors.js';
+import { ConcatListsQueryNode, TransformListQueryNode } from '../../query-tree/lists.js';
+import { LiteralQueryNode } from '../../query-tree/literals.js';
+import { SetFieldQueryNode } from '../../query-tree/mutations.js';
+import { MergeObjectsQueryNode, ObjectQueryNode } from '../../query-tree/objects.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
-    ConcatListsQueryNode,
     ConditionalQueryNode,
-    DynamicPropertyAccessQueryNode,
-    FieldQueryNode,
-    LiteralQueryNode,
-    MergeObjectsQueryNode,
-    ObjectQueryNode,
-    SafeListQueryNode,
-    SetFieldQueryNode,
-    TransformListQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
-    UpdateChildEntitiesQueryNode,
-    VariableQueryNode,
-} from '../../query-tree/index.js';
+} from '../../query-tree/operators.js';
+import type { PreExecQueryParms } from '../../query-tree/pre-exec.js';
+import { DynamicPropertyAccessQueryNode, FieldQueryNode } from '../../query-tree/queries.js';
+import { SafeListQueryNode } from '../../query-tree/type-check.js';
+import { VariableQueryNode } from '../../query-tree/variables.js';
 import { ENTITY_UPDATED_AT, ID_FIELD, REVISION_FIELD } from '../../schema/constants.js';
 import {
     getAddChildEntitiesFieldName,
@@ -41,7 +34,7 @@ import {
 import type { AnyValue, PlainObject } from '../../utils/utils.js';
 import { decapitalize, groupArray, joinWithAnd } from '../../utils/utils.js';
 import { createGraphQLError } from '../graphql-errors.js';
-import type { FieldContext } from '../query-node-object-type/index.js';
+import type { FieldContext } from '../query-node-object-type/context.js';
 import { TypedInputObjectType } from '../typed-input-object-type.js';
 import type { UpdateInputField, UpdateInputFieldContext } from './input-fields.js';
 import {

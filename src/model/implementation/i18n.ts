@@ -13,9 +13,9 @@ import type {
     LocalizationConfig,
     NamespaceLocalizationConfig,
     TypeLocalizationConfig,
-} from '../config/index.js';
-import type { MessageLocation } from '../validation/index.js';
-import { ValidationMessage } from '../validation/index.js';
+} from '../config/i18n.js';
+import type { MessageLocation } from '../validation/location.js';
+import { ValidationMessage } from '../validation/message.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
 import type { EnumValue } from './enum-type.js';
 import type { Field } from './field.js';

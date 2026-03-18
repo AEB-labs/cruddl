@@ -1,20 +1,17 @@
 import type { GraphQLInputType } from 'graphql';
 import { getNamedType, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
-import type { Field } from '../../model/index.js';
-import { TypeKind } from '../../model/index.js';
+import { TypeKind } from '../../model/config/type.js';
+import type { Field } from '../../model/implementation/field.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { RuntimeErrorQueryNode } from '../../query-tree/errors.js';
 import { FlexSearchFieldExistsQueryNode } from '../../query-tree/flex-search.js';
-import type { QueryNode } from '../../query-tree/index.js';
+import { ConstBoolQueryNode, LiteralQueryNode, NullQueryNode } from '../../query-tree/literals.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../../query-tree/operators.js';
 import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConstBoolQueryNode,
     FieldQueryNode,
-    LiteralQueryNode,
-    NullQueryNode,
     PropertyAccessQueryNode,
     RootEntityIDQueryNode,
-    RuntimeErrorQueryNode,
-} from '../../query-tree/index.js';
+} from '../../query-tree/queries.js';
 import {
     AND_FILTER_FIELD,
     FILTER_FIELD_PREFIX_SEPARATOR,
@@ -38,7 +35,7 @@ import {
     getScalarFilterLiteralValue,
     getScalarFilterValueNode,
 } from '../filter-input-types/filter-fields.js';
-import type { QueryNodeResolveInfo } from '../query-node-object-type/index.js';
+import type { QueryNodeResolveInfo } from '../query-node-object-type/definition.js';
 import type { TypedInputFieldBase } from '../typed-input-object-type.js';
 import { not } from '../utils/input-types.js';
 import {

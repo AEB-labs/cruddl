@@ -1,7 +1,7 @@
 import { Database } from 'arangojs';
 import { existsSync, readFileSync } from 'fs';
 import type { ExecutionResult } from 'graphql';
-import type { ArangoDBConfig } from '../../database/arangodb/index.js';
+import type { ArangoDBConfig } from '../../database/arangodb/config.js';
 import { isDefined } from '../../utils/utils.js';
 import { generateRandomString } from '../utils/generate-random-string.js';
 import { parseJSONCOrThrow } from '../utils/parse-jsonc-or-throw.js';

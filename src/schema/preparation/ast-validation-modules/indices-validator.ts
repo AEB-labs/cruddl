@@ -1,5 +1,5 @@
 import type { DocumentNode } from 'graphql';
-import { ValidationMessage } from '../../../model/index.js';
+import { ValidationMessage } from '../../../model/validation/message.js';
 import { INDEX_DIRECTIVE, UNIQUE_DIRECTIVE } from '../../constants.js';
 import {
     findDirectiveWithName,

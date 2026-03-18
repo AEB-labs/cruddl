@@ -1,5 +1,5 @@
 import type { DocumentNode } from 'graphql';
-import { ValidationMessage } from '../../../model/index.js';
+import { ValidationMessage } from '../../../model/validation/message.js';
 import { isDefined } from '../../../utils/utils.js';
 import { KEY_FIELD_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../constants.js';
 import { getObjectTypes } from '../../schema-utils.js';

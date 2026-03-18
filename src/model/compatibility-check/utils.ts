@@ -4,7 +4,7 @@ import type {
     LocalizationBaseConfig,
     LocalizationConfig,
     TypeLocalizationConfig,
-} from '../config/index.js';
+} from '../config/i18n.js';
 import { TypeKind } from '../config/type.js';
 
 export function describeTypeKind(kind: TypeKind) {

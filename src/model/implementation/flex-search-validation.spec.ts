@@ -15,7 +15,7 @@ import {
     assertValidatorWarns,
     validate,
 } from '../../testing/utils/source-validation-utils.js';
-import { FlexSearchLanguage } from '../index.js';
+import { FlexSearchLanguage } from '../config/field.js';
 
 describe('FlexSearch', () => {
     it('rejects flexSearch on relation', () => {

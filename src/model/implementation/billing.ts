@@ -3,7 +3,7 @@ import { memorize } from 'memorize-decorator';
 import { GraphQLInt53 } from '../../schema/scalars/int53.js';
 import { isDefined } from '../../utils/utils.js';
 import type { BillingEntityCategoryMappingConfig, BillingEntityConfig } from '../config/billing.js';
-import { ValidationMessage } from '../validation/index.js';
+import { ValidationMessage } from '../validation/message.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
 import { FieldPath } from './field-path.js';
 import type { Field } from './field.js';

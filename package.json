@@ -4,17 +4,17 @@
   "description": "",
   "license": "MIT",
   "type": "module",
-  "main": "dist/cjs/index.js",
-  "types": "./dist/cjs/index.d.ts",
+  "main": "dist/cjs/all-exports.js",
+  "types": "./dist/cjs/all-exports.d.ts",
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/esm/index.d.ts",
-        "default": "./dist/esm/index.js"
+        "types": "./dist/esm/all-exports.d.ts",
+        "default": "./dist/esm/all-exports.js"
       },
       "require": {
-        "types": "./dist/cjs/index.d.ts",
-        "default": "./dist/cjs/index.js"
+        "types": "./dist/cjs/all-exports.d.ts",
+        "default": "./dist/cjs/all-exports.js"
       }
     },
     "./core": {
@@ -29,22 +29,22 @@
     },
     "./arangodb": {
       "import": {
-        "types": "./dist/esm/database/arangodb/index.d.ts",
-        "default": "./dist/esm/database/arangodb/index.js"
+        "types": "./dist/esm/database/arangodb/public-api.d.ts",
+        "default": "./dist/esm/database/arangodb/public-api.js"
       },
       "require": {
-        "types": "./dist/cjs/database/arangodb/index.d.ts",
-        "default": "./dist/cjs/database/arangodb/index.js"
+        "types": "./dist/cjs/database/arangodb/public-api.d.ts",
+        "default": "./dist/cjs/database/arangodb/public-api.js"
       }
     },
     "./inmemory": {
       "import": {
-        "types": "./dist/esm/database/inmemory/index.d.ts",
-        "default": "./dist/esm/database/inmemory/index.js"
+        "types": "./dist/esm/database/inmemory/public-api.d.ts",
+        "default": "./dist/esm/database/inmemory/public-api.js"
       },
       "require": {
-        "types": "./dist/cjs/database/inmemory/index.d.ts",
-        "default": "./dist/cjs/database/inmemory/index.js"
+        "types": "./dist/cjs/database/inmemory/public-api.d.ts",
+        "default": "./dist/cjs/database/inmemory/public-api.js"
       }
     },
     "./package.json": "./package.json"
@@ -60,7 +60,7 @@
     "test:regression:arango": "CRUDDL_DB=arangodb vitest run src/testing/regression-tests/regressions.spec.ts",
     "test:regression:update": "CRUDDL_DB=arangodb CRUDDL_UPDATE_EXPECTED=true vitest run src/testing/regression-tests/regressions.spec.ts",
     "test:dropdb": "tsx src/testing/regression-tests/drop-test-db.ts",
-    "test:perf": "tsx src/testing/performance-tests/index.ts",
+    "test:perf": "tsx src/testing/performance-tests/run.ts",
     "dev-server": "tsx ./src/dev-server/start.ts",
     "arangodb:start": "arangodb --starter.mode=single --starter.local --starter.port=8528 --starter.data-dir=./db start",
     "arangodb:stop": "arangodb --starter.mode=single --starter.local --starter.port=8528 --starter.data-dir=./db stop",

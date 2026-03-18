@@ -4,7 +4,7 @@ import { graphql } from 'graphql';
 import { resolve } from 'path';
 import { ConsoleLoggerProvider } from '../../../config/console-logger.js';
 import type { ProjectOptions } from '../../../config/interfaces.js';
-import { ArangoDBAdapter } from '../../../database/arangodb/index.js';
+import { ArangoDBAdapter } from '../../../database/arangodb/arangodb-adapter.js';
 import { loadProjectFromDir } from '../../../project/project-from-fs.js';
 import type { Project } from '../../../project/project.js';
 import { range } from '../../../utils/utils.js';

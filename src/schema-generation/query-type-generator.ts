@@ -1,7 +1,10 @@
 import { memorize } from 'memorize-decorator';
-import type { Namespace, RootEntityType } from '../model/index.js';
-import type { QueryNode } from '../query-tree/index.js';
-import { EntitiesQueryNode, FirstOfListQueryNode, ObjectQueryNode } from '../query-tree/index.js';
+import type { Namespace } from '../model/implementation/namespace.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
+import type { QueryNode } from '../query-tree/base.js';
+import { FirstOfListQueryNode } from '../query-tree/lists.js';
+import { ObjectQueryNode } from '../query-tree/objects.js';
+import { EntitiesQueryNode } from '../query-tree/queries.js';
 import { QUERY_TYPE } from '../schema/constants.js';
 import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names.js';
 
@@ -12,12 +15,9 @@ import type { ListAugmentation } from './list-augmentation.js';
 import type { MetaTypeGenerator } from './meta-type-generator.js';
 import { LimitTypeCheckType } from './order-by-and-pagination-augmentation.js';
 import type { OutputTypeGenerator } from './output-type-generator.js';
-import type {
-    FieldContext,
-    QueryNodeField,
-    QueryNodeObjectType,
-} from './query-node-object-type/index.js';
-import { QueryNodeListType, QueryNodeNonNullType } from './query-node-object-type/index.js';
+import type { FieldContext } from './query-node-object-type/context.js';
+import type { QueryNodeField, QueryNodeObjectType } from './query-node-object-type/definition.js';
+import { QueryNodeListType, QueryNodeNonNullType } from './query-node-object-type/definition.js';
 import type { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator.js';
 import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field.js';
 

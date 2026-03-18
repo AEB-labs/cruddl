@@ -6,11 +6,14 @@ import {
     GraphQLString,
 } from 'graphql';
 import { describe, expect, it } from 'vitest';
-import { ChildEntityType, Model, RootEntityType, TypeKind } from '../../model/index.js';
+import { TypeKind } from '../../model/config/type.js';
+import { ChildEntityType } from '../../model/implementation/child-entity-type.js';
+import { Model } from '../../model/implementation/model.js';
+import { RootEntityType } from '../../model/implementation/root-entity-type.js';
 import { EnumTypeGenerator } from '../enum-type-generator.js';
-import { createRootFieldContext } from '../query-node-object-type/index.js';
-import type { CreateObjectInputField } from './index.js';
-import { CreateInputTypeGenerator } from './index.js';
+import { createRootFieldContext } from '../query-node-object-type/query-node-generator.js';
+import { CreateInputTypeGenerator } from './generator.js';
+import type { CreateObjectInputField } from './input-fields.js';
 
 describe('CreateInputTypeGenerator', () => {
     const model = new Model({ types: [] });

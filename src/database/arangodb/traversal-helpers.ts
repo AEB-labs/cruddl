@@ -1,17 +1,20 @@
+import type { QueryNode } from '../../query-tree/base.js';
 import { FlexSearchQueryNode } from '../../query-tree/flex-search.js';
-import type { QueryNode, VariableQueryNode } from '../../query-tree/index.js';
 import {
     AggregationQueryNode,
     CountQueryNode,
+    TransformListQueryNode,
+} from '../../query-tree/lists.js';
+import { ObjectEntriesQueryNode } from '../../query-tree/objects.js';
+import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
+import {
     EntitiesQueryNode,
     FieldQueryNode,
     FollowEdgeQueryNode,
-    ObjectEntriesQueryNode,
-    TransformListQueryNode,
     TraversalQueryNode,
-    VariableAssignmentQueryNode,
-} from '../../query-tree/index.js';
-import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
+} from '../../query-tree/queries.js';
+import type { VariableQueryNode } from '../../query-tree/variables.js';
+import { VariableAssignmentQueryNode } from '../../query-tree/variables.js';
 import { visitQueryNode } from '../../query-tree/visitor.js';
 import type { VisitResult } from '../../utils/visitor.js';
 import { canUseArrayExpansionOperatorForQuantifierFilter } from './quantifier-filter-helpers.js';

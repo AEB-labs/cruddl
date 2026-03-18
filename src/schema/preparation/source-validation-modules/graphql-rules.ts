@@ -12,7 +12,7 @@ import {
     VariablesInAllowedPositionRule,
 } from 'graphql';
 import { gql } from 'graphql-tag';
-import { ValidationMessage } from '../../../model/index.js';
+import { ValidationMessage } from '../../../model/validation/message.js';
 import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base.js';
 import type { ParsedProjectSource } from '../../parsing/parsed-project.js';
 import { ParsedProjectSourceBaseKind } from '../../parsing/parsed-project.js';

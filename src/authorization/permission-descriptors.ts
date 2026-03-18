@@ -1,15 +1,13 @@
 import { FieldPath } from '../model/implementation/field-path.js';
-import type { Field, Permission, PermissionProfile, RootEntityType } from '../model/index.js';
-import type { QueryNode } from '../query-tree/index.js';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConstBoolQueryNode,
-    FieldQueryNode,
-    LiteralQueryNode,
-    UnknownValueQueryNode,
-} from '../query-tree/index.js';
-import { simplifyBooleans } from '../query-tree/utils/index.js';
+import type { Field } from '../model/implementation/field.js';
+import type { Permission, PermissionProfile } from '../model/implementation/permission-profile.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
+import type { QueryNode } from '../query-tree/base.js';
+import { UnknownValueQueryNode } from '../query-tree/errors.js';
+import { ConstBoolQueryNode, LiteralQueryNode } from '../query-tree/literals.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../query-tree/operators.js';
+import { FieldQueryNode } from '../query-tree/queries.js';
+import { simplifyBooleans } from '../query-tree/utils/simplify-booleans.js';
 import { createFieldPathNode } from '../schema-generation/field-path-node.js';
 import { ACCESS_GROUP_FIELD } from '../schema/constants.js';
 import { isReadonlyArray } from '../utils/utils.js';

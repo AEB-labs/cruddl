@@ -1,14 +1,10 @@
 import type { ThunkReadonlyArray } from 'graphql';
-import type { Field } from '../../model/index.js';
-import type { QueryNode } from '../../query-tree/index.js';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConstBoolQueryNode,
-    NullQueryNode,
-} from '../../query-tree/index.js';
+import type { Field } from '../../model/implementation/field.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { ConstBoolQueryNode, NullQueryNode } from '../../query-tree/literals.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../../query-tree/operators.js';
 import type { AnyValue } from '../../utils/utils.js';
-import type { QueryNodeResolveInfo } from '../query-node-object-type/index.js';
+import type { QueryNodeResolveInfo } from '../query-node-object-type/definition.js';
 import { TypedInputObjectType } from '../typed-input-object-type.js';
 import { and } from '../utils/input-types.js';
 import type { FlexSearchFilterField } from './filter-fields.js';

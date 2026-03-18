@@ -9,7 +9,7 @@ import type {
     ThunkReadonlyArray,
 } from 'graphql';
 import type { ExecutionOptions } from '../../execution/execution-options.js';
-import type { QueryNode } from '../../query-tree/index.js';
+import type { QueryNode } from '../../query-tree/base.js';
 import type { FieldContext } from './context.js';
 
 export interface QueryNodeResolveInfo extends FieldContext {}

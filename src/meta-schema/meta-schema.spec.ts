@@ -8,7 +8,9 @@ import type {
     ExecutionOptionsCallbackArgs,
 } from '../execution/execution-options.js';
 import { prettyPrint } from '../graphql/pretty-print.js';
-import { AggregationOperator, Model, TypeKind } from '../model/index.js';
+import { AggregationOperator } from '../model/config/field.js';
+import { TypeKind } from '../model/config/type.js';
+import { Model } from '../model/implementation/model.js';
 import type { Project } from '../project/project.js';
 import { getMetaSchema } from './meta-schema.js';
 

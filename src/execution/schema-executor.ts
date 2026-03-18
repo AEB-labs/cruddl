@@ -12,8 +12,8 @@ import { resolveSelections } from '../graphql/field-collection.js';
 import { extractOperation } from '../graphql/operations.js';
 import { InvalidProjectError } from '../project/invalid-project-error.js';
 import type { Project } from '../project/project.js';
-import type { QueryNodeObjectType } from '../schema-generation/index.js';
-import { SchemaGenerator } from '../schema-generation/index.js';
+import type { QueryNodeObjectType } from '../schema-generation/query-node-object-type/definition.js';
+import { SchemaGenerator } from '../schema-generation/schema-generator.js';
 import type { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
 import { validateAndPrepareSchema } from '../schema/schema-builder.js';
 

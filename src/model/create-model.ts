@@ -94,39 +94,46 @@ import type {
     AggregationOperator,
     CalcMutationsOperator,
     CollectFieldConfig,
-    EnumTypeConfig,
-    EnumValueConfig,
     FieldConfig,
-    FlexSearchIndexConfig,
     FlexSearchLanguage,
+    RelationDeleteAction,
+} from './config/field.js';
+import type { LocalizationConfig } from './config/i18n.js';
+import type {
+    FlexSearchIndexConfig,
     FlexSearchPerformanceParams,
     FlexSearchPrimarySortClauseConfig,
     IndexDefinitionConfig,
-    LocalizationConfig,
-    NamespacedPermissionProfileConfigMap,
-    ObjectTypeConfig,
-    ObjectTypeConfigBase,
-    PermissionProfileConfigMap,
-    PermissionsConfig,
-    RelationDeleteAction,
-    RolesSpecifierConfig,
-    TimeToLiveConfig,
-    TypeConfig,
-    TypeConfigBase,
-} from './config/index.js';
-import { TypeKind } from './config/index.js';
+} from './config/indices.js';
 import type {
     FieldModuleSpecificationConfig,
     TypeModuleSpecificationConfig,
 } from './config/module-specification.js';
 import type { ModuleConfig } from './config/module.js';
+import type {
+    NamespacedPermissionProfileConfigMap,
+    PermissionProfileConfigMap,
+    PermissionsConfig,
+    RolesSpecifierConfig,
+} from './config/permissions.js';
+import type { TimeToLiveConfig } from './config/time-to-live.js';
+import type {
+    EnumTypeConfig,
+    EnumValueConfig,
+    ObjectTypeConfig,
+    ObjectTypeConfigBase,
+    TypeConfig,
+    TypeConfigBase,
+} from './config/type.js';
+import { TypeKind } from './config/type.js';
 import { extractBillingConfigs } from './extract-billing.js';
 import { extractI18nConfigs } from './extract-i18n.js';
 import { extractModuleConfigs } from './extract-modules.js';
 import { extractTTLConfigs } from './extract-ttl.js';
-import { Model } from './implementation/index.js';
+import { Model } from './implementation/model.js';
 import { OrderDirection } from './implementation/order.js';
-import { ValidationContext, ValidationMessage } from './validation/index.js';
+import { ValidationMessage } from './validation/message.js';
+import { ValidationContext } from './validation/validation-context.js';
 
 export function createModel(parsedProject: ParsedProject, options: ModelOptions = {}): Model {
     const validationContext = new ValidationContext();

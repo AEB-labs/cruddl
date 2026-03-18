@@ -1,6 +1,6 @@
-import type { Type } from '../implementation/index.js';
-import type { ValidationContext } from '../validation/index.js';
-import { ValidationMessage } from '../validation/index.js';
+import type { Type } from '../implementation/type.js';
+import { ValidationMessage } from '../validation/message.js';
+import type { ValidationContext } from '../validation/validation-context.js';
 import { checkEnumType } from './check-enum-type.js';
 import { checkObjectType } from './check-object-type.js';
 import { describeTypeKind } from './utils.js';

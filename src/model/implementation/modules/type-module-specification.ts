@@ -1,6 +1,6 @@
 import { MODULES_DIRECTIVE, MODULES_IN_ARG } from '../../../schema/constants.js';
 import type { TypeModuleSpecificationConfig } from '../../config/module-specification.js';
-import { ValidationMessage } from '../../validation/index.js';
+import { ValidationMessage } from '../../validation/message.js';
 import type { ValidationContext } from '../../validation/validation-context.js';
 import type { Type } from '../type.js';
 import { BaseModuleSpecification } from './base-module-specification.js';

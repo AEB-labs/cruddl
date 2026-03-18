@@ -5,11 +5,12 @@ import cors from 'cors';
 import express from 'express';
 import { resolve } from 'path';
 import { globalContext } from '../config/global.js';
-import { InMemoryAdapter } from '../database/inmemory/index.js';
-import type { ExecutionOptions, Project } from '../index.js';
-import { ArangoDBAdapter } from '../index.js';
+import { ArangoDBAdapter } from '../database/arangodb/arangodb-adapter.js';
+import { InMemoryAdapter } from '../database/inmemory/inmemory-adapter.js';
+import type { ExecutionOptions } from '../execution/execution-options.js';
 import { getMetaSchema } from '../meta-schema/meta-schema.js';
 import { loadProjectFromDir } from '../project/project-from-fs.js';
+import type { Project } from '../project/project.js';
 import { createFastApp } from './fast-server.js';
 
 const port = 3000;

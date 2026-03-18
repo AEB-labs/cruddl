@@ -1,4 +1,6 @@
-import type { Field, Relation, RootEntityType } from '../model/index.js';
+import type { Field } from '../model/implementation/field.js';
+import type { Relation } from '../model/implementation/relation.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
 import { indent } from '../utils/utils.js';
 import { QueryNode } from './base.js';
 import { PropertySpecification } from './objects.js';

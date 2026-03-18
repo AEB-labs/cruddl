@@ -1,18 +1,15 @@
-import type { QueryNode } from '../query-tree/index.js';
+import type { QueryNode } from '../query-tree/base.js';
+import { FLEX_SEARCH_TOO_MANY_OBJECTS, RuntimeErrorQueryNode } from '../query-tree/errors.js';
 import {
-    ConditionalQueryNode,
     FirstOfListQueryNode,
-    FLEX_SEARCH_TOO_MANY_OBJECTS,
     ListQueryNode,
-    ObjectQueryNode,
-    PreExecQueryParms,
-    PropertySpecification,
-    RuntimeErrorQueryNode,
     TransformListQueryNode,
-    TraversalQueryNode,
-    VariableAssignmentQueryNode,
-    WithPreExecutionQueryNode,
-} from '../query-tree/index.js';
+} from '../query-tree/lists.js';
+import { ObjectQueryNode, PropertySpecification } from '../query-tree/objects.js';
+import { ConditionalQueryNode } from '../query-tree/operators.js';
+import { PreExecQueryParms, WithPreExecutionQueryNode } from '../query-tree/pre-exec.js';
+import { TraversalQueryNode } from '../query-tree/queries.js';
+import { VariableAssignmentQueryNode } from '../query-tree/variables.js';
 import { visitQueryNode } from '../query-tree/visitor.js';
 import type { VisitResult } from '../utils/visitor.js';
 

@@ -1,5 +1,5 @@
-import type { TypeConfig } from '../config/index.js';
-import { TypeKind } from '../config/index.js';
+import type { TypeConfig } from '../config/type.js';
+import { TypeKind } from '../config/type.js';
 import { ChildEntityType } from './child-entity-type.js';
 import { EntityExtensionType } from './entity-extension-type.js';
 import { EnumType } from './enum-type.js';

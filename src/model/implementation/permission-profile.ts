@@ -3,13 +3,13 @@ import { AccessOperation } from '../../authorization/auth-basics.js';
 import { WILDCARD_CHARACTER } from '../../schema/constants.js';
 import { escapeRegExp, isReadonlyArray } from '../../utils/utils.js';
 import type {
-    MessageLocation,
     PermissionAccessKind,
     PermissionConfig,
     PermissionProfileConfig,
     PermissionRestrictionConfig,
-} from '../index.js';
-import { ValidationMessage } from '../index.js';
+} from '../config/permissions.js';
+import type { MessageLocation } from '../validation/location.js';
+import { ValidationMessage } from '../validation/message.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
 
 export class PermissionProfile implements ModelComponent {

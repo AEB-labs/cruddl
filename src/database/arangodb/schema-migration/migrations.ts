@@ -3,7 +3,7 @@ import type {
     ArangoSearchViewPropertiesOptions,
     CreateArangoSearchViewOptions,
 } from 'arangojs/views';
-import type { Relation } from '../../../model/implementation/index.js';
+import type { Relation } from '../../../model/implementation/relation.js';
 import type { IndexDefinition } from './index-helpers.js';
 import { describeIndex, getIndexDescriptor } from './index-helpers.js';
 

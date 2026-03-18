@@ -1,5 +1,5 @@
-import type { ValueObjectTypeConfig } from '../config/index.js';
-import { TypeKind } from '../config/index.js';
+import type { ValueObjectTypeConfig } from '../config/type.js';
+import { TypeKind } from '../config/type.js';
 import type { Model } from './model.js';
 import { ObjectTypeBase } from './object-type-base.js';
 

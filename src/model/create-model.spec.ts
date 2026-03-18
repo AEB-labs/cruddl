@@ -5,7 +5,9 @@ import { Project, ProjectSource } from '../core-exports.js';
 import { parseProject } from '../schema/parsing/parse-project.js';
 import { createSimpleModel } from '../testing/utils/create-simple-model.js';
 import { expectSingleError, expectToBeValid } from '../testing/utils/model-validation-utils.js';
-import { Severity, ValidationContext, createModel } from './index.js';
+import { createModel } from './create-model.js';
+import { Severity } from './validation/message.js';
+import { ValidationContext } from './validation/validation-context.js';
 
 describe('createModel', () => {
     it('translates _key: String @key properly', () => {

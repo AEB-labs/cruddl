@@ -9,9 +9,11 @@ import type {
 } from 'graphql';
 import { isTypeDefinitionNode, Kind, print } from 'graphql';
 import { isCommentOnlySource } from '../graphql/is-comment-only-source.js';
+import { IndexField } from '../model/implementation/indices.js';
+import type { Model } from '../model/implementation/model.js';
 import { parseModuleSpecificationExpression } from '../model/implementation/modules/expression-parser.js';
-import type { Model, RootEntityType } from '../model/index.js';
-import { IndexField, ValidationMessage } from '../model/index.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
+import { ValidationMessage } from '../model/validation/message.js';
 import { ValidationContext } from '../model/validation/validation-context.js';
 import {
     INDICES_ARG,

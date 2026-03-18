@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { CollectPathSegment } from '../index.js';
-import { CollectPath, Model, TypeKind, ValidationContext } from '../index.js';
+import { TypeKind } from '../config/type.js';
+import { ValidationContext } from '../validation/validation-context.js';
+import type { CollectPathSegment } from './collect-path.js';
+import { CollectPath } from './collect-path.js';
+import { Model } from './model.js';
 
 describe('CollectPath', () => {
     const model = new Model({

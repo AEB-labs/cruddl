@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { LocalizationConfig } from '../index.js';
-import { Model, TypeKind } from '../index.js';
+import type { LocalizationConfig } from '../config/i18n.js';
+import { TypeKind } from '../config/type.js';
+import { Model } from './model.js';
 
 const FULLY = 'fully';
 const PARTIALLY = 'partially';

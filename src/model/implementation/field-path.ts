@@ -1,6 +1,7 @@
 import { memorize } from 'memorize-decorator';
-import type { LocationLike, MessageLocation } from '../validation/index.js';
-import { locationWithinStringArgument, ValidationMessage } from '../validation/index.js';
+import type { LocationLike, MessageLocation } from '../validation/location.js';
+import { locationWithinStringArgument } from '../validation/location.js';
+import { ValidationMessage } from '../validation/message.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
 import type { Field } from './field.js';
 import type { ObjectType, Type } from './type.js';

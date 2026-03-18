@@ -1,15 +1,13 @@
 import type { GraphQLEnumType, ThunkReadonlyArray } from 'graphql';
 import { GraphQLString, resolveReadonlyArrayThunk } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import type { Field, Type } from '../../model/index.js';
-import { EnumType, ScalarType } from '../../model/index.js';
-import type { QueryNode } from '../../query-tree/index.js';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConstBoolQueryNode,
-    NullQueryNode,
-} from '../../query-tree/index.js';
+import { EnumType } from '../../model/implementation/enum-type.js';
+import type { Field } from '../../model/implementation/field.js';
+import { ScalarType } from '../../model/implementation/scalar-type.js';
+import type { Type } from '../../model/implementation/type.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { ConstBoolQueryNode, NullQueryNode } from '../../query-tree/literals.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../../query-tree/operators.js';
 import { INPUT_FIELD_EQUAL } from '../../schema/constants.js';
 import { getFilterTypeName } from '../../schema/names.js';
 import { GraphQLI18nString, GraphQLStringMap } from '../../schema/scalars/string-map.js';

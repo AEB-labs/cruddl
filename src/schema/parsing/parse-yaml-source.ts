@@ -9,13 +9,9 @@ import {
     type YAMLSequence,
 } from 'yaml-ast-parser';
 import type { ProjectOptions } from '../../config/interfaces.js';
-import {
-    MessageLocation,
-    Severity,
-    SourcePosition,
-    ValidationContext,
-    ValidationMessage,
-} from '../../model/index.js';
+import { MessageLocation, SourcePosition } from '../../model/validation/location.js';
+import { Severity, ValidationMessage } from '../../model/validation/message.js';
+import { ValidationContext } from '../../model/validation/validation-context.js';
 import { ProjectSource } from '../../project/source.js';
 import { isReadonlyArray, type PlainObject } from '../../utils/utils.js';
 import { getLineEndPosition } from '../schema-utils.js';

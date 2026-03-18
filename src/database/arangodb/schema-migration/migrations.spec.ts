@@ -3,15 +3,15 @@ import { deepEqual } from 'fast-equals';
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
 import { prettyPrint } from '../../../graphql/pretty-print.js';
-import type { Model } from '../../../model/index.js';
+import type { Model } from '../../../model/implementation/model.js';
 import { Project } from '../../../project/project.js';
 import { ProjectSource } from '../../../project/source.js';
 import {
     createTempDatabase,
     getTempDatabase,
 } from '../../../testing/regression-tests/initialization.js';
-import type { ArangoDBConfig } from '../index.js';
-import { ArangoDBAdapter } from '../index.js';
+import { ArangoDBAdapter } from '../arangodb-adapter.js';
+import type { ArangoDBConfig } from '../config.js';
 import { isArangoDBDisabled } from '../testing/is-arangodb-disabled.js';
 
 type GqlDocument = ReturnType<typeof gql>;

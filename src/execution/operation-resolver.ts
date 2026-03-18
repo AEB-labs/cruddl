@@ -10,28 +10,20 @@ import type {
 } from '../database/database-adapter.js';
 import type { OperationParams } from '../graphql/operation-based-resolvers.js';
 import { distillOperation } from '../graphql/query-distiller.js';
+import { QueryNode } from '../query-tree/base.js';
 import type { FlexSearchTokenization } from '../query-tree/flex-search.js';
 import {
     FlexSearchComplexOperatorQueryNode,
     FlexSearchQueryNode,
 } from '../query-tree/flex-search.js';
-import {
-    BinaryOperator,
-    ObjectQueryNode,
-    PreExecQueryParms,
-    PropertySpecification,
-    QueryNode,
-    WithPreExecutionQueryNode,
-} from '../query-tree/index.js';
-import { evaluateQueryStatically } from '../query-tree/utils/index.js';
-import type {
-    FieldContext,
-    QueryNodeObjectType,
-} from '../schema-generation/query-node-object-type/index.js';
-import {
-    buildConditionalObjectQueryNode,
-    SelectionToken,
-} from '../schema-generation/query-node-object-type/index.js';
+import { ObjectQueryNode, PropertySpecification } from '../query-tree/objects.js';
+import { BinaryOperator } from '../query-tree/operators.js';
+import { PreExecQueryParms, WithPreExecutionQueryNode } from '../query-tree/pre-exec.js';
+import { evaluateQueryStatically } from '../query-tree/utils/static-evaluation.js';
+import type { FieldContext } from '../schema-generation/query-node-object-type/context.js';
+import { SelectionToken } from '../schema-generation/query-node-object-type/context.js';
+import type { QueryNodeObjectType } from '../schema-generation/query-node-object-type/definition.js';
+import { buildConditionalObjectQueryNode } from '../schema-generation/query-node-object-type/query-node-generator.js';
 import type { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
 import { isDefined } from '../utils/utils.js';
 import { getPreciseTime, Watch } from '../utils/watch.js';

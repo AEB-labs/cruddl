@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { ValidationMessage } from '../../../model/validation/index.js';
-import { Severity, ValidationContext } from '../../../model/validation/index.js';
+import type { ValidationMessage } from '../../../model/validation/message.js';
+import { Severity } from '../../../model/validation/message.js';
+import { ValidationContext } from '../../../model/validation/validation-context.js';
 import { ProjectSource } from '../../../project/source.js';
 import { parseProjectSource } from '../../parsing/parse-project-source.js';
 import { SidecarSchemaValidator } from './sidecar-schema.js';

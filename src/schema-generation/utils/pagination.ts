@@ -1,4 +1,4 @@
-import { OrderDirection } from '../../query-tree/index.js';
+import { OrderDirection } from '../../query-tree/lists.js';
 import { ORDER_BY_ARG } from '../../schema/constants.js';
 import type { OrderByEnumType } from '../order-by-enum-generator.js';
 import { OrderByEnumValue } from '../order-by-enum-generator.js';

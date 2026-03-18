@@ -1,5 +1,5 @@
-import type { FlexSearchPrimarySortClauseConfig } from '../config/index.js';
-import { Severity, ValidationMessage } from '../validation/index.js';
+import type { FlexSearchPrimarySortClauseConfig } from '../config/indices.js';
+import { Severity, ValidationMessage } from '../validation/message.js';
 import type { ModelComponent } from '../validation/validation-context.js';
 import { ValidationContext } from '../validation/validation-context.js';
 import { FieldPath } from './field-path.js';

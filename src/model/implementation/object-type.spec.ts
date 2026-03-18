@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { expectToBeValid, validate } from '../../testing/utils/model-validation-utils.js';
-import { ChildEntityType, Model, Severity, TypeKind } from '../index.js';
+import { TypeKind } from '../config/type.js';
+import { Severity } from '../validation/message.js';
+import { ChildEntityType } from './child-entity-type.js';
+import { Model } from './model.js';
 
 // This test uses a ChildEntityType because that is a concrete class without much addition to ObjectType, but it
 // has system fields.

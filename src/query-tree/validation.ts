@@ -1,4 +1,5 @@
-import type { RelationSide, RootEntityType } from '../model/index.js';
+import type { RelationSide } from '../model/implementation/relation.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
 import { QueryNode } from './base.js';
 import { TOO_MANY_OBJECTS_ERROR } from './errors.js';
 

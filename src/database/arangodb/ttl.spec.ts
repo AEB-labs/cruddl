@@ -3,11 +3,11 @@ import { graphql } from 'graphql';
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
 import { prettyPrint } from '../../graphql/pretty-print.js';
-import type { TimeToLiveConfig } from '../../model/index.js';
+import type { TimeToLiveConfig } from '../../model/config/time-to-live.js';
 import { Project } from '../../project/project.js';
 import { ProjectSource } from '../../project/source.js';
 import { createTempDatabase } from '../../testing/regression-tests/initialization.js';
-import { ArangoDBAdapter } from './index.js';
+import { ArangoDBAdapter } from './arangodb-adapter.js';
 import { isArangoDBDisabled } from './testing/is-arangodb-disabled.js';
 
 interface Setup {

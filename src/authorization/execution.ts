@@ -1,18 +1,17 @@
-import type { QueryNode } from '../query-tree/index.js';
+import type { QueryNode } from '../query-tree/base.js';
+import { ATOMICITY_SKIP_ERROR, RuntimeErrorQueryNode } from '../query-tree/errors.js';
 import {
     AddEdgesQueryNode,
-    ATOMICITY_SKIP_ERROR,
     CreateEntityQueryNode,
     DeleteEntitiesQueryNode,
     RemoveEdgesQueryNode,
-    RuntimeErrorQueryNode,
     SetEdgeQueryNode,
     UpdateEntitiesQueryNode,
-} from '../query-tree/index.js';
+} from '../query-tree/mutations.js';
 import { visitQueryNode } from '../query-tree/visitor.js';
 import type { AuthContext } from './auth-basics.js';
 import { moveErrorsToOutputNodes } from './move-errors-to-output-nodes.js';
-import { transformNode } from './transformers/index.js';
+import { transformNode } from './transform-node.js';
 
 const MUTATIONS: ReadonlyArray<Function> = [
     CreateEntityQueryNode,

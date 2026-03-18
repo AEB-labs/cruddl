@@ -1,25 +1,23 @@
-import type { QueryNode } from '../../query-tree/index.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
+import { CountQueryNode, TransformListQueryNode } from '../../query-tree/lists.js';
+import { ConstIntQueryNode } from '../../query-tree/literals.js';
+import {
+    DeleteEntitiesQueryNode,
+    EntitiesIdentifierKind,
+    UpdateEntitiesQueryNode,
+} from '../../query-tree/mutations.js';
+import { MergeObjectsQueryNode, ObjectQueryNode } from '../../query-tree/objects.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
-    ConstIntQueryNode,
-    CountQueryNode,
-    DeleteEntitiesQueryNode,
-    EntitiesIdentifierKind,
-    EntityFromIdQueryNode,
-    ErrorIfNotTruthyResultValidator,
-    MergeObjectsQueryNode,
-    ObjectQueryNode,
-    PERMISSION_DENIED_ERROR,
-    PreExecQueryParms,
-    RuntimeErrorQueryNode,
-    TransformListQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
-    UpdateEntitiesQueryNode,
-    VariableQueryNode,
-    WithPreExecutionQueryNode,
-} from '../../query-tree/index.js';
+} from '../../query-tree/operators.js';
+import { PreExecQueryParms, WithPreExecutionQueryNode } from '../../query-tree/pre-exec.js';
+import { EntityFromIdQueryNode } from '../../query-tree/queries.js';
+import { ErrorIfNotTruthyResultValidator } from '../../query-tree/validation.js';
+import { VariableQueryNode } from '../../query-tree/variables.js';
 import { decapitalize } from '../../utils/utils.js';
 import type { AuthContext } from '../auth-basics.js';
 import { AccessOperation } from '../auth-basics.js';

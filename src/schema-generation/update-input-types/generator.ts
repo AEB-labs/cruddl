@@ -1,13 +1,11 @@
 import type { GraphQLInputType } from 'graphql';
 import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import type {
-    CalcMutationsOperator,
-    ChildEntityType,
-    EntityExtensionType,
-    Field,
-    RootEntityType,
-} from '../../model/index.js';
+import type { CalcMutationsOperator } from '../../model/config/field.js';
+import type { ChildEntityType } from '../../model/implementation/child-entity-type.js';
+import type { EntityExtensionType } from '../../model/implementation/entity-extension-type.js';
+import type { Field } from '../../model/implementation/field.js';
+import type { RootEntityType } from '../../model/implementation/root-entity-type.js';
 import type { CalcMutationOperator } from '../../schema/constants.js';
 import { CALC_MUTATIONS_OPERATORS, ID_FIELD } from '../../schema/constants.js';
 import {
@@ -17,7 +15,7 @@ import {
     getUpdateChildEntitiesFieldName,
     getUpdateInputTypeName,
 } from '../../schema/names.js';
-import type { CreateInputTypeGenerator } from '../create-input-types/index.js';
+import type { CreateInputTypeGenerator } from '../create-input-types/generator.js';
 import type { EnumTypeGenerator } from '../enum-type-generator.js';
 import type { UpdateInputField } from './input-fields.js';
 import {

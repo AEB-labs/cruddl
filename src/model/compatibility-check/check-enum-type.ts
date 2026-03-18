@@ -4,9 +4,12 @@ import { parseDocument } from 'yaml';
 import { prettyPrint } from '../../graphql/pretty-print.js';
 import type { Change } from '../change-set/change-set.js';
 import { ChangeSet, TextChange, YamlAddInMapChange } from '../change-set/change-set.js';
-import type { EnumType, EnumValue, ModelI18n } from '../implementation/index.js';
-import type { ValidationContext } from '../validation/index.js';
-import { MessageLocation, QuickFix, ValidationMessage } from '../validation/index.js';
+import type { EnumType, EnumValue } from '../implementation/enum-type.js';
+import type { ModelI18n } from '../implementation/i18n.js';
+import { MessageLocation } from '../validation/location.js';
+import { ValidationMessage } from '../validation/message.js';
+import { QuickFix } from '../validation/quick-fix.js';
+import type { ValidationContext } from '../validation/validation-context.js';
 import {
     getTypeLocalizationConfigs,
     getYamlNodePairAtPath,

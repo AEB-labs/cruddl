@@ -1,7 +1,7 @@
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
 import { prettyPrint } from '../../../graphql/pretty-print.js';
-import { ValidationContext } from '../../../model/validation/index.js';
+import { ValidationContext } from '../../../model/validation/validation-context.js';
 import { ProjectSource } from '../../../project/source.js';
 import { parseProjectSource } from '../../parsing/parse-project-source.js';
 import type { ParsedProjectSource } from '../../parsing/parsed-project.js';

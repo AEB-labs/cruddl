@@ -1,6 +1,7 @@
 import { expect } from 'vitest';
 import { applyChangeSet } from '../../core-exports.js';
-import { Severity, ValidationResult } from '../../model/index.js';
+import { Severity } from '../../model/validation/message.js';
+import { ValidationResult } from '../../model/validation/result.js';
 import type { ModelComponent } from '../../model/validation/validation-context.js';
 import { ValidationContext } from '../../model/validation/validation-context.js';
 import { Project } from '../../project/project.js';

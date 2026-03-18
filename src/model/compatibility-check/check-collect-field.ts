@@ -1,6 +1,6 @@
-import type { Field } from '../implementation/index.js';
-import type { ValidationContext } from '../validation/index.js';
-import { ValidationMessage } from '../validation/index.js';
+import type { Field } from '../implementation/field.js';
+import { ValidationMessage } from '../validation/message.js';
+import type { ValidationContext } from '../validation/validation-context.js';
 
 /**
  * Checks whether the @collect directives on the field and on the baseline fields match

@@ -1,8 +1,8 @@
 import { ID_FIELD } from '../../schema/constants.js';
-import type { ChildEntityTypeConfig } from '../config/index.js';
-import { TypeKind } from '../config/index.js';
-import type { ValidationContext } from '../validation/index.js';
-import { ValidationMessage } from '../validation/index.js';
+import type { ChildEntityTypeConfig } from '../config/type.js';
+import { TypeKind } from '../config/type.js';
+import { ValidationMessage } from '../validation/message.js';
+import type { ValidationContext } from '../validation/validation-context.js';
 import type { Field, SystemFieldConfig } from './field.js';
 import type { Model } from './model.js';
 import { ObjectTypeBase } from './object-type-base.js';

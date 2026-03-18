@@ -1,7 +1,7 @@
 import { ChangeSet, TextChange } from '../change-set/change-set.js';
 import type { Field } from '../implementation/field.js';
-import { QuickFix } from '../validation/index.js';
 import { ValidationMessage } from '../validation/message.js';
+import { QuickFix } from '../validation/quick-fix.js';
 import type { ValidationContext } from '../validation/validation-context.js';
 
 /**

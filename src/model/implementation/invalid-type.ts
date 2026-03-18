@@ -1,5 +1,5 @@
 import { GraphQLString } from 'graphql';
-import { TypeKind } from '../config/index.js';
+import { TypeKind } from '../config/type.js';
 import type { Model } from './model.js';
 import { ScalarType } from './scalar-type.js';
 

@@ -1,4 +1,6 @@
-import type { IndexField, Model, RootEntityType } from '../../../model/index.js';
+import type { IndexField } from '../../../model/implementation/indices.js';
+import type { Model } from '../../../model/implementation/model.js';
+import type { RootEntityType } from '../../../model/implementation/root-entity-type.js';
 import { ID_FIELD } from '../../../schema/constants.js';
 import {
     GraphQLOffsetDateTime,

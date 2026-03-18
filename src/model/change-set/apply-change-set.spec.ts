@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Pair, parseDocument } from 'yaml';
 import { Project } from '../../project/project.js';
 import { ProjectSource } from '../../project/source.js';
-import { MessageLocation } from '../index.js';
+import { MessageLocation } from '../validation/location.js';
 import { applyChangeSet, InvalidChangeSetError } from './apply-change-set.js';
 import { ChangeSet, TextChange, YamlAddInMapChange } from './change-set.js';
 

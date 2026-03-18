@@ -1,7 +1,7 @@
 import { CALC_MUTATIONS_OPERATORS_ARG } from '../../schema/constants.js';
-import type { Field } from '../implementation/index.js';
-import type { ValidationContext } from '../validation/index.js';
-import { ValidationMessage } from '../validation/index.js';
+import type { Field } from '../implementation/field.js';
+import { ValidationMessage } from '../validation/message.js';
+import type { ValidationContext } from '../validation/validation-context.js';
 
 /**
  * Checks whether all calc mutations defined in the baseline field are also present in the field to check

@@ -1,4 +1,4 @@
-import { ValidationContext } from '../../model/index.js';
+import { ValidationContext } from '../../model/validation/validation-context.js';
 import { Project } from '../../project/project.js';
 import { isDefined } from '../../utils/utils.js';
 import { parseProjectSource } from './parse-project-source.js';

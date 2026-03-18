@@ -2,17 +2,14 @@ import { GraphQLID, GraphQLNonNull, GraphQLString } from 'graphql';
 import { memorize } from 'memorize-decorator';
 import type { FieldRequest } from '../graphql/query-distiller.js';
 import { isListTypeIgnoringNonNull } from '../graphql/schema-utils.js';
-import type { Field, ObjectType, Type } from '../model/index.js';
-import { TypeKind } from '../model/index.js';
-import type { QueryNode } from '../query-tree/index.js';
-import {
-    NullQueryNode,
-    ObjectQueryNode,
-    PropertySpecification,
-    RevisionQueryNode,
-    UnaryOperationQueryNode,
-    UnaryOperator,
-} from '../query-tree/index.js';
+import { TypeKind } from '../model/config/type.js';
+import type { Field } from '../model/implementation/field.js';
+import type { ObjectType, Type } from '../model/implementation/type.js';
+import type { QueryNode } from '../query-tree/base.js';
+import { NullQueryNode } from '../query-tree/literals.js';
+import { ObjectQueryNode, PropertySpecification } from '../query-tree/objects.js';
+import { UnaryOperationQueryNode, UnaryOperator } from '../query-tree/operators.js';
+import { RevisionQueryNode } from '../query-tree/queries.js';
 import {
     CURSOR_FIELD,
     FLEX_SEARCH_ENTITIES_FIELD_PREFIX,
@@ -31,12 +28,9 @@ import type {
     OrderByEnumType,
     OrderByEnumValue,
 } from './order-by-enum-generator.js';
-import type {
-    FieldContext,
-    QueryNodeField,
-    QueryNodeOutputType,
-} from './query-node-object-type/index.js';
-import { QueryNodeListType, QueryNodeNonNullType } from './query-node-object-type/index.js';
+import type { FieldContext } from './query-node-object-type/context.js';
+import type { QueryNodeField, QueryNodeOutputType } from './query-node-object-type/definition.js';
+import { QueryNodeListType, QueryNodeNonNullType } from './query-node-object-type/definition.js';
 import type { RootFieldHelper } from './root-field-helper.js';
 import {
     getSortClausesForPrimarySort,

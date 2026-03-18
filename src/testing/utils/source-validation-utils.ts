@@ -2,13 +2,11 @@ import type { DocumentNode } from 'graphql';
 import { parse, Source } from 'graphql';
 import { expect } from 'vitest';
 import { prettyPrint } from '../../graphql/pretty-print.js';
-import {
-    createModel,
-    type PermissionProfileConfigMap,
-    type TimeToLiveConfig,
-    ValidationContext,
-    ValidationResult,
-} from '../../model/index.js';
+import type { PermissionProfileConfigMap } from '../../model/config/permissions.js';
+import type { TimeToLiveConfig } from '../../model/config/time-to-live.js';
+import { createModel } from '../../model/create-model.js';
+import { ValidationResult } from '../../model/validation/result.js';
+import { ValidationContext } from '../../model/validation/validation-context.js';
 import { ProjectSource } from '../../project/source.js';
 import { parseProjectSource } from '../../schema/parsing/parse-project-source.js';
 import { ParsedProjectSourceBaseKind } from '../../schema/parsing/parsed-project.js';

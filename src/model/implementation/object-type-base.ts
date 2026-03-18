@@ -1,8 +1,9 @@
 import type { DirectiveNode } from 'graphql';
 import { groupArray, isDefined } from '../../utils/utils.js';
-import type { FieldConfig, ObjectTypeConfig } from '../config/index.js';
-import type { ValidationContext } from '../validation/index.js';
-import { ValidationMessage } from '../validation/index.js';
+import type { FieldConfig } from '../config/field.js';
+import type { ObjectTypeConfig } from '../config/type.js';
+import { ValidationMessage } from '../validation/message.js';
+import type { ValidationContext } from '../validation/validation-context.js';
 import type { SystemFieldConfig } from './field.js';
 import { Field } from './field.js';
 import type { Model } from './model.js';

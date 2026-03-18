@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-    LiteralQueryNode,
-    ObjectQueryNode,
-    PropertySpecification,
-} from '../../query-tree/index.js';
+import { LiteralQueryNode } from '../../query-tree/literals.js';
+import { ObjectQueryNode, PropertySpecification } from '../../query-tree/objects.js';
 import { getAQLQuery } from './aql-generator.js';
 
 describe('getAQLForQuery', () => {

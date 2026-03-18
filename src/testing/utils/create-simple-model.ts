@@ -1,10 +1,8 @@
 import type { DocumentNode } from 'graphql';
-import type {
-    Model,
-    NamespaceLocalizationConfig,
-    PermissionProfileConfigMap,
-} from '../../model/index.js';
-import { createModel } from '../../model/index.js';
+import type { NamespaceLocalizationConfig } from '../../model/config/i18n.js';
+import type { PermissionProfileConfigMap } from '../../model/config/permissions.js';
+import { createModel } from '../../model/create-model.js';
+import type { Model } from '../../model/implementation/model.js';
 import {
     type ParsedProject,
     type ParsedProjectSource,

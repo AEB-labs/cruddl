@@ -1,25 +1,21 @@
 import { resolveReadonlyArrayThunk } from 'graphql';
 import { DefaultClock, UUIDGenerator } from '../../execution/execution-options.js';
 import type { FieldRequest, FieldSelection } from '../../graphql/query-distiller.js';
-import type { QueryNode, TraversalQueryNodeParams } from '../../query-tree/index.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { RuntimeErrorQueryNode } from '../../query-tree/errors.js';
+import { TransformListQueryNode } from '../../query-tree/lists.js';
+import { LiteralQueryNode, NullQueryNode } from '../../query-tree/literals.js';
+import { ObjectQueryNode, PropertySpecification } from '../../query-tree/objects.js';
+import { ConditionalQueryNode } from '../../query-tree/operators.js';
+import { PreExecQueryParms, WithPreExecutionQueryNode } from '../../query-tree/pre-exec.js';
+import type { TraversalQueryNodeParams } from '../../query-tree/queries.js';
+import { FieldQueryNode, TraversalQueryNode } from '../../query-tree/queries.js';
+import { BasicType, TypeCheckQueryNode } from '../../query-tree/type-check.js';
 import {
-    BasicType,
-    ConditionalQueryNode,
-    FieldQueryNode,
     HoistableQueryNode,
-    LiteralQueryNode,
-    NullQueryNode,
-    ObjectQueryNode,
-    PreExecQueryParms,
-    PropertySpecification,
-    RuntimeErrorQueryNode,
-    TransformListQueryNode,
-    TraversalQueryNode,
-    TypeCheckQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-    WithPreExecutionQueryNode,
-} from '../../query-tree/index.js';
+} from '../../query-tree/variables.js';
 import { groupByEquivalence } from '../../utils/group-by-equivalence.js';
 import type { RequireAllProperties } from '../../utils/util-types.js';
 import { decapitalize } from '../../utils/utils.js';

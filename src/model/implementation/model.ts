@@ -2,11 +2,11 @@ import { memorize } from 'memorize-decorator';
 import type { ModelOptions } from '../../config/interfaces.js';
 import { groupArray, isDefined, uniqBy } from '../../utils/utils.js';
 
-import type { ModelConfig } from '../config/index.js';
-import { TypeKind } from '../config/index.js';
-import type { NamespacedPermissionProfileConfigMap } from '../index.js';
-import type { ValidationResult } from '../validation/index.js';
-import { ValidationMessage } from '../validation/index.js';
+import type { ModelConfig } from '../config/model.js';
+import type { NamespacedPermissionProfileConfigMap } from '../config/permissions.js';
+import { TypeKind } from '../config/type.js';
+import { ValidationMessage } from '../validation/message.js';
+import type { ValidationResult } from '../validation/result.js';
 import type { ModelComponent } from '../validation/validation-context.js';
 import { ValidationContext } from '../validation/validation-context.js';
 import { BillingEntityType } from './billing.js';

@@ -1,5 +1,5 @@
 import type { DocumentNode } from 'graphql';
-import { ValidationMessage } from '../../../model/index.js';
+import { ValidationMessage } from '../../../model/validation/message.js';
 import { ROLES_DIRECTIVE, ROOT_ENTITY_DIRECTIVE } from '../../constants.js';
 import { findDirectiveWithName, getObjectTypes } from '../../schema-utils.js';
 import type { ASTValidator } from '../ast-validator.js';

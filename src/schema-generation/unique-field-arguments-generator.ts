@@ -1,7 +1,8 @@
 import type { GraphQLFieldConfigArgumentMap, GraphQLInputType } from 'graphql';
 import { GraphQLID } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import type { RootEntityType, Type } from '../model/index.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
+import type { Type } from '../model/implementation/type.js';
 import { ID_FIELD } from '../schema/constants.js';
 import type { EnumTypeGenerator } from './enum-type-generator.js';
 

@@ -1,31 +1,26 @@
 import { GraphQLBoolean, GraphQLID } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import type { RootEntityType } from '../model/implementation/index.js';
-import type { QueryNode } from '../query-tree/index.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
+import type { QueryNode } from '../query-tree/base.js';
+import { ConfirmForBillingQueryNode } from '../query-tree/billing.js';
+import { BILLING_KEY_FIELD_NOT_FILLED_ERROR, NOT_FOUND_ERROR } from '../query-tree/errors.js';
+import { FirstOfListQueryNode, TransformListQueryNode } from '../query-tree/lists.js';
+import { LiteralQueryNode } from '../query-tree/literals.js';
+import { UpdateEntitiesQueryNode } from '../query-tree/mutations.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../query-tree/operators.js';
+import { PreExecQueryParms, WithPreExecutionQueryNode } from '../query-tree/pre-exec.js';
 import {
-    BILLING_KEY_FIELD_NOT_FILLED_ERROR,
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConfirmForBillingQueryNode,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
-    ErrorIfNotTruthyResultValidator,
     FieldQueryNode,
-    FirstOfListQueryNode,
-    LiteralQueryNode,
-    NOT_FOUND_ERROR,
-    PreExecQueryParms,
     RootEntityIDQueryNode,
-    TransformListQueryNode,
-    UpdateEntitiesQueryNode,
-    VariableAssignmentQueryNode,
-    VariableQueryNode,
-    WithPreExecutionQueryNode,
-} from '../query-tree/index.js';
+} from '../query-tree/queries.js';
+import { ErrorIfNotTruthyResultValidator } from '../query-tree/validation.js';
+import { VariableAssignmentQueryNode, VariableQueryNode } from '../query-tree/variables.js';
 import { BILLING_MUTATION_INPUT_ARG } from '../schema/constants.js';
 import { getConfirmForBillingFieldName } from '../schema/names.js';
 import type { OutputTypeGenerator } from './output-type-generator.js';
-import type { QueryNodeField } from './query-node-object-type/index.js';
+import type { QueryNodeField } from './query-node-object-type/definition.js';
 import {
     createBillingEntityCategoryNode,
     createBillingEntityQuantityNode,

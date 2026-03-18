@@ -1,11 +1,14 @@
 import type { StringValueNode } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import type { QueryNode, VariableQueryNode } from '../../query-tree/index.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import type { VariableQueryNode } from '../../query-tree/variables.js';
 import { isDefined } from '../../utils/utils.js';
 
-import type { CollectFieldConfig } from '../config/index.js';
-import type { MessageLocation, ValidationContext } from '../validation/index.js';
-import { locationWithinStringArgument, ValidationMessage } from '../validation/index.js';
+import type { CollectFieldConfig } from '../config/field.js';
+import type { MessageLocation } from '../validation/location.js';
+import { locationWithinStringArgument } from '../validation/location.js';
+import { ValidationMessage } from '../validation/message.js';
+import type { ValidationContext } from '../validation/validation-context.js';
 import type { Field } from './field.js';
 import type { RelationSide } from './relation.js';
 import { Multiplicity } from './relation.js';

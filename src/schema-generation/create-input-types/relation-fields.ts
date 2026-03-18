@@ -1,12 +1,13 @@
 import type { GraphQLInputType } from 'graphql';
 import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
-import type { Field } from '../../model/index.js';
-import { Multiplicity } from '../../model/index.js';
-import type { PreExecQueryParms, QueryNode } from '../../query-tree/index.js';
+import type { Field } from '../../model/implementation/field.js';
+import { Multiplicity } from '../../model/implementation/relation.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import type { PreExecQueryParms } from '../../query-tree/pre-exec.js';
 import { getCreateRelatedEntityFieldName } from '../../schema/names.js';
 import type { AnyValue, PlainObject } from '../../utils/utils.js';
 import { isDefined, isReadonlyArray } from '../../utils/utils.js';
-import type { FieldContext } from '../query-node-object-type/index.js';
+import type { FieldContext } from '../query-node-object-type/context.js';
 import {
     getAddEdgesStatements,
     getCreateAndAddEdgesStatements,

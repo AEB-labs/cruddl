@@ -1,6 +1,6 @@
-import type { RootEntityType } from '../implementation/index.js';
-import type { ValidationContext } from '../validation/index.js';
-import { ValidationMessage } from '../validation/index.js';
+import type { RootEntityType } from '../implementation/root-entity-type.js';
+import { ValidationMessage } from '../validation/message.js';
+import type { ValidationContext } from '../validation/validation-context.js';
 
 export function checkBusinessObject(
     typeToCheck: RootEntityType,

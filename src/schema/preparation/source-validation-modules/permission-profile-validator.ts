@@ -2,7 +2,7 @@ import {
     createRoleSpecifierEntry,
     InvalidRoleSpecifierError,
 } from '../../../model/implementation/permission-profile.js';
-import { ValidationMessage } from '../../../model/index.js';
+import { ValidationMessage } from '../../../model/validation/message.js';
 import { isReadonlyArray } from '../../../utils/utils.js';
 import type { ParsedProjectSource, PathLocationMap } from '../../parsing/parsed-project.js';
 import { ParsedProjectSourceBaseKind } from '../../parsing/parsed-project.js';

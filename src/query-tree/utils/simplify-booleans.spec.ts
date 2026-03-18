@@ -1,14 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { QueryNode } from '../index.js';
+import type { QueryNode } from '../base.js';
+import { ConstBoolQueryNode, LiteralQueryNode } from '../literals.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
-    ConstBoolQueryNode,
-    LiteralQueryNode,
     UnaryOperationQueryNode,
     UnaryOperator,
-} from '../index.js';
-import { simplifyBooleans } from './index.js';
+} from '../operators.js';
+import { simplifyBooleans } from './simplify-booleans.js';
 
 describe('query-tree-utils', () => {
     describe('simplifyBooleans', () => {

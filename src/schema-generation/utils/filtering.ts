@@ -1,17 +1,15 @@
-import type { Type } from '../../model/index.js';
-import type { QueryNode, TraversalQueryNodeParams } from '../../query-tree/index.js';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConstBoolQueryNode,
-    TransformListQueryNode,
-    TraversalQueryNode,
-    VariableQueryNode,
-} from '../../query-tree/index.js';
-import { simplifyBooleans } from '../../query-tree/utils/index.js';
+import type { Type } from '../../model/implementation/type.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { TransformListQueryNode } from '../../query-tree/lists.js';
+import { ConstBoolQueryNode } from '../../query-tree/literals.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../../query-tree/operators.js';
+import type { TraversalQueryNodeParams } from '../../query-tree/queries.js';
+import { TraversalQueryNode } from '../../query-tree/queries.js';
+import { simplifyBooleans } from '../../query-tree/utils/simplify-booleans.js';
+import { VariableQueryNode } from '../../query-tree/variables.js';
 import type { RequireAllProperties } from '../../utils/util-types.js';
 import { decapitalize } from '../../utils/utils.js';
-import type { FilterObjectType } from '../filter-input-types/index.js';
+import type { FilterObjectType } from '../filter-input-types/generator.js';
 
 interface BuildFilteredListNodeParams {
     readonly listNode: QueryNode;

@@ -1,29 +1,32 @@
 import { GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLString } from 'graphql';
 import type { ExecutionOptions } from '../execution/execution-options.js';
-import type { Type } from '../model/index.js';
-import { FlexSearchQueryNode } from '../query-tree/flex-search.js';
-import type { QueryNode, TraversalQueryNodeParams } from '../query-tree/index.js';
+import type { Type } from '../model/implementation/type.js';
+import type { QueryNode } from '../query-tree/base.js';
 import {
     ARGUMENT_OUT_OF_RANGE_ERROR,
+    INVALID_CURSOR_ERROR,
+    NOT_SUPPORTED_ERROR,
+    RuntimeError,
+    RuntimeErrorQueryNode,
+} from '../query-tree/errors.js';
+import { FlexSearchQueryNode } from '../query-tree/flex-search.js';
+import {
+    ConcatListsQueryNode,
+    OrderDirection,
+    OrderSpecification,
+    TransformListQueryNode,
+} from '../query-tree/lists.js';
+import { ConstBoolQueryNode, LiteralQueryNode } from '../query-tree/literals.js';
+import {
     BinaryOperationQueryNode,
     BinaryOperator,
     BinaryOperatorWithAnalyzer,
-    ConcatListsQueryNode,
-    ConstBoolQueryNode,
-    INVALID_CURSOR_ERROR,
-    LiteralQueryNode,
-    NoImplicitlyTruncatedListValidator,
-    NOT_SUPPORTED_ERROR,
-    OrderDirection,
-    OrderSpecification,
-    PreExecQueryParms,
-    RuntimeError,
-    RuntimeErrorQueryNode,
-    TransformListQueryNode,
-    TraversalQueryNode,
-    VariableQueryNode,
-    WithPreExecutionQueryNode,
-} from '../query-tree/index.js';
+} from '../query-tree/operators.js';
+import { PreExecQueryParms, WithPreExecutionQueryNode } from '../query-tree/pre-exec.js';
+import type { TraversalQueryNodeParams } from '../query-tree/queries.js';
+import { TraversalQueryNode } from '../query-tree/queries.js';
+import { NoImplicitlyTruncatedListValidator } from '../query-tree/validation.js';
+import { VariableQueryNode } from '../query-tree/variables.js';
 import {
     AFTER_ARG,
     CURSOR_FIELD,
@@ -47,7 +50,7 @@ import type {
     OrderByEnumType,
     OrderByEnumValue,
 } from './order-by-enum-generator.js';
-import type { QueryNodeField } from './query-node-object-type/index.js';
+import type { QueryNodeField } from './query-node-object-type/definition.js';
 import type { RootFieldHelper } from './root-field-helper.js';
 import {
     getSortClausesForPrimarySort,

@@ -1,4 +1,5 @@
-import type { Field, RootEntityType } from '../model/index.js';
+import type { Field } from '../model/implementation/field.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
 import type { PermissionDescriptor } from './permission-descriptors.js';
 import {
     AlwaysDenyPermissionDescriptor,

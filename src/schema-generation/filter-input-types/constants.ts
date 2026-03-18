@@ -1,6 +1,6 @@
 import { GraphQLBoolean, GraphQLID, GraphQLString } from 'graphql';
-import type { QueryNode } from '../../query-tree/index.js';
-import { BinaryOperator } from '../../query-tree/index.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { BinaryOperator } from '../../query-tree/operators.js';
 import {
     INPUT_FIELD_CONTAINS,
     INPUT_FIELD_ENDS_WITH,

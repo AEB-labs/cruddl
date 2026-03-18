@@ -1,14 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { Model, PermissionProfile, TypeKind } from '../model/index.js';
-import type { QueryNode } from '../query-tree/index.js';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConstBoolQueryNode,
-    FieldQueryNode,
-    LiteralQueryNode,
-    VariableQueryNode,
-} from '../query-tree/index.js';
+import { TypeKind } from '../model/config/type.js';
+import { Model } from '../model/implementation/model.js';
+import { PermissionProfile } from '../model/implementation/permission-profile.js';
+import type { QueryNode } from '../query-tree/base.js';
+import { ConstBoolQueryNode, LiteralQueryNode } from '../query-tree/literals.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../query-tree/operators.js';
+import { FieldQueryNode } from '../query-tree/queries.js';
+import { VariableQueryNode } from '../query-tree/variables.js';
 import { ACCESS_GROUP_FIELD } from '../schema/constants.js';
 import type { AuthContext } from './auth-basics.js';
 import { AccessOperation } from './auth-basics.js';

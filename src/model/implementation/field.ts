@@ -23,14 +23,15 @@ import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js'
 import { GraphQLI18nString } from '../../schema/scalars/string-map.js';
 import { isDefined } from '../../utils/utils.js';
 import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
-import type { CalcMutationsOperator, FieldConfig, FlexSearchLanguage } from '../config/index.js';
-import { AggregationOperator, RelationDeleteAction, TypeKind } from '../config/index.js';
+import type { CalcMutationsOperator, FieldConfig, FlexSearchLanguage } from '../config/field.js';
+import { AggregationOperator, RelationDeleteAction } from '../config/field.js';
+import { TypeKind } from '../config/type.js';
 import {
     collectEmbeddingEntityTypes,
     collectEmbeddingRootEntityTypes,
 } from '../utils/emedding-entity-types.js';
 import { findRecursiveCascadePath } from '../utils/recursive-cascade.js';
-import { ValidationMessage } from '../validation/index.js';
+import { ValidationMessage } from '../validation/message.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
 import { numberTypeNames } from './built-in-types.js';
 import { CollectPath } from './collect-path.js';

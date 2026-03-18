@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { ValidationMessage } from '../../../model/validation/index.js';
-import { ValidationContext } from '../../../model/validation/index.js';
+import type { ValidationMessage } from '../../../model/validation/message.js';
+import { ValidationContext } from '../../../model/validation/validation-context.js';
 import { ProjectSource } from '../../../project/source.js';
 import { parseProjectSource } from '../../parsing/parse-project-source.js';
 import { PermissionProfileValidator } from './permission-profile-validator.js';
