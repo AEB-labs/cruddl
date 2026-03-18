@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { Model, TypeKind, ValueObjectType } from '../model/index.js';
+import { TypeKind } from '../model/config/type.js';
+import { Model } from '../model/implementation/model.js';
+import { ValueObjectType } from '../model/implementation/value-object-type.js';
 import { OrderByEnumGenerator } from './order-by-enum-generator.js';
 
 describe('OrderByEnumGenerator', () => {

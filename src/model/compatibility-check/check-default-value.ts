@@ -1,9 +1,9 @@
 import { deepEqual } from 'fast-equals';
 import { print } from 'graphql';
 import { createValueNodeFromValue } from '../../graphql/value-to-ast.js';
-import type { Field } from '../implementation/index.js';
-import type { ValidationContext } from '../validation/index.js';
-import { ValidationMessage } from '../validation/index.js';
+import type { Field } from '../implementation/field.js';
+import { ValidationMessage } from '../validation/message.js';
+import type { ValidationContext } from '../validation/validation-context.js';
 
 /**
  * Checks whether the @defaultValue directive on the field and on the basleine field match

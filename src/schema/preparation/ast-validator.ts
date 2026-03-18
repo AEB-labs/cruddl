@@ -1,5 +1,7 @@
 import type { DocumentNode } from 'graphql';
-import { Model, ValidationMessage, ValidationResult } from '../../model/index.js';
+import { Model } from '../../model/implementation/model.js';
+import { ValidationMessage } from '../../model/validation/message.js';
+import { ValidationResult } from '../../model/validation/result.js';
 import type { ProjectSource } from '../../project/source.js';
 import type { ParsedProjectSource } from '../parsing/parsed-project.js';
 import { IndicesValidator } from './ast-validation-modules/indices-validator.js';

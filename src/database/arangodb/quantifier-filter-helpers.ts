@@ -1,13 +1,10 @@
 import { Field } from '../../model/implementation/field.js';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    FieldQueryNode,
-    LiteralQueryNode,
-    QueryNode,
-    SafeListQueryNode,
-} from '../../query-tree/index.js';
+import { QueryNode } from '../../query-tree/base.js';
+import { LiteralQueryNode } from '../../query-tree/literals.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../../query-tree/operators.js';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
+import { FieldQueryNode } from '../../query-tree/queries.js';
+import { SafeListQueryNode } from '../../query-tree/type-check.js';
 import { simplifyBooleans } from '../../query-tree/utils/simplify-booleans.js';
 import { isStringCaseInsensitive } from '../../utils/string-utils.js';
 import { analyzeLikePatternPrefix } from '../like-helpers.js';

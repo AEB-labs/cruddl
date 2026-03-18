@@ -4,10 +4,10 @@ import type { ProjectOptions } from '../../config/interfaces.js';
 import type { Logger } from '../../config/logging.js';
 import type { IDGenerator } from '../../execution/execution-options.js';
 import { DefaultClock, UUIDGenerator } from '../../execution/execution-options.js';
-import type { Model } from '../../model/index.js';
+import type { Model } from '../../model/implementation/model.js';
+import type { QueryNode } from '../../query-tree/base.js';
 import type { FlexSearchTokenization } from '../../query-tree/flex-search.js';
-import type { QueryNode } from '../../query-tree/index.js';
-import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query-tree/index.js';
+import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query-tree/validation.js';
 import { isDefined, isReadonlyArray } from '../../utils/utils.js';
 import type {
     DatabaseAdapter,

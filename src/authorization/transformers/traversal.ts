@@ -1,11 +1,9 @@
 import type { RelationSegment } from '../../model/implementation/collect-path.js';
-import type { QueryNode, TraversalQueryNodeParams } from '../../query-tree/index.js';
-import {
-    PERMISSION_DENIED_ERROR,
-    RuntimeErrorQueryNode,
-    TraversalQueryNode,
-    VariableQueryNode,
-} from '../../query-tree/index.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
+import type { TraversalQueryNodeParams } from '../../query-tree/queries.js';
+import { TraversalQueryNode } from '../../query-tree/queries.js';
+import { VariableQueryNode } from '../../query-tree/variables.js';
 import type { RequireAllProperties } from '../../utils/util-types.js';
 import { decapitalize } from '../../utils/utils.js';
 import type { AuthContext } from '../auth-basics.js';

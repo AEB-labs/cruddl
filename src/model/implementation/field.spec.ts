@@ -5,7 +5,11 @@ import {
     expectToBeValid,
     validate,
 } from '../../testing/utils/model-validation-utils.js';
-import { CalcMutationsOperator, Field, Model, Severity, TypeKind } from '../index.js';
+import { CalcMutationsOperator } from '../config/field.js';
+import { TypeKind } from '../config/type.js';
+import { Severity } from '../validation/message.js';
+import { Field } from './field.js';
+import { Model } from './model.js';
 
 describe('Field', () => {
     const model = new Model({

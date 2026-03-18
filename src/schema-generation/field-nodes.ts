@@ -1,27 +1,29 @@
+import { AggregationOperator } from '../model/config/field.js';
 import { getEffectiveCollectSegments } from '../model/implementation/collect-path.js';
-import type { Field } from '../model/implementation/index.js';
-import type { RootEntityType } from '../model/index.js';
-import { AggregationOperator } from '../model/index.js';
-import type { QueryNode } from '../query-tree/index.js';
+import type { Field } from '../model/implementation/field.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
+import type { QueryNode } from '../query-tree/base.js';
 import {
     AggregationQueryNode,
-    BasicType,
+    FirstOfListQueryNode,
+    TransformListQueryNode,
+} from '../query-tree/lists.js';
+import { NullQueryNode } from '../query-tree/literals.js';
+import { ObjectQueryNode } from '../query-tree/objects.js';
+import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConditionalQueryNode,
+} from '../query-tree/operators.js';
+import {
     EntitiesQueryNode,
     FieldQueryNode,
-    FirstOfListQueryNode,
     FollowEdgeQueryNode,
-    NullQueryNode,
-    ObjectQueryNode,
     RootEntityIDQueryNode,
-    SafeListQueryNode,
-    TransformListQueryNode,
     TraversalQueryNode,
-    TypeCheckQueryNode,
-    VariableQueryNode,
-} from '../query-tree/index.js';
+} from '../query-tree/queries.js';
+import { BasicType, SafeListQueryNode, TypeCheckQueryNode } from '../query-tree/type-check.js';
+import { VariableQueryNode } from '../query-tree/variables.js';
 import { ID_FIELD } from '../schema/constants.js';
 import { GraphQLOffsetDateTime } from '../schema/scalars/offset-date-time.js';
 import { decapitalize } from '../utils/utils.js';

@@ -1,10 +1,8 @@
-import type { FollowEdgeQueryNode, QueryNode } from '../../query-tree/index.js';
-import {
-    PERMISSION_DENIED_ERROR,
-    RuntimeErrorQueryNode,
-    TransformListQueryNode,
-    VariableQueryNode,
-} from '../../query-tree/index.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
+import { TransformListQueryNode } from '../../query-tree/lists.js';
+import type { FollowEdgeQueryNode } from '../../query-tree/queries.js';
+import { VariableQueryNode } from '../../query-tree/variables.js';
 import type { AuthContext } from '../auth-basics.js';
 import { AccessOperation } from '../auth-basics.js';
 import {

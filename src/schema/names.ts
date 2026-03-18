@@ -1,4 +1,4 @@
-import type { RootEntityType } from '../model/implementation/index.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
 import { capitalize } from '../utils/utils.js';
 import {
     ADD_CHILD_ENTITIES_FIELD_PREFIX,

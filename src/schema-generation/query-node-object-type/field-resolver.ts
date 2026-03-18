@@ -1,6 +1,6 @@
 import type { GraphQLFieldResolver } from 'graphql';
 import type { ExecutionOptions } from '../../execution/execution-options.js';
-import { extractRuntimeError, isRuntimeErrorValue } from '../../query-tree/index.js';
+import { extractRuntimeError, isRuntimeErrorValue } from '../../query-tree/errors.js';
 import type { SchemaTransformationContext } from '../../schema/preparation/transformation-pipeline.js';
 
 /**

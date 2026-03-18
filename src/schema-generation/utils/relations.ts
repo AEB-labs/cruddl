@@ -1,34 +1,36 @@
+import { RelationDeleteAction } from '../../model/config/field.js';
 import type { RelationSegment } from '../../model/implementation/collect-path.js';
 import type { FieldPath } from '../../model/implementation/field-path.js';
-import type { Field, RelationSide, RootEntityType } from '../../model/index.js';
-import { Multiplicity, RelationDeleteAction } from '../../model/index.js';
-import type { QueryNode } from '../../query-tree/index.js';
+import type { Field } from '../../model/implementation/field.js';
+import type { RelationSide } from '../../model/implementation/relation.js';
+import { Multiplicity } from '../../model/implementation/relation.js';
+import type { RootEntityType } from '../../model/implementation/root-entity-type.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { NOT_FOUND_ERROR } from '../../query-tree/errors.js';
+import { ListItemQueryNode, ListQueryNode } from '../../query-tree/lists.js';
+import { LiteralQueryNode } from '../../query-tree/literals.js';
 import {
     AddEdgesQueryNode,
-    BinaryOperationQueryNode,
-    BinaryOperator,
     DeleteEntitiesQueryNode,
     EdgeFilter,
     EdgeIdentifier,
     EntitiesIdentifierKind,
-    EntityFromIdQueryNode,
-    ErrorIfNotTruthyResultValidator,
-    ListItemQueryNode,
-    ListQueryNode,
-    LiteralQueryNode,
-    NoRestrictingObjectsOnDeleteValidator,
-    NOT_FOUND_ERROR,
     PartialEdgeIdentifier,
-    PreExecQueryParms,
     RemoveEdgesQueryNode,
     SetEdgeQueryNode,
-    TraversalQueryNode,
-    VariableQueryNode,
-} from '../../query-tree/index.js';
+} from '../../query-tree/mutations.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../../query-tree/operators.js';
+import { PreExecQueryParms } from '../../query-tree/pre-exec.js';
+import { EntityFromIdQueryNode, TraversalQueryNode } from '../../query-tree/queries.js';
+import {
+    ErrorIfNotTruthyResultValidator,
+    NoRestrictingObjectsOnDeleteValidator,
+} from '../../query-tree/validation.js';
+import { VariableQueryNode } from '../../query-tree/variables.js';
 import type { PlainObject } from '../../utils/utils.js';
 import { isDefined } from '../../utils/utils.js';
-import type { CreateRootEntityInputType } from '../create-input-types/index.js';
-import type { FieldContext } from '../query-node-object-type/index.js';
+import type { CreateRootEntityInputType } from '../create-input-types/input-types.js';
+import type { FieldContext } from '../query-node-object-type/context.js';
 import { mapToIDNodesWithOptimizations } from './map.js';
 
 /**

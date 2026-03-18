@@ -1,8 +1,9 @@
 import { describe, it } from 'vitest';
 import { expectSingleMessage } from '../../testing/utils/model-validation-utils.js';
-import { TypeKind } from '../config/index.js';
-import { Severity } from '../validation/index.js';
-import { EntityExtensionType, Model } from './index.js';
+import { TypeKind } from '../config/type.js';
+import { Severity } from '../validation/message.js';
+import { EntityExtensionType } from './entity-extension-type.js';
+import { Model } from './model.js';
 
 describe('EnityExtensionType', () => {
     it('rejects EntityExtensions with recursion', () => {

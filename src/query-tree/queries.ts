@@ -3,7 +3,9 @@ import type {
     FieldSegment,
     RelationSegment,
 } from '../model/implementation/collect-path.js';
-import type { Field, RelationSide, RootEntityType } from '../model/index.js';
+import type { Field } from '../model/implementation/field.js';
+import type { RelationSide } from '../model/implementation/relation.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
 import { blue } from '../utils/colors.js';
 import { indent, isDefined } from '../utils/utils.js';
 import { QueryNode } from './base.js';

@@ -1,5 +1,5 @@
 import type { ProjectOptions } from '../../config/interfaces.js';
-import { ValidationContext } from '../../model/index.js';
+import { ValidationContext } from '../../model/validation/validation-context.js';
 import { ProjectSource, SourceType } from '../../project/source.js';
 import { parseGraphQLSource } from './parse-graphql-source.js';
 import { parseJSONSource } from './parse-json-source.js';

@@ -4,7 +4,10 @@ import {
     expectToBeValid,
     validate,
 } from '../../testing/utils/model-validation-utils.js';
-import { Model, RootEntityType, Severity, TypeKind } from '../index.js';
+import { TypeKind } from '../config/type.js';
+import { Severity } from '../validation/message.js';
+import { Model } from './model.js';
+import { RootEntityType } from './root-entity-type.js';
 
 describe('RootEntityType', () => {
     const modelWithoutDefaultProfile = new Model({

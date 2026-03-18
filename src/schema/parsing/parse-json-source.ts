@@ -6,7 +6,9 @@ import {
     type ParseError,
 } from 'jsonc-parser';
 import type { ProjectOptions } from '../../config/interfaces.js';
-import { MessageLocation, ValidationContext, ValidationMessage } from '../../model/index.js';
+import { MessageLocation } from '../../model/validation/location.js';
+import { ValidationMessage } from '../../model/validation/message.js';
+import { ValidationContext } from '../../model/validation/validation-context.js';
 import { ProjectSource } from '../../project/source.js';
 import type { Mutable } from '../../utils/util-types.js';
 import { type PlainObject } from '../../utils/utils.js';

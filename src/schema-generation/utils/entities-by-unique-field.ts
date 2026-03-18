@@ -1,17 +1,14 @@
-import type { RootEntityType } from '../../model/index.js';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    EntitiesQueryNode,
-    LiteralQueryNode,
-    TransformListQueryNode,
-    VariableQueryNode,
-} from '../../query-tree/index.js';
+import type { RootEntityType } from '../../model/implementation/root-entity-type.js';
+import { TransformListQueryNode } from '../../query-tree/lists.js';
+import { LiteralQueryNode } from '../../query-tree/literals.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../../query-tree/operators.js';
+import { EntitiesQueryNode } from '../../query-tree/queries.js';
+import { VariableQueryNode } from '../../query-tree/variables.js';
 import { ID_FIELD } from '../../schema/constants.js';
 import { decapitalize, isDefined } from '../../utils/utils.js';
 import { createFieldNode } from '../field-nodes.js';
 import { createGraphQLError } from '../graphql-errors.js';
-import type { FieldContext } from '../query-node-object-type/index.js';
+import type { FieldContext } from '../query-node-object-type/context.js';
 
 export function getEntitiesByUniqueFieldQuery(
     rootEntityType: RootEntityType,

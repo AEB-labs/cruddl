@@ -1,14 +1,13 @@
 import type { FieldPath } from '../model/implementation/field-path.js';
-import type { RootEntityType } from '../model/index.js';
-import type { QueryNode } from '../query-tree/index.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
+import type { QueryNode } from '../query-tree/base.js';
 import {
     DeleteEntitiesQueryNode,
     DeleteEntitiesResultValue,
     EntitiesIdentifierKind,
-    PreExecQueryParms,
-    VariableQueryNode,
-    WithPreExecutionQueryNode,
-} from '../query-tree/index.js';
+} from '../query-tree/mutations.js';
+import { PreExecQueryParms, WithPreExecutionQueryNode } from '../query-tree/pre-exec.js';
+import { VariableQueryNode } from '../query-tree/variables.js';
 import { mapToIDNodesUnoptimized } from './utils/map.js';
 import { getPreEntityRemovalStatements } from './utils/relations.js';
 

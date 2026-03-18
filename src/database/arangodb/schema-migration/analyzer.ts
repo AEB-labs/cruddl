@@ -3,7 +3,8 @@ import { CollectionType } from 'arangojs/collections';
 import type { ProjectOptions } from '../../../config/interfaces.js';
 import type { Logger } from '../../../config/logging.js';
 import { NORM_CI_ANALYZER } from '../../../model/implementation/flex-search.js';
-import type { Model, RootEntityType } from '../../../model/index.js';
+import type { Model } from '../../../model/implementation/model.js';
+import type { RootEntityType } from '../../../model/implementation/root-entity-type.js';
 import {
     billingCollectionName,
     getCollectionNameForRelation,

@@ -1,4 +1,5 @@
-import type { Relation, RootEntityType } from '../../model/index.js';
+import type { Relation } from '../../model/implementation/relation.js';
+import type { RootEntityType } from '../../model/implementation/root-entity-type.js';
 import { decapitalize } from '../../utils/utils.js';
 
 export function getCollectionNameForRootEntity(rootEntityType: RootEntityType) {

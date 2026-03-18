@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { Project } from '../../project/project.js';
 import { parseProject } from '../../schema/parsing/parse-project.js';
 import { validateParsedProjectSource } from '../../schema/preparation/ast-validator.js';
-import { createModel, ValidationContext } from '../index.js';
+import { createModel } from '../create-model.js';
+import { ValidationContext } from '../validation/validation-context.js';
 
 const permissionProfiles = `{
   "permissionProfiles": {

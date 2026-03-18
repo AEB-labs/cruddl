@@ -1,15 +1,11 @@
-import { AggregationOperator } from '../../model/index.js';
-import type { CreateEntitiesQueryNode, QueryNode } from '../../query-tree/index.js';
-import {
-    AggregationQueryNode,
-    ErrorIfNotTruthyResultValidator,
-    PERMISSION_DENIED_ERROR,
-    PreExecQueryParms,
-    RuntimeErrorQueryNode,
-    TransformListQueryNode,
-    VariableQueryNode,
-    WithPreExecutionQueryNode,
-} from '../../query-tree/index.js';
+import { AggregationOperator } from '../../model/config/field.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
+import { AggregationQueryNode, TransformListQueryNode } from '../../query-tree/lists.js';
+import type { CreateEntitiesQueryNode } from '../../query-tree/mutations.js';
+import { PreExecQueryParms, WithPreExecutionQueryNode } from '../../query-tree/pre-exec.js';
+import { ErrorIfNotTruthyResultValidator } from '../../query-tree/validation.js';
+import { VariableQueryNode } from '../../query-tree/variables.js';
 import type { AuthContext } from '../auth-basics.js';
 import { AccessOperation } from '../auth-basics.js';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model.js';

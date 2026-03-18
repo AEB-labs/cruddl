@@ -1,7 +1,7 @@
 import type { GraphQLEnumValueConfig } from 'graphql';
 import { GraphQLEnumType } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import type { EnumType } from '../model/index.js';
+import type { EnumType } from '../model/implementation/enum-type.js';
 
 export class EnumTypeGenerator {
     @memorize()

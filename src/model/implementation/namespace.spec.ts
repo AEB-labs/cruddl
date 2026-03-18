@@ -4,7 +4,11 @@ import {
     expectToBeValid,
     validate,
 } from '../../testing/utils/model-validation-utils.js';
-import { Model, Namespace, PermissionProfile, RootEntityType, TypeKind } from '../index.js';
+import { TypeKind } from '../config/type.js';
+import { Model } from './model.js';
+import { Namespace } from './namespace.js';
+import { PermissionProfile } from './permission-profile.js';
+import { RootEntityType } from './root-entity-type.js';
 
 const model = new Model({
     types: [],

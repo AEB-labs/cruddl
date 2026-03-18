@@ -1,12 +1,12 @@
 import { memorize } from 'memorize-decorator';
 import type { SchemaOptions } from '../config/interfaces.js';
-import type { Model } from '../model/index.js';
+import type { Model } from '../model/implementation/model.js';
 import { BillingTypeGenerator } from './billing-type-generator.js';
-import { CreateInputTypeGenerator } from './create-input-types/index.js';
+import { CreateInputTypeGenerator } from './create-input-types/generator.js';
 import { EnumTypeGenerator } from './enum-type-generator.js';
 import { FilterAugmentation } from './filter-augmentation.js';
-import { FilterTypeGenerator } from './filter-input-types/index.js';
-import { FlexSearchFilterTypeGenerator } from './flex-search-filter-input-types/index.js';
+import { FilterTypeGenerator } from './filter-input-types/generator.js';
+import { FlexSearchFilterTypeGenerator } from './flex-search-filter-input-types/generator.js';
 import { FlexSearchGenerator } from './flex-search-generator.js';
 import { FlexSearchPostFilterAugmentation } from './flex-search-post-filter-augmentation.js';
 import { MetaFirstAugmentation } from './limit-augmentation.js';
@@ -16,11 +16,11 @@ import { MutationTypeGenerator } from './mutation-type-generator.js';
 import { OrderByAndPaginationAugmentation } from './order-by-and-pagination-augmentation.js';
 import { OrderByEnumGenerator } from './order-by-enum-generator.js';
 import { OutputTypeGenerator } from './output-type-generator.js';
-import type { QueryNodeObjectType } from './query-node-object-type/index.js';
+import type { QueryNodeObjectType } from './query-node-object-type/definition.js';
 import { QueryTypeGenerator } from './query-type-generator.js';
 import { RootFieldHelper } from './root-field-helper.js';
 import { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator.js';
-import { UpdateInputTypeGenerator } from './update-input-types/index.js';
+import { UpdateInputTypeGenerator } from './update-input-types/generator.js';
 
 export class RootTypesGenerator {
     private readonly enumTypeGenerator: EnumTypeGenerator;

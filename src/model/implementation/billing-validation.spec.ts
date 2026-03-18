@@ -2,7 +2,8 @@ import { Source } from 'graphql';
 import { describe, expect, it } from 'vitest';
 import { Project } from '../../project/project.js';
 import { parseProject } from '../../schema/parsing/parse-project.js';
-import { createModel, ValidationContext } from '../index.js';
+import { createModel } from '../create-model.js';
+import { ValidationContext } from '../validation/validation-context.js';
 
 const graphql = `
 enum Importance {LOW, MEDIUM, HIGH}

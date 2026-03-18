@@ -1,15 +1,10 @@
 import { GraphQLBoolean } from 'graphql';
-import type { BillingEntityType } from '../../model/index.js';
-import type { QueryNode } from '../../query-tree/index.js';
-import {
-    ConditionalQueryNode,
-    ConstBoolQueryNode,
-    CountQueryNode,
-    LiteralQueryNode,
-    NullQueryNode,
-    VariableAssignmentQueryNode,
-    VariableQueryNode,
-} from '../../query-tree/index.js';
+import type { BillingEntityType } from '../../model/implementation/billing.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { CountQueryNode } from '../../query-tree/lists.js';
+import { ConstBoolQueryNode, LiteralQueryNode, NullQueryNode } from '../../query-tree/literals.js';
+import { ConditionalQueryNode } from '../../query-tree/operators.js';
+import { VariableAssignmentQueryNode, VariableQueryNode } from '../../query-tree/variables.js';
 
 import { isDefined } from '../../utils/utils.js';
 import { createFieldPathNode } from '../field-path-node.js';

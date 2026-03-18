@@ -1,25 +1,19 @@
 import type { ZonedDateTime } from '@js-joda/core';
 import { DateTimeFormatter, Instant, ZoneId } from '@js-joda/core';
 import type { Clock } from '../execution/execution-options.js';
+import type { Field } from '../model/implementation/field.js';
+import type { ScalarType } from '../model/implementation/scalar-type.js';
 import type { TimeToLiveType } from '../model/implementation/time-to-live.js';
-import type { Field, ScalarType } from '../model/index.js';
-import type { QueryNode } from '../query-tree/index.js';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    CountQueryNode,
-    DeleteEntitiesResultValue,
-    EntitiesQueryNode,
-    FieldPathQueryNode,
-    LiteralQueryNode,
-    NullQueryNode,
-    ObjectQueryNode,
-    PropertySpecification,
-    TransformListQueryNode,
-    VariableQueryNode,
-} from '../query-tree/index.js';
+import type { QueryNode } from '../query-tree/base.js';
+import { CountQueryNode, TransformListQueryNode } from '../query-tree/lists.js';
+import { LiteralQueryNode, NullQueryNode } from '../query-tree/literals.js';
+import { DeleteEntitiesResultValue } from '../query-tree/mutations.js';
+import { ObjectQueryNode, PropertySpecification } from '../query-tree/objects.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../query-tree/operators.js';
+import { EntitiesQueryNode, FieldPathQueryNode } from '../query-tree/queries.js';
+import { VariableQueryNode } from '../query-tree/variables.js';
+import { generateDeleteAllQueryNode } from '../schema-generation/delete-all-generator.js';
 import { getScalarFilterValueNode } from '../schema-generation/filter-input-types/filter-fields.js';
-import { generateDeleteAllQueryNode } from '../schema-generation/index.js';
 import { GraphQLLocalDate } from '../schema/scalars/local-date.js';
 import { decapitalize } from '../utils/utils.js';
 

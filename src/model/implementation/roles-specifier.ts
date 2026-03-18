@@ -1,5 +1,5 @@
-import type { RolesSpecifierConfig } from '../config/index.js';
-import { ValidationMessage } from '../validation/index.js';
+import type { RolesSpecifierConfig } from '../config/permissions.js';
+import { ValidationMessage } from '../validation/message.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
 import type { Field } from './field.js';
 import type { Type } from './type.js';

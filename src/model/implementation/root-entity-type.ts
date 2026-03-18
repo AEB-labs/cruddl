@@ -18,11 +18,12 @@ import type {
     FlexSearchPerformanceParams,
     FlexSearchPrimarySortClauseConfig,
     IndexDefinitionConfig,
-    PermissionsConfig,
-    RootEntityTypeConfig,
-} from '../config/index.js';
-import { TypeKind } from '../config/index.js';
-import { ValidationContext, ValidationMessage } from '../validation/index.js';
+} from '../config/indices.js';
+import type { PermissionsConfig } from '../config/permissions.js';
+import type { RootEntityTypeConfig } from '../config/type.js';
+import { TypeKind } from '../config/type.js';
+import { ValidationMessage } from '../validation/message.js';
+import { ValidationContext } from '../validation/validation-context.js';
 import { FieldPath } from './field-path.js';
 import type { Field, SystemFieldConfig } from './field.js';
 import { FlexSearchPrimarySortClause } from './flex-search.js';

@@ -1,12 +1,9 @@
 import { type DocumentNode, getLocation, GraphQLError, parse } from 'graphql';
 import type { ProjectOptions } from '../../config/interfaces.js';
 import { isCommentOnlySource } from '../../graphql/is-comment-only-source.js';
-import {
-    MessageLocation,
-    SourcePosition,
-    ValidationContext,
-    ValidationMessage,
-} from '../../model/index.js';
+import { MessageLocation, SourcePosition } from '../../model/validation/location.js';
+import { ValidationMessage } from '../../model/validation/message.js';
+import { ValidationContext } from '../../model/validation/validation-context.js';
 import { ProjectSource } from '../../project/source.js';
 import { getNamespaceFromSourceName } from './namespace-from-source-name.js';
 import { type ParsedGraphQLProjectSource, ParsedProjectSourceBaseKind } from './parsed-project.js';

@@ -5,9 +5,9 @@
     "outDir": "dist"
   },
   "files": [
-    "src/index.ts",
+    "src/all-exports.ts",
     "src/core-exports.ts",
-    "src/database/arangodb/index.ts",
-    "src/database/inmemory/index.ts"
+    "src/database/arangodb/public-api.ts",
+    "src/database/inmemory/public-api.ts"
   ]
 }

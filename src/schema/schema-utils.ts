@@ -14,7 +14,7 @@ import type {
     TypeNode,
 } from 'graphql';
 import { Kind } from 'graphql';
-import { SourcePosition } from '../model/validation/index.js';
+import { SourcePosition } from '../model/validation/location.js';
 import type { ProjectSource } from '../project/source.js';
 import {
     CHILD_ENTITY_DIRECTIVE,

@@ -1,5 +1,5 @@
-import type { RootEntityType } from '../implementation/index.js';
-import type { ValidationContext } from '../validation/index.js';
+import type { RootEntityType } from '../implementation/root-entity-type.js';
+import type { ValidationContext } from '../validation/validation-context.js';
 import { checkBusinessObject } from './check-business-object.js';
 import { checkFlexSearchOnType } from './check-flex-search-on-type.js';
 import { checkIndices } from './check-indices.js';

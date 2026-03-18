@@ -1,72 +1,88 @@
 import type { Clock, IDGenerator } from '../../execution/execution-options.js';
 import { DefaultClock, UUIDGenerator } from '../../execution/execution-options.js';
+import { AggregationOperator } from '../../model/config/field.js';
 import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../../model/implementation/flex-search.js';
-import type { Relation, RelationSide, RootEntityType } from '../../model/index.js';
-import { AggregationOperator } from '../../model/index.js';
+import type { Relation, RelationSide } from '../../model/implementation/relation.js';
+import type { RootEntityType } from '../../model/implementation/root-entity-type.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import {
+    ConfirmForBillingQueryNode,
+    CreateBillingEntityQueryNode,
+} from '../../query-tree/billing.js';
+import { UpdateChildEntitiesQueryNode } from '../../query-tree/child-entities.js';
+import {
+    RUNTIME_ERROR_CODE_PROPERTY,
+    RUNTIME_ERROR_TOKEN,
+    RuntimeErrorQueryNode,
+} from '../../query-tree/errors.js';
 import {
     FlexSearchComplexOperatorQueryNode,
     FlexSearchFieldExistsQueryNode,
     FlexSearchQueryNode,
+    FlexSearchStartsWithQueryNode,
 } from '../../query-tree/flex-search.js';
-import type { QueryNode, QueryResultValidator } from '../../query-tree/index.js';
 import {
-    AddEdgesQueryNode,
     AggregationQueryNode,
-    BasicType,
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    BinaryOperatorWithAnalyzer,
     ConcatListsQueryNode,
-    ConditionalQueryNode,
-    ConfirmForBillingQueryNode,
+    CountQueryNode,
+    FirstOfListQueryNode,
+    ListItemQueryNode,
+    ListQueryNode,
+    OrderClause,
+    OrderDirection,
+    OrderSpecification,
+    TransformListQueryNode,
+} from '../../query-tree/lists.js';
+import {
     ConstBoolQueryNode,
     ConstIntQueryNode,
-    CountQueryNode,
-    CreateBillingEntityQueryNode,
+    LiteralQueryNode,
+    NullQueryNode,
+} from '../../query-tree/literals.js';
+import {
+    AddEdgesQueryNode,
     CreateEntitiesQueryNode,
     CreateEntityQueryNode,
     DeleteEntitiesQueryNode,
-    DynamicPropertyAccessQueryNode,
     EntitiesIdentifierKind,
+    RemoveEdgesQueryNode,
+    SetEdgeQueryNode,
+    UpdateEntitiesQueryNode,
+} from '../../query-tree/mutations.js';
+import {
+    MergeObjectsQueryNode,
+    ObjectEntriesQueryNode,
+    ObjectQueryNode,
+} from '../../query-tree/objects.js';
+import {
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    BinaryOperatorWithAnalyzer,
+    ConditionalQueryNode,
+    OperatorWithAnalyzerQueryNode,
+    UnaryOperationQueryNode,
+    UnaryOperator,
+} from '../../query-tree/operators.js';
+import { WithPreExecutionQueryNode } from '../../query-tree/pre-exec.js';
+import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
+import {
+    DynamicPropertyAccessQueryNode,
     EntitiesQueryNode,
     EntityFromIdQueryNode,
     FieldPathQueryNode,
     FieldQueryNode,
-    FirstOfListQueryNode,
-    FlexSearchStartsWithQueryNode,
     FollowEdgeQueryNode,
-    HoistableQueryNode,
-    ListItemQueryNode,
-    ListQueryNode,
-    LiteralQueryNode,
-    MergeObjectsQueryNode,
-    NullQueryNode,
-    ObjectEntriesQueryNode,
-    ObjectQueryNode,
-    OperatorWithAnalyzerQueryNode,
-    OrderClause,
-    OrderDirection,
-    OrderSpecification,
     PropertyAccessQueryNode,
-    RemoveEdgesQueryNode,
     RootEntityIDQueryNode,
-    RUNTIME_ERROR_CODE_PROPERTY,
-    RUNTIME_ERROR_TOKEN,
-    RuntimeErrorQueryNode,
-    SafeListQueryNode,
-    SetEdgeQueryNode,
-    TransformListQueryNode,
     TraversalQueryNode,
-    TypeCheckQueryNode,
-    UnaryOperationQueryNode,
-    UnaryOperator,
-    UpdateChildEntitiesQueryNode,
-    UpdateEntitiesQueryNode,
+} from '../../query-tree/queries.js';
+import { BasicType, SafeListQueryNode, TypeCheckQueryNode } from '../../query-tree/type-check.js';
+import type { QueryResultValidator } from '../../query-tree/validation.js';
+import {
+    HoistableQueryNode,
     VariableAssignmentQueryNode,
     VariableQueryNode,
-    WithPreExecutionQueryNode,
-} from '../../query-tree/index.js';
-import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
+} from '../../query-tree/variables.js';
 import { createFieldPathNode } from '../../schema-generation/field-path-node.js';
 import { not } from '../../schema-generation/utils/input-types.js';
 import type { Constructor } from '../../utils/utils.js';

@@ -1,16 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import {
-    ConditionalQueryNode,
-    ConstBoolQueryNode,
-    FLEX_SEARCH_TOO_MANY_OBJECTS,
-    ListQueryNode,
-    ObjectQueryNode,
-    PreExecQueryParms,
-    PropertySpecification,
-    RuntimeErrorQueryNode,
-    TransformListQueryNode,
-    WithPreExecutionQueryNode,
-} from '../query-tree/index.js';
+import { FLEX_SEARCH_TOO_MANY_OBJECTS, RuntimeErrorQueryNode } from '../query-tree/errors.js';
+import { ListQueryNode, TransformListQueryNode } from '../query-tree/lists.js';
+import { ConstBoolQueryNode } from '../query-tree/literals.js';
+import { ObjectQueryNode, PropertySpecification } from '../query-tree/objects.js';
+import { ConditionalQueryNode } from '../query-tree/operators.js';
+import { PreExecQueryParms, WithPreExecutionQueryNode } from '../query-tree/pre-exec.js';
 import { moveErrorsToOutputNodes } from './move-errors-to-output-nodes.js';
 
 describe('move-errors-to-output-nodes', () => {

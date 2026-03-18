@@ -1,15 +1,10 @@
-import type { RootEntityType } from '../../model/implementation/index.js';
-import type { QueryNode } from '../../query-tree/index.js';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    EntityFromIdQueryNode,
-    ListQueryNode,
-    LiteralQueryNode,
-    RootEntityIDQueryNode,
-    TransformListQueryNode,
-    VariableQueryNode,
-} from '../../query-tree/index.js';
+import type { RootEntityType } from '../../model/implementation/root-entity-type.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { ListQueryNode, TransformListQueryNode } from '../../query-tree/lists.js';
+import { LiteralQueryNode } from '../../query-tree/literals.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../../query-tree/operators.js';
+import { EntityFromIdQueryNode, RootEntityIDQueryNode } from '../../query-tree/queries.js';
+import { VariableQueryNode } from '../../query-tree/variables.js';
 import { isDefined, isReadonlyArray } from '../../utils/utils.js';
 
 export function getMapNode(listNode: QueryNode, projection: (itemNode: QueryNode) => QueryNode) {

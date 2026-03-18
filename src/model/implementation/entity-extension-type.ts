@@ -1,7 +1,7 @@
-import type { EntityExtensionTypeConfig } from '../config/index.js';
-import { TypeKind } from '../config/index.js';
-import type { ValidationContext } from '../validation/index.js';
-import { ValidationMessage } from '../validation/index.js';
+import type { EntityExtensionTypeConfig } from '../config/type.js';
+import { TypeKind } from '../config/type.js';
+import { ValidationMessage } from '../validation/message.js';
+import type { ValidationContext } from '../validation/validation-context.js';
 import type { Field } from './field.js';
 import type { Model } from './model.js';
 import { ObjectTypeBase } from './object-type-base.js';

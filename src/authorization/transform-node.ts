@@ -1,34 +1,36 @@
-import { FlexSearchQueryNode } from '../../query-tree/flex-search.js';
-import type { QueryNode } from '../../query-tree/index.js';
+import type { QueryNode } from '../query-tree/base.js';
+import { FlexSearchQueryNode } from '../query-tree/flex-search.js';
 import {
     AffectedFieldInfoQueryNode,
     CreateEntitiesQueryNode,
     CreateEntityQueryNode,
     DeleteEntitiesQueryNode,
+    UpdateEntitiesQueryNode,
+} from '../query-tree/mutations.js';
+import {
     EntitiesQueryNode,
     EntityFromIdQueryNode,
     FieldPathQueryNode,
     FieldQueryNode,
     FollowEdgeQueryNode,
     TraversalQueryNode,
-    UpdateEntitiesQueryNode,
-} from '../../query-tree/index.js';
-import type { AuthContext } from '../auth-basics.js';
-import { transformAffectedFieldInfoQueryNode } from './affected-field-info.js';
-import { transformCreateEntitiesQueryNode } from './create-entities.js';
-import { transformCreateEntityQueryNode } from './create-entity.js';
+} from '../query-tree/queries.js';
+import type { AuthContext } from './auth-basics.js';
+import { transformAffectedFieldInfoQueryNode } from './transformers/affected-field-info.js';
+import { transformCreateEntitiesQueryNode } from './transformers/create-entities.js';
+import { transformCreateEntityQueryNode } from './transformers/create-entity.js';
 import {
     transformEntitiesQueryNode,
     transformEntityFromIdQueryNode,
     transformFlexSearchQueryNode,
-} from './entities.js';
-import { transformFieldPathQueryNode, transformFieldQueryNode } from './field.js';
-import { transformFollowEdgeQueryNode } from './follow-edge.js';
-import { transformTraversalQueryNode } from './traversal.js';
+} from './transformers/entities.js';
+import { transformFieldPathQueryNode, transformFieldQueryNode } from './transformers/field.js';
+import { transformFollowEdgeQueryNode } from './transformers/follow-edge.js';
+import { transformTraversalQueryNode } from './transformers/traversal.js';
 import {
     transformDeleteEntitiesQueryNode,
     transformUpdateEntitiesQueryNode,
-} from './update-delete-entities.js';
+} from './transformers/update-delete-entities.js';
 
 type TransformFunction<T extends QueryNode> = (node: T, authContext: AuthContext) => QueryNode;
 

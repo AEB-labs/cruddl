@@ -1,22 +1,19 @@
 import { ZonedDateTime } from '@js-joda/core';
 import type { GraphQLInputType } from 'graphql';
 import { getNamedType, GraphQLBoolean, GraphQLList, GraphQLNonNull } from 'graphql';
-import type { EnumType, Field, ScalarType, Type } from '../../model/index.js';
-import { TypeKind } from '../../model/index.js';
-import type { QueryNode } from '../../query-tree/index.js';
-import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    ConstBoolQueryNode,
-    CountQueryNode,
-    FieldQueryNode,
-    ListItemQueryNode,
-    LiteralQueryNode,
-    ObjectEntriesQueryNode,
-    PropertyAccessQueryNode,
-    VariableQueryNode,
-} from '../../query-tree/index.js';
+import { TypeKind } from '../../model/config/type.js';
+import type { EnumType } from '../../model/implementation/enum-type.js';
+import type { Field } from '../../model/implementation/field.js';
+import type { ScalarType } from '../../model/implementation/scalar-type.js';
+import type { Type } from '../../model/implementation/type.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { CountQueryNode, ListItemQueryNode } from '../../query-tree/lists.js';
+import { ConstBoolQueryNode, LiteralQueryNode } from '../../query-tree/literals.js';
+import { ObjectEntriesQueryNode } from '../../query-tree/objects.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../../query-tree/operators.js';
 import { QuantifierFilterNode } from '../../query-tree/quantifiers.js';
+import { FieldQueryNode, PropertyAccessQueryNode } from '../../query-tree/queries.js';
+import { VariableQueryNode } from '../../query-tree/variables.js';
 import {
     AND_FILTER_FIELD,
     FILTER_FIELD_PREFIX_SEPARATOR,

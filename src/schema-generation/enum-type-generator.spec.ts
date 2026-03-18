@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { EnumType, Model, TypeKind } from '../model/index.js';
+import { TypeKind } from '../model/config/type.js';
+import { EnumType } from '../model/implementation/enum-type.js';
+import { Model } from '../model/implementation/model.js';
 import { EnumTypeGenerator } from './enum-type-generator.js';
 
 describe('EnumTypeGenerator', () => {

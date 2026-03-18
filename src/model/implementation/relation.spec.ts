@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseAdapter, FlexSearchTokenizable } from '../../database/database-adapter.js';
+import type { QueryNode } from '../../query-tree/base.js';
 import type { FlexSearchTokenization } from '../../query-tree/flex-search.js';
-import type { QueryNode } from '../../query-tree/index.js';
-import type { Relation } from '../index.js';
-import { Model, TypeKind } from '../index.js';
+import { TypeKind } from '../config/type.js';
+import { Model } from './model.js';
+import type { Relation } from './relation.js';
 
 class FakeDBAdatper implements DatabaseAdapter {
     async execute(queryTree: QueryNode): Promise<any> {

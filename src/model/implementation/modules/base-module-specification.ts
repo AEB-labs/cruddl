@@ -4,7 +4,8 @@ import type {
     BaseModuleSpecificationConfig,
     ModuleSpecificationClauseConfig,
 } from '../../config/module-specification.js';
-import { ValidationMessage, locationWithinStringArgument } from '../../validation/index.js';
+import { locationWithinStringArgument } from '../../validation/location.js';
+import { ValidationMessage } from '../../validation/message.js';
 import type { ModelComponent } from '../../validation/validation-context.js';
 import { ValidationContext } from '../../validation/validation-context.js';
 import type { Model } from '../model.js';

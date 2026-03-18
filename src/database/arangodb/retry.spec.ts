@@ -1,22 +1,20 @@
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
-import type { QueryNode } from '../../query-tree/index.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { TransformListQueryNode } from '../../query-tree/lists.js';
+import { LiteralQueryNode } from '../../query-tree/literals.js';
 import {
-    BinaryOperationQueryNode,
-    BinaryOperator,
     CreateEntityQueryNode,
-    EntitiesQueryNode,
-    FieldQueryNode,
-    LiteralQueryNode,
     SetFieldQueryNode,
-    TransformListQueryNode,
     UpdateEntitiesQueryNode,
-    VariableQueryNode,
-} from '../../query-tree/index.js';
+} from '../../query-tree/mutations.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../../query-tree/operators.js';
+import { EntitiesQueryNode, FieldQueryNode } from '../../query-tree/queries.js';
+import { VariableQueryNode } from '../../query-tree/variables.js';
 import { createTempDatabase } from '../../testing/regression-tests/initialization.js';
 import { createSimpleModel } from '../../testing/utils/create-simple-model.js';
 import { range } from '../../utils/utils.js';
-import { ArangoDBAdapter } from './index.js';
+import { ArangoDBAdapter } from './arangodb-adapter.js';
 import { isArangoDBDisabled } from './testing/is-arangodb-disabled.js';
 
 const PARALLELISM = 20;

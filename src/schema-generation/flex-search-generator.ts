@@ -1,29 +1,27 @@
 import type { GraphQLFieldConfigArgumentMap } from 'graphql';
 import { GraphQLString } from 'graphql';
+import type { Field } from '../model/implementation/field.js';
 import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from '../model/implementation/flex-search.js';
-import type { Field, RootEntityType } from '../model/implementation/index.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
+import type { QueryNode } from '../query-tree/base.js';
+import { FLEX_SEARCH_TOO_MANY_OBJECTS, RuntimeErrorQueryNode } from '../query-tree/errors.js';
 import {
     FlexSearchComplexOperatorQueryNode,
     FlexSearchQueryNode,
     FlexSearchStartsWithQueryNode,
 } from '../query-tree/flex-search.js';
-import type { QueryNode } from '../query-tree/index.js';
+import { CountQueryNode } from '../query-tree/lists.js';
+import { ConstBoolQueryNode, LiteralQueryNode } from '../query-tree/literals.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     BinaryOperatorWithAnalyzer,
     ConditionalQueryNode,
-    ConstBoolQueryNode,
-    CountQueryNode,
-    FLEX_SEARCH_TOO_MANY_OBJECTS,
-    FieldPathQueryNode,
-    LiteralQueryNode,
-    PreExecQueryParms,
-    RuntimeErrorQueryNode,
-    VariableQueryNode,
-    WithPreExecutionQueryNode,
-} from '../query-tree/index.js';
-import { simplifyBooleans } from '../query-tree/utils/index.js';
+} from '../query-tree/operators.js';
+import { PreExecQueryParms, WithPreExecutionQueryNode } from '../query-tree/pre-exec.js';
+import { FieldPathQueryNode } from '../query-tree/queries.js';
+import { simplifyBooleans } from '../query-tree/utils/simplify-booleans.js';
+import { VariableQueryNode } from '../query-tree/variables.js';
 import {
     FILTER_ARG,
     FLEX_SEARCH_EXPRESSION_ARG,
@@ -34,7 +32,7 @@ import {
 import { getFlexSearchEntitiesFieldName, getMetaFieldName } from '../schema/names.js';
 import { decapitalize } from '../utils/utils.js';
 import type { FlexSearchFilterObjectType } from './flex-search-filter-input-types/filter-types.js';
-import type { FlexSearchFilterTypeGenerator } from './flex-search-filter-input-types/index.js';
+import type { FlexSearchFilterTypeGenerator } from './flex-search-filter-input-types/generator.js';
 import type { FlexSearchPostFilterAugmentation } from './flex-search-post-filter-augmentation.js';
 import type { OrderByAndPaginationAugmentation } from './order-by-and-pagination-augmentation.js';
 import { LimitTypeCheckType } from './order-by-and-pagination-augmentation.js';
@@ -43,8 +41,8 @@ import type {
     QueryNodeField,
     QueryNodeObjectType,
     QueryNodeResolveInfo,
-} from './query-node-object-type/index.js';
-import { QueryNodeListType, QueryNodeNonNullType } from './query-node-object-type/index.js';
+} from './query-node-object-type/definition.js';
+import { QueryNodeListType, QueryNodeNonNullType } from './query-node-object-type/definition.js';
 import { orderArgMatchesPrimarySort } from './utils/flex-search-utils.js';
 import { or } from './utils/input-types.js';
 

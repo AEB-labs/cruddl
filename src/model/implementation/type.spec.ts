@@ -5,7 +5,9 @@ import {
     expectSingleWarning,
     expectToBeValid,
 } from '../../testing/utils/model-validation-utils.js';
-import { Model, ScalarType, TypeKind } from '../index.js';
+import { TypeKind } from '../config/type.js';
+import { Model } from './model.js';
+import { ScalarType } from './scalar-type.js';
 
 // This test uses a ScalarType because that is a concrete class without much addition to TypeBase
 describe('Type', () => {

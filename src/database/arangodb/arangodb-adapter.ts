@@ -9,10 +9,10 @@ import {
     TransactionTimeoutError,
 } from '../../execution/runtime-errors.js';
 import { TransactionError } from '../../execution/transaction-error.js';
-import { Model } from '../../model/index.js';
+import { Model } from '../../model/implementation/model.js';
+import type { QueryNode } from '../../query-tree/base.js';
 import type { FlexSearchTokenization } from '../../query-tree/flex-search.js';
-import type { QueryNode } from '../../query-tree/index.js';
-import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query-tree/index.js';
+import { ALL_QUERY_RESULT_VALIDATOR_FUNCTION_PROVIDERS } from '../../query-tree/validation.js';
 import type { Mutable } from '../../utils/util-types.js';
 import { isDefined, sleep, sleepInterruptible } from '../../utils/utils.js';
 import { getPreciseTime, Watch } from '../../utils/watch.js';

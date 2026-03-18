@@ -10,9 +10,12 @@ import {
 import { PermissionResult } from '../authorization/permission-descriptors.js';
 import { CRUDDL_VERSION } from '../cruddl-version.js';
 import type { ExecutionOptionsCallbackArgs } from '../execution/execution-options.js';
+import { TypeKind } from '../model/config/type.js';
+import type { EnumValue } from '../model/implementation/enum-type.js';
+import { Field } from '../model/implementation/field.js';
 import { OrderDirection } from '../model/implementation/order.js';
-import type { EnumValue, RootEntityType, Type } from '../model/index.js';
-import { Field, TypeKind } from '../model/index.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
+import type { Type } from '../model/implementation/type.js';
 import type { Project } from '../project/project.js';
 import { GraphQLI18nString } from '../schema/scalars/string-map.js';
 import { isDefined } from '../utils/utils.js';

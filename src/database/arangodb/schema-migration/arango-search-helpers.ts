@@ -13,9 +13,11 @@ import type {
 } from 'arangojs/views';
 import { deepEqual } from 'fast-equals';
 import type { FieldPath } from '../../../model/implementation/field-path.js';
+import type { Field } from '../../../model/implementation/field.js';
 import { IDENTITY_ANALYZER } from '../../../model/implementation/flex-search.js';
+import type { Model } from '../../../model/implementation/model.js';
 import { OrderDirection } from '../../../model/implementation/order.js';
-import type { Field, Model, RootEntityType } from '../../../model/index.js';
+import type { RootEntityType } from '../../../model/implementation/root-entity-type.js';
 import { ID_FIELD } from '../../../schema/constants.js';
 import {
     GraphQLOffsetDateTime,

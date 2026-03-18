@@ -5,7 +5,7 @@ import type {
     LocalizationConfig,
     NamespaceLocalizationConfig,
     TypeLocalizationConfig,
-} from './config/index.js';
+} from './config/i18n.js';
 
 export function extractI18nConfigs(
     source: ParsedObjectProjectSource,

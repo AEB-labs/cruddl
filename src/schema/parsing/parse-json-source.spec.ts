@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ValidationContext, type ValidationMessage } from '../../model/index.js';
+import type { ValidationMessage } from '../../model/validation/message.js';
+import { ValidationContext } from '../../model/validation/validation-context.js';
 import { ProjectSource } from '../../project/source.js';
 import { parseJSONSource } from './parse-json-source.js';
 

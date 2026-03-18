@@ -1,29 +1,26 @@
 import type { ThunkReadonlyArray } from 'graphql';
-import type {
-    ChildEntityType,
-    EntityExtensionType,
-    Field,
-    ObjectType,
-    RootEntityType,
-    ValueObjectType,
-} from '../../model/index.js';
-import type { QueryNode } from '../../query-tree/index.js';
+import type { ChildEntityType } from '../../model/implementation/child-entity-type.js';
+import type { EntityExtensionType } from '../../model/implementation/entity-extension-type.js';
+import type { Field } from '../../model/implementation/field.js';
+import type { RootEntityType } from '../../model/implementation/root-entity-type.js';
+import type { ObjectType } from '../../model/implementation/type.js';
+import type { ValueObjectType } from '../../model/implementation/value-object-type.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { CreateBillingEntityQueryNode } from '../../query-tree/billing.js';
+import { ListItemQueryNode } from '../../query-tree/lists.js';
+import { LiteralQueryNode } from '../../query-tree/literals.js';
 import {
     AffectedFieldInfoQueryNode,
-    CreateBillingEntityQueryNode,
     CreateEntitiesQueryNode,
     CreateEntityQueryNode,
-    EntityFromIdQueryNode,
-    ListItemQueryNode,
-    LiteralQueryNode,
-    PreExecQueryParms,
-    VariableAssignmentQueryNode,
-    VariableQueryNode,
-} from '../../query-tree/index.js';
+} from '../../query-tree/mutations.js';
+import { PreExecQueryParms } from '../../query-tree/pre-exec.js';
+import { EntityFromIdQueryNode } from '../../query-tree/queries.js';
+import { VariableAssignmentQueryNode, VariableQueryNode } from '../../query-tree/variables.js';
 import { ENTITY_CREATED_AT, ENTITY_UPDATED_AT, ID_FIELD } from '../../schema/constants.js';
 import { getCreateInputTypeName, getValueObjectInputTypeName } from '../../schema/names.js';
 import type { PlainObject } from '../../utils/utils.js';
-import type { FieldContext } from '../query-node-object-type/index.js';
+import type { FieldContext } from '../query-node-object-type/context.js';
 import { TypedInputObjectType } from '../typed-input-object-type.js';
 import {
     createBillingEntityCategoryNode,

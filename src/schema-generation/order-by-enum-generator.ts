@@ -1,9 +1,10 @@
 import type { GraphQLEnumValueConfig } from 'graphql';
 import { GraphQLEnumType } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import type { Field, ObjectType } from '../model/index.js';
-import type { QueryNode } from '../query-tree/index.js';
-import { OrderClause, OrderDirection } from '../query-tree/index.js';
+import type { Field } from '../model/implementation/field.js';
+import type { ObjectType } from '../model/implementation/type.js';
+import type { QueryNode } from '../query-tree/base.js';
+import { OrderClause, OrderDirection } from '../query-tree/lists.js';
 import { ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/constants.js';
 import { getOrderByTypeName } from '../schema/names.js';
 

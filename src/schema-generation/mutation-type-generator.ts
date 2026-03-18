@@ -1,32 +1,32 @@
 import { GraphQLID, GraphQLList, GraphQLNonNull } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import type { Namespace, RootEntityType } from '../model/index.js';
-import type { QueryNode } from '../query-tree/index.js';
+import type { Namespace } from '../model/implementation/namespace.js';
+import type { RootEntityType } from '../model/implementation/root-entity-type.js';
+import type { QueryNode } from '../query-tree/base.js';
+import { CreateBillingEntityQueryNode } from '../query-tree/billing.js';
+import { NOT_FOUND_ERROR, UnknownValueQueryNode } from '../query-tree/errors.js';
 import {
-    AffectedFieldInfoQueryNode,
-    BinaryOperationQueryNode,
-    BinaryOperator,
-    CreateBillingEntityQueryNode,
-    DeleteEntitiesQueryNode,
-    EntitiesIdentifierKind,
-    EntitiesQueryNode,
-    EntityFromIdQueryNode,
-    ErrorIfEmptyResultValidator,
     FirstOfListQueryNode,
     ListQueryNode,
-    LiteralQueryNode,
-    NOT_FOUND_ERROR,
-    NullQueryNode,
-    ObjectQueryNode,
-    PreExecQueryParms,
-    RootEntityIDQueryNode,
     TransformListQueryNode,
-    UnknownValueQueryNode,
+} from '../query-tree/lists.js';
+import { LiteralQueryNode, NullQueryNode } from '../query-tree/literals.js';
+import {
+    AffectedFieldInfoQueryNode,
+    DeleteEntitiesQueryNode,
+    EntitiesIdentifierKind,
     UpdateEntitiesQueryNode,
-    VariableAssignmentQueryNode,
-    VariableQueryNode,
-    WithPreExecutionQueryNode,
-} from '../query-tree/index.js';
+} from '../query-tree/mutations.js';
+import { ObjectQueryNode } from '../query-tree/objects.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../query-tree/operators.js';
+import { PreExecQueryParms, WithPreExecutionQueryNode } from '../query-tree/pre-exec.js';
+import {
+    EntitiesQueryNode,
+    EntityFromIdQueryNode,
+    RootEntityIDQueryNode,
+} from '../query-tree/queries.js';
+import { ErrorIfEmptyResultValidator } from '../query-tree/validation.js';
+import { VariableAssignmentQueryNode, VariableQueryNode } from '../query-tree/variables.js';
 import {
     ID_FIELD,
     MUTATION_INPUT_ARG,
@@ -46,31 +46,21 @@ import {
 import type { PlainObject } from '../utils/utils.js';
 import { decapitalize, isDefined } from '../utils/utils.js';
 import type { BillingTypeGenerator } from './billing-type-generator.js';
-import type {
-    CreateInputTypeGenerator,
-    CreateRootEntityInputType,
-} from './create-input-types/index.js';
+import type { CreateInputTypeGenerator } from './create-input-types/generator.js';
+import type { CreateRootEntityInputType } from './create-input-types/input-types.js';
 import { generateDeleteAllQueryNode } from './delete-all-generator.js';
 import { createGraphQLError } from './graphql-errors.js';
 import type { ListAugmentation } from './list-augmentation.js';
 import { LimitTypeCheckType } from './order-by-and-pagination-augmentation.js';
 import type { OutputTypeGenerator } from './output-type-generator.js';
-import type {
-    FieldContext,
-    QueryNodeField,
-    QueryNodeObjectType,
-} from './query-node-object-type/index.js';
-import {
-    QueryNodeListType,
-    QueryNodeNonNullType,
-    makeNonNullableList,
-} from './query-node-object-type/index.js';
+import type { FieldContext } from './query-node-object-type/context.js';
+import type { QueryNodeField, QueryNodeObjectType } from './query-node-object-type/definition.js';
+import { QueryNodeListType, QueryNodeNonNullType } from './query-node-object-type/definition.js';
+import { makeNonNullableList } from './query-node-object-type/utils.js';
 import type { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator.js';
-import type {
-    UpdateInputFieldContext,
-    UpdateInputTypeGenerator,
-    UpdateRootEntityInputType,
-} from './update-input-types/index.js';
+import type { UpdateInputTypeGenerator } from './update-input-types/generator.js';
+import type { UpdateInputFieldContext } from './update-input-types/input-fields.js';
+import type { UpdateRootEntityInputType } from './update-input-types/input-types.js';
 import {
     createBillingEntityCategoryNode,
     createBillingEntityQuantityNode,

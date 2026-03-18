@@ -6,7 +6,7 @@ import {
     getTempDatabase,
 } from '../../testing/regression-tests/initialization.js';
 import { createSimpleModel } from '../../testing/utils/create-simple-model.js';
-import { ArangoDBAdapter } from './index.js';
+import { ArangoDBAdapter } from './arangodb-adapter.js';
 import { isArangoDBDisabled } from './testing/is-arangodb-disabled.js';
 
 describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {

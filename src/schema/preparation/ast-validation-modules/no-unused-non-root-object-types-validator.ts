@@ -1,5 +1,5 @@
 import type { DocumentNode, ObjectTypeDefinitionNode } from 'graphql';
-import { ValidationMessage } from '../../../model/index.js';
+import { ValidationMessage } from '../../../model/validation/message.js';
 import {
     getNamedTypeDefinitionAST,
     getObjectTypes,

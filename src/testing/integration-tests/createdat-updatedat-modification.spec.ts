@@ -1,6 +1,6 @@
 import { execute, graphql, parse } from 'graphql';
 import { describe, expect, it } from 'vitest';
-import { InMemoryAdapter } from '../../database/inmemory/index.js';
+import { InMemoryAdapter } from '../../database/inmemory/inmemory-adapter.js';
 import { Project } from '../../project/project.js';
 import { ProjectSource } from '../../project/source.js';
 import { sleep } from '../../utils/utils.js';

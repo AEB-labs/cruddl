@@ -1,6 +1,6 @@
 import type { GraphQLScalarType } from 'graphql';
-import type { ScalarTypeConfig } from '../config/index.js';
-import { TypeKind } from '../config/index.js';
+import type { ScalarTypeConfig } from '../config/type.js';
+import { TypeKind } from '../config/type.js';
 import type { Model } from './model.js';
 import { TypeBase } from './type-base.js';
 

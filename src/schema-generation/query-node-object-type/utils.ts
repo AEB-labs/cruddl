@@ -10,9 +10,12 @@ import {
     isListType,
     isNonNullType,
 } from 'graphql';
-import type { QueryNodeObjectType, QueryNodeOutputType } from './definition.js';
+import type {
+    QueryNodeNullableType,
+    QueryNodeObjectType,
+    QueryNodeOutputType,
+} from './definition.js';
 import { QueryNodeListType, QueryNodeNonNullType } from './definition.js';
-import type { QueryNodeNullableType } from './index.js';
 
 export function isGraphQLOutputType(type: {}): type is GraphQLOutputType {
     return (

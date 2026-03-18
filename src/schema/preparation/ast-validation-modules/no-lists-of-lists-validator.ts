@@ -1,6 +1,6 @@
 import type { DocumentNode } from 'graphql';
 import { Kind } from 'graphql';
-import { ValidationMessage } from '../../../model/index.js';
+import { ValidationMessage } from '../../../model/validation/message.js';
 import { getObjectTypes } from '../../schema-utils.js';
 import type { ASTValidator } from '../ast-validator.js';
 

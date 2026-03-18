@@ -1,16 +1,14 @@
+import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
 import { FlexSearchQueryNode } from '../../query-tree/flex-search.js';
-import type { EntitiesQueryNode, EntityFromIdQueryNode } from '../../query-tree/index.js';
+import { TransformListQueryNode } from '../../query-tree/lists.js';
+import { NullQueryNode } from '../../query-tree/literals.js';
 import {
     BinaryOperationQueryNode,
     BinaryOperator,
     ConditionalQueryNode,
-    NullQueryNode,
-    PERMISSION_DENIED_ERROR,
-    RuntimeErrorQueryNode,
-    TransformListQueryNode,
-    VariableAssignmentQueryNode,
-    VariableQueryNode,
-} from '../../query-tree/index.js';
+} from '../../query-tree/operators.js';
+import type { EntitiesQueryNode, EntityFromIdQueryNode } from '../../query-tree/queries.js';
+import { VariableAssignmentQueryNode, VariableQueryNode } from '../../query-tree/variables.js';
 import type { AuthContext } from '../auth-basics.js';
 import { AccessOperation } from '../auth-basics.js';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model.js';

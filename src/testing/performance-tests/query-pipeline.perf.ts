@@ -5,15 +5,15 @@ import { applyAuthorizationToQueryTree } from '../../authorization/execution.js'
 import { getAQLQuery } from '../../database/arangodb/aql-generator.js';
 import type { DistilledOperation } from '../../graphql/query-distiller.js';
 import { distillQuery } from '../../graphql/query-distiller.js';
-import type { Model } from '../../model/index.js';
-import type { QueryNode } from '../../query-tree/index.js';
-import { ObjectQueryNode } from '../../query-tree/index.js';
-import type { QueryNodeObjectType } from '../../schema-generation/index.js';
+import type { Model } from '../../model/implementation/model.js';
+import type { QueryNode } from '../../query-tree/base.js';
+import { ObjectQueryNode } from '../../query-tree/objects.js';
+import type { QueryNodeObjectType } from '../../schema-generation/query-node-object-type/definition.js';
 import {
     buildConditionalObjectQueryNode,
-    RootTypesGenerator,
-} from '../../schema-generation/index.js';
-import { createRootFieldContext } from '../../schema-generation/query-node-object-type/index.js';
+    createRootFieldContext,
+} from '../../schema-generation/query-node-object-type/query-node-generator.js';
+import { RootTypesGenerator } from '../../schema-generation/root-types-generator.js';
 import { isDefined } from '../../utils/utils.js';
 import type { BenchmarkConfig, BenchmarkFactories } from './support/async-bench.js';
 import { createTestProject } from './support/helpers.js';
