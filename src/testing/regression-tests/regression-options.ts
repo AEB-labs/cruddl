@@ -1,4 +1,4 @@
-import { likePatternToRegExp } from '../../database/like-helpers.js';
+import { likePatternToRegExp } from '../../core/utils/like-helpers.js';
 
 type DatabaseSpecifier = 'in-memory' | 'arangodb';
 const ALL_DATABASES: DatabaseSpecifier[] = ['in-memory', 'arangodb'];

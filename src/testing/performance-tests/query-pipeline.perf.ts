@@ -1,20 +1,20 @@
 import type { DocumentNode, GraphQLSchema } from 'graphql';
 import { parse, validate } from 'graphql';
 import { resolve } from 'path';
-import { applyAuthorizationToQueryTree } from '../../authorization/execution.js';
-import { getAQLQuery } from '../../database/arangodb/aql-generator.js';
-import type { DistilledOperation } from '../../graphql/query-distiller.js';
-import { distillQuery } from '../../graphql/query-distiller.js';
-import type { Model } from '../../model/implementation/model.js';
-import type { QueryNode } from '../../query-tree/base.js';
-import { ObjectQueryNode } from '../../query-tree/objects.js';
-import type { QueryNodeObjectType } from '../../schema-generation/query-node-object-type/definition.js';
+import { getAQLQuery } from '../../arangodb/aql-generator.js';
+import { applyAuthorizationToQueryTree } from '../../core/authorization/execution.js';
+import type { DistilledOperation } from '../../core/graphql/query-distiller.js';
+import { distillQuery } from '../../core/graphql/query-distiller.js';
+import type { Model } from '../../core/model/implementation/model.js';
+import type { QueryNode } from '../../core/query-tree/base.js';
+import { ObjectQueryNode } from '../../core/query-tree/objects.js';
+import type { QueryNodeObjectType } from '../../core/schema-generation/query-node-object-type/definition.js';
 import {
     buildConditionalObjectQueryNode,
     createRootFieldContext,
-} from '../../schema-generation/query-node-object-type/query-node-generator.js';
-import { RootTypesGenerator } from '../../schema-generation/root-types-generator.js';
-import { isDefined } from '../../utils/utils.js';
+} from '../../core/schema-generation/query-node-object-type/query-node-generator.js';
+import { RootTypesGenerator } from '../../core/schema-generation/root-types-generator.js';
+import { isDefined } from '../../core/utils/utils.js';
 import type { BenchmarkConfig, BenchmarkFactories } from './support/async-bench.js';
 import { createTestProject } from './support/helpers.js';
 

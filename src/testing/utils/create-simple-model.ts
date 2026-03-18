@@ -1,13 +1,13 @@
 import type { DocumentNode } from 'graphql';
-import type { NamespaceLocalizationConfig } from '../../model/config/i18n.js';
-import type { PermissionProfileConfigMap } from '../../model/config/permissions.js';
-import { createModel } from '../../model/create-model.js';
-import type { Model } from '../../model/implementation/model.js';
+import type { NamespaceLocalizationConfig } from '../../core/model/config/i18n.js';
+import type { PermissionProfileConfigMap } from '../../core/model/config/permissions.js';
+import { createModel } from '../../core/model/create-model.js';
+import type { Model } from '../../core/model/implementation/model.js';
 import {
     type ParsedProject,
     type ParsedProjectSource,
     ParsedProjectSourceBaseKind,
-} from '../../schema/parsing/parsed-project.js';
+} from '../../core/schema/parsing/parsed-project.js';
 
 export function createSimpleModel(
     document: DocumentNode,
