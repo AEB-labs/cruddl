@@ -198,9 +198,9 @@ describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {
 
             const propertiesAfterSecondMigration =
                 (await view.properties()) as ArangoSearchViewProperties;
-            expect(properties.commitIntervalMsec).to.equal(2000);
-            expect(properties.consolidationIntervalMsec).to.equal(8000);
-            expect(properties.cleanupIntervalStep).to.equal(1);
+            expect(propertiesAfterSecondMigration.commitIntervalMsec).to.equal(2000);
+            expect(propertiesAfterSecondMigration.consolidationIntervalMsec).to.equal(8000);
+            expect(propertiesAfterSecondMigration.cleanupIntervalStep).to.equal(1);
         });
     });
 });
