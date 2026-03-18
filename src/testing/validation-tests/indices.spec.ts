@@ -1,6 +1,6 @@
 import { gql } from 'graphql-tag';
 import { describe, it } from 'vitest';
-import { prettyPrint } from '../../graphql/pretty-print.js';
+import { prettyPrint } from '../../core/graphql/pretty-print.js';
 import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,

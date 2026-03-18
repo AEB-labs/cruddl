@@ -1,3 +1,3 @@
-import colors from './src/utils/colors.js';
+import colors from './src/core/utils/colors.js';
 
 colors.enabled = true;

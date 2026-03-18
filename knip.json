@@ -1,12 +1,12 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": [
-    "src/all-exports.ts!",
+    "src/public-api.ts!",
     "src/dev-server/*",
     "src/**/*.spec.ts",
     "src/testing/regression-tests/**/test-data.ts"
   ],
-  "project": ["src/**/*.ts!", "!**/testing/**!", "!src/project/project-from-fs.ts!"],
+  "project": ["src/**/*.ts!", "!**/testing/**!", "!src/core/project/project-from-fs.ts!"],
   "rules": {
     "exports": "off",
     "types": "off",

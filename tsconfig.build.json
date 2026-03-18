@@ -4,10 +4,5 @@
     "types": [],
     "outDir": "dist"
   },
-  "files": [
-    "src/all-exports.ts",
-    "src/core-exports.ts",
-    "src/database/arangodb/public-api.ts",
-    "src/database/inmemory/public-api.ts"
-  ]
+  "files": ["src/public-api.ts"]
 }

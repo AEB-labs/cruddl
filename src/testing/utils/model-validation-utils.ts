@@ -1,10 +1,10 @@
 import { expect } from 'vitest';
-import { applyChangeSet } from '../../core-exports.js';
-import { Severity } from '../../model/validation/message.js';
-import { ValidationResult } from '../../model/validation/result.js';
-import type { ModelComponent } from '../../model/validation/validation-context.js';
-import { ValidationContext } from '../../model/validation/validation-context.js';
-import { Project } from '../../project/project.js';
+import { Severity } from '../../core/model/validation/message.js';
+import { ValidationResult } from '../../core/model/validation/result.js';
+import type { ModelComponent } from '../../core/model/validation/validation-context.js';
+import { ValidationContext } from '../../core/model/validation/validation-context.js';
+import { Project } from '../../core/project/project.js';
+import { applyChangeSet } from '../../core/public-api.js';
 
 type Validatable = ModelComponent | ValidationResult | Project;
 

@@ -4,27 +4,27 @@
   "description": "",
   "license": "MIT",
   "type": "module",
-  "main": "dist/cjs/all-exports.js",
-  "types": "./dist/cjs/all-exports.d.ts",
+  "main": "dist/cjs/public-api.js",
+  "types": "./dist/cjs/public-api.d.ts",
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/esm/all-exports.d.ts",
-        "default": "./dist/esm/all-exports.js"
+        "types": "./dist/esm/public-api.d.ts",
+        "default": "./dist/esm/public-api.js"
       },
       "require": {
-        "types": "./dist/cjs/all-exports.d.ts",
-        "default": "./dist/cjs/all-exports.js"
+        "types": "./dist/cjs/public-api.d.ts",
+        "default": "./dist/cjs/public-api.js"
       }
     },
     "./core": {
       "import": {
-        "types": "./dist/esm/core-exports.d.ts",
-        "default": "./dist/esm/core-exports.js"
+        "types": "./dist/esm/core/public-api.d.ts",
+        "default": "./dist/esm/core/public-api.js"
       },
       "require": {
-        "types": "./dist/cjs/core-exports.d.ts",
-        "default": "./dist/cjs/core-exports.js"
+        "types": "./dist/cjs/core/public-api.d.ts",
+        "default": "./dist/cjs/core/public-api.js"
       }
     },
     "./arangodb": {

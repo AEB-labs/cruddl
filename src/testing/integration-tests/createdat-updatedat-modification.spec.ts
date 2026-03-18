@@ -1,9 +1,9 @@
 import { execute, graphql, parse } from 'graphql';
 import { describe, expect, it } from 'vitest';
-import { InMemoryAdapter } from '../../database/inmemory/inmemory-adapter.js';
-import { Project } from '../../project/project.js';
-import { ProjectSource } from '../../project/source.js';
-import { sleep } from '../../utils/utils.js';
+import { Project } from '../../core/project/project.js';
+import { ProjectSource } from '../../core/project/source.js';
+import { sleep } from '../../core/utils/utils.js';
+import { InMemoryAdapter } from '../../inmemory/inmemory-adapter.js';
 
 describe('mutation', () => {
     const astSchema = `

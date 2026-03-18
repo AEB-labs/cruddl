@@ -1,4 +1,4 @@
-import { bold, green, grey, red, yellow } from '../../../utils/colors.js';
+import { bold, green, grey, red, yellow } from '../../../core/utils/colors.js';
 import type { BenchmarkFactories } from './async-bench.js';
 import { benchmark, time } from './async-bench.js';
 
