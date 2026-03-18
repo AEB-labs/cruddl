@@ -7,7 +7,6 @@ import type { QueryNode } from '../query-tree/base.js';
 import { OrderClause, OrderDirection } from '../query-tree/lists.js';
 import { ORDER_BY_ASC_SUFFIX, ORDER_BY_DESC_SUFFIX } from '../schema/constants.js';
 import { getOrderByTypeName } from '../schema/names.js';
-
 import { isDefined } from '../utils/utils.js';
 import { createFieldNode } from './field-nodes.js';
 import { getScalarFilterValueNode } from './filter-input-types/filter-fields.js';

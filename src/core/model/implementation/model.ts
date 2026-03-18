@@ -1,7 +1,6 @@
 import { memorize } from 'memorize-decorator';
 import type { ModelOptions } from '../../config/interfaces.js';
 import { groupArray, isDefined, uniqBy } from '../../utils/utils.js';
-
 import type { ModelConfig } from '../config/model.js';
 import type { NamespacedPermissionProfileConfigMap } from '../config/permissions.js';
 import { TypeKind } from '../config/type.js';

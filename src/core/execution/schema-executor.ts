@@ -16,7 +16,6 @@ import type { QueryNodeObjectType } from '../schema-generation/query-node-object
 import { SchemaGenerator } from '../schema-generation/schema-generator.js';
 import type { SchemaTransformationContext } from '../schema/preparation/transformation-pipeline.js';
 import { validateAndPrepareSchema } from '../schema/schema-builder.js';
-
 import type { ExecutionOptions } from './execution-options.js';
 import type { ExecutionResult } from './execution-result.js';
 import { OperationResolver } from './operation-resolver.js';

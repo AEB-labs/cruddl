@@ -3,7 +3,6 @@ import { memorize } from 'memorize-decorator';
 import type { QueryNode } from '../../query-tree/base.js';
 import type { VariableQueryNode } from '../../query-tree/variables.js';
 import { isDefined } from '../../utils/utils.js';
-
 import type { CollectFieldConfig } from '../config/field.js';
 import type { MessageLocation } from '../validation/location.js';
 import { locationWithinStringArgument } from '../validation/location.js';
