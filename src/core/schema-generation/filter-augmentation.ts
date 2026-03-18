@@ -30,7 +30,7 @@ export class FilterAugmentation {
                 },
             },
             resolve: (sourceNode, args, info) => {
-                let listNode = schemaField.resolve(sourceNode, args, info);
+                const listNode = schemaField.resolve(sourceNode, args, info);
                 return buildFilteredListNode({
                     listNode,
                     filterValue: args[FILTER_ARG],

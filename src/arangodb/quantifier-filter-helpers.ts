@@ -55,7 +55,7 @@ export function canUseArrayExpansionOperatorForQuantifierFilter(
         return undefined;
     }
 
-    let fields: Field[] = [];
+    const fields: Field[] = [];
     let currentFieldNode: QueryNode = conditionNode.lhs;
     while (currentFieldNode !== node.itemVariable) {
         if (!(currentFieldNode instanceof FieldQueryNode)) {

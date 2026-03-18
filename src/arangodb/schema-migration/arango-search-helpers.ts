@@ -123,7 +123,7 @@ export async function calculateRequiredArangoSearchViewCreateOperations(
     db: Database,
     configuration?: ArangoSearchConfiguration,
 ): Promise<ReadonlyArray<SchemaMigration>> {
-    let viewsToCreate = requiredViews.filter(
+    const viewsToCreate = requiredViews.filter(
         (value) => !existingViews.some((value1) => value1.name === value.viewName),
     );
 

@@ -40,7 +40,7 @@ export class OperationResolver {
         options?: ExecutionOptions,
     ): Promise<ExecutionResult> {
         globalContext.registerContext(this.context);
-        let profileConsumer = this.context.profileConsumer;
+        const profileConsumer = this.context.profileConsumer;
         const logger = globalContext.loggerProvider.getLogger('query-resolvers');
 
         if (!options) {
@@ -298,7 +298,7 @@ export class OperationResolver {
                     containsComplexOR = true;
                 }
             }
-            let expandedResultNode = this.expandQueryNode(queryNode.resultNode, tokenizations);
+            const expandedResultNode = this.expandQueryNode(queryNode.resultNode, tokenizations);
             if (expandedResultNode.containsComplexOR) {
                 containsComplexOR = true;
             }

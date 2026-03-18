@@ -62,7 +62,7 @@ export class FlexSearchPostFilterAugmentation {
                     );
                 }
 
-                let listNode = schemaField.resolve(sourceNode, args, info);
+                const listNode = schemaField.resolve(sourceNode, args, info);
                 return buildFilteredListNode({
                     listNode,
                     filterValue: filterValue || legacyFilterValue,

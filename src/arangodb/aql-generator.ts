@@ -350,7 +350,7 @@ function createAQLCompoundQuery(
     // move LET statements up
     // they often occur for value objects / entity extensions
     // this avoids the FIRST() and the subquery which reduces load on the AQL query optimizer
-    let variableAssignments: AQLFragment[] = [];
+    const variableAssignments: AQLFragment[] = [];
     const variableAssignmentNodes: VariableAssignmentQueryNode[] = [];
     node = extractVariableAssignments(node, variableAssignmentNodes);
     for (const assignmentNode of variableAssignmentNodes) {
@@ -572,7 +572,7 @@ register(RevisionQueryNode, (node, context) => {
 });
 
 register(FlexSearchQueryNode, (node, context) => {
-    let itemContext = context
+    const itemContext = context
         .bindVariable(node.itemVariable)
         .withExtension(inFlexSearchFilterSymbol, true);
     const viewName = getFlexSearchViewNameForRootEntity(node.rootEntityType!);
@@ -629,7 +629,7 @@ register(TransformListQueryNode, (node, context) => {
         }
     }
 
-    let itemContext = currentContext.bindVariable(node.itemVariable);
+    const itemContext = currentContext.bindVariable(node.itemVariable);
     const itemVar = itemContext.getVariable(node.itemVariable);
     let itemProjectionContext = itemContext;
     const loopScopedAssignments: AQLFragment[] = [];
@@ -688,7 +688,7 @@ function generateInClauseWithFilterAndOrderAndLimit({
     } else {
         list = processNode(node.listNode, context);
     }
-    let filter = simplifyBooleans(node.filterNode);
+    const filter = simplifyBooleans(node.filterNode);
 
     return aql.lines(
         aql`IN ${list}`,
@@ -2872,7 +2872,7 @@ register(UpdateEntitiesQueryNode, (node, context) => {
     let entityFrag: AQLFragment;
     let options: AQLFragment;
     let updateFrag = processNode(new ObjectQueryNode(node.updates), newContext);
-    let additionalUpdates: ReadonlyArray<SetFieldQueryNode> = [];
+    const additionalUpdates: ReadonlyArray<SetFieldQueryNode> = [];
 
     if (node.revision) {
         entityFrag = aql`MERGE(${entityVar}, { _rev: ${aql.value(node.revision)} })`;

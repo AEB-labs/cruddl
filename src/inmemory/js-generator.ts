@@ -443,7 +443,7 @@ function getPaginationFrag({
 }
 
 register(TransformListQueryNode, (node, context) => {
-    let itemContext = context.bindVariable(node.itemVariable);
+    const itemContext = context.bindVariable(node.itemVariable);
     const itemVar = itemContext.getVariable(node.itemVariable);
 
     function lambda(exprNode: QueryNode) {
@@ -828,7 +828,7 @@ function getFollowEdgeFragment(
 register(TraversalQueryNode, (node, context): JSFragment => {
     let currentFrag: JSFragment = processNode(node.sourceEntityNode, context);
     let isList = node.sourceIsList;
-    let isAlreadyID = node.entitiesIdentifierKind === EntitiesIdentifierKind.ID;
+    const isAlreadyID = node.entitiesIdentifierKind === EntitiesIdentifierKind.ID;
 
     if (
         !node.relationSegments.length &&
@@ -851,7 +851,7 @@ register(TraversalQueryNode, (node, context): JSFragment => {
             segment.isListSegment ||
             (segmentIndex === node.relationSegments.length - 1 && node.alwaysProduceList);
         if (isList) {
-            let edgeListFragment = js`${nodeVar} ? ${getFollowEdgeFragment(
+            const edgeListFragment = js`${nodeVar} ? ${getFollowEdgeFragment(
                 segment.relationSide,
                 idFrag,
                 context,
@@ -1144,7 +1144,7 @@ register(OperatorWithAnalyzerQueryNode, (node, context) => {
 
     const isCaseInsensitive = node.analyzer === NORM_CI_ANALYZER;
 
-    let lhs = processNode(node.lhs, context);
+    const lhs = processNode(node.lhs, context);
     let rhs = processNode(node.rhs, context);
 
     // imitating flexSearch here. All fields can be arrays, flexsearch/arangosearch would flatten them
@@ -1197,7 +1197,7 @@ register(OperatorWithAnalyzerQueryNode, (node, context) => {
 });
 
 register(FlexSearchQueryNode, (node, context) => {
-    let itemContext = context.bindVariable(node.itemVariable);
+    const itemContext = context.bindVariable(node.itemVariable);
     const itemVar = itemContext.getVariable(node.itemVariable);
 
     function lambda(exprNode: QueryNode) {

@@ -112,7 +112,7 @@ export class SchemaAnalyzer {
         const existingIndicesPromises = model.rootEntityTypes.map((rootEntityType) =>
             this.getPersistentCollectionIndices(rootEntityType),
         );
-        let existingIndices: IndexDefinition[] = [];
+        const existingIndices: IndexDefinition[] = [];
         await Promise.all(existingIndicesPromises).then((promiseResults) =>
             promiseResults.forEach((indices) =>
                 indices.forEach((index) => existingIndices.push(index)),
@@ -126,12 +126,12 @@ export class SchemaAnalyzer {
 
         // this is useful to show a warning on large collections which would take a while to create an index
         // (or even automatically defer large indices)
-        let collectionSizes = new Map<string, number>();
-        for (let index of [...indicesToCreate, ...indicesToDelete]) {
+        const collectionSizes = new Map<string, number>();
+        for (const index of [...indicesToCreate, ...indicesToDelete]) {
             if (!collectionSizes.has(index.collectionName)) {
                 let collectionSize;
                 try {
-                    let countResult = await this.db.collection(index.collectionName).count();
+                    const countResult = await this.db.collection(index.collectionName).count();
                     collectionSize = countResult.count;
                     collectionSizes.set(index.collectionName, collectionSize);
                 } catch (e) {

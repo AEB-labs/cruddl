@@ -10,6 +10,8 @@ function stringify(val: any) {
 }
 
 export namespace aqlConfig {
+    // is assigned externally, which is not seen by eslint
+    // eslint-disable-next-line prefer-const
     export let enableIndentationForCode = false;
 }
 
@@ -89,7 +91,7 @@ export class AQLCodeBuildingContext {
     }
 
     getBoundValueMap() {
-        let result: { [key: string]: unknown } = {};
+        const result: { [key: string]: unknown } = {};
         for (let i = 0; i < this.boundValues.length; i++) {
             const name = AQLCodeBuildingContext.getBoundValueName(i);
             result[name] = this.boundValues[i];
@@ -306,8 +308,8 @@ export function aql(
     strings: ReadonlyArray<string>,
     ...values: (AQLFragment | string | number | boolean)[]
 ): AQLFragment {
-    let snippets = [...strings];
-    let fragments: AQLFragment[] = [];
+    const snippets = [...strings];
+    const fragments: AQLFragment[] = [];
     while (snippets.length || values.length) {
         if (snippets.length) {
             fragments.push(new AQLCodeFragment(snippets.shift()!));
@@ -491,7 +493,7 @@ export class AQLCompoundQuery extends AQLFragment {
     //TODO Refactor the following three methods. AQLCompoundQuery isn't a real AQLFragment.
     //TODO Include read/write accessed collections in output
     toStringWithContext(context: AQLCodeBuildingContext): string {
-        let descriptions = this.preExecQueries.map((aqlQuery) =>
+        const descriptions = this.preExecQueries.map((aqlQuery) =>
             aqlQuery.toStringWithContext(context),
         );
         const varDescription = this.resultVar
@@ -512,7 +514,7 @@ export class AQLCompoundQuery extends AQLFragment {
     }
 
     toColoredStringWithContext(context: AQLCodeBuildingContext): string {
-        let descriptions = this.preExecQueries.map((aqlQuery) =>
+        const descriptions = this.preExecQueries.map((aqlQuery) =>
             aqlQuery.toColoredStringWithContext(context),
         );
         const varDescription = this.resultVar

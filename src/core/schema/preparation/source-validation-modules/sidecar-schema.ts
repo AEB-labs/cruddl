@@ -10,7 +10,7 @@ export class SidecarSchemaValidator implements ParsedSourceValidator {
             return [];
         }
 
-        let data = source.object;
+        const data = source.object;
 
         // validate-schema.js is generated from schema.json using the npm script "compile-json-schema"
         // we pre-compile this not only for performance but mainly to conform to a CSP with eval disallowed

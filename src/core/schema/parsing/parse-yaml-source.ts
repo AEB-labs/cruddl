@@ -90,7 +90,7 @@ function extractMessageLocationsFromYAML(
     source: ProjectSource,
 ): { [path: string]: MessageLocation } {
     const result = extractAllPaths(root, [] as ReadonlyArray<string | number>);
-    let messageLocations: { [path: string]: MessageLocation } = {};
+    const messageLocations: { [path: string]: MessageLocation } = {};
     result.forEach(
         (val) =>
             (messageLocations['/' + val.path.join('/')] = new MessageLocation(

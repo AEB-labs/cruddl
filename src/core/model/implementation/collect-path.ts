@@ -147,7 +147,7 @@ export class CollectPath {
         }
 
         let currentType: Type = this.declaringType;
-        let segments: CollectPathSegment[] = [];
+        const segments: CollectPathSegment[] = [];
         let currentResultIsList = false;
         let previousResultIsList;
         let currentResultIsNullable = false;

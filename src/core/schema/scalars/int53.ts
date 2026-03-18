@@ -35,7 +35,7 @@ function parseInt53(valueNode: ValueNode) {
         );
     }
 
-    var num = parseInt(valueNode.value, 10);
+    const num = parseInt(valueNode.value, 10);
     if (num > Number.MAX_SAFE_INTEGER) {
         throw new GraphQLError(
             `Int53 cannot represent value larger than ${Number.MAX_SAFE_INTEGER}: ${valueNode.value}`,

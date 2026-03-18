@@ -291,7 +291,7 @@ export class RegressionSuite {
             : {};
         const meta = this.getMeta().resolveTestMeta(name);
 
-        let actualResult: Record<string, unknown> = {};
+        const actualResult: Record<string, unknown> = {};
         let arangoSearchPending = true;
         const aqlResults: AqlResult[] = [];
         const aqlDir = resolve(this.testsPath, name, 'aql');

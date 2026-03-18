@@ -141,14 +141,14 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             const startTime = enableProfiling ? getPreciseTime() : 0;
 
             // will be replaced with the validators (keep the exact syntax)
-            let validators: { [name: string]: (validationData: any, result: any) => void } = {};
+            const validators: { [name: string]: (validationData: any, result: any) => void } = {};
 
-            let timings: { [key: string]: number } | undefined = enableProfiling ? {} : undefined;
+            const timings: { [key: string]: number } | undefined = enableProfiling ? {} : undefined;
             let timingsTotal = 0;
 
-            let plans: any[] = [];
+            const plans: any[] = [];
 
-            let transactionStats: Mutable<TransactionStats> = {};
+            const transactionStats: Mutable<TransactionStats> = {};
 
             /**
              * Throws an error so that the transaction is rolled back and returns the given value as transaction result
@@ -173,7 +173,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 });
             }
 
-            let resultHolder: { [p: string]: any } = {};
+            const resultHolder: { [p: string]: any } = {};
             for (const query of queries) {
                 const bindVars = query.boundValues;
                 for (const key in query.usedPreExecResultNames) {
@@ -216,8 +216,8 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 const resultData = executionResult.next();
 
                 if (timings) {
-                    let profile = executionResult.getExtra().profile;
-                    for (let key in profile) {
+                    const profile = executionResult.getExtra().profile;
+                    for (const key in profile) {
                         if (profile.hasOwnProperty(key)) {
                             timings[key] = (timings[key] || 0) + profile[key];
                             timingsTotal += profile[key];
@@ -602,7 +602,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             });
         }
         let requestSentCallback: (() => void) | undefined;
-        let requestSentPromise = new Promise<void>((resolve) => (requestSentCallback = resolve));
+        const requestSentPromise = new Promise<void>((resolve) => (requestSentCallback = resolve));
         let timeout: any | undefined;
         if (isDefined(options.transactionTimeoutMs)) {
             const ms = options.transactionTimeoutMs;

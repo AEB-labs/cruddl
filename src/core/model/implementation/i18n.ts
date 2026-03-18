@@ -207,7 +207,7 @@ export class NamespaceLocalization {
         }
         const typeConfig = this.config.types[typeName];
 
-        let elementLocalizations: { [name: string]: LocalizationBaseConfig } | undefined =
+        const elementLocalizations: { [name: string]: LocalizationBaseConfig } | undefined =
             typeConfig[property];
         if (!elementLocalizations) {
             return undefined;

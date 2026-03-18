@@ -105,7 +105,7 @@ export class FieldPath implements ModelComponent {
         }
 
         let currentType: Type = this.config.baseType;
-        let segments: Field[] = [];
+        const segments: Field[] = [];
         let currentOffset = 0;
         let lastField: Field | undefined;
         for (const segmentSpecifier of segmentSpecifiers) {

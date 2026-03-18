@@ -208,7 +208,7 @@ export class InMemoryAdapter implements DatabaseAdapter {
                 idGenerator.generateID({ target: 'root-entity', typeName: rootEntityTypeName }),
         };
 
-        let resultHolder: { [p: string]: any } = {};
+        const resultHolder: { [p: string]: any } = {};
         for (const query of queries) {
             const boundValues = query.boundValues; // used in eval'ed code
             for (const key in query.usedPreExecResultNames) {

@@ -189,7 +189,7 @@ export class TimeToLiveType implements ModelComponent {
 
     @memorize()
     get fieldType(): ScalarType | undefined {
-        let path = this.path && this.path[this.path.length - 1];
+        const path = this.path && this.path[this.path.length - 1];
         return path && (path.type as ScalarType);
     }
 
@@ -223,7 +223,7 @@ export class TimeToLiveType implements ModelComponent {
         let type: Type = this.rootEntityType;
 
         let field: Field | undefined = undefined;
-        let fieldsInPath = [];
+        const fieldsInPath = [];
         for (const fieldName of this.input.dateField.split('.')) {
             if (!type.isObjectType) {
                 if (field) {

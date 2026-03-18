@@ -38,7 +38,7 @@ export class GraphQLRulesValidator implements ParsedSourceValidator {
             return [];
         }
 
-        let ast = source.document;
+        const ast = source.document;
 
         const results = [...validate(coreSchema, ast, rules)];
 

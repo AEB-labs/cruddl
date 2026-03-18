@@ -147,7 +147,7 @@ export class BasicListUpdateInputField extends BasicUpdateInputField {
     protected coerceValue(value: AnyValue, context: FieldContext): AnyValue {
         // null is not a valid list value - if the user specified it, coerce it to [] to not have a mix of [] and
         // null in the database
-        let listValue = isReadonlyArray(value) ? value : [];
+        const listValue = isReadonlyArray(value) ? value : [];
         return listValue.map((itemValue) => super.coerceValue(itemValue, context));
     }
 }

@@ -85,7 +85,7 @@ function transformUpdateOrDeleteEntitiesQueryNode(
         operation,
         ConditionExplanationContext.BEFORE_WRITE,
     );
-    let preExecQueries: PreExecQueryParms[] = [
+    const preExecQueries: PreExecQueryParms[] = [
         new PreExecQueryParms({
             query: canWrite,
             resultValidator: new ErrorIfNotTruthyResultValidator({

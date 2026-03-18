@@ -244,8 +244,8 @@ export function js(
     strings: ReadonlyArray<string>,
     ...values: (JSFragment | string | number | boolean)[]
 ): JSFragment {
-    let snippets = [...strings];
-    let fragments: JSFragment[] = [];
+    const snippets = [...strings];
+    const fragments: JSFragment[] = [];
     while (snippets.length || values.length) {
         if (snippets.length) {
             fragments.push(new JSCodeFragment(snippets.shift()!));
@@ -418,7 +418,7 @@ export class JSCompoundQuery extends JSFragment {
     //TODO Refactor the following three methods. JSCompoundQuery isn't a real JSFragment.
     //TODO Include read/write accessed collections in output
     toStringWithContext(context: JSCodeBuildingContext): string {
-        let descriptions = this.preExecQueries.map((JSQuery) =>
+        const descriptions = this.preExecQueries.map((JSQuery) =>
             JSQuery.toStringWithContext(context),
         );
         const varDescription = this.resultVar
@@ -439,7 +439,7 @@ export class JSCompoundQuery extends JSFragment {
     }
 
     toColoredStringWithContext(context: JSCodeBuildingContext): string {
-        let descriptions = this.preExecQueries.map((JSQuery) =>
+        const descriptions = this.preExecQueries.map((JSQuery) =>
             JSQuery.toColoredStringWithContext(context),
         );
         const varDescription = this.resultVar

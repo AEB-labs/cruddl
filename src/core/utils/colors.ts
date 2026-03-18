@@ -5,7 +5,7 @@ import style from 'ansi-styles';
 // webpack environment
 
 namespace colors {
-    export let enabled = false;
+    export const enabled = false;
 }
 export default colors;
 

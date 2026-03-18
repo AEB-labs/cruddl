@@ -20,7 +20,7 @@ export function getOrderByValues(
         // indices only work if all directions are equal. So if all are descending, add the discriminator field
         // descending, too - otherwise, it does not matter, so we default to ascending. If there are no values, default
         // to ascending, too.
-        let direction =
+        const direction =
             values.length > 0 &&
             values.every((value) => value.direction === OrderDirection.DESCENDING)
                 ? OrderDirection.DESCENDING

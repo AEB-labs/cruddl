@@ -569,7 +569,7 @@ function getDefaultLanguage(
     objectTypeDefinitionNode: ObjectTypeDefinitionNode,
     context: ValidationContext,
 ): FlexSearchLanguage | undefined {
-    let directive: DirectiveNode | undefined =
+    const directive: DirectiveNode | undefined =
         findDirectiveWithName(objectTypeDefinitionNode, ROOT_ENTITY_DIRECTIVE) ||
         findDirectiveWithName(objectTypeDefinitionNode, CHILD_ENTITY_DIRECTIVE) ||
         findDirectiveWithName(objectTypeDefinitionNode, VALUE_OBJECT_DIRECTIVE) ||
@@ -599,7 +599,7 @@ function getLanguage(
     fieldNode: FieldDefinitionNode,
     context: ValidationContext,
 ): FlexSearchLanguage | undefined {
-    let directive: DirectiveNode | undefined = findDirectiveWithName(
+    const directive: DirectiveNode | undefined = findDirectiveWithName(
         fieldNode,
         FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
     );
@@ -805,14 +805,14 @@ function createFieldBasedIndices(
 ): ReadonlyArray<IndexDefinitionConfig> {
     return (definition.fields || [])
         .map((field): IndexDefinitionConfig | undefined => {
-            let indexDirective = findDirectiveWithName(
+            const indexDirective = findDirectiveWithName(
                 field,
                 unique ? UNIQUE_DIRECTIVE : INDEX_DIRECTIVE,
             );
             if (!indexDirective) {
                 return undefined;
             }
-            let sparseArg =
+            const sparseArg =
                 indexDirective.arguments &&
                 indexDirective.arguments.find((arg) => arg.name.value === 'sparse');
             let sparse: boolean | undefined;
@@ -1272,8 +1272,8 @@ function getCombinedModuleSpecification(
     }
 
     const inAstNode = astNode.arguments?.find((a) => a.name.value === MODULES_IN_ARG);
-    let allAstNode = astNode.arguments?.find((a) => a.name.value === MODULES_ALL_ARG);
-    let includeAllFieldsAstNode = astNode.arguments?.find(
+    const allAstNode = astNode.arguments?.find((a) => a.name.value === MODULES_ALL_ARG);
+    const includeAllFieldsAstNode = astNode.arguments?.find(
         (a) => a.name.value === MODULES_INCLUDE_ALL_FIELDS_ARG,
     );
 

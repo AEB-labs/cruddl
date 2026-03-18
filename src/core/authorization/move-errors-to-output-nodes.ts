@@ -78,7 +78,7 @@ export function moveErrorsToOutputNodes(queryTree: QueryNode): QueryNode {
                     if (errors.length == 1) {
                         return errors[0];
                     } else {
-                        let uniqueErrorMessages = Array.from(
+                        const uniqueErrorMessages = Array.from(
                             new Set(errors.map((err) => err.message)),
                         );
                         const code = errors.some((value) => value.code !== errors[0].code)

@@ -55,7 +55,7 @@ export class IndexField implements ModelComponent {
 
         let type: Type = this.declaringType;
         let field: Field | undefined = undefined;
-        let fieldsInPath = [];
+        const fieldsInPath = [];
         for (const fieldName of this.path) {
             if (!type.isObjectType) {
                 if (field) {
