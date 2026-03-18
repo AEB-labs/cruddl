@@ -5,7 +5,6 @@ import { CountQueryNode } from '../../query-tree/lists.js';
 import { ConstBoolQueryNode, LiteralQueryNode, NullQueryNode } from '../../query-tree/literals.js';
 import { ConditionalQueryNode } from '../../query-tree/operators.js';
 import { VariableAssignmentQueryNode, VariableQueryNode } from '../../query-tree/variables.js';
-
 import { isDefined } from '../../utils/utils.js';
 import { createFieldPathNode } from '../field-path-node.js';
 import { equal } from './input-types.js';

@@ -25,7 +25,6 @@ import {
 } from '../../schema/constants.js';
 import { getFlexSearchFilterTypeName } from '../../schema/names.js';
 import { GraphQLI18nString } from '../../schema/scalars/string-map.js';
-
 import type { EnumTypeGenerator } from '../enum-type-generator.js';
 import {
     ENUM_FILTER_FIELDS,

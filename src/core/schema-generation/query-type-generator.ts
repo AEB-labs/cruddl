@@ -7,7 +7,6 @@ import { ObjectQueryNode } from '../query-tree/objects.js';
 import { EntitiesQueryNode } from '../query-tree/queries.js';
 import { QUERY_TYPE } from '../schema/constants.js';
 import { getAllEntitiesFieldName, getMetaFieldName } from '../schema/names.js';
-
 import type { FilterAugmentation } from './filter-augmentation.js';
 import type { FlexSearchGenerator } from './flex-search-generator.js';
 import type { MetaFirstAugmentation } from './limit-augmentation.js';
