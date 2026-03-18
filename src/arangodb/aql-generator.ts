@@ -41,11 +41,7 @@ import {
     LiteralQueryNode,
     NullQueryNode,
 } from '../core/query-tree/literals.js';
-import type {
-    EdgeIdentifier,
-    PartialEdgeIdentifier,
-    SetFieldQueryNode,
-} from '../core/query-tree/mutations.js';
+import type { EdgeIdentifier, PartialEdgeIdentifier } from '../core/query-tree/mutations.js';
 import {
     AddEdgesQueryNode,
     CreateEntitiesQueryNode,
@@ -1129,7 +1125,7 @@ register(FlexSearchFieldExistsQueryNode, (node, context) => {
     }
 });
 
-register(FlexSearchComplexOperatorQueryNode, (node, context) => {
+register(FlexSearchComplexOperatorQueryNode, () => {
     throw new Error(
         `Internal Error: FlexSearchComplexOperatorQueryNode must be expanded before generating the query.`,
     );
@@ -2872,8 +2868,6 @@ register(UpdateEntitiesQueryNode, (node, context) => {
     let entityFrag: AQLFragment;
     let options: AQLFragment;
     let updateFrag = processNode(new ObjectQueryNode(node.updates), newContext);
-    const additionalUpdates: ReadonlyArray<SetFieldQueryNode> = [];
-
     if (node.revision) {
         entityFrag = aql`MERGE(${entityVar}, { _rev: ${aql.value(node.revision)} })`;
         options = aql`{ mergeObjects: false, ignoreRevs: false }`;
@@ -2991,7 +2985,6 @@ register(RemoveEdgesQueryNode, (node, context) => {
 });
 
 register(SetEdgeQueryNode, (node, context) => {
-    const edgeVar = aql.variable('edge');
     return aqlExt.subquery(
         aql`UPSERT ${formatEdge(node.relation, node.existingEdge, context)}`,
         aql`INSERT ${formatEdge(node.relation, node.newEdge, context)}`,

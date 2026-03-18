@@ -62,7 +62,7 @@ export function validatePostMerge(ast: DocumentNode, model: Model): ValidationRe
             // trust on the appropriate validator for the modelling mistake.
             try {
                 return validator.validate(ast, model);
-            } catch (e) {
+            } catch {
                 return [];
             }
         }),

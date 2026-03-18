@@ -229,7 +229,7 @@ export class AQLCollection extends AQLFragment {
         }
     }
 
-    toStringWithContext(context: AQLCodeBuildingContext): string {
+    toStringWithContext(): string {
         return this.collectionName;
     }
 
@@ -534,7 +534,7 @@ export class AQLCompoundQuery extends AQLFragment {
         return descriptions.join('\n');
     }
 
-    getCodeWithContext(context: AQLCodeBuildingContext): string {
+    getCodeWithContext(): string {
         throw new Error(
             'Unsupported Operation. AQLCompoundQuery can not provide a single AQL statement.',
         );

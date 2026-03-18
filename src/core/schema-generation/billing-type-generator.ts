@@ -50,7 +50,7 @@ export class BillingTypeGenerator {
             },
             isSerial: true,
             description: `Confirms a ${rootEntityType.name} to be exported to billing.`,
-            resolve: (_, args, info) =>
+            resolve: (_, args) =>
                 this.generateQueryNode(args[BILLING_MUTATION_INPUT_ARG], rootEntityType),
         };
     }

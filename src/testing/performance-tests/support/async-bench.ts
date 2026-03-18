@@ -36,11 +36,6 @@ interface BenchmarkState {
     readonly config: BenchmarkConfig;
 }
 
-interface BenchmarkAction {
-    readonly shouldContinue: boolean;
-    readonly nextIterationCount?: number;
-}
-
 export class BenchmarkCycleDetails {
     /**
      * The zero-based index of this cycyle

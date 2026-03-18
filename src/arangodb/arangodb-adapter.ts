@@ -130,8 +130,12 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             options,
             transactionID,
         }: ArangoExecutionOptions) {
+            // run in arangodb, where it must be commonjs
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
             const db = require('@arangodb').db;
             const enableProfiling = options.recordTimings;
+            // run in arangodb, where it must be commonjs
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
             const internal = enableProfiling ? require('internal') : undefined;
 
             function getPreciseTime() {
@@ -648,7 +652,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                         params: args,
                         waitForSync: true,
                     },
-                    beforeRequest: (req) => {
+                    beforeRequest: () => {
                         watch.stop('queuing');
 
                         // start the timeout promise if needed (transactionTimeoutMs should not include queue time)
@@ -706,7 +710,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 try {
                     transactionResult = JSON.parse(valStr);
                 } catch (eParse) {
-                    throw new Error(`Error parsing result of rolled back transaction`);
+                    throw new Error(`Error parsing result of rolled back transaction`, {
+                        cause: eParse,
+                    });
                 }
             } else {
                 throw e;

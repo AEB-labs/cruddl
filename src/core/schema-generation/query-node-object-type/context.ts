@@ -1,4 +1,4 @@
-import type { Clock, ExecutionOptions, IDGenerator } from '../../execution/execution-options.js';
+import type { Clock, IDGenerator } from '../../execution/execution-options.js';
 import type { FieldSelection } from '../../graphql/query-distiller.js';
 
 /**
@@ -52,7 +52,7 @@ export interface FieldContext {
     readonly idGenerator: IDGenerator;
 
     /**
-     * Refer to {@link ExecutionOptions.maxLimitForRootEntityQueries} for a description of this property.
+     * Refer to {@link import('../../execution/execution-options.js').ExecutionOptions.maxLimitForRootEntityQueries} for a description of this property.
      */
     readonly maxLimitForRootEntityQueries?: number;
 

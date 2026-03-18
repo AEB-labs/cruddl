@@ -134,7 +134,7 @@ export class SchemaAnalyzer {
                     const countResult = await this.db.collection(index.collectionName).count();
                     collectionSize = countResult.count;
                     collectionSizes.set(index.collectionName, collectionSize);
-                } catch (e) {
+                } catch {
                     // ignore
                 }
             }
