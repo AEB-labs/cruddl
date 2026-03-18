@@ -2,12 +2,12 @@ import { aql, Database } from 'arangojs';
 import type { GraphQLSchema } from 'graphql';
 import { graphql } from 'graphql';
 import { resolve } from 'path';
-import { ConsoleLoggerProvider } from '../../../config/console-logger.js';
-import type { ProjectOptions } from '../../../config/interfaces.js';
-import { ArangoDBAdapter } from '../../../database/arangodb/arangodb-adapter.js';
-import { loadProjectFromDir } from '../../../project/project-from-fs.js';
-import type { Project } from '../../../project/project.js';
-import { range } from '../../../utils/utils.js';
+import { ArangoDBAdapter } from '../../../arangodb/arangodb-adapter.js';
+import { ConsoleLoggerProvider } from '../../../core/config/console-logger.js';
+import type { ProjectOptions } from '../../../core/config/interfaces.js';
+import { loadProjectFromDir } from '../../../core/project/project-from-fs.js';
+import type { Project } from '../../../core/project/project.js';
+import { range } from '../../../core/utils/utils.js';
 import { createTempDatabase } from '../../regression-tests/initialization.js';
 
 const MODEL_PATH = resolve(import.meta.dirname, '../../regression/papers/model');

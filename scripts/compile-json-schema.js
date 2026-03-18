@@ -4,11 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const schemaPath = 'src/schema/preparation/source-validation-modules/schema/schema.json';
-const validatorPath = 'src/schema/preparation/source-validation-modules/schema/validate-schema.js';
+const schemaPath = 'src/core/schema/preparation/source-validation-modules/schema/schema.json';
+const validatorPath =
+    'src/core/schema/preparation/source-validation-modules/schema/validate-schema.js';
 const validatorCjsPath =
-    'src/schema/preparation/source-validation-modules/schema/validate-schema.cjs';
-const dtsPath = 'src/schema/preparation/source-validation-modules/schema/validate-schema.d.ts';
+    'src/core/schema/preparation/source-validation-modules/schema/validate-schema.cjs';
+const dtsPath = 'src/core/schema/preparation/source-validation-modules/schema/validate-schema.d.ts';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(scriptDir, '..');

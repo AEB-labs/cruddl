@@ -1,4 +1,4 @@
-import { takeRandomSample } from '../../utils/utils.js';
+import { takeRandomSample } from '../../core/utils/utils.js';
 import type { BenchmarkConfig, BenchmarkFactories } from './support/async-bench.js';
 import type { TestEnvironment } from './support/helpers.js';
 import {

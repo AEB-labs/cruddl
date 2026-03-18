@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PermissionProfileConfig } from '../../model/config/permissions.js';
+import type { PermissionProfileConfig } from '../../core/model/config/permissions.js';
 import { assertValidatorRejects, validate } from '../utils/source-validation-utils.js';
 
 const modelWithRootEntityWithPermissionProfile = `

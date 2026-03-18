@@ -1,20 +1,20 @@
 import type { DocumentNode } from 'graphql';
 import { parse, Source } from 'graphql';
 import { expect } from 'vitest';
-import { prettyPrint } from '../../graphql/pretty-print.js';
-import type { PermissionProfileConfigMap } from '../../model/config/permissions.js';
-import type { TimeToLiveConfig } from '../../model/config/time-to-live.js';
-import { createModel } from '../../model/create-model.js';
-import { ValidationResult } from '../../model/validation/result.js';
-import { ValidationContext } from '../../model/validation/validation-context.js';
-import { ProjectSource } from '../../project/source.js';
-import { parseProjectSource } from '../../schema/parsing/parse-project-source.js';
-import { ParsedProjectSourceBaseKind } from '../../schema/parsing/parsed-project.js';
+import { prettyPrint } from '../../core/graphql/pretty-print.js';
+import type { PermissionProfileConfigMap } from '../../core/model/config/permissions.js';
+import type { TimeToLiveConfig } from '../../core/model/config/time-to-live.js';
+import { createModel } from '../../core/model/create-model.js';
+import { ValidationResult } from '../../core/model/validation/result.js';
+import { ValidationContext } from '../../core/model/validation/validation-context.js';
+import { ProjectSource } from '../../core/project/source.js';
+import { parseProjectSource } from '../../core/schema/parsing/parse-project-source.js';
+import { ParsedProjectSourceBaseKind } from '../../core/schema/parsing/parsed-project.js';
 import {
     validateParsedProjectSource,
     validatePostMerge,
     validateSource,
-} from '../../schema/preparation/ast-validator.js';
+} from '../../core/schema/preparation/ast-validator.js';
 
 export function assertValidatorRejects(
     source: string | DocumentNode,
