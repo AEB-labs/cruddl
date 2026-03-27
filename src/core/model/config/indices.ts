@@ -2,6 +2,7 @@ import type {
     ArgumentNode,
     DirectiveNode,
     EnumValueNode,
+    IntValueNode,
     ObjectValueNode,
     StringValueNode,
     ValueNode,
@@ -25,6 +26,35 @@ export interface IndexDefinitionConfig {
      * non-sparse.
      */
     readonly sparse?: boolean;
+
+    readonly astNode?: DirectiveNode | ObjectValueNode;
+}
+
+export type VectorSimilarityMetric = 'COSINE' | 'L2' | 'INNER_PRODUCT';
+
+export interface VectorIndexDefinitionConfig {
+    readonly sparse?: boolean;
+
+    readonly metric?: VectorSimilarityMetric;
+    readonly metricASTNode?: EnumValueNode;
+
+    readonly dimension?: number;
+    readonly dimensionASTNode?: IntValueNode;
+
+    readonly nLists?: number;
+    readonly nListsASTNode?: IntValueNode;
+
+    readonly defaultNProbe?: number;
+    readonly defaultNProbeASTNode?: IntValueNode;
+
+    readonly trainingIterations?: number;
+    readonly trainingIterationsASTNode?: IntValueNode;
+
+    readonly factory?: string;
+    readonly factoryASTNode?: StringValueNode;
+
+    readonly storedValues?: ReadonlyArray<string>;
+    readonly storedValuesASTNodes?: ReadonlyArray<StringValueNode | undefined>;
 
     readonly astNode?: DirectiveNode | ObjectValueNode;
 }

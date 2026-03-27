@@ -110,7 +110,7 @@ export class SchemaAnalyzer {
         // update indices
         const requiredIndices = getRequiredIndicesFromModel(model);
         const existingIndicesPromises = model.rootEntityTypes.map((rootEntityType) =>
-            this.getPersistentCollectionIndices(rootEntityType),
+            this.getCollectionIndices(rootEntityType),
         );
         let existingIndices: IndexDefinition[] = [];
         await Promise.all(existingIndicesPromises).then((promiseResults) =>
@@ -158,7 +158,7 @@ export class SchemaAnalyzer {
         ];
     }
 
-    async getPersistentCollectionIndices(
+    async getCollectionIndices(
         rootEntityType: RootEntityType,
     ): Promise<ReadonlyArray<IndexDefinition>> {
         const collectionName = getCollectionNameForRootEntity(rootEntityType);
@@ -169,7 +169,7 @@ export class SchemaAnalyzer {
 
         const result = await this.db.collection(collectionName).indexes();
         return result.flatMap((index) =>
-            index.type === 'persistent'
+            index.type === 'persistent' || index.type === 'vector'
                 ? [
                       {
                           ...index,
