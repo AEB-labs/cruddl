@@ -11,17 +11,7 @@ import type {
     TypeDefinitionNode,
     ValueNode,
 } from 'graphql';
-import {
-    GraphQLBoolean,
-    GraphQLEnumType,
-    GraphQLInputObjectType,
-    GraphQLInt,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLString,
-    Kind,
-    valueFromAST,
-} from 'graphql';
+import { GraphQLInt, Kind, valueFromAST } from 'graphql';
 import type { ModelOptions } from '../config/interfaces.js';
 import { getValueFromAST } from '../graphql/value-from-ast.js';
 import {
@@ -74,6 +64,7 @@ import {
     VALUE_ARG,
     VALUE_OBJECT_DIRECTIVE,
 } from '../schema/constants.js';
+import { getBaseInputObjectType } from '../schema/graphql-base.js';
 import type {
     ParsedGraphQLProjectSource,
     ParsedObjectProjectSource,
@@ -1227,29 +1218,7 @@ function extractModules(
         .reduce((previousValue, currentValue) => previousValue.concat(currentValue), []);
 }
 
-// fake input type for index mapping
-const indexDefinitionInputObjectType: GraphQLInputObjectType = new GraphQLInputObjectType({
-    fields: {
-        id: { type: GraphQLString },
-        fields: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) },
-        unique: { type: GraphQLBoolean, defaultValue: false },
-        sparse: { type: GraphQLBoolean },
-    },
-    name: INDEX_DEFINITION_INPUT_TYPE,
-});
-
-const flexSearchOrderInputObjectType: GraphQLInputObjectType = new GraphQLInputObjectType({
-    name: 'FlexSearchOrderArgument',
-    fields: {
-        field: { type: GraphQLString },
-        direction: {
-            type: new GraphQLEnumType({
-                name: 'OrderDirection',
-                values: { ASC: { value: 'ASC' }, DESC: { value: 'DESC' } },
-            }),
-        },
-    },
-});
+const indexDefinitionInputObjectType = getBaseInputObjectType(INDEX_DEFINITION_INPUT_TYPE);
 
 function getCombinedModuleSpecification(
     definition: ObjectTypeDefinitionNode | EnumTypeDefinitionNode | FieldDefinitionNode,
