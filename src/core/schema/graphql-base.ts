@@ -1,5 +1,11 @@
-import type { DocumentNode, EnumTypeDefinitionNode, EnumValueDefinitionNode } from 'graphql';
-import { Kind } from 'graphql';
+import {
+    buildASTSchema,
+    type DocumentNode,
+    type EnumTypeDefinitionNode,
+    type EnumValueDefinitionNode,
+    GraphQLInputObjectType,
+    Kind,
+} from 'graphql';
 import { gql } from 'graphql-tag';
 import type { MessageCodes } from '../model/validation/suppress/message-codes.js';
 import {
@@ -439,3 +445,30 @@ export const CORE_SCALARS: DocumentNode = gql`
     """
     scalar Decimal3
 `;
+
+const schemaBase: DocumentNode = gql`
+    schema {
+        query: DummyQueryType___
+    }
+
+    type DummyQueryType___ {
+        field: ID
+    }
+`;
+
+export const BASE_SCHEMA = buildASTSchema({
+    kind: Kind.DOCUMENT,
+    definitions: [
+        ...DIRECTIVES.definitions,
+        ...CORE_SCALARS.definitions,
+        ...schemaBase.definitions,
+    ],
+});
+
+export function getBaseInputObjectType(name: string): GraphQLInputObjectType {
+    const type = BASE_SCHEMA.getType(name);
+    if (!type || !(type instanceof GraphQLInputObjectType)) {
+        throw new Error(`Expected input object type ${name} to exist in base schema`);
+    }
+    return type;
+}
