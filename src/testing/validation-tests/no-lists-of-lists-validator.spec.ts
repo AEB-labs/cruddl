@@ -30,7 +30,7 @@ describe('no lists of lists validator', () => {
     it('accepts non-nested lists', () => {
         assertValidatorAcceptsAndDoesNotWarn(`
             type Stuff @rootEntity {
-                foo: [String!]!
+                foo: [String]
             }
         `);
     });
