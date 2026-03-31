@@ -118,6 +118,14 @@ export interface QueryGenerationOptions {
      * An interface to generate IDs, e.g. for new child entities.
      */
     readonly idGenerator: IDGenerator;
+
+    /**
+     * If set, an `OPTIONS { maxProjections: <value> }` hint is added to FOR loops that iterate over root entity
+     * documents (including relation traversals).
+     *
+     * See {@link ExecutionOptions.maxProjections} for details.
+     */
+    readonly maxProjections?: number;
 }
 
 class QueryContext {
@@ -602,12 +610,20 @@ function generateInClauseWithFilterAndOrderAndLimit({
 }) {
     let list: AQLFragment;
     let filterDanglingEdges = aql``;
+    const isDocumentCollectionOrTraversal =
+        node.listNode instanceof FollowEdgeQueryNode ||
+        node.listNode instanceof EntitiesQueryNode;
     if (node.listNode instanceof FollowEdgeQueryNode) {
         list = getSimpleFollowEdgeFragment(node.listNode, context);
         filterDanglingEdges = aql`FILTER ${itemVar} != null`;
     } else {
         list = processNode(node.listNode, context);
     }
+    const maxProjections = context.options.maxProjections;
+    const optionsFrag =
+        maxProjections !== undefined && isDocumentCollectionOrTraversal
+            ? aql` OPTIONS { maxProjections: ${aql.integer(maxProjections)} }`
+            : aql``;
     let filter = simplifyBooleans(node.filterNode);
 
     let limitClause;
@@ -624,7 +640,7 @@ function generateInClauseWithFilterAndOrderAndLimit({
     }
 
     return aql.lines(
-        aql`IN ${list}`,
+        aql`IN ${list}${optionsFrag}`,
         filter instanceof ConstBoolQueryNode && filter.value
             ? aql``
             : aql`FILTER ${processNode(filter, itemContext)}`,
@@ -1539,6 +1555,10 @@ function getRelationTraversalFragment({
     const forFragments: AQLFragment[] = [];
     const sourceEntityVar = aql.variable(`sourceEntity`);
     let currentObjectFrag = sourceIsList ? sourceEntityVar : sourceFrag;
+    const traversalOptionsFrag =
+        context.options.maxProjections !== undefined
+            ? aql` OPTIONS { maxProjections: ${aql.integer(context.options.maxProjections)} }`
+            : aql``;
     let segmentIndex = 0;
     for (const segment of segments) {
         const nodeVar = aql.variable(`node`);
@@ -1594,7 +1614,7 @@ function getRelationTraversalFragment({
             segment.relationSide.relation,
             AccessType.EXPLICIT_READ,
             context,
-        )}${pruneFrag}${filterFrag}`;
+        )}${traversalOptionsFrag}${pruneFrag}${filterFrag}`;
         if (segment.isListSegment || (alwaysProduceList && segmentIndex === segments.length - 1)) {
             // this is simple - we can just push one FOR statement after the other
             forFragments.push(traversalFrag);
