@@ -144,6 +144,19 @@ export interface ExecutionOptions {
      *
      */
     readonly implicitLimitForRootEntityQueries?: number;
+
+    /**
+     * The maximum number of document attributes per FOR loop to be used as projections.
+     *
+     * When set, emits `OPTIONS { maxProjections: <value> }` on every FOR loop that directly
+     * iterates a document collection or performs a graph traversal in ArangoDB AQL.
+     *
+     * Increase this value when a query accesses many small attributes from large documents and
+     * a full document copy should be avoided. The ArangoDB default (when unset) is 5.
+     *
+     * Has no effect when using the InMemoryAdapter.
+     */
+    readonly maxProjections?: number;
 }
 
 export interface TimeToLiveExecutionOptions {

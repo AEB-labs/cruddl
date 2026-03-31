@@ -340,6 +340,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             aqlQuery = getAQLQuery(queryTree, {
                 clock: options.clock,
                 idGenerator: options.idGenerator,
+                maxProjections: options.maxProjections,
             });
             executableQueries = aqlQuery.getExecutableQueries();
         } finally {
