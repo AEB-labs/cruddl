@@ -126,6 +126,14 @@ export interface QueryGenerationOptions {
      * An interface to generate IDs, e.g. for new child entities.
      */
     readonly idGenerator: IDGenerator;
+
+    /**
+     * If set, an `OPTIONS { maxProjections: <value> }` hint is added to FOR loops that iterate over root entity
+     * documents (including relation traversals).
+     *
+     * See {@link ExecutionOptions.maxProjections} for details.
+     */
+    readonly maxProjections?: number;
 }
 
 class QueryContext {
@@ -661,6 +669,8 @@ function generateInClauseWithFilterAndOrderAndLimit({
 }) {
     let list: AQLFragment;
     let filterDanglingEdges = aql``;
+    const isEntityList =
+        node.listNode instanceof EntitiesQueryNode || node.listNode instanceof FollowEdgeQueryNode;
     if (node.listNode instanceof FollowEdgeQueryNode) {
         list = getSimpleFollowEdgeFragment(node.listNode, context);
         // using $var._key != null instead of $var != null because the latter prevents ArangoDB
@@ -670,9 +680,15 @@ function generateInClauseWithFilterAndOrderAndLimit({
         list = processNode(node.listNode, context);
     }
     let filter = simplifyBooleans(node.filterNode);
+    const maxProjections = context.options.maxProjections;
+    const optionsFrag =
+        isEntityList && maxProjections !== undefined
+            ? aql`OPTIONS { maxProjections: ${aql.integer(maxProjections)} }`
+            : aql``;
 
     return aql.lines(
         aql`IN ${list}`,
+        optionsFrag,
         filter instanceof ConstBoolQueryNode && filter.value
             ? aql``
             : aql`FILTER ${processNode(filter, itemContext)}`,
@@ -715,6 +731,13 @@ function generateInClause(node: QueryNode, context: QueryContext, entityVar: AQL
             itemVar: entityVar,
             context,
         });
+    }
+
+    if (node instanceof EntitiesQueryNode && context.options.maxProjections !== undefined) {
+        return aql.lines(
+            aql`IN ${processNode(node, context)}`,
+            aql`OPTIONS { maxProjections: ${aql.integer(context.options.maxProjections)} }`,
+        );
     }
 
     return aql`IN ${processNode(node, context)}`;
@@ -2610,6 +2633,12 @@ function getRelationTraversalForStatements({
         const dir = segment.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
         let filterFrag = aql``;
         let pruneFrag = aql``;
+        // only need to specify maxProjections if there is a high / variable number of field accesses.
+        const traversalOptionsFrag =
+            (isLastSegment || !!segment.vertexFilter) &&
+            context.options.maxProjections !== undefined
+                ? aql` OPTIONS { maxProjections: ${aql.integer(context.options.maxProjections)} }`
+                : aql``;
         if (segment.vertexFilter) {
             if (!segment.vertexFilterVariable) {
                 throw new Error(`vertexFilter is set, but vertexFilterVariable is not`);
@@ -2654,7 +2683,7 @@ function getRelationTraversalForStatements({
             segment.relationSide.relation,
             AccessType.EXPLICIT_READ,
             context,
-        )}${pruneFrag}${filterFrag}`;
+        )}${traversalOptionsFrag}${pruneFrag}${filterFrag}`;
 
         // if we just put one FOR after the other, we never get NULL values:
         // consider Consignment has-many Delivery has-one Order
@@ -3140,6 +3169,7 @@ export function getAQLQuery(
         new QueryContext({
             clock: options.clock ?? new DefaultClock(),
             idGenerator: options.idGenerator ?? new UUIDGenerator(),
+            maxProjections: options.maxProjections,
         }),
     );
 }
