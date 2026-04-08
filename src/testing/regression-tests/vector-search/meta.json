@@ -4,5 +4,6 @@
       "ignore": true
     }
   },
-  "migrateAfterSeed": true
+  "migrateAfterSeed": true,
+  "timeoutInMs": 20000
 }

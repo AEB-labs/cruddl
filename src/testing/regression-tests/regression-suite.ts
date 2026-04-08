@@ -173,6 +173,9 @@ export class RegressionSuite {
         // test data has been seeded so that those deferred migrations are picked up and applied.
         if (this.getMeta().resolveSuiteMeta().migrateAfterSeed) {
             await initAdapter.updateSchema(initProject.getModel());
+            // looks like training vector indices is actually asynchronous
+            // TODO vector-todo does this mean our downtimeless strategy isn't actually downtimeless, i.e. we need to poll for it being ready?
+            await new Promise((resolve) => setTimeout(resolve, 5_000));
         }
 
         if (this.databaseSpecifier === 'arangodb') {
