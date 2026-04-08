@@ -95,6 +95,7 @@ import {
     VariableAssignmentQueryNode,
     VariableQueryNode,
 } from '../core/query-tree/variables.js';
+import { VectorSearchQueryNode } from '../core/query-tree/vector-search.js';
 import { not } from '../core/schema-generation/utils/input-types.js';
 import { analyzeLikePatternPrefix } from '../core/utils/like-helpers.js';
 import { isStringCaseInsensitive } from '../core/utils/string-utils.js';
@@ -584,6 +585,120 @@ register(FlexSearchQueryNode, (node, context) => {
         node.isOptimisationsDisabled ? aql`OPTIONS { conditionOptimization: 'none' }` : aql``,
         aql`RETURN ${itemContext.getVariable(node.itemVariable)}`,
     );
+});
+
+register(VectorSearchQueryNode, (node, context) => {
+    const collectionName = getCollectionNameForRootEntity(node.rootEntityType);
+    context.addCollectionAccess(collectionName, AccessType.EXPLICIT_READ);
+    const itemContext = context.bindVariable(node.itemVariable);
+    const itemVar = itemContext.getVariable(node.itemVariable);
+
+    // Determine the AQL function name and sort direction based on the vector similarity metric
+    const metric = node.field.vectorIndex!.metric;
+    let approxFnName: string;
+    let sortDesc: boolean;
+    switch (metric) {
+        case 'L2':
+            approxFnName = 'APPROX_NEAR_L2';
+            sortDesc = false;
+            break;
+        case 'INNER_PRODUCT':
+            approxFnName = 'APPROX_NEAR_INNER_PRODUCT';
+            sortDesc = true;
+            break;
+        case 'COSINE':
+        default:
+            approxFnName = 'APPROX_NEAR_COSINE';
+            sortDesc = true;
+            break;
+    }
+
+    // Build the APPROX_NEAR_* function call
+    const vectorArg = processNode(node.vectorNode, itemContext);
+    const fieldAccess = aql`${itemVar}.${aql.identifier(node.field.name)}`;
+    let approxCall: AQLFragment;
+    if (node.nProbe != null) {
+        approxCall = aql`${aql.code(approxFnName)}(${fieldAccess}, ${vectorArg}, { nProbe: ${aql.value(node.nProbe)} })`;
+    } else {
+        approxCall = aql`${aql.code(approxFnName)}(${fieldAccess}, ${vectorArg})`;
+    }
+
+    // Use a dedicated AQL variable for the score to avoid name collisions
+    const scoreVar = new AQLVariable('vectorScore');
+
+    // Build the query parts
+    const parts: AQLFragment[] = [];
+
+    parts.push(aql`FOR ${itemVar} IN ${aql.collection(collectionName)}`);
+
+    // Pre-filter (between FOR and SORT, for ArangoDB vector index pre-filtering in v3.12.6+)
+    const simplifiedFilterNode = simplifyBooleans(node.filterNode);
+    if (!simplifiedFilterNode.equals(ConstBoolQueryNode.TRUE)) {
+        parts.push(aql`FILTER ${processNode(simplifiedFilterNode, itemContext)}`);
+    }
+
+    // Compute similarity/distance score
+    parts.push(aql`LET ${scoreVar} = ${approxCall}`);
+
+    // Sort by score (DESC for similarity, ASC for distance)
+    if (sortDesc) {
+        parts.push(aql`SORT ${scoreVar} DESC`);
+    } else {
+        parts.push(aql`SORT ${scoreVar}`);
+    }
+
+    // Post-sort score/distance threshold filter
+    if (node.minScore != null) {
+        parts.push(aql`FILTER ${scoreVar} >= ${aql.value(node.minScore)}`);
+    }
+    if (node.maxDistance != null) {
+        parts.push(aql`FILTER ${scoreVar} <= ${aql.value(node.maxDistance)}`);
+    }
+
+    // Limit
+    if (node.maxCountNode) {
+        const maxCount = processNode(node.maxCountNode, itemContext);
+        if (node.skipNode) {
+            const skip = processNode(node.skipNode, itemContext);
+            parts.push(aql`LIMIT ${skip}, ${maxCount}`);
+        } else {
+            parts.push(aql`LIMIT ${maxCount}`);
+        }
+    }
+
+    // When the innerNode is an ObjectQueryNode we can inject the score directly as a property
+    // instead of building the full object and then merging { _vectorScore } onto it. This avoids
+    // a redundant MERGE call and allows ArangoDB to optimise the projection more effectively.
+    //
+    // The _vectorScore property in the ObjectQueryNode was resolved from the output type as
+    // PropertyAccessQueryNode(itemVariable, '_vectorScore'), which would otherwise access a
+    // non-existent field from the document. We replace that with the computed scoreVar directly.
+    // If the user applied a GraphQL alias (e.g. `score: _vectorScore`), the node's propertyName
+    // changes but its valueNode is still PropertyAccessQueryNode(itemVariable, '_vectorScore'),
+    // so the replacement still fires correctly.
+    if (node.innerNode instanceof ObjectQueryNode) {
+        const properties = node.innerNode.properties.map((p) => {
+            const isVectorScoreAccess =
+                p.valueNode instanceof PropertyAccessQueryNode &&
+                p.valueNode.objectNode === node.itemVariable &&
+                p.valueNode.propertyName === '_vectorScore';
+            const aqlValue = isVectorScoreAccess ? scoreVar : processNode(p.valueNode, itemContext);
+            return aql`${aqlExt.safeJSONKey(p.propertyName)}: ${aqlValue}`;
+        });
+        if (properties.length === 0) {
+            parts.push(aql`RETURN {}`);
+        } else {
+            parts.push(
+                aql`RETURN ${aql.lines(aql`{`, aql.indent(aql.join(properties, aql`,\n`)), aql`}`)}`,
+            );
+        }
+    } else {
+        // Non-object inner nodes (e.g. the item variable itself): fall back to MERGE
+        const innerResult = processNode(node.innerNode, itemContext);
+        parts.push(aql`RETURN MERGE(${innerResult}, { _vectorScore: ${scoreVar} })`);
+    }
+
+    return aqlExt.subquery(...parts);
 });
 
 register(TransformListQueryNode, (node, context) => {

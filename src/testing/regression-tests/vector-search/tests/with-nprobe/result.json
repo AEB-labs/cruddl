@@ -1,0 +1,20 @@
+{
+  "withNprobe": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "_vectorScore": 1
+        },
+        {
+          "title": "Gamma",
+          "_vectorScore": 0.7071067690849304
+        },
+        {
+          "title": "Beta",
+          "_vectorScore": 0
+        }
+      ]
+    }
+  }
+}

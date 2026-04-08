@@ -261,15 +261,24 @@ Behavior when the collection is empty at migration time:
 ### Automatic `nLists` and periodic reanalysis
 
 When `nLists` is omitted, it is computed as `max(1, min(N, round(15 × sqrt(N))))` from the live
-document count `N` at the time the analysis runs. The analyzer runs at least once per day.
+document count `N` at the time the analysis runs.
 
-If the document count has grown enough that the computed `nLists` would differ significantly from
-the value used to build the current index (more than ~25%), a new drop-and-recreate migration is
-generated and **applied automatically**. This keeps the index tuned to your data volume without any
-schema change.
+By default, no automatic rebuild is triggered when the document count grows. To opt in to automatic
+nLists drift detection, set the `vectorIndexNListsRebuildThreshold` option in your `ArangoDBConfig`:
 
-Note: rebuilding a vector index is an expensive operation on large collections. The ~25% threshold
-exists precisely to avoid triggering a rebuild on every incremental document addition.
+```typescript
+new ArangoDBAdapter({
+    // ... other config
+    vectorIndexNListsRebuildThreshold: 0.25, // rebuild when nLists would differ by more than 25%
+});
+```
+
+When the threshold is set, if the computed `nLists` would differ from the value used to build the
+current index by more than the configured fraction, a new drop-and-recreate migration is generated.
+This keeps the index tuned to your data volume without any schema change.
+
+Note: rebuilding a vector index is an expensive operation on large collections. A typical threshold
+of 0.25 (25%) avoids triggering a rebuild on every incremental document addition.
 
 ### Pinning index parameters without changing the schema
 

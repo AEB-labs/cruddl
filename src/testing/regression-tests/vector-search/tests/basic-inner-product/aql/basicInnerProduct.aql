@@ -1,0 +1,14 @@
+RETURN {
+  "vectorSearchArticles": (
+    FOR v_article1 IN @@articles
+    LET v_vectorScore1 = APPROX_NEAR_INNER_PRODUCT(v_article1.`scoreEmbedding`, @var1)
+    SORT v_vectorScore1 DESC
+    LIMIT @var2
+    RETURN {
+      "title": v_article1.`title`,
+      @var3: v_vectorScore1
+    }
+  )
+}
+
+// Peak memory usage: 32768 bytes

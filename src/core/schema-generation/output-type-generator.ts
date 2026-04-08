@@ -1,4 +1,4 @@
-import { GraphQLID, GraphQLNonNull, GraphQLString } from 'graphql';
+import { GraphQLFloat, GraphQLID, GraphQLNonNull, GraphQLString } from 'graphql';
 import { memorize } from 'memorize-decorator';
 import type { FieldRequest } from '../graphql/query-distiller.js';
 import { isListTypeIgnoringNonNull } from '../graphql/schema-utils.js';
@@ -9,7 +9,7 @@ import type { QueryNode } from '../query-tree/base.js';
 import { NullQueryNode } from '../query-tree/literals.js';
 import { ObjectQueryNode, PropertySpecification } from '../query-tree/objects.js';
 import { UnaryOperationQueryNode, UnaryOperator } from '../query-tree/operators.js';
-import { RevisionQueryNode } from '../query-tree/queries.js';
+import { PropertyAccessQueryNode, RevisionQueryNode } from '../query-tree/queries.js';
 import {
     CURSOR_FIELD,
     FLEX_SEARCH_ENTITIES_FIELD_PREFIX,
@@ -109,6 +109,8 @@ export class OutputTypeGenerator {
             this.createCursorField(objectType),
 
             this.createRevisionField(objectType),
+
+            this.createVectorScoreField(objectType),
         ].filter(isDefined);
     }
 
@@ -191,6 +193,20 @@ export class OutputTypeGenerator {
 
     private getRevisionNode(itemNode: QueryNode): QueryNode {
         return new RevisionQueryNode(itemNode);
+    }
+
+    private createVectorScoreField(objectType: ObjectType): QueryNodeField | undefined {
+        if (!objectType.isRootEntityType || objectType.vectorIndices.length === 0) {
+            return undefined;
+        }
+
+        return {
+            name: '_vectorScore',
+            description: `The similarity/distance score from a vector search query. Null when not queried via vector search.`,
+            type: GraphQLFloat,
+            isPure: true,
+            resolve: (source) => new PropertyAccessQueryNode(source, '_vectorScore'),
+        };
     }
 
     private createFields(field: Field): ReadonlyArray<QueryNodeField> {

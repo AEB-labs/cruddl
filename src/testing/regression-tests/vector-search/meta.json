@@ -1,0 +1,8 @@
+{
+  "databases": {
+    "in-memory": {
+      "ignore": true
+    }
+  },
+  "migrateAfterSeed": true
+}

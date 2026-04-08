@@ -1,0 +1,28 @@
+{
+  "vectorScoreInAllArticles": {
+    "data": {
+      "allArticles": [
+        {
+          "title": "Alpha",
+          "_vectorScore": null
+        },
+        {
+          "title": "Beta",
+          "_vectorScore": null
+        },
+        {
+          "title": "Delta",
+          "_vectorScore": null
+        },
+        {
+          "title": "Epsilon",
+          "_vectorScore": null
+        },
+        {
+          "title": "Gamma",
+          "_vectorScore": null
+        }
+      ]
+    }
+  }
+}

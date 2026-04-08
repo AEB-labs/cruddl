@@ -22,7 +22,8 @@ describe('index-helpers', () => {
 
         expect(vectorIndex).to.not.be.undefined;
         expect(vectorIndex!.type).to.equal('vector');
-        expect(vectorIndex!.name).to.equal('vector_embedding');
+        // name is undefined in required indices — assigned at migration time based on A/B slot
+        expect(vectorIndex!.name).to.be.undefined;
         expect(vectorIndex!.fields).to.deep.equal(['embedding']);
         if (vectorIndex && vectorIndex.type === 'vector') {
             expect(vectorIndex.params.metric).to.equal('cosine');
@@ -51,7 +52,7 @@ describe('index-helpers', () => {
             requiredIndices,
             TEMP_DATABASE_CONFIG,
         );
-        expect(result.indicesToCreate).to.deep.equal([]);
-        expect(result.indicesToDelete).to.deep.equal([]);
+        expect(result.persistentIndicesToCreate).to.deep.equal([]);
+        expect(result.persistentIndicesToDelete).to.deep.equal([]);
     });
 });

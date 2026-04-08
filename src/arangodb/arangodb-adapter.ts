@@ -18,6 +18,7 @@ import {
     TransactionTimeoutError,
 } from '../core/execution/runtime-errors.js';
 import { TransactionError } from '../core/execution/transaction-error.js';
+import type { Field } from '../core/model/implementation/field.js';
 import { Model } from '../core/model/implementation/model.js';
 import type { QueryNode } from '../core/query-tree/base.js';
 import type { FlexSearchTokenization } from '../core/query-tree/flex-search.js';
@@ -28,6 +29,7 @@ import { getPreciseTime, Watch } from '../core/utils/watch.js';
 import { generateTokenizationQuery, getAQLQuery } from './aql-generator.js';
 import type { AQLCompoundQuery, AQLExecutableQuery } from './aql.js';
 import { aqlConfig } from './aql.js';
+import { getCollectionNameForRootEntity } from './arango-basics.js';
 import { CancellationManager } from './cancellation-manager.js';
 import type { ArangoDBConfig } from './config.js';
 import {
@@ -39,8 +41,15 @@ import {
 import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes.js';
 import { hasRevisionAssertions } from './revision-helper.js';
 import { SchemaAnalyzer } from './schema-migration/analyzer.js';
+import type { VectorIndexDefinition } from './schema-migration/index-helpers.js';
+import { computeAutoNLists, mapMetricForArango } from './schema-migration/index-helpers.js';
 import type { SchemaMigration } from './schema-migration/migrations.js';
+import {
+    CreateVectorIndexMigration,
+    RecreateVectorIndexMigration,
+} from './schema-migration/migrations.js';
 import { MigrationPerformer } from './schema-migration/performer.js';
+import type { VectorIndexStatus } from './vector-index-status.js';
 import type { ArangoDBVersion } from './version-helper.js';
 import { ArangoDBVersionHelper } from './version-helper.js';
 
@@ -805,6 +814,222 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
     async getArangoDBVersion(): Promise<ArangoDBVersion | undefined> {
         return this.versionHelper.getArangoDBVersion();
+    }
+
+    /**
+     * Returns the status of all vector indices defined in the model, including
+     * whether they exist in the database, their current configuration, and
+     * whether they need to be rebuilt.
+     */
+    async getVectorIndexStatuses(model: Model): Promise<ReadonlyArray<VectorIndexStatus>> {
+        const statuses: VectorIndexStatus[] = [];
+        // Only retrieve vector-index migrations (not the full set of outstanding migrations)
+        const migrations = await this.analyzer.getVectorIndexMigrations(model);
+
+        for (const rootEntityType of model.rootEntityTypes) {
+            if (rootEntityType.vectorIndices.length === 0) {
+                continue;
+            }
+
+            const collectionName = getCollectionNameForRootEntity(rootEntityType);
+            let documentCount = 0;
+            try {
+                const countResult = await this.db.collection(collectionName).count();
+                documentCount = countResult.count;
+            } catch (e) {
+                // collection may not exist yet
+            }
+
+            let existingIndices: ReadonlyArray<any> = [];
+            try {
+                existingIndices = await this.db.collection(collectionName).indexes();
+            } catch (e) {
+                // collection may not exist yet
+            }
+
+            for (const vectorIndex of rootEntityType.vectorIndices) {
+                const fieldName = vectorIndex.field.name;
+                const computedNLists = vectorIndex.nLists ?? computeAutoNLists(documentCount);
+
+                // Find the matching existing index
+                const existingArangoIndex = existingIndices.find(
+                    (idx: any) =>
+                        idx.type === 'vector' &&
+                        idx.fields?.length === 1 &&
+                        idx.fields[0] === fieldName,
+                );
+
+                const existingIndexInfo = existingArangoIndex
+                    ? {
+                          name: existingArangoIndex.name,
+                          id: existingArangoIndex.id,
+                          nLists: existingArangoIndex.params?.nLists,
+                          metric: existingArangoIndex.params?.metric,
+                          dimension: existingArangoIndex.params?.dimension,
+                      }
+                    : undefined;
+
+                const isIndexMissing = !existingArangoIndex;
+                const isDeferred = isIndexMissing && documentCount === 0;
+
+                // Calculate drift
+                let nListsDriftPercent: number | undefined;
+                if (!vectorIndex.nLists && existingIndexInfo?.nLists) {
+                    nListsDriftPercent =
+                        Math.abs(computedNLists - existingIndexInfo.nLists) /
+                        existingIndexInfo.nLists;
+                }
+
+                // Check for a matching pending migration
+                const pendingMigration = migrations.find((m) => {
+                    if (m.type === 'createVectorIndex') {
+                        return (
+                            m.requiredIndex.collectionName === collectionName &&
+                            m.requiredIndex.fields[0] === fieldName
+                        );
+                    }
+                    if (m.type === 'recreateVectorIndex') {
+                        return (
+                            m.requiredIndex.collectionName === collectionName &&
+                            m.requiredIndex.fields[0] === fieldName
+                        );
+                    }
+                    return false;
+                });
+
+                const needsRebuild = pendingMigration?.type === 'recreateVectorIndex';
+
+                statuses.push({
+                    rootEntityType,
+                    vectorIndex,
+                    collectionName,
+                    documentCount,
+                    computedNLists,
+                    existingIndexInfo,
+                    isIndexMissing,
+                    isDeferred,
+                    needsRebuild,
+                    nListsDriftPercent,
+                    pendingMigration,
+                });
+            }
+        }
+
+        return statuses;
+    }
+
+    /**
+     * Creates or recreates a vector index for the given field.
+     * Uses A/B slot naming for zero-downtime rebuilds when an index already exists.
+     *
+     * @throws Error if the field has no vector index, the collection does not exist, or has no
+     *         documents (ArangoDB cannot train IVF clusters on an empty collection).
+     */
+    async recreateVectorIndex(field: Field): Promise<void> {
+        const vectorIndex = field.vectorIndex;
+        if (!vectorIndex) {
+            throw new Error(
+                `Field "${field.declaringType.name}.${field.name}" has no vector index`,
+            );
+        }
+
+        const rootEntityType = field.declaringType;
+        if (!rootEntityType.isRootEntityType) {
+            throw new Error(
+                `Field "${field.declaringType.name}.${field.name}" is not on a root entity type`,
+            );
+        }
+
+        const collectionName = getCollectionNameForRootEntity(rootEntityType);
+
+        // For sparse indexes, count only documents where the field is not null.
+        // For non-sparse indexes, all documents have an embedding so we use the total count.
+        let documentCount: number;
+        try {
+            if (vectorIndex.sparse) {
+                const cursor = await this.db.query<number>(
+                    `FOR doc IN @@col FILTER doc[@field] != null COLLECT WITH COUNT INTO c RETURN c`,
+                    { '@col': collectionName, field: field.name },
+                );
+                const rows = await cursor.all();
+                documentCount = rows[0] ?? 0;
+            } else {
+                const countResult = await this.db.collection(collectionName).count();
+                documentCount = countResult.count;
+            }
+        } catch (e) {
+            throw new Error(
+                `Collection "${collectionName}" does not exist — ensure schema migrations have been run`,
+            );
+        }
+
+        if (documentCount === 0) {
+            throw new Error(
+                `Collection "${collectionName}" has no documents — vector index cannot be trained on empty data`,
+            );
+        }
+
+        const resolvedNLists = vectorIndex.nLists ?? computeAutoNLists(documentCount);
+
+        const requiredDef: VectorIndexDefinition = {
+            rootEntity: rootEntityType,
+            collectionName,
+            fields: [field.name] as [string],
+            sparse: vectorIndex.sparse,
+            type: 'vector',
+            params: {
+                metric: mapMetricForArango(vectorIndex.metric),
+                dimension: vectorIndex.dimension || 1,
+                nLists: resolvedNLists,
+                defaultNProbe: vectorIndex.defaultNProbe,
+                trainingIterations: vectorIndex.trainingIterations,
+                factory: vectorIndex.factory,
+            },
+            storedValues: vectorIndex.storedValues,
+        };
+
+        // Check if an index already exists
+        let existingIndices: ReadonlyArray<any> = [];
+        try {
+            existingIndices = await this.db.collection(collectionName).indexes();
+        } catch (e) {
+            // collection existence was already verified above
+        }
+
+        const existingArangoIndex = existingIndices.find(
+            (idx: any) =>
+                idx.type === 'vector' && idx.fields?.length === 1 && idx.fields[0] === field.name,
+        );
+
+        if (existingArangoIndex) {
+            // Rebuild using A/B zero-downtime strategy
+            const existingDef: VectorIndexDefinition = {
+                ...requiredDef,
+                id: existingArangoIndex.id,
+                name: existingArangoIndex.name,
+                params: {
+                    ...requiredDef.params,
+                    ...existingArangoIndex.params,
+                },
+            };
+            const migration = new RecreateVectorIndexMigration({
+                existingIndex: existingDef,
+                requiredIndex: requiredDef,
+                collectionSize: documentCount,
+            });
+            this.logger.info(`Performing migration "${migration.description}"`);
+            await this.migrationPerformer.performMigration(migration);
+            this.logger.info(`Successfully performed migration "${migration.description}"`);
+        } else {
+            // No existing index — create for the first time
+            const migration = new CreateVectorIndexMigration({
+                requiredIndex: requiredDef,
+                collectionSize: documentCount,
+            });
+            this.logger.info(`Performing migration "${migration.description}"`);
+            await this.migrationPerformer.performMigration(migration);
+            this.logger.info(`Successfully performed migration "${migration.description}"`);
+        }
     }
 
     async tokenizeExpressions(

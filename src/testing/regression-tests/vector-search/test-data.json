@@ -1,0 +1,57 @@
+{
+  "roles": ["admin"],
+  "rootEntities": {
+    "Article": [
+      {
+        "@id": "1",
+        "title": "Alpha",
+        "category": "tech",
+        "isPublished": true,
+        "embedding": [1.0, 0.0, 0.0, 0.0],
+        "imageEmbedding": [1.0, 0.0, 0.0, 0.0],
+        "scoreEmbedding": [1.0, 0.0, 0.0, 0.0],
+        "secretEmbedding": [1.0, 0.0, 0.0, 0.0]
+      },
+      {
+        "@id": "2",
+        "title": "Beta",
+        "category": "science",
+        "isPublished": true,
+        "embedding": [0.0, 1.0, 0.0, 0.0],
+        "imageEmbedding": [0.0, 1.0, 0.0, 0.0],
+        "scoreEmbedding": [0.0, 1.0, 0.0, 0.0],
+        "secretEmbedding": [0.0, 1.0, 0.0, 0.0]
+      },
+      {
+        "@id": "3",
+        "title": "Gamma",
+        "category": "tech",
+        "isPublished": false,
+        "embedding": [0.5, 0.5, 0.0, 0.0],
+        "imageEmbedding": [0.5, 0.5, 0.0, 0.0],
+        "scoreEmbedding": [0.5, 0.5, 0.0, 0.0],
+        "secretEmbedding": [0.5, 0.5, 0.0, 0.0]
+      },
+      {
+        "@id": "4",
+        "title": "Delta",
+        "category": "science",
+        "isPublished": true,
+        "embedding": [0.0, 0.0, 1.0, 0.0],
+        "imageEmbedding": [0.0, 0.0, 1.0, 0.0],
+        "scoreEmbedding": [0.0, 0.0, 1.0, 0.0],
+        "secretEmbedding": [0.0, 0.0, 1.0, 0.0]
+      },
+      {
+        "@id": "5",
+        "title": "Epsilon",
+        "category": "tech",
+        "isPublished": true,
+        "embedding": [0.0, 0.0, 0.0, 1.0],
+        "imageEmbedding": [0.0, 0.0, 0.0, 1.0],
+        "scoreEmbedding": [0.0, 0.0, 0.0, 1.0],
+        "secretEmbedding": [0.0, 0.0, 0.0, 1.0]
+      }
+    ]
+  }
+}

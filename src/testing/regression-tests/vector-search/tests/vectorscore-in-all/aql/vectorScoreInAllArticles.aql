@@ -1,0 +1,13 @@
+RETURN {
+  "allArticles": (
+    FOR v_article1
+    IN @@articles
+    SORT (v_article1.`title`)
+    RETURN {
+      "title": v_article1.`title`,
+      @var1: v_article1[@var2]
+    }
+  )
+}
+
+// Peak memory usage: 32768 bytes

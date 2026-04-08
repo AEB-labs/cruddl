@@ -1,0 +1,6 @@
+query vectorScoreInAllArticles {
+    allArticles(orderBy: title_ASC) {
+        title
+        _vectorScore
+    }
+}

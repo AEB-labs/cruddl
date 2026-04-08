@@ -352,8 +352,9 @@ const directivesBase: DocumentNode = gql`
         Number of Voronoi cells (centroids) used to partition the vector space.
 
         Higher values can improve recall but increase index build time and memory usage.
+        When omitted, it is auto-computed from the document count at index creation time.
         """
-        nLists: Int!
+        nLists: Int
 
         """
         Default number of neighboring centroids to probe at query time.

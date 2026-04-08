@@ -1,0 +1,12 @@
+query withFilter {
+    vectorSearchArticles(
+        field: embedding
+        vector: [1.0, 0.0, 0.0, 0.0]
+        filter: { isPublished: true }
+        first: 5
+    ) {
+        title
+        isPublished
+        _vectorScore
+    }
+}

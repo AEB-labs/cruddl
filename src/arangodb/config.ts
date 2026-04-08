@@ -73,6 +73,32 @@ export interface ArangoDBConfig {
      * Indices without names will never be ignored.
      */
     readonly nonManagedIndexNamesPattern?: RegExp;
+
+    /**
+     * Controls automatic nLists drift detection for vector indexes with auto-computed nLists.
+     *
+     * **Background**: ArangoDB vector indexes use the IVF (Inverted File Index) algorithm, which
+     * partitions document embeddings into `nLists` clusters at index-creation time. When the
+     * number of documents grows significantly, the originally chosen `nLists` value may no longer
+     * be optimal — too few clusters reduce recall, too many waste memory and slow down queries.
+     *
+     * When this option is set, cruddl re-computes the recommended `nLists` on every analysis run
+     * using the formula `max(1, min(N, round(15 × √N)))` where N is the current document count.
+     * If the re-computed value differs from the current index's `nLists` by more than the
+     * configured fraction, a recreate migration is generated automatically.
+     *
+     * Example: a value of `0.25` triggers a rebuild when the re-computed nLists would differ by
+     * more than 25 % from the existing index's nLists (e.g. existing 100 → rebuild if new < 75 or
+     * > 125).
+     *
+     * **Important**: this option only reacts to nLists drift caused by document-count growth. It
+     * does **not** replace a manual rebuild for other scenarios, such as data distribution changes
+     * (cluster skew), changed embedding models, or index corruption. For those cases, call
+     * `recreateVectorIndex()` explicitly.
+     *
+     * If not set, nLists drift never triggers an automatic rebuild.
+     */
+    readonly vectorIndexNListsRebuildThreshold?: number;
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {

@@ -1,0 +1,20 @@
+{
+  "vectorScoreAliased": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "score": 1
+        },
+        {
+          "title": "Gamma",
+          "score": 0.7071067690849304
+        },
+        {
+          "title": "Beta",
+          "score": 0
+        }
+      ]
+    }
+  }
+}

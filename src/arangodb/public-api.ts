@@ -14,12 +14,15 @@ export {
     CreateDocumentCollectionMigration,
     CreateEdgeCollectionMigration,
     CreateIndexMigration,
+    CreateVectorIndexMigration,
     DropArangoSearchViewMigration,
     DropIndexMigration,
     RecreateArangoSearchViewMigration,
+    RecreateVectorIndexMigration,
     UpdateArangoSearchAnalyzerMigration,
     UpdateArangoSearchViewMigration,
     type CreateArangoSearchAnalyzerMigrationConfig,
     type SchemaMigration,
     type UpdateArangoSearchAnalyzerMigrationConfig,
 } from './schema-migration/migrations.js';
+export type { VectorIndexStatus } from './vector-index-status.js';

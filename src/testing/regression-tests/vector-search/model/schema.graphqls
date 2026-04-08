@@ -1,0 +1,11 @@
+type Article @rootEntity(permissionProfile: "restricted") {
+    title: String
+    category: String @accessField
+    isPublished: Boolean
+    embedding: [Float] @vectorIndex(metric: COSINE, dimension: 4, nLists: 1)
+    imageEmbedding: [Float] @vectorIndex(metric: L2, dimension: 4, nLists: 1)
+    scoreEmbedding: [Float] @vectorIndex(metric: INNER_PRODUCT, dimension: 4, nLists: 1)
+    secretEmbedding: [Float]
+        @vectorIndex(metric: COSINE, dimension: 4, nLists: 1)
+        @roles(readWrite: ["admin"])
+}

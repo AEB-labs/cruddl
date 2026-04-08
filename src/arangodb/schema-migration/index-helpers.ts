@@ -26,7 +26,17 @@ export interface PersistentIndexDefinition {
 }
 
 export interface VectorIndexDefinition {
+    /**
+     * Present when this definition was fetched from the database (existing index).
+     * Never set for model-derived required-index definitions — the index name is assigned
+     * at migration time via the A/B slot scheme (see vectorIndexSlotName).
+     */
     readonly id?: string;
+    /**
+     * Present when this definition was fetched from the database (existing index).
+     * Never set for model-derived required-index definitions — the index name is assigned
+     * at migration time via the A/B slot scheme (see vectorIndexSlotName).
+     */
     readonly name?: string;
     readonly rootEntity: RootEntityType;
     readonly fields: [string];
@@ -36,7 +46,7 @@ export interface VectorIndexDefinition {
     readonly params: {
         readonly metric: ArangoVectorSimilarityMetric;
         readonly dimension: number;
-        readonly nLists: number;
+        readonly nLists?: number;
         readonly defaultNProbe?: number;
         readonly trainingIterations?: number;
         readonly factory?: string;
@@ -145,14 +155,14 @@ function getIndicesForRootEntity(rootEntity: RootEntityType): ReadonlyArray<Inde
         (vectorIndex) => ({
             rootEntity,
             collectionName,
-            name: 'vector_' + vectorIndex.field.name,
+            // name is intentionally left undefined — assigned at migration time based on A/B slot
             fields: [vectorIndex.field.name] as [string],
             sparse: vectorIndex.sparse,
-            type: 'vector',
+            type: 'vector' as const,
             params: {
                 metric: mapMetricForArango(vectorIndex.metric),
                 dimension: vectorIndex.dimension || 1,
-                nLists: vectorIndex.nLists || 1,
+                nLists: vectorIndex.nLists, // may be undefined (auto-computed)
                 defaultNProbe: vectorIndex.defaultNProbe,
                 trainingIterations: vectorIndex.trainingIterations,
                 factory: vectorIndex.factory,
@@ -169,8 +179,8 @@ export function calculateRequiredIndexOperations(
     requiredIndices: ReadonlyArray<IndexDefinition>,
     config: ArangoDBConfig,
 ): {
-    indicesToDelete: ReadonlyArray<IndexDefinition>;
-    indicesToCreate: ReadonlyArray<IndexDefinition>;
+    persistentIndicesToDelete: ReadonlyArray<IndexDefinition>;
+    persistentIndicesToCreate: ReadonlyArray<IndexDefinition>;
 } {
     let indicesToDelete = [...existingIndices];
     const indicesToCreate = requiredIndices
@@ -194,7 +204,10 @@ export function calculateRequiredIndexOperations(
                 !config.nonManagedIndexNamesPattern ||
                 !index.name.match(config.nonManagedIndexNamesPattern),
         );
-    return { indicesToDelete, indicesToCreate };
+    return {
+        persistentIndicesToDelete: indicesToDelete,
+        persistentIndicesToCreate: indicesToCreate,
+    };
 }
 
 /**
@@ -226,7 +239,7 @@ function getArangoFieldPath(indexField: IndexField): string {
     return segments.join('.');
 }
 
-function mapMetricForArango(metric: string): ArangoVectorSimilarityMetric {
+export function mapMetricForArango(metric: string): ArangoVectorSimilarityMetric {
     switch (metric) {
         case 'L2':
             return 'l2';
@@ -236,4 +249,77 @@ function mapMetricForArango(metric: string): ArangoVectorSimilarityMetric {
         default:
             return 'cosine';
     }
+}
+
+/**
+ * Computes the recommended nLists value based on the document count.
+ * Formula: max(1, min(N, round(15 * sqrt(N))))
+ */
+export function computeAutoNLists(docCount: number): number {
+    if (docCount <= 0) {
+        return 1;
+    }
+    return Math.max(1, Math.min(docCount, Math.round(15 * Math.sqrt(docCount))));
+}
+
+export type VectorIndexSlot = 'a' | 'b';
+
+/**
+ * Returns the ArangoDB index name for a vector index using the A/B slot naming scheme.
+ */
+export function vectorIndexSlotName(fieldName: string, slot: VectorIndexSlot): string {
+    return `vector_${fieldName}_${slot}`;
+}
+
+/**
+ * Returns the other slot for A/B naming.
+ */
+export function otherVectorIndexSlot(slot: VectorIndexSlot): VectorIndexSlot {
+    return slot === 'a' ? 'b' : 'a';
+}
+
+/**
+ * Determines the slot of an existing vector index by its name.
+ * Returns undefined if the name does not match the expected pattern.
+ */
+export function getVectorIndexSlot(indexName: string): VectorIndexSlot | undefined {
+    if (indexName.endsWith('_a')) {
+        return 'a';
+    }
+    if (indexName.endsWith('_b')) {
+        return 'b';
+    }
+    return undefined;
+}
+
+/**
+ * Checks whether the nLists drift between an existing and a new value exceeds the given threshold.
+ * The threshold is a fraction (e.g. 0.25 for 25%).
+ */
+export function nListsDriftExceedsThreshold(
+    existingNLists: number,
+    newNLists: number,
+    threshold: number,
+): boolean {
+    if (existingNLists <= 0) {
+        return true;
+    }
+    return Math.abs(newNLists - existingNLists) / existingNLists > threshold;
+}
+
+/**
+ * Checks whether two vector index definitions match on their core identity fields
+ * (collection, field, type) but differ in their params.
+ */
+export function vectorIndexMatchesByField(
+    existing: IndexDefinition,
+    required: IndexDefinition,
+): boolean {
+    return (
+        existing.type === 'vector' &&
+        required.type === 'vector' &&
+        existing.rootEntity === required.rootEntity &&
+        existing.collectionName === required.collectionName &&
+        existing.fields.join('|') === required.fields.join('|')
+    );
 }

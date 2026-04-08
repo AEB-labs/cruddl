@@ -43,6 +43,8 @@ export class VectorIndex implements ModelComponent {
     }
 
     validate(context: ValidationContext) {
+        // Note: list-type and Float-type validation is done in field.ts validateVectorIndex()
+
         const supportedMetrics = new Set(['COSINE', 'L2', 'INNER_PRODUCT']);
         if (!supportedMetrics.has(this.metric)) {
             context.addMessage(
@@ -62,7 +64,7 @@ export class VectorIndex implements ModelComponent {
             );
         }
 
-        if (this.nLists == undefined || this.nLists < 1) {
+        if (this.nLists != undefined && this.nLists < 1) {
             context.addMessage(
                 ValidationMessage.error(
                     `A vector index must specify a positive nLists value.`,

@@ -4,12 +4,14 @@ import type {
     CreateArangoSearchViewOptions,
 } from 'arangojs/views';
 import type { Relation } from '../../core/model/implementation/relation.js';
-import type { IndexDefinition } from './index-helpers.js';
+import type { IndexDefinition, VectorIndexDefinition } from './index-helpers.js';
 import { describeIndex, getIndexDescriptor } from './index-helpers.js';
 
 export type SchemaMigration =
     | CreateIndexMigration
     | DropIndexMigration
+    | CreateVectorIndexMigration
+    | RecreateVectorIndexMigration
     | CreateDocumentCollectionMigration
     | CreateEdgeCollectionMigration
     | CreateArangoSearchViewMigration
@@ -68,6 +70,75 @@ export class DropIndexMigration {
 
     get id() {
         return `dropIndex/${getIndexDescriptor(this.index)}`;
+    }
+
+    get isMandatory() {
+        return false;
+    }
+}
+
+interface CreateVectorIndexMigrationConfig {
+    readonly requiredIndex: VectorIndexDefinition;
+    readonly collectionSize?: number;
+}
+
+/**
+ * Migration that creates a new vector index for the first time (no existing index is present).
+ * The index is always created in slot 'a'. The actual index name is derived by the performer
+ * using vectorIndexSlotName(field, 'a').
+ */
+export class CreateVectorIndexMigration {
+    readonly type: 'createVectorIndex' = 'createVectorIndex';
+    readonly requiredIndex: VectorIndexDefinition;
+    readonly collectionSize: number | undefined;
+
+    constructor(config: CreateVectorIndexMigrationConfig) {
+        this.requiredIndex = config.requiredIndex;
+        this.collectionSize = config.collectionSize;
+    }
+
+    get description() {
+        return `create ${describeIndex(this.requiredIndex)}`;
+    }
+
+    get id() {
+        return `createVectorIndex/${getIndexDescriptor(this.requiredIndex)}`;
+    }
+
+    get isMandatory() {
+        return false;
+    }
+}
+
+interface RecreateVectorIndexMigrationConfig {
+    readonly existingIndex: VectorIndexDefinition;
+    readonly requiredIndex: VectorIndexDefinition;
+    readonly collectionSize?: number;
+}
+
+/**
+ * Migration that recreates an existing vector index with updated parameters (e.g. changed metric,
+ * dimension, or nLists). Uses the A/B slot naming scheme: the new index is created in the slot
+ * opposite to the existing one, and the old index is dropped once the new one is ready.
+ */
+export class RecreateVectorIndexMigration {
+    readonly type: 'recreateVectorIndex' = 'recreateVectorIndex';
+    readonly existingIndex: VectorIndexDefinition;
+    readonly requiredIndex: VectorIndexDefinition;
+    readonly collectionSize: number | undefined;
+
+    constructor(config: RecreateVectorIndexMigrationConfig) {
+        this.existingIndex = config.existingIndex;
+        this.requiredIndex = config.requiredIndex;
+        this.collectionSize = config.collectionSize;
+    }
+
+    get description() {
+        return `recreate ${describeIndex(this.existingIndex)} with updated parameters`;
+    }
+
+    get id() {
+        return `recreateVectorIndex/${getIndexDescriptor(this.requiredIndex)}`;
     }
 
     get isMandatory() {
