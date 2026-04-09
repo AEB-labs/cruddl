@@ -702,7 +702,10 @@ register(VectorSearchQueryNode, (node, context) => {
     // changes but its valueNode is still PropertyAccessQueryNode(itemVariable, '_vectorScore'),
     // so the replacement still fires correctly.
     if (node.innerNode instanceof ObjectQueryNode) {
+        // TODO vector-todo use process(ObjectQueryNode) instead of manually doing this here
         const properties = node.innerNode.properties.map((p) => {
+            // TODO Vector-todo this supports a single alias but not two aliases
+            // consider if we just fix this here (making it ugly) or introduce a VectorScoreQueryNode()
             const isVectorScoreAccess =
                 p.valueNode instanceof PropertyAccessQueryNode &&
                 p.valueNode.objectNode === node.itemVariable &&
