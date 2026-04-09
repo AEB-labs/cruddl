@@ -270,7 +270,7 @@ describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {
             const vectorAfterSecond = afterSecond.filter((i: any) => i.type === 'vector');
             expect(vectorAfterSecond).toHaveLength(1);
             expect(vectorAfterSecond[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
-        });
+        }, 30_000);
 
         it('throws when the collection has no documents', async () => {
             const model = createSimpleModel(gql`

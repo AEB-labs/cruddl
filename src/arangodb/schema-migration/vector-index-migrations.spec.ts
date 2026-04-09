@@ -25,553 +25,567 @@ import { MigrationPerformer } from './performer.js';
 
 let dbConfig: ArangoDBConfig;
 
-describe.skipIf(isArangoDBDisabled())('vector index migrations (integration tests)', () => {
-    beforeEach(async () => {
-        dbConfig = await createTempDatabase();
-        // Create the articles collection up-front for most tests
-        const db = getTempDatabase();
-        await db.createCollection('articles');
-    });
-
-    // -----------------------------------------------------------------------
-    // Deferred creation
-    // -----------------------------------------------------------------------
-
-    it('does not create vector index on an empty collection', async () => {
-        const project = buildVectorProject();
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(project.getModel());
-        expect(migrations).toHaveLength(0);
-    });
-
-    it('schedules CreateVectorIndexMigration once the collection has documents', async () => {
-        const project = buildVectorProject();
-        const db = getTempDatabase();
-        await seedArticles(db);
-
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(project.getModel());
-
-        expect(migrations).toHaveLength(1);
-        expect(migrations[0]).toBeInstanceOf(CreateVectorIndexMigration);
-    });
-
-    // -----------------------------------------------------------------------
-    // First-time creation always goes to slot A
-    // -----------------------------------------------------------------------
-
-    it('creates the index in slot A on first creation', async () => {
-        const project = buildVectorProject({ nLists: 1 });
-        const db = getTempDatabase();
-        await seedArticles(db);
-
-        await runMigrations(project);
-
-        const indexes = await db.collection('articles').indexes();
-        const vectorIndexes = indexes.filter((i: any) => i.type === 'vector');
-        expect(vectorIndexes).toHaveLength(1);
-        expect(vectorIndexes[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
-    });
-
-    it('is stable (no migrations) after creation', async () => {
-        const project = buildVectorProject({ nLists: 1 });
-        const db = getTempDatabase();
-        await seedArticles(db);
-
-        await runMigrations(project);
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(project.getModel());
-        expect(migrations).toHaveLength(0);
-    });
-
-    // -----------------------------------------------------------------------
-    // Recreation: metric change triggers A → B slot swap
-    // -----------------------------------------------------------------------
-
-    it('schedules RecreateVectorIndexMigration when the metric changes', async () => {
-        const cosineProject = buildVectorProject({ nLists: 1 });
-        const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
-        const db = getTempDatabase();
-        await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
-
-        // Step 1: create the COSINE index in slot A
-        await runMigrations(cosineProject);
-
-        // Step 2: changing the metric should produce a recreate migration
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(l2Project.getModel());
-        expect(migrations).toHaveLength(1);
-        const [m] = migrations;
-        expect(m).toBeInstanceOf(RecreateVectorIndexMigration);
-        if (m instanceof RecreateVectorIndexMigration) {
-            expect(m.existingIndex.name).toEqual(vectorIndexSlotName('embedding', 'a'));
-        }
-    });
-
-    it('places the recreated index in slot B when existing index is in slot A', async () => {
-        const cosineProject = buildVectorProject({ nLists: 1 });
-        const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
-        const db = getTempDatabase();
-        await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
-
-        await runMigrations(cosineProject);
-        await runMigrations(l2Project);
-
-        const indexes = await db.collection('articles').indexes();
-        const vectorIndexes = indexes.filter((i: any) => i.type === 'vector');
-        expect(vectorIndexes).toHaveLength(1);
-        expect(vectorIndexes[0].name).toEqual(vectorIndexSlotName('embedding', 'b'));
-        expect(getVectorIndexSlot(vectorIndexes[0].name)).toEqual('b');
-    });
-
-    it('places the re-recreated index back in slot A (A→B→A cycle)', async () => {
-        const cosineProject = buildVectorProject({ nLists: 1 });
-        const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
-        const innerProductProject = buildVectorProject({ metric: 'INNER_PRODUCT', nLists: 1 });
-        const db = getTempDatabase();
-        await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
-
-        // A (COSINE) → B (L2) → A (INNER_PRODUCT)
-        await runMigrations(cosineProject);
-        await runMigrations(l2Project);
-        await runMigrations(innerProductProject);
-
-        const indexes = await db.collection('articles').indexes();
-        const vectorIndexes = indexes.filter((i: any) => i.type === 'vector');
-        expect(vectorIndexes).toHaveLength(1);
-        expect(vectorIndexes[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
-        expect((vectorIndexes[0] as VectorIndexDescription).params?.metric).toEqual('innerProduct');
-    });
-
-    // -----------------------------------------------------------------------
-    // Recreation: other parameter changes
-    // -----------------------------------------------------------------------
-
-    it('schedules recreation when the dimension changes', async () => {
-        const dim4Project = buildVectorProject({ dimension: 4, nLists: 1 });
-        const dim8Project = buildVectorProject({ dimension: 8, nLists: 1 });
-        const db = getTempDatabase();
-        await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
-
-        await runMigrations(dim4Project);
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(dim8Project.getModel());
-        expect(migrations).toHaveLength(1);
-        expect(migrations[0]).toBeInstanceOf(RecreateVectorIndexMigration);
-    });
-
-    it('schedules recreation when sparse flag changes', async () => {
-        const nonSparseProject = buildVectorProject({ dimension: 4, nLists: 1, sparse: false });
-        const sparseProject = buildVectorProject({ dimension: 4, nLists: 1, sparse: true });
-        const db = getTempDatabase();
-        await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
-
-        await runMigrations(nonSparseProject);
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(sparseProject.getModel());
-        expect(migrations).toHaveLength(1);
-        expect(migrations[0]).toBeInstanceOf(RecreateVectorIndexMigration);
-    });
-
-    it('schedules recreation when pinned nLists changes', async () => {
-        const nLists1Project = buildVectorProject({ dimension: 4, nLists: 1 });
-        const nLists2Project = buildVectorProject({ dimension: 4, nLists: 2 });
-        const db = getTempDatabase();
-        await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
-
-        await runMigrations(nLists1Project);
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(nLists2Project.getModel());
-        expect(migrations).toHaveLength(1);
-        expect(migrations[0]).toBeInstanceOf(RecreateVectorIndexMigration);
-    });
-
-    // -----------------------------------------------------------------------
-    // nLists auto-computation: drift threshold
-    // -----------------------------------------------------------------------
-
-    it('does not schedule recreation for nLists drift without a threshold configured', async () => {
-        // Use nLists: 1 to ensure the index exists; then switch to auto-computed
-        const pinnedProject = buildVectorProject({ dimension: 4, nLists: 1 });
-        const autoProject = buildVectorProject({ dimension: 4 });
-        const db = getTempDatabase();
-        // Insert enough docs so auto-computed nLists diverges from 1
-        await seedArticles(db, 20);
-
-        await runMigrations(pinnedProject);
-        const analyzer = makeAnalyzer(); // no vectorIndexNListsRebuildThreshold
-        const migrations = await analyzer.getVectorIndexMigrations(autoProject.getModel());
-        // Without a threshold, nLists drift never triggers recreation
-        const recreateMigrations = migrations.filter(
-            (m) => m instanceof RecreateVectorIndexMigration,
-        );
-        expect(recreateMigrations).toHaveLength(0);
-    });
-
-    it('schedules recreation when auto-computed nLists drift exceeds configured threshold', async () => {
-        const pinnedProject = buildVectorProject({ dimension: 4, nLists: 1 });
-        const autoProject = buildVectorProject({ dimension: 4 });
-        const db = getTempDatabase();
-        // Insert enough docs so auto-computed nLists >> 1, well beyond 10% threshold
-        await seedArticles(db, 50);
-        await runMigrations(pinnedProject);
-
-        // Now use an analyzer with a low rebuild threshold
-        const thresholdAnalyzer = makeAnalyzer({ vectorIndexNListsRebuildThreshold: 0.1 });
-        const migrations = await thresholdAnalyzer.getVectorIndexMigrations(autoProject.getModel());
-        const recreateMigrations = migrations.filter(
-            (m) => m instanceof RecreateVectorIndexMigration,
-        );
-        expect(recreateMigrations).toHaveLength(1);
-    });
-
-    // -----------------------------------------------------------------------
-    // Drop when removed from model
-    // -----------------------------------------------------------------------
-
-    it('schedules DropIndexMigration when a vector index is removed from the model', async () => {
-        const withIndexProject = buildVectorProject({ nLists: 1 });
-        const withoutIndexProject = buildProject(gql`
-            type Article @rootEntity {
-                embedding: [Float]
-            }
-        `);
-        const db = getTempDatabase();
-        await seedArticles(db);
-
-        await runMigrations(withIndexProject);
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(withoutIndexProject.getModel());
-        expect(migrations).toHaveLength(1);
-        expect(migrations[0]).toBeInstanceOf(DropIndexMigration);
-    });
-
-    it('is stable (no migrations) after the index is dropped', async () => {
-        const withIndexProject = buildVectorProject({ nLists: 1 });
-        const withoutIndexProject = buildProject(gql`
-            type Article @rootEntity {
-                embedding: [Float]
-            }
-        `);
-        const db = getTempDatabase();
-        await seedArticles(db);
-
-        await runMigrations(withIndexProject);
-        await runMigrations(withoutIndexProject);
-
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(withoutIndexProject.getModel());
-        expect(migrations).toHaveLength(0);
-    });
-
-    // -----------------------------------------------------------------------
-    // Recovery: both A and B slots present (aborted recreation)
-    // -----------------------------------------------------------------------
-
-    it('schedules DropIndexMigration for B when both A and B are present (stuck recreation)', async () => {
-        const project = buildVectorProject({ nLists: 1 });
-        const db = getTempDatabase();
-        await seedArticles(db);
-
-        // Create the normal slot-A index
-        await runMigrations(project);
-
-        // Simulate a stuck recreation by manually creating slot B directly in ArangoDB
-        await ensureSlotIndex(db, 'b', 'cosine');
-
-        // Now the analyzer should detect the stuck state and produce exactly one DropIndexMigration for B
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(project.getModel());
-        expect(migrations).toHaveLength(1);
-        const [m] = migrations;
-        expect(m).toBeInstanceOf(DropIndexMigration);
-        if (m instanceof DropIndexMigration) {
-            expect(m.index.name).toEqual(vectorIndexSlotName('embedding', 'b'));
-        }
-    });
-
-    it('finds the DropIndex migration for B, runs it, and confirms B is gone', async () => {
-        const project = buildVectorProject({ nLists: 1 });
-        const db = getTempDatabase();
-        await seedArticles(db);
-
-        // Step 1: run migrations – slot A is created, system is stable
-        await runMigrations(project);
-
-        // Step 2: manually inject a slot B index to simulate an aborted recreation
-        await ensureSlotIndex(db, 'b', 'cosine');
-
-        // Verify both slots are present before cleanup
-        const beforeVector = await getVectorIndexes(db);
-        expect(beforeVector).toHaveLength(2);
-
-        // Step 3: the analyzer must find exactly one DropIndexMigration targeting slot B
-        const analyzer = makeAnalyzer();
-        const performer = makePerformer();
-        const migrations = await analyzer.getVectorIndexMigrations(project.getModel());
-        expect(migrations).toHaveLength(1);
-        const [drop] = migrations;
-        expect(drop).toBeInstanceOf(DropIndexMigration);
-        expect((drop as DropIndexMigration).index.name).toEqual(
-            vectorIndexSlotName('embedding', 'b'),
-        );
-
-        // Step 4: run that specific migration explicitly
-        await performer.performMigration(drop);
-
-        // Step 5: verify slot B is gone and slot A still exists
-        const afterVector = await getVectorIndexes(db);
-        expect(afterVector).toHaveLength(1);
-        expect(afterVector[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
-
-        // Step 6: no further migrations needed
-        const remaining = await analyzer.getVectorIndexMigrations(project.getModel());
-        expect(remaining).toHaveLength(0);
-    });
-
-    it('is stable after recovering from a stuck recreation (drop B, keep A)', async () => {
-        const project = buildVectorProject({ nLists: 1 });
-        const db = getTempDatabase();
-        await seedArticles(db);
-
-        await runMigrations(project);
-
-        // Simulate stuck state: inject a B index
-        await ensureSlotIndex(db, 'b', 'cosine');
-
-        // Perform the cleanup migration
-        await runMigrations(project);
-
-        // Only A should remain
-        const indexes = await db.collection('articles').indexes();
-        const vectorIndexes = indexes.filter((i: any) => i.type === 'vector');
-        expect(vectorIndexes).toHaveLength(1);
-        expect(vectorIndexes[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
-
-        // And the system should now be fully stable
-        const analyzer = makeAnalyzer();
-        const remaining = await analyzer.getVectorIndexMigrations(project.getModel());
-        expect(remaining).toHaveLength(0);
-    });
-
-    it('when B matches the required params and A does not, drops A and keeps B', async () => {
-        // Scenario: recreation completed (B=L2 was built, ready), but the final "drop A" step
-        // was interrupted. The analyzer should recognize B as the correct slot and drop A.
-        const cosineProject = buildVectorProject({ nLists: 1 });
-        const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
-        const db = getTempDatabase();
-        await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
-
-        // A = COSINE (stale)
-        await runMigrations(cosineProject);
-        // B = L2 (correct new index; drop of A was interrupted).
-        // Explicit sparse=true to match the model's default sparse value.
-        await ensureSlotIndex(db, 'b', 'l2', 4, 1, true);
-
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(l2Project.getModel());
-        expect(migrations).toHaveLength(1);
-        expect(migrations[0]).toBeInstanceOf(DropIndexMigration);
-        expect((migrations[0] as DropIndexMigration).index.name).toEqual(
-            vectorIndexSlotName('embedding', 'a'),
-        );
-    });
-
-    it('drops A (stale) and keeps B (correct L2) — no spurious recreate needed', async () => {
-        // Both A (COSINE) and B (L2) exist, model requires L2.
-        // B already has the correct params → drop A, keep B. No recreation required.
-        const cosineProject = buildVectorProject({ nLists: 1 });
-        const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
-        const db = getTempDatabase();
-        await seedArticles(db);
-
-        // Slot A has COSINE
-        await runMigrations(cosineProject);
-
-        // Simulate a stuck recreation where B was created with L2 but A was not yet dropped.
-        // Explicit sparse=true to match the model's default sparse value.
-        await ensureSlotIndex(db, 'b', 'l2', 4, 1, true);
-
-        // The model now wants L2, both A (COSINE) and B (L2, sparse=true) exist.
-        // B matches → drop A, keep B. No recreate migration is generated.
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(l2Project.getModel());
-        const dropMigrations = migrations.filter((m) => m instanceof DropIndexMigration);
-        const recreateMigrations = migrations.filter(
-            (m) => m instanceof RecreateVectorIndexMigration,
-        );
-        // Drop the stale A slot
-        expect(dropMigrations).toHaveLength(1);
-        expect((dropMigrations[0] as DropIndexMigration).index.name).toEqual(
-            vectorIndexSlotName('embedding', 'a'),
-        );
-        // B is already correct — no recreation needed
-        expect(recreateMigrations).toHaveLength(0);
-    });
-
-    it('after recovery (drop A, keep B), system is stable in a single run', async () => {
-        const cosineProject = buildVectorProject({ nLists: 1 });
-        const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
-        const db = getTempDatabase();
-        await seedArticles(db);
-
-        const analyzer = makeAnalyzer();
-
-        // Slot A has COSINE
-        await runMigrations(cosineProject);
-
-        // Inject stuck B (L2, sparse=true) — B is the correct new index; drop of A was interrupted
-        await ensureSlotIndex(db, 'b', 'l2', 4, 1, true);
-
-        // Single run: drop A (stale COSINE), keep B (correct L2)
-        await runMigrations(l2Project);
-
-        const indexes = await db.collection('articles').indexes();
-        const vectorIndexes = indexes.filter((i: any) => i.type === 'vector');
-        expect(vectorIndexes).toHaveLength(1);
-        expect(vectorIndexes[0].name).toEqual(vectorIndexSlotName('embedding', 'b'));
-        expect((vectorIndexes[0] as VectorIndexDescription).params?.metric).toEqual('l2');
-
-        // System is stable after a single run
-        const remaining = await analyzer.getVectorIndexMigrations(l2Project.getModel());
-        expect(remaining).toHaveLength(0);
-    });
-
-    it('when neither A nor B matches required, drops B and schedules recreation of A', async () => {
-        // Scenario: both slots exist with the wrong metric; model now requires L2.
-        // The stuck-slot detection falls into the "else" branch (B doesn't match, A doesn't
-        // match either) → drop B. Then the main loop sees A (COSINE) for an L2 model and
-        // schedules RecreateVectorIndexMigration(A → slot B).
-        const cosineProject = buildVectorProject({ nLists: 1 });
-        const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
-        const db = getTempDatabase();
-        await seedArticles(db);
-
-        // Create slot A with COSINE
-        await runMigrations(cosineProject);
-        // Inject slot B also with COSINE (both slots stale for L2 model)
-        await ensureSlotIndex(db, 'b', 'cosine', 4, 1);
-
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(l2Project.getModel());
-        const dropMigrations = migrations.filter((m) => m instanceof DropIndexMigration);
-        const recreateMigrations = migrations.filter(
-            (m) => m instanceof RecreateVectorIndexMigration,
-        );
-        // Stuck B (COSINE) is dropped by the stuck-slot handler
-        expect(dropMigrations).toHaveLength(1);
-        expect((dropMigrations[0] as DropIndexMigration).index.name).toEqual(
-            vectorIndexSlotName('embedding', 'b'),
-        );
-        // A (COSINE) is scheduled for recreation to become L2
-        expect(recreateMigrations).toHaveLength(1);
-        const recreate = recreateMigrations[0] as RecreateVectorIndexMigration;
-        expect(recreate.existingIndex.name).toEqual(vectorIndexSlotName('embedding', 'a'));
-        expect(recreate.requiredIndex.params.metric).toEqual('l2');
-    });
-
-    it('drops both A and B when the vector index field is removed from the model', async () => {
-        // Scenario: a previous recreation was aborted, leaving both A and B in the database.
-        // The model is then updated to remove the vector index entirely.
-        // Expected: the stuck-slot handler drops B (since !resolved), and the regular drop
-        // loop removes A (it is no longer required by the model).
-        const cosineProject = buildVectorProject({ nLists: 1 });
-        const withoutIndexProject = buildProject(gql`
-            type Article @rootEntity {
-                embedding: [Float]
-            }
-        `);
-        const db = getTempDatabase();
-        await seedArticles(db);
-
-        // Create slot A
-        await runMigrations(cosineProject);
-        // Inject slot B to simulate stuck state
-        await ensureSlotIndex(db, 'b', 'cosine', 4, 1);
-
-        // With the vector index removed from the model, both slots should be dropped
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(withoutIndexProject.getModel());
-        const dropMigrations = migrations.filter((m) => m instanceof DropIndexMigration);
-        expect(dropMigrations).toHaveLength(2);
-        const droppedNames = dropMigrations.map((m) => (m as DropIndexMigration).index.name);
-        expect(droppedNames).toContain(vectorIndexSlotName('embedding', 'a'));
-        expect(droppedNames).toContain(vectorIndexSlotName('embedding', 'b'));
-    });
-
-    it('schedules recreation when storedValues change', async () => {
-        // storedValues changes require a full index rebuild because the co-located data
-        // (stored with each vector in the IVF index) must be rewritten.
-        const withoutStoredValues = buildProject(gql`
-            type Article @rootEntity {
-                title: String
-                embedding: [Float] @vectorIndex(dimension: 4, defaultNProbe: 10, maxNProbe: 50)
-            }
-        `);
-        const withStoredValues = buildProject(gql`
-            type Article @rootEntity {
-                title: String
-                embedding: [Float]
-                    @vectorIndex(
-                        dimension: 4
-                        defaultNProbe: 10
-                        maxNProbe: 50
-                        storedValues: ["title"]
-                    )
-            }
-        `);
-        const db = getTempDatabase();
-        await seedArticles(db);
-
-        // Create the initial index (no storedValues)
-        await runMigrations(withoutStoredValues);
-
-        const analyzer = makeAnalyzer();
-        const migrations = await analyzer.getVectorIndexMigrations(withStoredValues.getModel());
-        expect(migrations).toHaveLength(1);
-        expect(migrations[0]).toBeInstanceOf(RecreateVectorIndexMigration);
-    });
-
-    // -----------------------------------------------------------------------
-    // Performer: dropIndex handles already-gone index gracefully
-    // -----------------------------------------------------------------------
-
-    it('performer does not throw when dropping an already-removed index', async () => {
-        const project = buildVectorProject({ nLists: 1 });
-        const db = getTempDatabase();
-        await seedArticles(db);
-
-        const performer = makePerformer();
-        const model = project.getModel();
-
-        await runMigrations(project);
-
-        // Get the index id, then drop the index with the raw API to simulate concurrent removal
-        const indexes = await db.collection('articles').indexes();
-        const vectorIndex = indexes.find((i: any) => i.type === 'vector');
-        expect(vectorIndex).toBeDefined();
-        if (!vectorIndex) {
-            return; // type guard for TS
-        }
-        await db.collection('articles').dropIndex(vectorIndex.id);
-
-        // Now perform a DropIndexMigration for the already-gone index — should not throw
-        const dropMigration = new DropIndexMigration({
-            index: {
-                id: vectorIndex.id,
-                name: vectorIndex.name,
-                collectionName: 'articles',
-                fields: ['embedding'],
-                sparse: false,
-                type: 'vector' as const,
-                params: { metric: 'cosine', dimension: 4, nLists: 1 },
-                rootEntity: model.rootEntityTypes.find((r) => r.name === 'Article')!,
-            },
+describe.skipIf(isArangoDBDisabled())(
+    'vector index migrations (integration tests)',
+    { timeout: 30_000 },
+    () => {
+        beforeEach(async () => {
+            dbConfig = await createTempDatabase();
+            // Create the articles collection up-front for most tests
+            const db = getTempDatabase();
+            await db.createCollection('articles');
         });
 
-        await expect(performer.performMigration(dropMigration)).resolves.not.toThrow();
-    });
-});
+        // -----------------------------------------------------------------------
+        // Deferred creation
+        // -----------------------------------------------------------------------
+
+        it('does not create vector index on an empty collection', async () => {
+            const project = buildVectorProject();
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(project.getModel());
+            expect(migrations).toHaveLength(0);
+        });
+
+        it('schedules CreateVectorIndexMigration once the collection has documents', async () => {
+            const project = buildVectorProject();
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(project.getModel());
+
+            expect(migrations).toHaveLength(1);
+            expect(migrations[0]).toBeInstanceOf(CreateVectorIndexMigration);
+        });
+
+        // -----------------------------------------------------------------------
+        // First-time creation always goes to slot A
+        // -----------------------------------------------------------------------
+
+        it('creates the index in slot A on first creation', async () => {
+            const project = buildVectorProject({ nLists: 1 });
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            await runMigrations(project);
+
+            const indexes = await db.collection('articles').indexes();
+            const vectorIndexes = indexes.filter((i: any) => i.type === 'vector');
+            expect(vectorIndexes).toHaveLength(1);
+            expect(vectorIndexes[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
+        });
+
+        it('is stable (no migrations) after creation', async () => {
+            const project = buildVectorProject({ nLists: 1 });
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            await runMigrations(project);
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(project.getModel());
+            expect(migrations).toHaveLength(0);
+        });
+
+        // -----------------------------------------------------------------------
+        // Recreation: metric change triggers A → B slot swap
+        // -----------------------------------------------------------------------
+
+        it('schedules RecreateVectorIndexMigration when the metric changes', async () => {
+            const cosineProject = buildVectorProject({ nLists: 1 });
+            const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
+            const db = getTempDatabase();
+            await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
+
+            // Step 1: create the COSINE index in slot A
+            await runMigrations(cosineProject);
+
+            // Step 2: changing the metric should produce a recreate migration
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(l2Project.getModel());
+            expect(migrations).toHaveLength(1);
+            const [m] = migrations;
+            expect(m).toBeInstanceOf(RecreateVectorIndexMigration);
+            if (m instanceof RecreateVectorIndexMigration) {
+                expect(m.existingIndex.name).toEqual(vectorIndexSlotName('embedding', 'a'));
+            }
+        });
+
+        it('places the recreated index in slot B when existing index is in slot A', async () => {
+            const cosineProject = buildVectorProject({ nLists: 1 });
+            const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
+            const db = getTempDatabase();
+            await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
+
+            await runMigrations(cosineProject);
+            await runMigrations(l2Project);
+
+            const indexes = await db.collection('articles').indexes();
+            const vectorIndexes = indexes.filter((i: any) => i.type === 'vector');
+            expect(vectorIndexes).toHaveLength(1);
+            expect(vectorIndexes[0].name).toEqual(vectorIndexSlotName('embedding', 'b'));
+            expect(getVectorIndexSlot(vectorIndexes[0].name)).toEqual('b');
+        });
+
+        it('places the re-recreated index back in slot A (A→B→A cycle)', async () => {
+            const cosineProject = buildVectorProject({ nLists: 1 });
+            const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
+            const innerProductProject = buildVectorProject({ metric: 'INNER_PRODUCT', nLists: 1 });
+            const db = getTempDatabase();
+            await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
+
+            // A (COSINE) → B (L2) → A (INNER_PRODUCT)
+            await runMigrations(cosineProject);
+            await runMigrations(l2Project);
+            await runMigrations(innerProductProject);
+
+            const indexes = await db.collection('articles').indexes();
+            const vectorIndexes = indexes.filter((i: any) => i.type === 'vector');
+            expect(vectorIndexes).toHaveLength(1);
+            expect(vectorIndexes[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
+            expect((vectorIndexes[0] as VectorIndexDescription).params?.metric).toEqual(
+                'innerProduct',
+            );
+        });
+
+        // -----------------------------------------------------------------------
+        // Recreation: other parameter changes
+        // -----------------------------------------------------------------------
+
+        it('schedules recreation when the dimension changes', async () => {
+            const dim4Project = buildVectorProject({ dimension: 4, nLists: 1 });
+            const dim8Project = buildVectorProject({ dimension: 8, nLists: 1 });
+            const db = getTempDatabase();
+            await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
+
+            await runMigrations(dim4Project);
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(dim8Project.getModel());
+            expect(migrations).toHaveLength(1);
+            expect(migrations[0]).toBeInstanceOf(RecreateVectorIndexMigration);
+        });
+
+        it('schedules recreation when sparse flag changes', async () => {
+            const nonSparseProject = buildVectorProject({ dimension: 4, nLists: 1, sparse: false });
+            const sparseProject = buildVectorProject({ dimension: 4, nLists: 1, sparse: true });
+            const db = getTempDatabase();
+            await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
+
+            await runMigrations(nonSparseProject);
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(sparseProject.getModel());
+            expect(migrations).toHaveLength(1);
+            expect(migrations[0]).toBeInstanceOf(RecreateVectorIndexMigration);
+        });
+
+        it('schedules recreation when pinned nLists changes', async () => {
+            const nLists1Project = buildVectorProject({ dimension: 4, nLists: 1 });
+            const nLists2Project = buildVectorProject({ dimension: 4, nLists: 2 });
+            const db = getTempDatabase();
+            await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
+
+            await runMigrations(nLists1Project);
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(nLists2Project.getModel());
+            expect(migrations).toHaveLength(1);
+            expect(migrations[0]).toBeInstanceOf(RecreateVectorIndexMigration);
+        });
+
+        // -----------------------------------------------------------------------
+        // nLists auto-computation: drift threshold
+        // -----------------------------------------------------------------------
+
+        it('does not schedule recreation for nLists drift without a threshold configured', async () => {
+            // Use nLists: 1 to ensure the index exists; then switch to auto-computed
+            const pinnedProject = buildVectorProject({ dimension: 4, nLists: 1 });
+            const autoProject = buildVectorProject({ dimension: 4 });
+            const db = getTempDatabase();
+            // Insert enough docs so auto-computed nLists diverges from 1
+            await seedArticles(db, 20);
+
+            await runMigrations(pinnedProject);
+            const analyzer = makeAnalyzer(); // no vectorIndexNListsRebuildThreshold
+            const migrations = await analyzer.getVectorIndexMigrations(autoProject.getModel());
+            // Without a threshold, nLists drift never triggers recreation
+            const recreateMigrations = migrations.filter(
+                (m) => m instanceof RecreateVectorIndexMigration,
+            );
+            expect(recreateMigrations).toHaveLength(0);
+        });
+
+        it('schedules recreation when auto-computed nLists drift exceeds configured threshold', async () => {
+            const pinnedProject = buildVectorProject({ dimension: 4, nLists: 1 });
+            const autoProject = buildVectorProject({ dimension: 4 });
+            const db = getTempDatabase();
+            // Insert enough docs so auto-computed nLists >> 1, well beyond 10% threshold
+            await seedArticles(db, 50);
+            await runMigrations(pinnedProject);
+
+            // Now use an analyzer with a low rebuild threshold
+            const thresholdAnalyzer = makeAnalyzer({ vectorIndexNListsRebuildThreshold: 0.1 });
+            const migrations = await thresholdAnalyzer.getVectorIndexMigrations(
+                autoProject.getModel(),
+            );
+            const recreateMigrations = migrations.filter(
+                (m) => m instanceof RecreateVectorIndexMigration,
+            );
+            expect(recreateMigrations).toHaveLength(1);
+        });
+
+        // -----------------------------------------------------------------------
+        // Drop when removed from model
+        // -----------------------------------------------------------------------
+
+        it('schedules DropIndexMigration when a vector index is removed from the model', async () => {
+            const withIndexProject = buildVectorProject({ nLists: 1 });
+            const withoutIndexProject = buildProject(gql`
+                type Article @rootEntity {
+                    embedding: [Float]
+                }
+            `);
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            await runMigrations(withIndexProject);
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(
+                withoutIndexProject.getModel(),
+            );
+            expect(migrations).toHaveLength(1);
+            expect(migrations[0]).toBeInstanceOf(DropIndexMigration);
+        });
+
+        it('is stable (no migrations) after the index is dropped', async () => {
+            const withIndexProject = buildVectorProject({ nLists: 1 });
+            const withoutIndexProject = buildProject(gql`
+                type Article @rootEntity {
+                    embedding: [Float]
+                }
+            `);
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            await runMigrations(withIndexProject);
+            await runMigrations(withoutIndexProject);
+
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(
+                withoutIndexProject.getModel(),
+            );
+            expect(migrations).toHaveLength(0);
+        });
+
+        // -----------------------------------------------------------------------
+        // Recovery: both A and B slots present (aborted recreation)
+        // -----------------------------------------------------------------------
+
+        it('schedules DropIndexMigration for B when both A and B are present (stuck recreation)', async () => {
+            const project = buildVectorProject({ nLists: 1 });
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            // Create the normal slot-A index
+            await runMigrations(project);
+
+            // Simulate a stuck recreation by manually creating slot B directly in ArangoDB
+            await ensureSlotIndex(db, 'b', 'cosine');
+
+            // Now the analyzer should detect the stuck state and produce exactly one DropIndexMigration for B
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(project.getModel());
+            expect(migrations).toHaveLength(1);
+            const [m] = migrations;
+            expect(m).toBeInstanceOf(DropIndexMigration);
+            if (m instanceof DropIndexMigration) {
+                expect(m.index.name).toEqual(vectorIndexSlotName('embedding', 'b'));
+            }
+        });
+
+        it('finds the DropIndex migration for B, runs it, and confirms B is gone', async () => {
+            const project = buildVectorProject({ nLists: 1 });
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            // Step 1: run migrations – slot A is created, system is stable
+            await runMigrations(project);
+
+            // Step 2: manually inject a slot B index to simulate an aborted recreation
+            await ensureSlotIndex(db, 'b', 'cosine');
+
+            // Verify both slots are present before cleanup
+            const beforeVector = await getVectorIndexes(db);
+            expect(beforeVector).toHaveLength(2);
+
+            // Step 3: the analyzer must find exactly one DropIndexMigration targeting slot B
+            const analyzer = makeAnalyzer();
+            const performer = makePerformer();
+            const migrations = await analyzer.getVectorIndexMigrations(project.getModel());
+            expect(migrations).toHaveLength(1);
+            const [drop] = migrations;
+            expect(drop).toBeInstanceOf(DropIndexMigration);
+            expect((drop as DropIndexMigration).index.name).toEqual(
+                vectorIndexSlotName('embedding', 'b'),
+            );
+
+            // Step 4: run that specific migration explicitly
+            await performer.performMigration(drop);
+
+            // Step 5: verify slot B is gone and slot A still exists
+            const afterVector = await getVectorIndexes(db);
+            expect(afterVector).toHaveLength(1);
+            expect(afterVector[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
+
+            // Step 6: no further migrations needed
+            const remaining = await analyzer.getVectorIndexMigrations(project.getModel());
+            expect(remaining).toHaveLength(0);
+        });
+
+        it('is stable after recovering from a stuck recreation (drop B, keep A)', async () => {
+            const project = buildVectorProject({ nLists: 1 });
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            await runMigrations(project);
+
+            // Simulate stuck state: inject a B index
+            await ensureSlotIndex(db, 'b', 'cosine');
+
+            // Perform the cleanup migration
+            await runMigrations(project);
+
+            // Only A should remain
+            const indexes = await db.collection('articles').indexes();
+            const vectorIndexes = indexes.filter((i: any) => i.type === 'vector');
+            expect(vectorIndexes).toHaveLength(1);
+            expect(vectorIndexes[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
+
+            // And the system should now be fully stable
+            const analyzer = makeAnalyzer();
+            const remaining = await analyzer.getVectorIndexMigrations(project.getModel());
+            expect(remaining).toHaveLength(0);
+        });
+
+        it('when B matches the required params and A does not, drops A and keeps B', async () => {
+            // Scenario: recreation completed (B=L2 was built, ready), but the final "drop A" step
+            // was interrupted. The analyzer should recognize B as the correct slot and drop A.
+            const cosineProject = buildVectorProject({ nLists: 1 });
+            const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
+            const db = getTempDatabase();
+            await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
+
+            // A = COSINE (stale)
+            await runMigrations(cosineProject);
+            // B = L2 (correct new index; drop of A was interrupted).
+            // Explicit sparse=true to match the model's default sparse value.
+            await ensureSlotIndex(db, 'b', 'l2', 4, 1, true);
+
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(l2Project.getModel());
+            expect(migrations).toHaveLength(1);
+            expect(migrations[0]).toBeInstanceOf(DropIndexMigration);
+            expect((migrations[0] as DropIndexMigration).index.name).toEqual(
+                vectorIndexSlotName('embedding', 'a'),
+            );
+        });
+
+        it('drops A (stale) and keeps B (correct L2) — no spurious recreate needed', async () => {
+            // Both A (COSINE) and B (L2) exist, model requires L2.
+            // B already has the correct params → drop A, keep B. No recreation required.
+            const cosineProject = buildVectorProject({ nLists: 1 });
+            const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            // Slot A has COSINE
+            await runMigrations(cosineProject);
+
+            // Simulate a stuck recreation where B was created with L2 but A was not yet dropped.
+            // Explicit sparse=true to match the model's default sparse value.
+            await ensureSlotIndex(db, 'b', 'l2', 4, 1, true);
+
+            // The model now wants L2, both A (COSINE) and B (L2, sparse=true) exist.
+            // B matches → drop A, keep B. No recreate migration is generated.
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(l2Project.getModel());
+            const dropMigrations = migrations.filter((m) => m instanceof DropIndexMigration);
+            const recreateMigrations = migrations.filter(
+                (m) => m instanceof RecreateVectorIndexMigration,
+            );
+            // Drop the stale A slot
+            expect(dropMigrations).toHaveLength(1);
+            expect((dropMigrations[0] as DropIndexMigration).index.name).toEqual(
+                vectorIndexSlotName('embedding', 'a'),
+            );
+            // B is already correct — no recreation needed
+            expect(recreateMigrations).toHaveLength(0);
+        });
+
+        it('after recovery (drop A, keep B), system is stable in a single run', async () => {
+            const cosineProject = buildVectorProject({ nLists: 1 });
+            const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            const analyzer = makeAnalyzer();
+
+            // Slot A has COSINE
+            await runMigrations(cosineProject);
+
+            // Inject stuck B (L2, sparse=true) — B is the correct new index; drop of A was interrupted
+            await ensureSlotIndex(db, 'b', 'l2', 4, 1, true);
+
+            // Single run: drop A (stale COSINE), keep B (correct L2)
+            await runMigrations(l2Project);
+
+            const indexes = await db.collection('articles').indexes();
+            const vectorIndexes = indexes.filter((i: any) => i.type === 'vector');
+            expect(vectorIndexes).toHaveLength(1);
+            expect(vectorIndexes[0].name).toEqual(vectorIndexSlotName('embedding', 'b'));
+            expect((vectorIndexes[0] as VectorIndexDescription).params?.metric).toEqual('l2');
+
+            // System is stable after a single run
+            const remaining = await analyzer.getVectorIndexMigrations(l2Project.getModel());
+            expect(remaining).toHaveLength(0);
+        });
+
+        it('when neither A nor B matches required, drops B and schedules recreation of A', async () => {
+            // Scenario: both slots exist with the wrong metric; model now requires L2.
+            // The stuck-slot detection falls into the "else" branch (B doesn't match, A doesn't
+            // match either) → drop B. Then the main loop sees A (COSINE) for an L2 model and
+            // schedules RecreateVectorIndexMigration(A → slot B).
+            const cosineProject = buildVectorProject({ nLists: 1 });
+            const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            // Create slot A with COSINE
+            await runMigrations(cosineProject);
+            // Inject slot B also with COSINE (both slots stale for L2 model)
+            await ensureSlotIndex(db, 'b', 'cosine', 4, 1);
+
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(l2Project.getModel());
+            const dropMigrations = migrations.filter((m) => m instanceof DropIndexMigration);
+            const recreateMigrations = migrations.filter(
+                (m) => m instanceof RecreateVectorIndexMigration,
+            );
+            // Stuck B (COSINE) is dropped by the stuck-slot handler
+            expect(dropMigrations).toHaveLength(1);
+            expect((dropMigrations[0] as DropIndexMigration).index.name).toEqual(
+                vectorIndexSlotName('embedding', 'b'),
+            );
+            // A (COSINE) is scheduled for recreation to become L2
+            expect(recreateMigrations).toHaveLength(1);
+            const recreate = recreateMigrations[0] as RecreateVectorIndexMigration;
+            expect(recreate.existingIndex.name).toEqual(vectorIndexSlotName('embedding', 'a'));
+            expect(recreate.requiredIndex.params.metric).toEqual('l2');
+        });
+
+        it('drops both A and B when the vector index field is removed from the model', async () => {
+            // Scenario: a previous recreation was aborted, leaving both A and B in the database.
+            // The model is then updated to remove the vector index entirely.
+            // Expected: the stuck-slot handler drops B (since !resolved), and the regular drop
+            // loop removes A (it is no longer required by the model).
+            const cosineProject = buildVectorProject({ nLists: 1 });
+            const withoutIndexProject = buildProject(gql`
+                type Article @rootEntity {
+                    embedding: [Float]
+                }
+            `);
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            // Create slot A
+            await runMigrations(cosineProject);
+            // Inject slot B to simulate stuck state
+            await ensureSlotIndex(db, 'b', 'cosine', 4, 1);
+
+            // With the vector index removed from the model, both slots should be dropped
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(
+                withoutIndexProject.getModel(),
+            );
+            const dropMigrations = migrations.filter((m) => m instanceof DropIndexMigration);
+            expect(dropMigrations).toHaveLength(2);
+            const droppedNames = dropMigrations.map((m) => (m as DropIndexMigration).index.name);
+            expect(droppedNames).toContain(vectorIndexSlotName('embedding', 'a'));
+            expect(droppedNames).toContain(vectorIndexSlotName('embedding', 'b'));
+        });
+
+        it('schedules recreation when storedValues change', async () => {
+            // storedValues changes require a full index rebuild because the co-located data
+            // (stored with each vector in the IVF index) must be rewritten.
+            const withoutStoredValues = buildProject(gql`
+                type Article @rootEntity {
+                    title: String
+                    embedding: [Float] @vectorIndex(dimension: 4, defaultNProbe: 10, maxNProbe: 50)
+                }
+            `);
+            const withStoredValues = buildProject(gql`
+                type Article @rootEntity {
+                    title: String
+                    embedding: [Float]
+                        @vectorIndex(
+                            dimension: 4
+                            defaultNProbe: 10
+                            maxNProbe: 50
+                            storedValues: ["title"]
+                        )
+                }
+            `);
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            // Create the initial index (no storedValues)
+            await runMigrations(withoutStoredValues);
+
+            const analyzer = makeAnalyzer();
+            const migrations = await analyzer.getVectorIndexMigrations(withStoredValues.getModel());
+            expect(migrations).toHaveLength(1);
+            expect(migrations[0]).toBeInstanceOf(RecreateVectorIndexMigration);
+        });
+
+        // -----------------------------------------------------------------------
+        // Performer: dropIndex handles already-gone index gracefully
+        // -----------------------------------------------------------------------
+
+        it('performer does not throw when dropping an already-removed index', async () => {
+            const project = buildVectorProject({ nLists: 1 });
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            const performer = makePerformer();
+            const model = project.getModel();
+
+            await runMigrations(project);
+
+            // Get the index id, then drop the index with the raw API to simulate concurrent removal
+            const indexes = await db.collection('articles').indexes();
+            const vectorIndex = indexes.find((i: any) => i.type === 'vector');
+            expect(vectorIndex).toBeDefined();
+            if (!vectorIndex) {
+                return; // type guard for TS
+            }
+            await db.collection('articles').dropIndex(vectorIndex.id);
+
+            // Now perform a DropIndexMigration for the already-gone index — should not throw
+            const dropMigration = new DropIndexMigration({
+                index: {
+                    id: vectorIndex.id,
+                    name: vectorIndex.name,
+                    collectionName: 'articles',
+                    fields: ['embedding'],
+                    sparse: false,
+                    type: 'vector' as const,
+                    params: { metric: 'cosine', dimension: 4, nLists: 1 },
+                    rootEntity: model.rootEntityTypes.find((r) => r.name === 'Article')!,
+                },
+            });
+
+            await expect(performer.performMigration(dropMigration)).resolves.not.toThrow();
+        });
+    },
+);
 
 function buildProject(document: DocumentNode): Project {
     return new Project({
