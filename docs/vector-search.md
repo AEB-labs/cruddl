@@ -17,9 +17,13 @@ Start with the smallest useful setup.
 type Product @rootEntity {
     id: ID
     title: String
-    textEmbedding: [Float] @vectorIndex(metric: COSINE, dimension: 768)
+    textEmbedding: [Float] @vectorIndex(dimension: 768, defaultNProbe: 20, maxNProbe: 100)
 }
 ```
+
+> **Note**: The `metric` parameter defaults to `COSINE`, which is the recommended choice for most
+> embedding models because it is invariant to vector magnitude and focuses on directional
+> similarity. You can omit it in most cases.
 
 ### Query
 
@@ -41,8 +45,7 @@ What this gives you:
 -   `first` for limiting result count.
 
 > **Note**: specifying `orderBy` in a vector query is a runtime error. Ordering is fully determined
-> by the metric (see section 4). For cursor-based pagination the usual stable tie-breaker rules
-> apply (the system appends a sort key such as `ID_ASC` to make cursors deterministic).
+> by the metric (see section 4).
 
 ## 2. Core proposal shape
 
@@ -53,15 +56,22 @@ Use `@vectorIndex` on a field to declare index parameters:
 ```graphql
 @vectorIndex(
   sparse: Boolean = true
-  metric: VectorSimilarityMetric!
+  metric: VectorSimilarityMetric  # optional; defaults to COSINE
   dimension: Int!
   nLists: Int           # optional; auto-computed from document count if omitted
-  defaultNProbe: Int = 1
+  defaultNProbe: Int!   # required; used as query-time default when nProbe is not specified
+  maxNProbe: Int!       # required; safety guard — queries exceeding this value are rejected
   trainingIterations: Int = 25
   factory: String
   storedValues: [String!]
 )
 ```
+
+> **Note on `defaultNProbe`**: unlike most index parameters, `defaultNProbe` is **not stored in** >
+> **the ArangoDB index**. Instead, cruddl passes it explicitly in the AQL query call every time a
+> vector search runs without an explicit `nProbe` argument. This means you can change
+> `defaultNProbe` in the schema and see the effect immediately on the next query — no index
+> recreation required.
 
 Field restriction in this proposal:
 
@@ -100,6 +110,10 @@ Threshold semantics are metric-dependent as well:
 -   For `INNER_PRODUCT`, values are unbounded and scale-sensitive (vector magnitudes affect the
     score), so thresholds are model-specific and not directly comparable to cosine thresholds.
 -   `maxDistance` applies to `L2` (distance metric).
+
+> **Note**: score-based filtering (`minScore`, `maxDistance`) requires ArangoDB to support FILTER on
+> the computed score variable within the vector query plan. This is subject to ArangoDB version
+> support; earlier versions may return a query-plan error for these arguments.
 
 This directly drives default ordering and valid threshold usage.
 
@@ -142,8 +156,9 @@ When one embedding is not enough (for example text vs image retrieval), define t
 type Product @rootEntity {
     id: ID
     title: String
-    textEmbedding: [Float] @vectorIndex(metric: COSINE, dimension: 768)
-    imageEmbedding: [Float] @vectorIndex(metric: L2, dimension: 512)
+    textEmbedding: [Float] @vectorIndex(dimension: 768, defaultNProbe: 20, maxNProbe: 100)
+    imageEmbedding: [Float]
+        @vectorIndex(metric: L2, dimension: 512, defaultNProbe: 20, maxNProbe: 100)
 }
 ```
 
@@ -192,7 +207,11 @@ Use these in `@vectorIndex` for quality/performance tradeoffs:
 -   `nLists` — optional. When omitted, auto-computed as `max(1, min(N, round(15 × sqrt(N))))` where
     `N` is the document count at index-creation time. Specify an explicit value to override the
     default, e.g. when you know your data distribution warrants more or fewer clusters.
--   `defaultNProbe`
+-   `defaultNProbe` — **required**. The default number of IVF clusters to probe at query time.
+    Typical values range from 10 to 50. Higher values improve recall but increase latency.
+-   `maxNProbe` — **required**. The maximum allowed `nProbe` value for queries on this index.
+    Queries specifying an `nProbe` greater than this limit will receive an error. This acts as a
+    safety guard against excessively expensive queries.
 -   `trainingIterations`
 -   `factory`
 -   `storedValues`
@@ -201,7 +220,9 @@ Use these in `@vectorIndex` for quality/performance tradeoffs:
 
 Use these in the vector search query (e.g. `vectorSearchProducts`) per request:
 
--   `nProbe`
+-   `nProbe` — overrides `defaultNProbe` for this query. Must not exceed `maxNProbe` (a runtime
+    error is returned if it does). When not specified, the index's `defaultNProbe` value from the
+    schema is used automatically.
 -   `minScore` for similarity metrics
 -   `maxDistance` for distance metrics
 -   `first`
@@ -302,3 +323,20 @@ explicit:
     rows than requested.
 -   Results are metric-dependent (`COSINE`/`INNER_PRODUCT` sort high-to-low, `L2` low-to-high), and
     using the wrong direction silently degrades nearest-neighbor quality.
+
+## 10. Training readiness and A/B index swapping
+
+When a vector index is recreated (e.g. due to nLists drift or parameter changes), cruddl uses an A/B
+slot scheme: the new index is built in the alternate slot while the old one remains active.
+
+**Training awareness** (ArangoDB 3.12.9+): ArangoDB reports a `trainingState` field on vector
+indexes. cruddl polls this field after creating a new index and only drops the old index once the
+new one reports `trainingState: "ready"`. This ensures:
+
+-   Queries are never routed to a still-training index.
+-   The old index remains available as a fallback during the entire training period.
+-   If both A and B slots exist (e.g. from an interrupted migration), the cleanup only removes B if
+    A is confirmed ready.
+
+On ArangoDB versions prior to 3.12.9, the `ensureIndex` call itself blocks until training is
+complete, so no polling is necessary.

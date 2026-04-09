@@ -1,12 +1,12 @@
 RETURN {
   "vectorSearchArticles": (
     FOR v_article1 IN @@articles
-    LET v_vectorScore1 = APPROX_NEAR_COSINE(v_article1.`embedding`, @var1)
+    LET v_vectorScore1 = APPROX_NEAR_COSINE(v_article1.`embedding`, @var1, { nProbe: @var2 })
     SORT v_vectorScore1 DESC
-    LIMIT @var2, @var3
+    LIMIT @var3, @var4
     RETURN {
       "title": v_article1.`title`,
-      @var4: v_vectorScore1
+      @var5: v_vectorScore1
     }
   )
 }

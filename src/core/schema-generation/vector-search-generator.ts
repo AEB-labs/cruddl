@@ -122,6 +122,18 @@ export class VectorSearchGenerator {
             );
         }
 
+        if (nProbe != null && vectorIndex.maxNProbe != null && nProbe > vectorIndex.maxNProbe) {
+            return new RuntimeErrorQueryNode(
+                `"nProbe" (${nProbe}) exceeds the maximum allowed value of ${vectorIndex.maxNProbe} for field "${selectedFieldName}"`,
+                { code: ARGUMENT_OUT_OF_RANGE_ERROR },
+            );
+        }
+
+        // Use the index's defaultNProbe when the caller does not specify nProbe explicitly.
+        // defaultNProbe is NOT stored in the ArangoDB index — it is always passed at query time
+        // so that changes to the schema value take effect immediately without index recreation.
+        const effectiveNProbe = nProbe ?? vectorIndex.defaultNProbe;
+
         const dimension = vectorIndex.dimension!;
         if (vector.length !== dimension) {
             return new RuntimeErrorQueryNode(
@@ -155,7 +167,7 @@ export class VectorSearchGenerator {
             rootEntityType,
             field: vectorIndex.field,
             vectorNode: new LiteralQueryNode(vector),
-            nProbe,
+            nProbe: effectiveNProbe,
             minScore,
             maxDistance,
             filterNode,

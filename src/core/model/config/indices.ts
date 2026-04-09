@@ -47,6 +47,9 @@ export interface VectorIndexDefinitionConfig {
     readonly defaultNProbe?: number;
     readonly defaultNProbeASTNode?: IntValueNode;
 
+    readonly maxNProbe?: number;
+    readonly maxNProbeASTNode?: IntValueNode;
+
     readonly trainingIterations?: number;
     readonly trainingIterationsASTNode?: IntValueNode;
 

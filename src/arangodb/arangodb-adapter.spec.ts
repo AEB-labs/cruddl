@@ -1,9 +1,10 @@
 import type { ArangoSearchViewProperties } from 'arangojs/views';
 import { gql } from 'graphql-tag';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { createTempDatabase, getTempDatabase } from '../testing/regression-tests/initialization.js';
 import { createSimpleModel } from '../testing/utils/create-simple-model.js';
 import { ArangoDBAdapter } from './arangodb-adapter.js';
+import { vectorIndexSlotName } from './schema-migration/index-helpers.js';
 import { isArangoDBDisabled } from './testing/is-arangodb-disabled.js';
 
 describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {
@@ -201,6 +202,91 @@ describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {
             expect(properties.commitIntervalMsec).to.equal(2000);
             expect(properties.consolidationIntervalMsec).to.equal(8000);
             expect(properties.cleanupIntervalStep).to.equal(1);
+        });
+    });
+
+    describe('recreateVectorIndex', () => {
+        let dbConfig: Awaited<ReturnType<typeof createTempDatabase>>;
+        beforeEach(async () => {
+            dbConfig = await createTempDatabase();
+        });
+
+        it('creates the index in slot A when no index exists', async () => {
+            const model = createSimpleModel(gql`
+                type Article @rootEntity {
+                    embedding: [Float]
+                        @vectorIndex(dimension: 4, nLists: 1, defaultNProbe: 10, maxNProbe: 50)
+                }
+            `);
+            const adapter = new ArangoDBAdapter(dbConfig);
+            const db = getTempDatabase();
+
+            await db.collection('articles').create({});
+            await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
+
+            const field = model.rootEntityTypes[0].fields.find((f) => f.name === 'embedding')!;
+            await adapter.recreateVectorIndex(field);
+
+            const indexes = await db.collection('articles').indexes();
+            const vectorIndexes = indexes.filter((i: any) => i.type === 'vector');
+            expect(vectorIndexes).toHaveLength(1);
+            expect(vectorIndexes[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
+        });
+
+        it('always recreates even when the existing index already matches (force rebuild)', async () => {
+            // This is the key differentiator of recreateVectorIndex: even if the existing
+            // index has matching params, it always rebuilds. Because ArangoDB deduplicates
+            // ensureIndex calls with identical params, the adapter drops and re-creates in
+            // slot A rather than using an A/B rotation.
+            const model = createSimpleModel(gql`
+                type Article @rootEntity {
+                    embedding: [Float]
+                        @vectorIndex(dimension: 4, nLists: 1, defaultNProbe: 10, maxNProbe: 50)
+                }
+            `);
+            const adapter = new ArangoDBAdapter(dbConfig);
+            const db = getTempDatabase();
+
+            await db.collection('articles').create({});
+            await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
+
+            const field = model.rootEntityTypes[0].fields.find((f) => f.name === 'embedding')!;
+
+            // First call: creates slot A
+            await adapter.recreateVectorIndex(field);
+
+            const afterFirst = await db.collection('articles').indexes();
+            const vectorAfterFirst = afterFirst.filter((i: any) => i.type === 'vector');
+            expect(vectorAfterFirst).toHaveLength(1);
+            expect(vectorAfterFirst[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
+
+            // Second call: drops the current index and rebuilds in slot A.
+            // ArangoDB's ensureIndex deduplication would return the existing index when params
+            // are identical, so a zero-downtime A/B rotation is not possible here. Instead we
+            // drop first and create fresh, ending up back in slot A.
+            await adapter.recreateVectorIndex(field);
+
+            const afterSecond = await db.collection('articles').indexes();
+            const vectorAfterSecond = afterSecond.filter((i: any) => i.type === 'vector');
+            expect(vectorAfterSecond).toHaveLength(1);
+            expect(vectorAfterSecond[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
+        });
+
+        it('throws when the collection has no documents', async () => {
+            const model = createSimpleModel(gql`
+                type Article @rootEntity {
+                    embedding: [Float]
+                        @vectorIndex(dimension: 4, nLists: 1, defaultNProbe: 10, maxNProbe: 50)
+                }
+            `);
+            const adapter = new ArangoDBAdapter(dbConfig);
+            const db = getTempDatabase();
+
+            await db.collection('articles').create({});
+            // No documents inserted — must throw
+
+            const field = model.rootEntityTypes[0].fields.find((f) => f.name === 'embedding')!;
+            await expect(adapter.recreateVectorIndex(field)).rejects.toThrow('has no documents');
         });
     });
 });

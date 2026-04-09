@@ -9,7 +9,8 @@ describe('index-helpers', () => {
         const model = createSimpleModel(gql`
             type Product @rootEntity {
                 key: String @key
-                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 768, nLists: 100)
+                embedding: [Float]
+                    @vectorIndex(dimension: 768, nLists: 100, defaultNProbe: 10, maxNProbe: 50)
                 code: String @index
             }
         `);
@@ -37,7 +38,8 @@ describe('index-helpers', () => {
     it('does not recreate vector index when it already has the correct name', () => {
         const model = createSimpleModel(gql`
             type Product @rootEntity {
-                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 3, nLists: 10)
+                embedding: [Float]
+                    @vectorIndex(dimension: 3, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
             }
         `);
 

@@ -8,6 +8,11 @@ export interface VectorIndexExistingInfo {
     readonly nLists: number;
     readonly metric: string;
     readonly dimension: number;
+    /**
+     * Training state reported by ArangoDB 3.12.9+.
+     * "ready" indicates the index has been fully trained and is usable.
+     */
+    readonly trainingState?: string;
 }
 
 export interface VectorIndexStatus {

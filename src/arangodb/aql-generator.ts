@@ -640,30 +640,39 @@ register(VectorSearchQueryNode, (node, context) => {
     // Compute similarity/distance score
     parts.push(aql`LET ${scoreVar} = ${approxCall}`);
 
-    // Sort by score (DESC for similarity, ASC for distance)
+    // Sort by score (DESC for similarity metrics, ASC for distance metrics)
     if (sortDesc) {
         parts.push(aql`SORT ${scoreVar} DESC`);
     } else {
         parts.push(aql`SORT ${scoreVar}`);
     }
 
-    // Post-sort score/distance threshold filter
+    // maxCountNode is required because the vector search does not work without a LIMIT
+    const maxCount = processNode(node.maxCountNode, itemContext);
+    if (node.skipNode) {
+        const skip = processNode(node.skipNode, itemContext);
+        parts.push(aql`LIMIT ${skip}, ${maxCount}`);
+    } else {
+        parts.push(aql`LIMIT ${maxCount}`);
+    }
+
+    // Score threshold filter placed AFTER LIMIT.
+    //
+    // ArangoDB's query optimizer tries to push any FILTER on an APPROX_NEAR_* score variable
+    // into the EnumerateNearVector plan node, which it cannot do when the FILTER references
+    // the computed score variable (rather than a document field). Placing the FILTER after
+    // LIMIT side-steps this restriction: by then the result set has already been materialised
+    // and sorted, so ArangoDB treats it as a plain post-processing step.
+    //
+    // Semantics: conceptually this is a soft filter on the top-N candidates. Because the
+    // result is already sorted by score, any item that fails the threshold is genuinely
+    // outside the acceptable range for the caller — the response may therefore contain fewer
+    // than `first` items when some top-N candidates fall below `minScore` / above `maxDistance`.
     if (node.minScore != null) {
         parts.push(aql`FILTER ${scoreVar} >= ${aql.value(node.minScore)}`);
     }
     if (node.maxDistance != null) {
         parts.push(aql`FILTER ${scoreVar} <= ${aql.value(node.maxDistance)}`);
-    }
-
-    // Limit
-    if (node.maxCountNode) {
-        const maxCount = processNode(node.maxCountNode, itemContext);
-        if (node.skipNode) {
-            const skip = processNode(node.skipNode, itemContext);
-            parts.push(aql`LIMIT ${skip}, ${maxCount}`);
-        } else {
-            parts.push(aql`LIMIT ${maxCount}`);
-        }
     }
 
     // When the innerNode is an ObjectQueryNode we can inject the score directly as a property

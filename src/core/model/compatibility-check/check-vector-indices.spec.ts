@@ -12,12 +12,14 @@ describe('checkModel', () => {
             const result = runCheck(
                 gql`
                     type Test @rootEntity @modules(in: "module1", includeAllFields: true) {
-                        embedding: [Float] @vectorIndex(metric: COSINE, dimension: 3, nLists: 10)
+                        embedding: [Float]
+                            @vectorIndex(dimension: 3, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
                     }
                 `,
                 gql`
                     type Test @rootEntity {
-                        embedding: [Float] @vectorIndex(metric: COSINE, dimension: 3, nLists: 10)
+                        embedding: [Float]
+                            @vectorIndex(dimension: 3, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
                     }
                 `,
             );
@@ -35,6 +37,7 @@ describe('checkModel', () => {
                                 nLists: 100
                                 sparse: false
                                 defaultNProbe: 5
+                                maxNProbe: 100
                                 trainingIterations: 30
                                 factory: "IVF100,Flat"
                                 storedValues: ["tenantId", "category.code"]
@@ -56,6 +59,7 @@ describe('checkModel', () => {
                                 nLists: 100
                                 sparse: false
                                 defaultNProbe: 5
+                                maxNProbe: 100
                                 trainingIterations: 30
                                 factory: "IVF100,Flat"
                                 storedValues: ["tenantId", "category.code"]
@@ -76,7 +80,8 @@ describe('checkModel', () => {
             const result = runCheck(
                 gql`
                     type Test @rootEntity @modules(in: "module1", includeAllFields: true) {
-                        embedding: [Float] @vectorIndex(metric: COSINE, dimension: 3, nLists: 10)
+                        embedding: [Float]
+                            @vectorIndex(dimension: 3, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
                     }
                 `,
                 gql`
@@ -87,7 +92,7 @@ describe('checkModel', () => {
             );
             expectSingleCompatibilityIssue(
                 result,
-                'The vector index is missing: @vectorIndex(metric: COSINE, dimension: 3, nLists: 10, sparse: true) on field "embedding"',
+                'The vector index is missing: @vectorIndex(metric: COSINE, dimension: 3, nLists: 10, sparse: true, defaultNProbe: 10, maxNProbe: 50) on field "embedding"',
             );
         });
 
@@ -95,18 +100,26 @@ describe('checkModel', () => {
             const result = runCheck(
                 gql`
                     type Test @rootEntity @modules(in: "module1", includeAllFields: true) {
-                        embedding: [Float] @vectorIndex(metric: COSINE, dimension: 3, nLists: 10)
+                        embedding: [Float]
+                            @vectorIndex(dimension: 3, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
                     }
                 `,
                 gql`
                     type Test @rootEntity {
-                        embedding: [Float] @vectorIndex(metric: L2, dimension: 3, nLists: 10)
+                        embedding: [Float]
+                            @vectorIndex(
+                                metric: L2
+                                dimension: 3
+                                nLists: 10
+                                defaultNProbe: 10
+                                maxNProbe: 50
+                            )
                     }
                 `,
             );
             expectSingleCompatibilityIssue(
                 result,
-                'The vector index has wrong parameters, should be: @vectorIndex(metric: COSINE, dimension: 3, nLists: 10, sparse: true) on field "embedding"',
+                'The vector index has wrong parameters, should be: @vectorIndex(metric: COSINE, dimension: 3, nLists: 10, sparse: true, defaultNProbe: 10, maxNProbe: 50) on field "embedding"',
             );
         });
     });

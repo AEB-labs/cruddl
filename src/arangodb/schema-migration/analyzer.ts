@@ -23,10 +23,7 @@ import {
 import type { IndexDefinition, VectorIndexDefinition } from './index-helpers.js';
 import {
     calculateRequiredIndexOperations,
-    computeAutoNLists,
     getRequiredIndicesFromModel,
-    getVectorIndexSlot,
-    nListsDriftExceedsThreshold,
     vectorIndexMatchesByField,
 } from './index-helpers.js';
 import type { CreateArangoSearchAnalyzerMigrationConfig, SchemaMigration } from './migrations.js';
@@ -40,6 +37,10 @@ import {
     RecreateVectorIndexMigration,
     UpdateArangoSearchAnalyzerMigration,
 } from './migrations.js';
+import {
+    planVectorIndexMigrationsForField,
+    resolveRequiredVectorIndex,
+} from './vector-index-migration-planner.js';
 
 export class SchemaAnalyzer {
     private readonly db: Database;
@@ -217,9 +218,6 @@ export class SchemaAnalyzer {
         );
 
         // Fetch document counts for all collections that have vector indexes.
-        // For sparse indexes the count should ideally reflect only documents where the field
-        // is not null, but we use the total collection count here as an approximation.
-        // See collectDocumentCount() for the sparse-aware variant.
         const collectionSizes = new Map<string, number>();
         for (const index of requiredVectorIndices) {
             if (!collectionSizes.has(index.collectionName)) {
@@ -236,94 +234,52 @@ export class SchemaAnalyzer {
             CreateVectorIndexMigration | RecreateVectorIndexMigration | DropIndexMigration
         > = [];
 
-        // Detect "stuck" A/B state: both slot-A and slot-B of the same vector index exist,
-        // meaning a previous recreation was interrupted after the new index was built but before
-        // the old one was dropped.  We clean up by dropping the B-slot copy so the next run
-        // starts from a clean single-slot state.
-        const vectorIndexesByField = new Map<string, VectorIndexDefinition[]>();
-        for (const idx of existingVectorIndices) {
-            const key = `${idx.collectionName}/${idx.fields[0]}`;
-            const list = vectorIndexesByField.get(key);
-            if (list) {
-                list.push(idx);
-            } else {
-                vectorIndexesByField.set(key, [idx]);
-            }
-        }
-        const stuckBSlotIndices = new Set<VectorIndexDefinition>();
-        for (const [, group] of vectorIndexesByField) {
-            if (group.length >= 2) {
-                const bIndex = group.find(
-                    (idx) => idx.name != null && getVectorIndexSlot(idx.name) === 'b',
-                );
-                if (bIndex) {
-                    stuckBSlotIndices.add(bIndex);
-                    migrations.push(
-                        new DropIndexMigration({
-                            index: bIndex,
-                            collectionSize: collectionSizes.get(bIndex.collectionName),
-                        }),
-                    );
-                }
-            }
-        }
-
-        // From here on, exclude stuck B-slot indexes from further analysis so we don't
-        // generate spurious "create" or "recreate" migrations alongside the cleanup drops.
-        const activeExistingVectorIndices = existingVectorIndices.filter(
-            (idx) => !stuckBSlotIndices.has(idx),
-        );
+        // Per-field migration planning: stuck-slot cleanup + create/recreate.
+        const stuckDroppedIndices = new Set<VectorIndexDefinition>();
 
         for (const required of requiredVectorIndices) {
             const docCount = collectionSizes.get(required.collectionName) ?? 0;
-            const existing = activeExistingVectorIndices.find((ex) =>
+            const { resolvedRequired, nListsPinned } = resolveRequiredVectorIndex(
+                required,
+                docCount,
+            );
+
+            const existingForField = existingVectorIndices.filter((ex) =>
                 vectorIndexMatchesByField(ex, required),
             );
 
-            // Resolve nLists: use the explicit pinned value from the model, or auto-compute from
-            // the current document count. The auto-computed value is max(1, min(N, 15×√N)).
-            const resolvedNLists = required.params.nLists ?? computeAutoNLists(docCount);
-            const nListsPinned = required.params.nLists != null;
-
-            const resolvedRequired: VectorIndexDefinition = {
-                ...required,
-                params: { ...required.params, nLists: resolvedNLists },
-            };
-
-            if (!existing) {
-                if (docCount === 0) {
-                    // The collection is empty — skip for now. ArangoDB cannot train IVF clusters
-                    // on an empty collection. The migration will be generated once documents exist
-                    // (on the next analysis run or after a manual "refresh migrations" in the UI).
-                    continue;
-                }
-                migrations.push(
-                    new CreateVectorIndexMigration({
-                        requiredIndex: resolvedRequired,
-                        collectionSize: docCount,
-                    }),
-                );
-            } else {
-                const needsRecreate = this.vectorIndexNeedsRecreation(
-                    existing,
-                    resolvedRequired,
+            const fieldMigrations = await planVectorIndexMigrationsForField(
+                existingForField,
+                resolvedRequired,
+                docCount,
+                {
                     nListsPinned,
-                );
-                if (needsRecreate) {
-                    migrations.push(
-                        new RecreateVectorIndexMigration({
-                            existingIndex: existing,
-                            requiredIndex: resolvedRequired,
-                            collectionSize: docCount,
-                        }),
-                    );
+                    nListsRebuildThreshold: this.config.vectorIndexNListsRebuildThreshold,
+                    stuckSlotWaitMs: this.config.vectorIndexStuckSlotWaitMs,
+                    refreshIndicesForStuckCheck: async () => {
+                        const refreshed = await this.getCollectionIndices(required.rootEntity);
+                        return refreshed.filter(
+                            (i): i is VectorIndexDefinition =>
+                                i.type === 'vector' && vectorIndexMatchesByField(i, required),
+                        );
+                    },
+                },
+            );
+
+            for (const m of fieldMigrations) {
+                migrations.push(m);
+                if (m instanceof DropIndexMigration) {
+                    stuckDroppedIndices.add(m.index as VectorIndexDefinition);
                 }
             }
         }
 
         // Drop existing vector indexes that are no longer required by the model.
-        // Note: stuck B-slot indexes are already handled above; only active ones are checked here.
-        for (const existing of activeExistingVectorIndices) {
+        // Stuck-slot drops are already scheduled above; exclude them from this loop.
+        for (const existing of existingVectorIndices) {
+            if (stuckDroppedIndices.has(existing)) {
+                continue;
+            }
             const stillRequired = requiredVectorIndices.some((req) =>
                 vectorIndexMatchesByField(existing, req),
             );
@@ -365,68 +321,6 @@ export class SchemaAnalyzer {
         );
         const rows = await cursor.all();
         return (rows[0] as number) ?? 0;
-    }
-
-    /**
-     * Determines whether an existing vector index must be recreated because its configuration has
-     * diverged from what the model requires.
-     *
-     * ### What triggers recreation
-     * - **Metric change**: switching between COSINE, L2, and INNER_PRODUCT changes the distance
-     *   function and invalidates the trained clusters — a rebuild is mandatory.
-     * - **Dimension change**: the embedding dimensionality affects the cluster centroids — a
-     *   rebuild is mandatory.
-     * - **Sparseness change**: controls whether null-embedding documents are indexed.
-     * - **storedValues change**: changes which extra fields are co-located with the index for
-     *   efficient pre-filtering.
-     * - **nLists changes (pinned)**: when an explicit `nLists` is set in the model and it differs
-     *   from the current index, the index is rebuilt to match.
-     * - **nLists drift (auto-computed)**: when `nLists` is not pinned, the value is re-computed
-     *   from the current document count. If the computed value differs from the existing index by
-     *   more than `vectorIndexNListsRebuildThreshold` (e.g. 0.25 = 25 %), a rebuild is scheduled.
-     *   Without a configured threshold, nLists drift alone never triggers a rebuild.
-     */
-    private vectorIndexNeedsRecreation(
-        existing: VectorIndexDefinition,
-        required: VectorIndexDefinition,
-        nListsPinned: boolean,
-    ): boolean {
-        // Core parameter changes always require a full rebuild
-        if (
-            existing.params.metric !== required.params.metric ||
-            existing.params.dimension !== required.params.dimension ||
-            existing.sparse !== required.sparse
-        ) {
-            return true;
-        }
-
-        // storedValues changes require a rebuild
-        if ((existing.storedValues ?? []).join('|') !== (required.storedValues ?? []).join('|')) {
-            return true;
-        }
-
-        // nLists checks — only relevant when both existing and resolved nLists are known
-        if (existing.params.nLists != null && required.params.nLists != null) {
-            if (nListsPinned) {
-                // Explicit nLists in the model: rebuild whenever the value differs
-                return existing.params.nLists !== required.params.nLists;
-            } else {
-                // Auto-computed nLists: rebuild only when drift exceeds the configured threshold.
-                // If no threshold is configured, nLists drift never triggers an automatic rebuild —
-                // operators can trigger a manual rebuild via recreateVectorIndex().
-                const threshold = this.config.vectorIndexNListsRebuildThreshold;
-                if (threshold == null) {
-                    return false;
-                }
-                return nListsDriftExceedsThreshold(
-                    existing.params.nLists,
-                    required.params.nLists,
-                    threshold,
-                );
-            }
-        }
-
-        return false;
     }
 
     async getCollectionIndices(

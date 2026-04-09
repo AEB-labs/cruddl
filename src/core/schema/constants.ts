@@ -179,6 +179,7 @@ export const VECTOR_INDEX_METRIC_ARG = 'metric';
 export const VECTOR_INDEX_DIMENSION_ARG = 'dimension';
 export const VECTOR_INDEX_N_LISTS_ARG = 'nLists';
 export const VECTOR_INDEX_DEFAULT_N_PROBE_ARG = 'defaultNProbe';
+export const VECTOR_INDEX_MAX_N_PROBE_ARG = 'maxNProbe';
 export const VECTOR_INDEX_TRAINING_ITERATIONS_ARG = 'trainingIterations';
 export const VECTOR_INDEX_FACTORY_ARG = 'factory';
 export const VECTOR_INDEX_STORED_VALUES_ARG = 'storedValues';

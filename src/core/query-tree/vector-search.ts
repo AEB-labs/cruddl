@@ -36,7 +36,7 @@ export interface VectorSearchQueryNodeParams {
     readonly itemVariable?: VariableQueryNode;
     readonly innerNode?: QueryNode;
     readonly skipNode?: QueryNode;
-    readonly maxCountNode?: QueryNode;
+    readonly maxCountNode: QueryNode;
 }
 
 export class VectorSearchQueryNode extends QueryNode {
@@ -56,7 +56,7 @@ export class VectorSearchQueryNode extends QueryNode {
     public readonly innerNode: QueryNode;
     /** Optional offset: number of results to skip before returning (offset in LIMIT skip, count). */
     public readonly skipNode: QueryNode | undefined;
-    public readonly maxCountNode: QueryNode | undefined;
+    public readonly maxCountNode: QueryNode;
 
     constructor(params: VectorSearchQueryNodeParams) {
         super();

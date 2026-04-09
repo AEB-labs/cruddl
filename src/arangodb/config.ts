@@ -99,6 +99,35 @@ export interface ArangoDBConfig {
      * If not set, nLists drift never triggers an automatic rebuild.
      */
     readonly vectorIndexNListsRebuildThreshold?: number;
+
+    /**
+     * Maximum time in milliseconds to wait for a vector index to finish training before the
+     * migration is considered failed.
+     *
+     * ArangoDB reports a `trainingState` field on vector indexes (3.12.9+). After `ensureIndex`
+     * returns, cruddl polls this field until the index reports `"ready"`. If the index does not
+     * become ready within the configured timeout, the migration throws.
+     *
+     * On ArangoDB versions prior to 3.12.9, `ensureIndex` blocks until training is complete, so
+     * this timeout is not relevant.
+     *
+     * Defaults to 600 000 ms (10 minutes).
+     */
+    readonly vectorIndexTrainingTimeoutMs?: number;
+
+    /**
+     * Time in milliseconds to wait before resolving the ambiguous "both A and B slots exist with
+     * identical params" state during stuck-slot cleanup.
+     *
+     * When both the A and B vector index slots for a field are present simultaneously and both
+     * match the model's requirements, cruddl assumes a parallel migration process just finished
+     * and is about to drop A. A brief wait lets that process complete so that cruddl doesn't
+     * intervene unnecessarily. After the wait, cruddl re-checks the state and drops B
+     * conservatively if both slots still exist.
+     *
+     * Defaults to 5 000 ms (5 seconds). Set to 0 in tests.
+     */
+    readonly vectorIndexStuckSlotWaitMs?: number;
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {

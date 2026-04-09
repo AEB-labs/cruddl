@@ -69,6 +69,7 @@ import {
     VECTOR_INDEX_DIMENSION_ARG,
     VECTOR_INDEX_DIRECTIVE,
     VECTOR_INDEX_FACTORY_ARG,
+    VECTOR_INDEX_MAX_N_PROBE_ARG,
     VECTOR_INDEX_METRIC_ARG,
     VECTOR_INDEX_N_LISTS_ARG,
     VECTOR_INDEX_STORED_VALUES_ARG,
@@ -869,6 +870,7 @@ function createVectorIndexDefinitionInput(
         dimension?: number;
         nLists?: number;
         defaultNProbe?: number;
+        maxNProbe?: number;
         trainingIterations?: number;
         factory?: string;
         storedValues?: ReadonlyArray<string>;
@@ -889,6 +891,10 @@ function createVectorIndexDefinitionInput(
     const defaultNProbeArgValue = getNodeByName(
         vectorIndexDirective.arguments,
         VECTOR_INDEX_DEFAULT_N_PROBE_ARG,
+    )?.value;
+    const maxNProbeArgValue = getNodeByName(
+        vectorIndexDirective.arguments,
+        VECTOR_INDEX_MAX_N_PROBE_ARG,
     )?.value;
     const trainingIterationsArgValue = getNodeByName(
         vectorIndexDirective.arguments,
@@ -924,6 +930,8 @@ function createVectorIndexDefinitionInput(
         defaultNProbe: mappedValues.defaultNProbe,
         defaultNProbeASTNode:
             defaultNProbeArgValue?.kind === Kind.INT ? defaultNProbeArgValue : undefined,
+        maxNProbe: mappedValues.maxNProbe,
+        maxNProbeASTNode: maxNProbeArgValue?.kind === Kind.INT ? maxNProbeArgValue : undefined,
         trainingIterations: mappedValues.trainingIterations,
         trainingIterationsASTNode:
             trainingIterationsArgValue?.kind === Kind.INT ? trainingIterationsArgValue : undefined,

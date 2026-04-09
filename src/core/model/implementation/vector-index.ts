@@ -11,6 +11,7 @@ export class VectorIndex implements ModelComponent {
     readonly dimension?: number;
     readonly nLists?: number;
     readonly defaultNProbe?: number;
+    readonly maxNProbe?: number;
     readonly trainingIterations?: number;
     readonly factory?: string;
     readonly storedValues: ReadonlyArray<string>;
@@ -26,6 +27,7 @@ export class VectorIndex implements ModelComponent {
         this.dimension = input.dimension;
         this.nLists = input.nLists;
         this.defaultNProbe = input.defaultNProbe;
+        this.maxNProbe = input.maxNProbe;
         this.trainingIterations = input.trainingIterations;
         this.factory = input.factory;
         this.storedValues = input.storedValues ?? [];
@@ -73,10 +75,34 @@ export class VectorIndex implements ModelComponent {
             );
         }
 
-        if (this.defaultNProbe != undefined && this.defaultNProbe < 1) {
+        if (this.defaultNProbe == undefined || this.defaultNProbe < 1) {
             context.addMessage(
                 ValidationMessage.error(
-                    `defaultNProbe must be positive if specified.`,
+                    `A vector index must specify a positive defaultNProbe value.`,
+                    this.input.defaultNProbeASTNode ?? this.astNode,
+                ),
+            );
+        }
+
+        if (this.maxNProbe == undefined || this.maxNProbe < 1) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `A vector index must specify a positive maxNProbe value.`,
+                    this.input.maxNProbeASTNode ?? this.astNode,
+                ),
+            );
+        }
+
+        if (
+            this.defaultNProbe != undefined &&
+            this.defaultNProbe >= 1 &&
+            this.maxNProbe != undefined &&
+            this.maxNProbe >= 1 &&
+            this.defaultNProbe > this.maxNProbe
+        ) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `defaultNProbe (${this.defaultNProbe}) must not exceed maxNProbe (${this.maxNProbe}).`,
                     this.input.defaultNProbeASTNode ?? this.astNode,
                 ),
             );

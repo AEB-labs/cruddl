@@ -114,7 +114,8 @@ describe('createModel', () => {
     it('translates vector indices declared on a field', () => {
         const document: DocumentNode = gql`
             type Test @rootEntity {
-                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 768, nLists: 100)
+                embedding: [Float]
+                    @vectorIndex(dimension: 768, nLists: 100, defaultNProbe: 10, maxNProbe: 50)
             }
         `;
 
@@ -136,7 +137,8 @@ describe('createModel', () => {
     it('rejects vector indices on non-list fields', () => {
         const document: DocumentNode = gql`
             type Test @rootEntity {
-                embedding: Float @vectorIndex(metric: COSINE, dimension: 3, nLists: 10)
+                embedding: Float
+                    @vectorIndex(dimension: 3, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
             }
         `;
 

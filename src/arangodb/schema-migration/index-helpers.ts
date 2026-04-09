@@ -47,11 +47,16 @@ export interface VectorIndexDefinition {
         readonly metric: ArangoVectorSimilarityMetric;
         readonly dimension: number;
         readonly nLists?: number;
-        readonly defaultNProbe?: number;
         readonly trainingIterations?: number;
         readonly factory?: string;
     };
     readonly storedValues?: ReadonlyArray<string>;
+    /**
+     * Training state reported by ArangoDB 3.12.9+ for vector indexes.
+     * "ready" indicates the index has been fully trained and is usable.
+     * Only present when fetched from the database.
+     */
+    readonly trainingState?: string;
 }
 
 export type IndexDefinition = PersistentIndexDefinition | VectorIndexDefinition;
@@ -59,11 +64,15 @@ export type IndexDefinition = PersistentIndexDefinition | VectorIndexDefinition;
 export function describeIndex(index: IndexDefinition) {
     const indexTypePrefix = index.type === 'persistent' && index.unique ? 'unique ' : '';
     const sparsePrefix = index.sparse ? 'sparse ' : '';
+    const vectorSuffix =
+        index.type === 'vector'
+            ? ` (metric: ${index.params.metric}, dimension: ${index.params.dimension})`
+            : '';
     return `${indexTypePrefix}${sparsePrefix}${index.type} index${
         index.name ? ` "${index.name}"` : index.id ? ' ' + index.id : ''
     } on collection ${index.collectionName} on ${
         index.fields.length > 1 ? 'fields' : 'field'
-    } '${index.fields.join(',')}'`;
+    } '${index.fields.join(',')}'${vectorSuffix}`;
 }
 
 export function getIndexDescriptor(index: IndexDefinition) {
@@ -88,9 +97,6 @@ function getVectorIndexDescriptorAdditions(
         `metric:${index.params.metric}`,
         `dimension:${index.params.dimension}`,
         `nLists:${index.params.nLists}`,
-        index.params.defaultNProbe != undefined
-            ? `defaultNProbe:${index.params.defaultNProbe}`
-            : undefined,
         index.params.trainingIterations != undefined
             ? `trainingIterations:${index.params.trainingIterations}`
             : undefined,
@@ -122,10 +128,10 @@ function indexDefinitionsEqual(a: IndexDefinition, b: IndexDefinition) {
             a.params.metric === b.params.metric &&
             a.params.dimension === b.params.dimension &&
             a.params.nLists === b.params.nLists &&
-            a.params.defaultNProbe === b.params.defaultNProbe &&
             a.params.trainingIterations === b.params.trainingIterations &&
             a.params.factory === b.params.factory &&
-            (a.storedValues || []).join('|') === (b.storedValues || []).join('|')
+            [...(a.storedValues || [])].sort().join('|') ===
+                [...(b.storedValues || [])].sort().join('|')
         );
     }
 
@@ -163,7 +169,6 @@ function getIndicesForRootEntity(rootEntity: RootEntityType): ReadonlyArray<Inde
                 metric: mapMetricForArango(vectorIndex.metric),
                 dimension: vectorIndex.dimension || 1,
                 nLists: vectorIndex.nLists, // may be undefined (auto-computed)
-                defaultNProbe: vectorIndex.defaultNProbe,
                 trainingIterations: vectorIndex.trainingIterations,
                 factory: vectorIndex.factory,
             },

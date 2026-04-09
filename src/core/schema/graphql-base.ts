@@ -338,8 +338,13 @@ const directivesBase: DocumentNode = gql`
         """
         sparse: Boolean = true
 
-        "The similarity metric used for nearest-neighbor ranking."
-        metric: VectorSimilarityMetric!
+        """
+        The similarity metric used for nearest-neighbor ranking.
+
+        Defaults to COSINE, which is the recommended choice for most embedding models
+        because it is invariant to vector magnitude and focuses on directional similarity.
+        """
+        metric: VectorSimilarityMetric
 
         """
         Vector dimension (number of elements per embedding).
@@ -359,9 +364,20 @@ const directivesBase: DocumentNode = gql`
         """
         Default number of neighboring centroids to probe at query time.
 
-        Higher values usually improve recall but can increase query latency.
+        Higher values improve recall but increase query latency. Typical values
+        range from 10 to 50, but the optimal setting depends on your data
+        distribution, index size, and latency requirements.
         """
-        defaultNProbe: Int = 1
+        defaultNProbe: Int!
+
+        """
+        Maximum allowed nProbe value for queries on this index.
+
+        If a query specifies an nProbe value greater than maxNProbe, a runtime
+        error is returned. This acts as a safety guard against excessively
+        expensive queries.
+        """
+        maxNProbe: Int!
 
         """
         Number of training iterations for index building.

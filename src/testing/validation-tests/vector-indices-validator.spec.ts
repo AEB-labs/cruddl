@@ -8,7 +8,15 @@ describe('vector indices validator', () => {
     it('accepts a valid vector index on a root entity field', () => {
         assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity {
-                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10)
+                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
+            }
+        `);
+    });
+
+    it('accepts a vector index without metric (defaults to COSINE)', () => {
+        assertValidatorAcceptsAndDoesNotWarn(`
+            type Foo @rootEntity {
+                embedding: [Float] @vectorIndex(dimension: 128, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
             }
         `);
     });
@@ -17,7 +25,7 @@ describe('vector indices validator', () => {
         assertValidatorRejects(
             `
             type Foo @childEntity {
-                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10)
+                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
             }
         `,
             '@vectorIndex is only allowed in root entity fields.',
@@ -28,7 +36,7 @@ describe('vector indices validator', () => {
         assertValidatorRejects(
             `
             type Foo @valueObject {
-                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10)
+                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
             }
         `,
             '@vectorIndex is only allowed in root entity fields.',
@@ -39,7 +47,7 @@ describe('vector indices validator', () => {
         assertValidatorRejects(
             `
             type Foo @entityExtension {
-                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10)
+                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
             }
         `,
             '@vectorIndex is only allowed in root entity fields.',
@@ -50,7 +58,7 @@ describe('vector indices validator', () => {
         assertValidatorRejects(
             `
             type Foo @rootEntity {
-                embedding: Float @vectorIndex(metric: COSINE, dimension: 128, nLists: 10)
+                embedding: Float @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
             }
         `,
             'Vector indices can only be defined on list fields, but "Foo.embedding" is not a list field.',
@@ -61,7 +69,7 @@ describe('vector indices validator', () => {
         assertValidatorRejects(
             `
             type Foo @rootEntity {
-                embedding: [String!]! @vectorIndex(metric: COSINE, dimension: 128, nLists: 10)
+                embedding: [String!]! @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
             }
         `,
             'Vector indices can only be defined on fields of type "[Float]", but the type of "Foo.embedding" is "[String]".',
@@ -72,7 +80,7 @@ describe('vector indices validator', () => {
         assertValidatorRejects(
             `
             type Foo @rootEntity {
-                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 0, nLists: 10)
+                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 0, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
             }
         `,
             'A vector index must specify a positive dimension.',
@@ -83,10 +91,21 @@ describe('vector indices validator', () => {
         assertValidatorRejects(
             `
             type Foo @rootEntity {
-                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 0)
+                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 0, defaultNProbe: 10, maxNProbe: 50)
             }
         `,
             'A vector index must specify a positive nLists value.',
+        );
+    });
+
+    it('rejects vector index without defaultNProbe', () => {
+        assertValidatorRejects(
+            `
+            type Foo @rootEntity {
+                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, maxNProbe: 50)
+            }
+        `,
+            'Directive "@vectorIndex" argument "defaultNProbe" of type "Int!" is required, but it was not provided.',
         );
     });
 
@@ -94,10 +113,43 @@ describe('vector indices validator', () => {
         assertValidatorRejects(
             `
             type Foo @rootEntity {
-                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, defaultNProbe: 0)
+                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, defaultNProbe: 0, maxNProbe: 50)
             }
         `,
-            'defaultNProbe must be positive if specified.',
+            'A vector index must specify a positive defaultNProbe value.',
+        );
+    });
+
+    it('rejects vector index without maxNProbe', () => {
+        assertValidatorRejects(
+            `
+            type Foo @rootEntity {
+                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, defaultNProbe: 10)
+            }
+        `,
+            'Directive "@vectorIndex" argument "maxNProbe" of type "Int!" is required, but it was not provided.',
+        );
+    });
+
+    it('rejects vector index with non-positive maxNProbe', () => {
+        assertValidatorRejects(
+            `
+            type Foo @rootEntity {
+                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, defaultNProbe: 10, maxNProbe: 0)
+            }
+        `,
+            'A vector index must specify a positive maxNProbe value.',
+        );
+    });
+
+    it('rejects vector index where defaultNProbe exceeds maxNProbe', () => {
+        assertValidatorRejects(
+            `
+            type Foo @rootEntity {
+                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, defaultNProbe: 100, maxNProbe: 50)
+            }
+        `,
+            'defaultNProbe (100) must not exceed maxNProbe (50).',
         );
     });
 
@@ -105,7 +157,7 @@ describe('vector indices validator', () => {
         assertValidatorRejects(
             `
             type Foo @rootEntity {
-                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, trainingIterations: 0)
+                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, defaultNProbe: 10, maxNProbe: 50, trainingIterations: 0)
             }
         `,
             'trainingIterations must be positive if specified.',
@@ -120,7 +172,7 @@ describe('vector indices validator', () => {
         assertValidatorRejects(
             `
             type Foo @rootEntity {
-                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, storedValues: [${storedValues}])
+                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, defaultNProbe: 10, maxNProbe: 50, storedValues: [${storedValues}])
             }
         `,
             'storedValues must contain at most 32 entries.',
@@ -131,10 +183,43 @@ describe('vector indices validator', () => {
         assertValidatorRejects(
             `
             type Foo @rootEntity {
-                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, storedValues: ["tenantId"])
+                embedding: [Float] @vectorIndex(metric: COSINE, dimension: 128, nLists: 10, defaultNProbe: 10, maxNProbe: 50, storedValues: ["tenantId"])
             }
         `,
             'Type "Foo" does not have a field "tenantId".',
+        );
+    });
+
+    it('rejects storedValues path that crosses a root entity boundary', () => {
+        assertValidatorRejects(
+            `
+            type Foo @rootEntity {
+                embedding: [Float] @vectorIndex(dimension: 4, defaultNProbe: 10, maxNProbe: 50, storedValues: ["other"])
+                other: Bar
+            }
+            type Bar @rootEntity {
+                name: String
+            }
+        `,
+            [
+                'Field "Foo.other" resolves to a different root entity, but this path cannot traverse root entity boundaries.',
+                'Type "Bar" is a root entity type and cannot be embedded. Consider adding @reference or @relation.',
+            ],
+        );
+    });
+
+    it('rejects storedValues with a nonexistent nested path segment', () => {
+        assertValidatorRejects(
+            `
+            type Foo @rootEntity {
+                embedding: [Float] @vectorIndex(dimension: 4, defaultNProbe: 10, maxNProbe: 50, storedValues: ["category.missing"])
+                category: Category
+            }
+            type Category @entityExtension {
+                code: String
+            }
+        `,
+            'Type "Category" does not have a field "missing".',
         );
     });
 
@@ -148,6 +233,7 @@ describe('vector indices validator', () => {
                         dimension: 768
                         nLists: 100
                         defaultNProbe: 5
+                        maxNProbe: 100
                         trainingIterations: 30
                         factory: "IVF100,Flat"
                         storedValues: ["tenantId", "category.code"]

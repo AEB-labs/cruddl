@@ -50,6 +50,7 @@ function serializeVectorIndexConfig(index: VectorIndex) {
         dimension: index.dimension,
         nLists: index.nLists,
         defaultNProbe: index.defaultNProbe,
+        maxNProbe: index.maxNProbe,
         trainingIterations: index.trainingIterations,
         factory: index.factory,
         storedValues: index.storedValues,
@@ -63,6 +64,7 @@ function describeVectorIndex(index: VectorIndex): string {
         `nLists: ${index.nLists}`,
         `sparse: ${index.sparse}`,
         index.defaultNProbe != undefined ? `defaultNProbe: ${index.defaultNProbe}` : undefined,
+        index.maxNProbe != undefined ? `maxNProbe: ${index.maxNProbe}` : undefined,
         index.trainingIterations != undefined
             ? `trainingIterations: ${index.trainingIterations}`
             : undefined,

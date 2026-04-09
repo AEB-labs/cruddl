@@ -95,7 +95,7 @@ export class MigrationPerformer {
      * For first-time creation (`CreateVectorIndexMigration`), the index is always placed in
      * slot 'a'. For recreation (`RecreateVectorIndexMigration`), the new index is placed in the
      * slot opposite to the existing one (A/B alternation) for zero-downtime rebuilds, and the
-     * old index is dropped once the new one is ready.
+     * old index is dropped once the new one is fully trained and ready.
      */
     private async createOrRecreateVectorIndex(
         migration: CreateVectorIndexMigration | RecreateVectorIndexMigration,
@@ -122,7 +122,6 @@ export class MigrationPerformer {
                 metric: requiredIndex.params.metric,
                 dimension: requiredIndex.params.dimension,
                 nLists: requiredIndex.params.nLists,
-                defaultNProbe: requiredIndex.params.defaultNProbe,
                 trainingIterations: requiredIndex.params.trainingIterations,
                 factory: requiredIndex.params.factory,
             },
@@ -130,6 +129,14 @@ export class MigrationPerformer {
                 ? { storedValues: requiredIndex.storedValues.slice() }
                 : {}),
             inBackground: true,
+        });
+
+        // Wait for the new index to finish training before dropping the old one.
+        // ArangoDB's ensureIndex returns after the index is created, but vector index
+        // training may still be in progress. Querying the index before training is
+        // complete can return incorrect or empty results.
+        await this.waitForVectorIndexReady(collectionName, newName, {
+            timeoutMs: this.config.vectorIndexTrainingTimeoutMs,
         });
 
         // Drop the old index after the new one is available (recreation only)
@@ -142,6 +149,54 @@ export class MigrationPerformer {
                 }
                 throw e;
             }
+        }
+    }
+
+    /**
+     * Polls the ArangoDB index API until the vector index reports trainingState "ready".
+     *
+     * ArangoDB 3.12.9+ reports a `trainingState` field on vector indexes. While the
+     * index is still being trained, this field is set to a value other than "ready"
+     * (e.g. "training"). We poll at a fixed interval until the index reports "ready"
+     * or the timeout is exceeded.
+     *
+     * If the ArangoDB version does not report trainingState (pre-3.12.9), the method
+     * returns immediately — ensureIndex in those versions blocks until training completes.
+     */
+    async waitForVectorIndexReady(
+        collectionName: string,
+        indexName: string,
+        {
+            pollIntervalMs = 500,
+            timeoutMs = 600_000,
+        }: { pollIntervalMs?: number; timeoutMs?: number } = {},
+    ): Promise<void> {
+        const startTime = Date.now();
+
+        while (true) {
+            const indexes = await this.db.collection(collectionName).indexes();
+            const index = indexes.find((i: any) => i.name === indexName) as any;
+
+            if (!index) {
+                throw new Error(
+                    `Vector index "${indexName}" not found on collection "${collectionName}"`,
+                );
+            }
+
+            // trainingState is available from ArangoDB 3.12.9+
+            // If the field is not present, assume the index is ready (older versions
+            // block in ensureIndex until training is complete).
+            if (!('trainingState' in index) || index.trainingState === 'ready') {
+                return;
+            }
+
+            if (Date.now() - startTime > timeoutMs) {
+                throw new Error(
+                    `Vector index "${indexName}" on collection "${collectionName}" did not become ready within ${timeoutMs}ms (current state: ${index.trainingState})`,
+                );
+            }
+
+            await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
         }
     }
 
