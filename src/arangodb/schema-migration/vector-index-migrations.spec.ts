@@ -365,11 +365,13 @@ describe.skipIf(isArangoDBDisabled())(
             expect(remaining).toHaveLength(0);
         });
 
-        // TODO vector-todo same issue as with the test below
-        // also try to harmonize these tests if they actually test similar things.
-        it('when B matches the required params and A does not, drops A and keeps B', async () => {
-            // Scenario: recreation completed (B=L2 was built, ready), but the final "drop A" step
-            // was interrupted. The analyzer should recognize B as the correct slot and drop A.
+        // Covers the scenario where B was built with the correct params (L2) but the "drop A"
+        // step was interrupted, and accounts for an ArangoDB behavioral difference:
+        //   < 3.12.9 : ensureIndex() blocks until training is complete → B is ready immediately
+        //   ≥ 3.12.9 : ensureIndex() returns while training is still ongoing
+        // In both cases the final state after training must be: one DropIndexMigration for A,
+        // and no spurious RecreateVectorIndexMigration.
+        it('when B (correct, L2) matches but A (stale, COSINE) does not — drops A, no spurious recreate', async () => {
             const cosineProject = buildVectorProject({ nLists: 1 });
             const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
             const db = getTempDatabase();
@@ -378,56 +380,51 @@ describe.skipIf(isArangoDBDisabled())(
             // A = COSINE (stale)
             await runMigrations(cosineProject);
             // B = L2 (correct new index; drop of A was interrupted).
-            // Explicit sparse=true to match the model's default sparse value.
+            // ensureSlotIndex uses inBackground — on ArangoDB ≥3.12.9 B may still be training.
             await ensureSlotIndex(db, 'b', 'l2', 4, 1, true);
 
             const analyzer = makeAnalyzer();
-            const migrations = await analyzer.getVectorIndexMigrations(l2Project.getModel());
-            expect(migrations).toHaveLength(1);
-            expect(migrations[0]).toBeInstanceOf(DropIndexMigration);
-            expect((migrations[0] as DropIndexMigration).index.name).toEqual(
-                vectorIndexSlotName('embedding', 'a'),
-            );
-        });
+            const performer = makePerformer();
+            const bSlotName = vectorIndexSlotName('embedding', 'b');
 
-        // TODO vector-todo this test currently has two behaviors depending on arangodb version
-        // - < 3.12.9: ensureIndex() waited until the training was complete, so we have a Drop and no recreate (so what's currently writtin as assertions)
-        // - 3.12.9: ensureIndex() completes while training is still ongoing
-        // we should take the opportunity to test both in 3.12.9
-        // immediateliy after creation, verify that no migration is reported (it should wait until the training is complete)
-        //    (this behavior depends on the todo in vector-index-migration-planner)
-        // then we poll until the index is ready
-        // then we ensure that the Drop a migration is reported
+            // On ArangoDB ≥3.12.9 B may report trainingState != "ready" immediately after creation.
+            // The planner must NOT generate any create/recreate migrations during that window.
+            const indexesAfterEnsure = await db.collection('articles').indexes();
+            const bIndexAfterEnsure = indexesAfterEnsure.find(
+                (i: any) => i.name === bSlotName,
+            ) as any;
+            if (
+                bIndexAfterEnsure &&
+                'trainingState' in bIndexAfterEnsure &&
+                bIndexAfterEnsure.trainingState !== 'ready'
+            ) {
+                const migrationsDuringTraining = await analyzer.getVectorIndexMigrations(
+                    l2Project.getModel(),
+                );
+                // Planner returns early when B is still training — no create/recreate allowed
+                const spurious = migrationsDuringTraining.filter(
+                    (m) =>
+                        m instanceof RecreateVectorIndexMigration ||
+                        m instanceof CreateVectorIndexMigration,
+                );
+                expect(spurious).toHaveLength(0);
+            }
 
-        it('drops A (stale) and keeps B (correct L2) — no spurious recreate needed', async () => {
-            // Both A (COSINE) and B (L2) exist, model requires L2.
-            // B already has the correct params → drop A, keep B. No recreation required.
-            const cosineProject = buildVectorProject({ nLists: 1 });
-            const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
-            const db = getTempDatabase();
-            await seedArticles(db);
+            // Wait for B to finish training (no-op on ArangoDB <3.12.9 where ensureIndex blocks)
+            await performer.waitForVectorIndexReady('articles', bSlotName, {
+                pollIntervalMs: 100,
+            });
 
-            // Slot A has COSINE
-            await runMigrations(cosineProject);
-
-            // Simulate a stuck recreation where B was created with L2 but A was not yet dropped.
-            // Explicit sparse=true to match the model's default sparse value.
-            await ensureSlotIndex(db, 'b', 'l2', 4, 1, true);
-
-            // The model now wants L2, both A (COSINE) and B (L2, sparse=true) exist.
-            // B matches → drop A, keep B. No recreate migration is generated.
-            const analyzer = makeAnalyzer();
+            // B is now ready — planner identifies B as correct and schedules Drop A only
             const migrations = await analyzer.getVectorIndexMigrations(l2Project.getModel());
             const dropMigrations = migrations.filter((m) => m instanceof DropIndexMigration);
             const recreateMigrations = migrations.filter(
                 (m) => m instanceof RecreateVectorIndexMigration,
             );
-            // Drop the stale A slot
             expect(dropMigrations).toHaveLength(1);
             expect((dropMigrations[0] as DropIndexMigration).index.name).toEqual(
                 vectorIndexSlotName('embedding', 'a'),
             );
-            // B is already correct — no recreation needed
             expect(recreateMigrations).toHaveLength(0);
         });
 
@@ -444,6 +441,15 @@ describe.skipIf(isArangoDBDisabled())(
 
             // Inject stuck B (L2, sparse=true) — B is the correct new index; drop of A was interrupted
             await ensureSlotIndex(db, 'b', 'l2', 4, 1, true);
+
+            // Wait for B to be fully ready before asking the planner to act.
+            // On ArangoDB ≥3.12.9, ensureSlotIndex returns while training is still in progress.
+            const performer = makePerformer();
+            await performer.waitForVectorIndexReady(
+                'articles',
+                vectorIndexSlotName('embedding', 'b'),
+                { pollIntervalMs: 100 },
+            );
 
             // Single run: drop A (stale COSINE), keep B (correct L2)
             await runMigrations(l2Project);

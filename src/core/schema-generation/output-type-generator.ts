@@ -211,7 +211,7 @@ export class OutputTypeGenerator {
             isPure: true,
             resolve: (_source, _args, info) =>
                 this.getVectorScoreNode(
-                    info.selectionStack[info.selectionStack.length - 2].fieldRequest,
+                    info.selectionStack[info.selectionStack.length - 2]?.fieldRequest,
                 ),
         };
     }

@@ -109,12 +109,12 @@ describe('stuck A+B: B matches, A does not', () => {
         );
     });
 
-    it('generates RecreateVectorIndexMigration when B is still training', async () => {
+    it('generates nothing when B is still training (wait for next run)', async () => {
         // B (training) is the correct new index, but it's not ready yet.
-        // The planner still sees A as the surviving reference and generates a recreation
-        // migration for it. When the performer executes this, ensureIndex returns the
-        // already-in-progress B (ArangoDB deduplication), waitForVectorIndexReady then
-        // blocks until B becomes ready, and the performer drops A. Net result: correct.
+        // The planner must not generate any create/recreate migration — doing so would
+        // trigger a third recreation slot when B is already being built. Instead it returns
+        // nothing and relies on the next analysis run (after B becomes ready) to schedule
+        // the Drop A migration.
         const aIndex = makeIndex('a', { metric: 'l2', trainingState: 'ready' }); // stale
         const bIndex = makeIndex('b', { trainingState: 'training' }); // correct but not ready
 
@@ -125,11 +125,8 @@ describe('stuck A+B: B matches, A does not', () => {
             opts(),
         );
 
-        expect(migrations).toHaveLength(1);
-        expect(migrations[0]).toBeInstanceOf(RecreateVectorIndexMigration);
-        expect((migrations[0] as RecreateVectorIndexMigration).existingIndex.name).toEqual(
-            vectorIndexSlotName('embedding', 'a'),
-        );
+        // Planner waits — no migration generated
+        expect(migrations).toHaveLength(0);
     });
 });
 
