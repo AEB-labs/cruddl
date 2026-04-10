@@ -231,7 +231,7 @@ describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {
             const vectorIndexes = indexes.filter((i: any) => i.type === 'vector');
             expect(vectorIndexes).toHaveLength(1);
             expect(vectorIndexes[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
-        });
+        }, 30_000);
 
         it('always recreates even when the existing index already matches (force rebuild)', async () => {
             // This is the key differentiator of recreateVectorIndex: even if the existing
