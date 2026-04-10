@@ -6,15 +6,19 @@ import { TypeKind } from '../model/config/type.js';
 import type { Field } from '../model/implementation/field.js';
 import type { ObjectType, Type } from '../model/implementation/type.js';
 import type { QueryNode } from '../query-tree/base.js';
+import { RuntimeErrorQueryNode } from '../query-tree/errors.js';
 import { NullQueryNode } from '../query-tree/literals.js';
 import { ObjectQueryNode, PropertySpecification } from '../query-tree/objects.js';
 import { UnaryOperationQueryNode, UnaryOperator } from '../query-tree/operators.js';
-import { PropertyAccessQueryNode, RevisionQueryNode } from '../query-tree/queries.js';
+import { RevisionQueryNode } from '../query-tree/queries.js';
+import { VectorScoreQueryNode } from '../query-tree/vector-search.js';
 import {
     CURSOR_FIELD,
     FLEX_SEARCH_ENTITIES_FIELD_PREFIX,
     ORDER_BY_ARG,
     REVISION_FIELD,
+    VECTOR_SCORE_FIELD,
+    VECTOR_SEARCH_ENTITIES_FIELD_PREFIX,
 } from '../schema/constants.js';
 import { getMetaFieldName } from '../schema/names.js';
 import { isDefined } from '../utils/utils.js';
@@ -201,12 +205,28 @@ export class OutputTypeGenerator {
         }
 
         return {
-            name: '_vectorScore',
-            description: `The similarity/distance score from a vector search query. Null when not queried via vector search.`,
+            name: VECTOR_SCORE_FIELD,
+            description: `The similarity/distance score from a vector search query. Only available when queried through \`vectorSearch${objectType.pluralName}\`.`,
             type: GraphQLFloat,
             isPure: true,
-            resolve: (source) => new PropertyAccessQueryNode(source, '_vectorScore'),
+            resolve: (_source, _args, info) =>
+                this.getVectorScoreNode(
+                    info.selectionStack[info.selectionStack.length - 2].fieldRequest,
+                ),
         };
+    }
+
+    private getVectorScoreNode(listFieldRequest: FieldRequest | undefined): QueryNode {
+        if (
+            !listFieldRequest ||
+            !isListTypeIgnoringNonNull(listFieldRequest.field.type) ||
+            !listFieldRequest.fieldName.startsWith(VECTOR_SEARCH_ENTITIES_FIELD_PREFIX)
+        ) {
+            return new RuntimeErrorQueryNode(
+                `${VECTOR_SCORE_FIELD} is only available when queried via a vectorSearch* field`,
+            );
+        }
+        return new VectorScoreQueryNode();
     }
 
     private createFields(field: Field): ReadonlyArray<QueryNodeField> {

@@ -16,5 +16,41 @@
         }
       ]
     }
+  },
+  "vectorScoreTwoAliases": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "score": 1,
+          "_vectorScore": 1
+        },
+        {
+          "title": "Gamma",
+          "score": 0.7071067690849304,
+          "_vectorScore": 0.7071067690849304
+        },
+        {
+          "title": "Beta",
+          "score": 0,
+          "_vectorScore": 0
+        }
+      ]
+    }
+  },
+  "vectorSearchWithoutScore": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha"
+        },
+        {
+          "title": "Gamma"
+        },
+        {
+          "title": "Beta"
+        }
+      ]
+    }
   }
 }

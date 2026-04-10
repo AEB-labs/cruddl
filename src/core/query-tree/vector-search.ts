@@ -105,3 +105,15 @@ export class VectorSearchQueryNode extends QueryNode {
         return parts.join(' ') + '\n' + indent(details.join('\n'));
     }
 }
+
+/**
+ * A leaf QueryNode that represents the vector similarity/distance score computed by the
+ * enclosing VectorSearchQueryNode.
+ *
+ * Only works within the innerNode of a VectorSearchQueryNode
+ */
+export class VectorScoreQueryNode extends QueryNode {
+    describe(): string {
+        return 'vector score';
+    }
+}

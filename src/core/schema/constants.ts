@@ -59,6 +59,7 @@ export const CREATE_ENTITY_TYPE_SUFFIX = 'Input';
 export const UPDATE_ENTITY_FIELD_PREFIX = 'update';
 export const UPDATE_ALL_ENTITIES_FIELD_PREFIX = 'updateAll';
 export const FLEX_SEARCH_ENTITIES_FIELD_PREFIX = 'flexSearch';
+export const VECTOR_SEARCH_ENTITIES_FIELD_PREFIX = 'vectorSearch';
 export const DELETE_ENTITY_FIELD_PREFIX = 'delete';
 export const DELETE_ALL_ENTITIES_FIELD_PREFIX = 'deleteAll';
 export const ADD_CHILD_ENTITIES_FIELD_PREFIX = 'add';
@@ -95,6 +96,7 @@ export const FIRST_ARG = 'first';
 export const VALUE_ARG = 'value';
 export const KEY_FIELD_DIRECTIVE = 'key';
 export const REVISION_FIELD = '_revision';
+export const VECTOR_SCORE_FIELD = '_vectorScore';
 
 export const FILTER_FIELD_PREFIX_SEPARATOR = '_';
 export const INPUT_FIELD_EQUAL = 'equal';

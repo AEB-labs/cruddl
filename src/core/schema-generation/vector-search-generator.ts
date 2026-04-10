@@ -7,7 +7,12 @@ import { ARGUMENT_OUT_OF_RANGE_ERROR, RuntimeErrorQueryNode } from '../query-tre
 import { LiteralQueryNode } from '../query-tree/literals.js';
 import { VariableQueryNode } from '../query-tree/variables.js';
 import { VectorSearchQueryNode } from '../query-tree/vector-search.js';
-import { FILTER_ARG, FIRST_ARG, SKIP_ARG } from '../schema/constants.js';
+import {
+    FILTER_ARG,
+    FIRST_ARG,
+    SKIP_ARG,
+    VECTOR_SEARCH_ENTITIES_FIELD_PREFIX,
+} from '../schema/constants.js';
 import { decapitalize } from '../utils/utils.js';
 import type { FilterTypeGenerator } from './filter-input-types/generator.js';
 import type { OutputTypeGenerator } from './output-type-generator.js';
@@ -15,7 +20,6 @@ import type { FieldContext } from './query-node-object-type/context.js';
 import type { QueryNodeField } from './query-node-object-type/definition.js';
 import { QueryNodeListType, QueryNodeNonNullType } from './query-node-object-type/definition.js';
 
-export const VECTOR_SEARCH_FIELD_PREFIX = 'vectorSearch';
 const VECTOR_ARG = 'vector';
 const N_PROBE_ARG = 'nProbe';
 const MIN_SCORE_ARG = 'minScore';
@@ -36,7 +40,7 @@ export class VectorSearchGenerator {
             );
         }
 
-        const fieldName = VECTOR_SEARCH_FIELD_PREFIX + rootEntityType.pluralName;
+        const fieldName = VECTOR_SEARCH_ENTITIES_FIELD_PREFIX + rootEntityType.pluralName;
         const outputType = this.outputTypeGenerator.generate(rootEntityType);
         const filterType = this.filterTypeGenerator.generate(rootEntityType);
         const fieldEnumType = this.getVectorIndexFieldEnum(rootEntityType);

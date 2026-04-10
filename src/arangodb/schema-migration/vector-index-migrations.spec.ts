@@ -365,6 +365,8 @@ describe.skipIf(isArangoDBDisabled())(
             expect(remaining).toHaveLength(0);
         });
 
+        // TODO vector-todo same issue as with the test below
+        // also try to harmonize these tests if they actually test similar things.
         it('when B matches the required params and A does not, drops A and keeps B', async () => {
             // Scenario: recreation completed (B=L2 was built, ready), but the final "drop A" step
             // was interrupted. The analyzer should recognize B as the correct slot and drop A.
@@ -387,6 +389,15 @@ describe.skipIf(isArangoDBDisabled())(
                 vectorIndexSlotName('embedding', 'a'),
             );
         });
+
+        // TODO vector-todo this test currently has two behaviors depending on arangodb version
+        // - < 3.12.9: ensureIndex() waited until the training was complete, so we have a Drop and no recreate (so what's currently writtin as assertions)
+        // - 3.12.9: ensureIndex() completes while training is still ongoing
+        // we should take the opportunity to test both in 3.12.9
+        // immediateliy after creation, verify that no migration is reported (it should wait until the training is complete)
+        //    (this behavior depends on the todo in vector-index-migration-planner)
+        // then we poll until the index is ready
+        // then we ensure that the Drop a migration is reported
 
         it('drops A (stale) and keeps B (correct L2) — no spurious recreate needed', async () => {
             // Both A (COSINE) and B (L2) exist, model requires L2.

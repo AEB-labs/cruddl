@@ -5,7 +5,7 @@ RETURN {
     SORT (v_article1.`title`)
     RETURN {
       "title": v_article1.`title`,
-      @var1: v_article1[@var2]
+      @var1: { __cruddl_runtime_error: @var2 }
     }
   )
 }

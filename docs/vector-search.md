@@ -97,6 +97,10 @@ vectorSearchProducts(
 
 ## 3. Understanding `_vectorScore` and metric semantics
 
+`_vectorScore` is a **computed field** that is only available when queried through a `vectorSearch*`
+field. Requesting it in any other context — including `all*` queries, entity-by-id lookups, or
+relation/reference traversals — is a runtime error.
+
 `_vectorScore` is intentionally metric-dependent:
 
 -   `COSINE`: similarity, higher is better.

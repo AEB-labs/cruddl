@@ -1,6 +1,24 @@
+# Single alias: _vectorScore accessed under a different name.
 query vectorScoreAliased {
     vectorSearchArticles(field: embedding, vector: [1.0, 0.0, 0.0, 0.0], first: 3) {
         title
         score: _vectorScore
+    }
+}
+
+# Two independent aliases for _vectorScore in one selection set.
+# Both must resolve to the same computed scoreVar — no MERGE, no pattern matching.
+query vectorScoreTwoAliases {
+    vectorSearchArticles(field: embedding, vector: [1.0, 0.0, 0.0, 0.0], first: 3) {
+        title
+        score: _vectorScore
+        _vectorScore
+    }
+}
+
+# vectorSearch without requesting _vectorScore at all: must not emit a MERGE or runtime error.
+query vectorSearchWithoutScore {
+    vectorSearchArticles(field: embedding, vector: [1.0, 0.0, 0.0, 0.0], first: 3) {
+        title
     }
 }

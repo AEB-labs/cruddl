@@ -142,6 +142,9 @@ export async function planVectorIndexMigrationsForField(
                 );
             }
             // If B is still training, leave both intact — next run will clean up.
+            // TODO vector-todo if B is still training, we should just wait until it finished training
+            // however, we currently will create a recreate action further below. that shouldn't happen
+            // (also fix the same issue in !aIsReady below)
         } else if (bMatches && aMatches) {
             // Both slots report matching params — most likely a parallel migration instance just
             // finished building B and is about to drop A. Wait briefly before intervening.
