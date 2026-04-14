@@ -600,6 +600,71 @@ describe.skipIf(isArangoDBDisabled())(
 
             await expect(performer.performMigration(dropMigration)).resolves.not.toThrow();
         });
+
+        // -----------------------------------------------------------------------
+        // nLists drift: below threshold
+        // -----------------------------------------------------------------------
+
+        it('does not schedule recreation when nLists drift is below the configured threshold', async () => {
+            // Create an index with nLists: 1, then switch to auto-computed nLists.
+            // With only a few documents, the auto-computed nLists will be small, so
+            // the drift from 1 is modest and below a generous threshold.
+            const pinnedProject = buildVectorProject({ dimension: 4, nLists: 1 });
+            const autoProject = buildVectorProject({ dimension: 4 });
+            const db = getTempDatabase();
+            // Only 2 documents → auto-computed nLists = max(1, min(2, round(15*sqrt(2)))) = 2
+            // Drift from existing nLists=1: |2-1|/1 = 100%, so use a threshold > 1.0
+            // Actually, let's use a large number of docs with nLists close to auto-computed.
+            // With 1 doc → auto nLists = 1 → 0% drift
+            await seedArticles(db, 1);
+
+            await runMigrations(pinnedProject);
+            // With 1 doc, auto-computed nLists = max(1, min(1, round(15*1))) = 1
+            // Drift: |1-1|/1 = 0%, well below any threshold.
+            const thresholdAnalyzer = makeAnalyzer({ vectorIndexNListsRebuildThreshold: 0.25 });
+            const migrations = await thresholdAnalyzer.getVectorIndexMigrations(
+                autoProject.getModel(),
+            );
+            const recreateMigrations = migrations.filter(
+                (m) => m instanceof RecreateVectorIndexMigration,
+            );
+            expect(recreateMigrations).toHaveLength(0);
+        });
+
+        // -----------------------------------------------------------------------
+        // Stuck A+B: both match, both ready — drops B conservatively
+        // -----------------------------------------------------------------------
+
+        it('drops B when both A and B match and are ready (tiebreaker)', async () => {
+            const project = buildVectorProject({ nLists: 1 });
+            const db = getTempDatabase();
+            await seedArticles(db);
+
+            // Create slot A via normal migration
+            await runMigrations(project);
+
+            // Inject a matching slot B (same params)
+            await ensureSlotIndex(db, 'b', 'cosine', 4, 1);
+
+            // Wait for B to be ready
+            const performer = makePerformer();
+            await performer.waitForVectorIndexReady(
+                'articles',
+                vectorIndexSlotName('embedding', 'b'),
+                { pollIntervalMs: 100 },
+            );
+
+            // Analyzer should detect stuck state — both match, both ready
+            const analyzer = makeAnalyzer({ vectorIndexStuckSlotWaitMs: 0 });
+            const migrations = await analyzer.getVectorIndexMigrations(project.getModel());
+
+            // Exactly one DropIndexMigration for slot B
+            expect(migrations).toHaveLength(1);
+            expect(migrations[0]).toBeInstanceOf(DropIndexMigration);
+            expect((migrations[0] as DropIndexMigration).index.name).toEqual(
+                vectorIndexSlotName('embedding', 'b'),
+            );
+        });
     },
 );
 

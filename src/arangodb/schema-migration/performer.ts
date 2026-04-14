@@ -96,6 +96,17 @@ export class MigrationPerformer {
      * slot 'a'. For recreation (`RecreateVectorIndexMigration`), the new index is placed in the
      * slot opposite to the existing one (A/B alternation) for zero-downtime rebuilds, and the
      * old index is dropped once the new one is fully trained and ready.
+     *
+     * **defaultNProbe slot pinning**: ArangoDB's `ensureIndex` deduplicates vector indexes by
+     * `fields` + `params`. Without a distinguishing param, creating slot B with identical params
+     * to slot A would silently return the existing A index, breaking A/B rotation. To prevent
+     * this, the performer always sets `defaultNProbe` deterministically by slot:
+     *   - slot A → defaultNProbe: 1
+     *   - slot B → defaultNProbe: 2
+     * This ensures the two slots are always considered distinct by ArangoDB, enabling zero-downtime
+     * rotation even when all other parameters are identical (e.g. `forceRecreate`).
+     * cruddl does not rely on the index-default nProbe for query execution, so this value has no
+     * functional impact on query behavior.
      */
     private async createOrRecreateVectorIndex(
         migration: CreateVectorIndexMigration | RecreateVectorIndexMigration,
@@ -113,6 +124,9 @@ export class MigrationPerformer {
         const newSlot = existingSlot ? otherVectorIndexSlot(existingSlot) : 'a';
         const newName = vectorIndexSlotName(fieldName, newSlot);
 
+        // Slot-pinned defaultNProbe: see JSDoc above.
+        const defaultNProbe = newSlot === 'a' ? 1 : 2;
+
         await (this.db.collection(collectionName) as any).ensureIndex({
             type: 'vector',
             name: newName,
@@ -122,6 +136,7 @@ export class MigrationPerformer {
                 metric: requiredIndex.params.metric,
                 dimension: requiredIndex.params.dimension,
                 nLists: requiredIndex.params.nLists,
+                defaultNProbe,
                 trainingIterations: requiredIndex.params.trainingIterations,
                 factory: requiredIndex.params.factory,
             },
@@ -132,14 +147,11 @@ export class MigrationPerformer {
         });
 
         // Wait for the new index to finish training before dropping the old one.
-        // ArangoDB's ensureIndex returns after the index is created, but vector index
-        // training may still be in progress. Querying the index before training is
-        // complete can return incorrect or empty results.
         await this.waitForVectorIndexReady(collectionName, newName, {
             timeoutMs: this.config.vectorIndexTrainingTimeoutMs,
         });
 
-        // Drop the old index after the new one is available (recreation only)
+        // Drop the old index after the new one is available (recreation only).
         if (existingIndex?.id) {
             try {
                 await this.db.collection(collectionName).dropIndex(existingIndex.id);

@@ -259,8 +259,9 @@ describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {
             expect(vectorAfterFirst).toHaveLength(1);
             expect(vectorAfterFirst[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
 
-            // Second call: uses A/B rotation — builds slot B while slot A is still live,
-            // then drops slot A once slot B is ready. Zero-downtime even for identical params.
+            // Second call: uses A/B rotation — builds slot B (defaultNProbe: 2) while slot A
+            // (defaultNProbe: 1) is still live. The differing defaultNProbe prevents ArangoDB from
+            // deduplicating the ensureIndex call, guaranteeing zero-downtime A/B rotation.
             await adapter.recreateVectorIndex(field);
 
             const afterSecond = await db.collection('articles').indexes();
