@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createTempDatabase, getTempDatabase } from '../testing/regression-tests/initialization.js';
 import { createSimpleModel } from '../testing/utils/create-simple-model.js';
 import { ArangoDBAdapter } from './arangodb-adapter.js';
-import { vectorIndexSlotName } from './schema-migration/index-helpers.js';
+import { vectorIndexSlotName } from './schema-migration/vector-index/vector-index-helpers.js';
 import { isArangoDBDisabled } from './testing/is-arangodb-disabled.js';
 
 describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {

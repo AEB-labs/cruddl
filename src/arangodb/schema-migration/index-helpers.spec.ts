@@ -5,7 +5,7 @@ import { createSimpleModel } from '../../testing/utils/create-simple-model.js';
 import { calculateRequiredIndexOperations, getRequiredIndicesFromModel } from './index-helpers.js';
 
 describe('index-helpers', () => {
-    it('extracts persistent and vector indices from the model', () => {
+    it('extracts persistent indices from the model', () => {
         const model = createSimpleModel(gql`
             type Product @rootEntity {
                 key: String @key
@@ -16,22 +16,13 @@ describe('index-helpers', () => {
         `);
 
         const requiredIndices = getRequiredIndicesFromModel(model);
-        const vectorIndex = requiredIndices.find((index) => index.type === 'vector');
+
+        // Vector indices are not returned - they are handled separately
+        expect(requiredIndices.every((index) => index.type === 'persistent')).toBe(true);
+
         const persistentIndex = requiredIndices.find(
             (index) => index.type === 'persistent' && index.fields.join(',') === 'code',
         );
-
-        expect(vectorIndex).to.not.be.undefined;
-        expect(vectorIndex!.type).to.equal('vector');
-        // name is undefined in required indices — assigned at migration time based on A/B slot
-        expect(vectorIndex!.name).to.be.undefined;
-        expect(vectorIndex!.fields).to.deep.equal(['embedding']);
-        if (vectorIndex && vectorIndex.type === 'vector') {
-            expect(vectorIndex.params.metric).to.equal('cosine');
-            expect(vectorIndex.params.dimension).to.equal(768);
-            expect(vectorIndex.params.nLists).to.equal(100);
-        }
-
         expect(persistentIndex).to.not.be.undefined;
     });
 

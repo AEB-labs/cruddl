@@ -30,13 +30,16 @@ import {
     CreateIndexMigration,
     CreateVectorIndexMigration,
     DropIndexMigration,
+    DropVectorIndexMigration,
     RecreateVectorIndexMigration,
     UpdateArangoSearchAnalyzerMigration,
 } from './migrations.js';
+import { VectorIndexAnalyzer } from './vector-index/vector-index-analyzer.js';
 
 export class SchemaAnalyzer {
     private readonly db: Database;
     private readonly logger: Logger;
+    private readonly vectorIndexAnalyzer: VectorIndexAnalyzer;
 
     constructor(
         readonly config: ArangoDBConfig,
@@ -44,6 +47,7 @@ export class SchemaAnalyzer {
     ) {
         this.db = initDatabase(config);
         this.logger = getArangoDBLogger(schemaContext);
+        this.vectorIndexAnalyzer = new VectorIndexAnalyzer(this.db, config);
     }
 
     async getOutstandingMigrations(model: Model): Promise<ReadonlyArray<SchemaMigration>> {
@@ -134,7 +138,7 @@ export class SchemaAnalyzer {
                     const countResult = await this.db.collection(index.collectionName).count();
                     collectionSizes.set(index.collectionName, countResult.count);
                 } catch (e) {
-                    // ignore — collection may not exist yet
+                    // ignore - collection may not exist yet
                 }
             }
         }
@@ -161,15 +165,78 @@ export class SchemaAnalyzer {
 
     /**
      * Returns migrations needed to bring vector indexes in sync with the model.
+     *
+     * Phase 1: For each vector-indexed field, call analyzeField() and collect migrations.
+     * Phase 2: Drop orphaned vector indexes whose field is no longer in the model.
      */
     async getVectorIndexMigrations(
         model: Model,
     ): Promise<
         ReadonlyArray<
-            CreateVectorIndexMigration | RecreateVectorIndexMigration | DropIndexMigration
+            CreateVectorIndexMigration | RecreateVectorIndexMigration | DropVectorIndexMigration
         >
     > {
-        throw new Error('not implemented yet');
+        const migrations: Array<
+            CreateVectorIndexMigration | RecreateVectorIndexMigration | DropVectorIndexMigration
+        > = [];
+
+        // Phase 1 - Per-field analysis
+        for (const rootEntityType of model.rootEntityTypes) {
+            for (const vectorIndex of rootEntityType.vectorIndices) {
+                const status = await this.vectorIndexAnalyzer.analyzeField(
+                    vectorIndex.field,
+                    false,
+                );
+                for (const migration of status.migrations) {
+                    migrations.push(
+                        migration as
+                            | CreateVectorIndexMigration
+                            | RecreateVectorIndexMigration
+                            | DropVectorIndexMigration,
+                    );
+                }
+            }
+        }
+
+        // Phase 2 - Orphaned index cleanup
+        for (const rootEntityType of model.rootEntityTypes) {
+            const collectionName = getCollectionNameForRootEntity(rootEntityType);
+            const coll = this.db.collection(collectionName);
+            if (!(await coll.exists())) {
+                continue;
+            }
+
+            const allIndexes = await coll.indexes();
+            const vectorIndexedFieldNames = new Set(
+                rootEntityType.vectorIndices.map((vi) => vi.field.name),
+            );
+
+            for (const idx of allIndexes) {
+                if ((idx as any).type !== 'vector') {
+                    continue;
+                }
+                const indexName: string = (idx as any).name ?? '';
+                if (!indexName.startsWith('vector_')) {
+                    continue;
+                }
+                // Extract field name from the index fields array (should be a single element)
+                const indexFields: string[] = (idx as any).fields ?? [];
+                if (indexFields.length !== 1) {
+                    continue;
+                }
+                const indexFieldName = indexFields[0];
+                if (!vectorIndexedFieldNames.has(indexFieldName)) {
+                    migrations.push(
+                        new DropVectorIndexMigration({
+                            indexName: indexName,
+                            collectionName,
+                        }),
+                    );
+                }
+            }
+        }
+
+        return migrations;
     }
 
     private async getPersistentIndices(

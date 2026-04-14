@@ -4,13 +4,13 @@ import { aql, Database } from 'arangojs';
 import { graphql, type GraphQLSchema } from 'graphql';
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
-import { prettyPrint } from '../../core/graphql/pretty-print.js';
-import { Project } from '../../core/project/project.js';
-import { ProjectSource } from '../../core/project/source.js';
-import { createTempDatabase } from '../../testing/regression-tests/initialization.js';
-import { ArangoDBAdapter } from '../arangodb-adapter.js';
-import { isArangoDBDisabled } from '../testing/is-arangodb-disabled.js';
-import { vectorIndexSlotName } from './index-helpers.js';
+import { prettyPrint } from '../../../core/graphql/pretty-print.js';
+import { Project } from '../../../core/project/project.js';
+import { ProjectSource } from '../../../core/project/source.js';
+import { createTempDatabase } from '../../../testing/regression-tests/initialization.js';
+import { ArangoDBAdapter } from '../../arangodb-adapter.js';
+import { isArangoDBDisabled } from '../../testing/is-arangodb-disabled.js';
+import { vectorIndexSlotName } from './vector-index-helpers.js';
 
 const DIMENSION = 128;
 const INITIAL_DOC_COUNT = 20_000;
@@ -53,7 +53,7 @@ describe.skipIf(isArangoDBDisabled())('vector index performance (integration)', 
         expect(docCount).to.equal(INITIAL_DOC_COUNT);
 
         // ----------------------------------------------------------------
-        // Run initial migration — creates vector index in slot A
+        // Run initial migration - creates vector index in slot A
         // ----------------------------------------------------------------
         const initialMigrations = await adapter.getOutstandingMigrations(model);
         expect(initialMigrations).toHaveLength(1);

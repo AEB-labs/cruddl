@@ -17,6 +17,7 @@ export {
     CreateVectorIndexMigration,
     DropArangoSearchViewMigration,
     DropIndexMigration,
+    DropVectorIndexMigration,
     RecreateArangoSearchViewMigration,
     RecreateVectorIndexMigration,
     UpdateArangoSearchAnalyzerMigration,
@@ -25,4 +26,8 @@ export {
     type SchemaMigration,
     type UpdateArangoSearchAnalyzerMigrationConfig,
 } from './schema-migration/migrations.js';
-export type { VectorIndexStatus } from './vector-index-status.js';
+export { VectorIndexState } from './schema-migration/vector-index/vector-index-status.js';
+export type {
+    VectorIndexExistingInfo,
+    VectorIndexStatus,
+} from './schema-migration/vector-index/vector-index-status.js';

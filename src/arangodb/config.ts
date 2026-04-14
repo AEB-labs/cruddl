@@ -80,7 +80,7 @@ export interface ArangoDBConfig {
      * **Background**: ArangoDB vector indexes use the IVF (Inverted File Index) algorithm, which
      * partitions document embeddings into `nLists` clusters at index-creation time. When the
      * number of documents grows significantly, the originally chosen `nLists` value may no longer
-     * be optimal — too few clusters reduce recall, too many waste memory and slow down queries.
+     * be optimal - too few clusters reduce recall, too many waste memory and slow down queries.
      *
      * When this option is set, cruddl re-computes the recommended `nLists` on every analysis run
      * using the formula `max(1, min(N, round(15 × √N)))` where N is the current document count.
@@ -88,7 +88,7 @@ export interface ArangoDBConfig {
      * configured fraction, a recreate migration is generated automatically.
      *
      * Example: a value of `0.25` triggers a rebuild when the re-computed nLists would differ by
-     * more than 25 % from the existing index's nLists (e.g. existing 100 → rebuild if new < 75 or
+     * more than 25 % from the existing index's nLists (e.g. existing 100 -> rebuild if new < 75 or
      * > 125).
      *
      * **Important**: this option only reacts to nLists drift caused by document-count growth. It
@@ -114,20 +114,6 @@ export interface ArangoDBConfig {
      * Defaults to 600 000 ms (10 minutes).
      */
     readonly vectorIndexTrainingTimeoutMs?: number;
-
-    /**
-     * Time in milliseconds to wait before resolving the ambiguous "both A and B slots exist with
-     * identical params" state during stuck-slot cleanup.
-     *
-     * When both the A and B vector index slots for a field are present simultaneously and both
-     * match the model's requirements, cruddl assumes a parallel migration process just finished
-     * and is about to drop A. A brief wait lets that process complete so that cruddl doesn't
-     * intervene unnecessarily. After the wait, cruddl re-checks the state and drops B
-     * conservatively if both slots still exist.
-     *
-     * Defaults to 5 000 ms (5 seconds). Set to 0 in tests.
-     */
-    readonly vectorIndexStuckSlotWaitMs?: number;
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {

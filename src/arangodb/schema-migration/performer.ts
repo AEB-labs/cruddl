@@ -17,12 +17,14 @@ import type {
     CreateIndexMigration,
     CreateVectorIndexMigration,
     DropIndexMigration,
+    DropVectorIndexMigration,
     RecreateArangoSearchViewMigration,
     RecreateVectorIndexMigration,
     SchemaMigration,
     UpdateArangoSearchAnalyzerMigration,
     UpdateArangoSearchViewMigration,
 } from './migrations.js';
+import { vectorIndexSlotName } from './vector-index/vector-index-helpers.js';
 
 export class MigrationPerformer {
     private readonly db: Database;
@@ -37,6 +39,8 @@ export class MigrationPerformer {
                 return this.createPersistentIndex(migration);
             case 'dropIndex':
                 return this.dropIndex(migration);
+            case 'dropVectorIndex':
+                return this.dropVectorIndex(migration);
             case 'createVectorIndex':
             case 'recreateVectorIndex':
                 return this.createOrRecreateVectorIndex(migration);
@@ -84,13 +88,90 @@ export class MigrationPerformer {
         }
     }
 
+    private async dropVectorIndex(migration: DropVectorIndexMigration) {
+        try {
+            await this.db
+                .collection(migration.collectionName)
+                .dropIndex({ name: migration.indexName });
+        } catch (e: any) {
+            if (e.errorNum === ERROR_ARANGO_INDEX_NOT_FOUND) {
+                return;
+            }
+            throw e;
+        }
+    }
+
     /**
      * Creates a new vector index (for first-time creation or recreation from an existing one).
+     *
+     * Both CreateVectorIndexMigration and RecreateVectorIndexMigration are executed identically:
+     * 1. Determine the target slot from requiredIndex.slot
+     * 2. Call ensureIndex with slot-pinned defaultNProbe (A->1, B->2) to avoid dedup
+     * 3. Wait for the new index to become ready
+     * 4. If existingIndex is present (recreate): drop the old index
      */
     private async createOrRecreateVectorIndex(
         migration: CreateVectorIndexMigration | RecreateVectorIndexMigration,
     ) {
-        throw new Error('not implemented yet');
+        const requiredIndex = migration.requiredIndex;
+        const slot = requiredIndex.slot ?? 'a';
+        const fieldName = requiredIndex.fields[0];
+        const indexName = vectorIndexSlotName(fieldName, slot);
+        const collectionName = requiredIndex.collectionName;
+
+        // Pin defaultNProbe by slot to prevent ArangoDB's ensureIndex deduplication.
+        // ArangoDB considers two indexes identical when all creation parameters match.
+        // Since the A/B slot rotation creates a second index with the same field, metric,
+        // dimension and nLists, ArangoDB would return the existing index instead of creating
+        // a new one. Using slot-distinct defaultNProbe values (A -> 1, B -> 2) ensures the
+        // parameter sets always differ, so ensureIndex always creates a fresh index.
+        const defaultNProbe = slot === 'a' ? 1 : 2;
+
+        const coll = this.db.collection(collectionName);
+        await coll.ensureIndex({
+            type: 'vector',
+            name: indexName,
+            fields: [fieldName],
+            sparse: requiredIndex.sparse,
+            params: {
+                metric: requiredIndex.params.metric,
+                dimension: requiredIndex.params.dimension,
+                nLists: requiredIndex.params.nLists ?? 1,
+                ...(requiredIndex.params.trainingIterations != null
+                    ? { trainingIterations: requiredIndex.params.trainingIterations }
+                    : {}),
+                ...(requiredIndex.params.factory != null
+                    ? { factory: requiredIndex.params.factory }
+                    : {}),
+                defaultNProbe,
+            },
+            ...(requiredIndex.storedValues && requiredIndex.storedValues.length > 0
+                ? { storedValues: requiredIndex.storedValues.map((f) => [f]) }
+                : {}),
+            inBackground: true,
+        } as any);
+
+        // Wait for the new index to become ready (polls trainingState; no-op on pre-3.12.9)
+        const timeoutMs = this.config.vectorIndexTrainingTimeoutMs ?? 600_000;
+        await this.waitForVectorIndexReady(collectionName, indexName, {
+            timeoutMs,
+        });
+
+        // If this is a recreation, drop the old index
+        if (migration.type === 'recreateVectorIndex') {
+            const existingIndex = (migration as RecreateVectorIndexMigration).existingIndex;
+            if (existingIndex.id) {
+                try {
+                    await coll.dropIndex(existingIndex.id);
+                } catch (e: any) {
+                    // Ignore "index not found" - may have been dropped concurrently
+                    if (e.errorNum === ERROR_ARANGO_INDEX_NOT_FOUND) {
+                        return;
+                    }
+                    throw e;
+                }
+            }
+        }
     }
 
     /**
@@ -102,7 +183,7 @@ export class MigrationPerformer {
      * or the timeout is exceeded.
      *
      * If the ArangoDB version does not report trainingState (pre-3.12.9), the method
-     * returns immediately — ensureIndex in those versions blocks until training completes.
+     * returns immediately - ensureIndex in those versions blocks until training completes.
      */
     async waitForVectorIndexReady(
         collectionName: string,

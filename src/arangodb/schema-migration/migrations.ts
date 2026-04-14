@@ -1,17 +1,20 @@
 import type { CreateAnalyzerOptions } from 'arangojs/analyzers';
+import type { VectorIndexDescription } from 'arangojs/indexes';
 import type {
     ArangoSearchViewPropertiesOptions,
     CreateArangoSearchViewOptions,
 } from 'arangojs/views';
 import type { Relation } from '../../core/model/implementation/relation.js';
-import type { IndexDefinition, VectorIndexDefinition } from './index-helpers.js';
+import type { PersistentIndexDefinition } from './index-helpers.js';
 import { describeIndex, getIndexDescriptor } from './index-helpers.js';
+import type { VectorIndexDefinition } from './vector-index/vector-index-definition.js';
 
 export type SchemaMigration =
     | CreateIndexMigration
     | DropIndexMigration
     | CreateVectorIndexMigration
     | RecreateVectorIndexMigration
+    | DropVectorIndexMigration
     | CreateDocumentCollectionMigration
     | CreateEdgeCollectionMigration
     | CreateArangoSearchViewMigration
@@ -22,13 +25,13 @@ export type SchemaMigration =
     | UpdateArangoSearchAnalyzerMigration;
 
 interface CreateIndexMigrationConfig {
-    readonly index: IndexDefinition;
+    readonly index: PersistentIndexDefinition;
     readonly collectionSize?: number;
 }
 
 export class CreateIndexMigration {
     readonly type: 'createIndex' = 'createIndex';
-    readonly index: IndexDefinition;
+    readonly index: PersistentIndexDefinition;
     readonly collectionSize: number | undefined;
 
     constructor(config: CreateIndexMigrationConfig) {
@@ -50,13 +53,13 @@ export class CreateIndexMigration {
 }
 
 interface DropIndexMigrationConfig {
-    readonly index: IndexDefinition;
+    readonly index: PersistentIndexDefinition;
     readonly collectionSize?: number;
 }
 
 export class DropIndexMigration {
     readonly type: 'dropIndex' = 'dropIndex';
-    readonly index: IndexDefinition;
+    readonly index: PersistentIndexDefinition;
     readonly collectionSize: number | undefined;
 
     constructor(config: DropIndexMigrationConfig) {
@@ -79,7 +82,7 @@ export class DropIndexMigration {
 
 interface CreateVectorIndexMigrationConfig {
     readonly requiredIndex: VectorIndexDefinition;
-    readonly collectionSize?: number;
+    readonly vectorDocumentCount?: number;
 }
 
 /**
@@ -90,19 +93,19 @@ interface CreateVectorIndexMigrationConfig {
 export class CreateVectorIndexMigration {
     readonly type: 'createVectorIndex' = 'createVectorIndex';
     readonly requiredIndex: VectorIndexDefinition;
-    readonly collectionSize: number | undefined;
+    readonly vectorDocumentCount: number | undefined;
 
     constructor(config: CreateVectorIndexMigrationConfig) {
         this.requiredIndex = config.requiredIndex;
-        this.collectionSize = config.collectionSize;
+        this.vectorDocumentCount = config.vectorDocumentCount;
     }
 
     get description() {
-        return `create ${describeIndex(this.requiredIndex)}`;
+        return `create vector index ${this.requiredIndex.collectionName}/${this.requiredIndex.fields[0]}`;
     }
 
     get id() {
-        return `createVectorIndex/${getIndexDescriptor(this.requiredIndex)}`;
+        return `createVectorIndex/${this.requiredIndex.collectionName}/${this.requiredIndex.fields[0]}`;
     }
 
     get isMandatory() {
@@ -111,9 +114,9 @@ export class CreateVectorIndexMigration {
 }
 
 interface RecreateVectorIndexMigrationConfig {
-    readonly existingIndex: VectorIndexDefinition;
+    readonly existingIndex: VectorIndexDescription;
     readonly requiredIndex: VectorIndexDefinition;
-    readonly collectionSize?: number;
+    readonly vectorDocumentCount?: number;
 }
 
 /**
@@ -123,22 +126,53 @@ interface RecreateVectorIndexMigrationConfig {
  */
 export class RecreateVectorIndexMigration {
     readonly type: 'recreateVectorIndex' = 'recreateVectorIndex';
-    readonly existingIndex: VectorIndexDefinition;
+    readonly existingIndex: VectorIndexDescription;
     readonly requiredIndex: VectorIndexDefinition;
-    readonly collectionSize: number | undefined;
+    readonly vectorDocumentCount: number | undefined;
 
     constructor(config: RecreateVectorIndexMigrationConfig) {
         this.existingIndex = config.existingIndex;
         this.requiredIndex = config.requiredIndex;
-        this.collectionSize = config.collectionSize;
+        this.vectorDocumentCount = config.vectorDocumentCount;
     }
 
     get description() {
-        return `recreate ${describeIndex(this.existingIndex)} with updated parameters`;
+        return `recreate vector index ${this.requiredIndex.collectionName}/${this.requiredIndex.fields[0]} with updated parameters`;
     }
 
     get id() {
-        return `recreateVectorIndex/${getIndexDescriptor(this.requiredIndex)}`;
+        return `recreateVectorIndex/${this.requiredIndex.collectionName}/${this.requiredIndex.fields[0]}`;
+    }
+
+    get isMandatory() {
+        return false;
+    }
+}
+
+interface DropVectorIndexMigrationConfig {
+    readonly indexName: string;
+    readonly collectionName: string;
+}
+
+/**
+ * Migration that drops a vector index, identified solely by its name.
+ */
+export class DropVectorIndexMigration {
+    readonly type: 'dropVectorIndex' = 'dropVectorIndex';
+    readonly indexName: string;
+    readonly collectionName: string;
+
+    constructor(config: DropVectorIndexMigrationConfig) {
+        this.indexName = config.indexName;
+        this.collectionName = config.collectionName;
+    }
+
+    get description() {
+        return `drop vector index "${this.indexName}" on collection ${this.collectionName}`;
+    }
+
+    get id() {
+        return `dropVectorIndex/${this.collectionName}/${this.indexName}`;
     }
 
     get isMandatory() {

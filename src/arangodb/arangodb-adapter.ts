@@ -18,6 +18,7 @@ import {
     TransactionTimeoutError,
 } from '../core/execution/runtime-errors.js';
 import { TransactionError } from '../core/execution/transaction-error.js';
+import type { Field } from '../core/model/implementation/field.js';
 import { Model } from '../core/model/implementation/model.js';
 import type { QueryNode } from '../core/query-tree/base.js';
 import type { FlexSearchTokenization } from '../core/query-tree/flex-search.js';
@@ -41,6 +42,8 @@ import { hasRevisionAssertions } from './revision-helper.js';
 import { SchemaAnalyzer } from './schema-migration/analyzer.js';
 import { type SchemaMigration } from './schema-migration/migrations.js';
 import { MigrationPerformer } from './schema-migration/performer.js';
+import { VectorIndexAnalyzer } from './schema-migration/vector-index/vector-index-analyzer.js';
+import type { VectorIndexStatus } from './schema-migration/vector-index/vector-index-status.js';
 import type { ArangoDBVersion } from './version-helper.js';
 import { ArangoDBVersionHelper } from './version-helper.js';
 
@@ -95,6 +98,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
     private readonly logger: Logger;
     private readonly analyzer: SchemaAnalyzer;
     private readonly migrationPerformer: MigrationPerformer;
+    private readonly vectorIndexAnalyzer: VectorIndexAnalyzer;
     private readonly cancellationManager: CancellationManager;
     private readonly versionHelper: ArangoDBVersionHelper;
     private readonly doNonMandatoryMigrations: boolean;
@@ -108,6 +112,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         this.db = initDatabase(config);
         this.analyzer = new SchemaAnalyzer(config, schemaContext);
         this.migrationPerformer = new MigrationPerformer(config);
+        this.vectorIndexAnalyzer = new VectorIndexAnalyzer(this.db, config);
         this.versionHelper = new ArangoDBVersionHelper(this.db);
         this.arangoExecutionFunction = this.buildUpArangoExecutionFunction();
         // the cancellation manager gets its own database instance so its cancellation requests are not queued
@@ -806,6 +811,31 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
     async getArangoDBVersion(): Promise<ArangoDBVersion | undefined> {
         return this.versionHelper.getArangoDBVersion();
+    }
+
+    /**
+     * Returns the status of a single vector-indexed field.
+     * The field must have a @vectorIndex directive and belong to a root entity type.
+     */
+    async getVectorIndexStatus(field: Field): Promise<VectorIndexStatus> {
+        if (!field.vectorIndex) {
+            throw new Error(`Field "${field.name}" does not have a vector index`);
+        }
+        return this.vectorIndexAnalyzer.analyzeField(field, false);
+    }
+
+    /**
+     * Force-rebuilds a vector index using A/B slot rotation, even if the current
+     * index matches the model. Throws if the collection has no documents.
+     */
+    async recreateVectorIndex(field: Field): Promise<void> {
+        if (!field.vectorIndex) {
+            throw new Error(`Field "${field.name}" does not have a vector index`);
+        }
+        const status = await this.vectorIndexAnalyzer.analyzeField(field, true);
+        for (const migration of status.migrations) {
+            await this.migrationPerformer.performMigration(migration);
+        }
     }
 
     async tokenizeExpressions(

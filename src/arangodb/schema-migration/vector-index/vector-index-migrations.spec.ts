@@ -5,23 +5,23 @@ import type { EnsureVectorIndexOptions, VectorIndexDescription } from 'arangojs/
 import type { DocumentNode } from 'graphql';
 import { gql } from 'graphql-tag';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { prettyPrint } from '../../core/graphql/pretty-print.js';
-import { Project } from '../../core/project/project.js';
-import { ProjectSource } from '../../core/project/source.js';
+import { prettyPrint } from '../../../core/graphql/pretty-print.js';
+import { Project } from '../../../core/project/project.js';
+import { ProjectSource } from '../../../core/project/source.js';
 import {
     createTempDatabase,
     getTempDatabase,
-} from '../../testing/regression-tests/initialization.js';
-import type { ArangoDBConfig } from '../config.js';
-import { isArangoDBDisabled } from '../testing/is-arangodb-disabled.js';
-import { SchemaAnalyzer } from './analyzer.js';
-import { vectorIndexSlotName } from './index-helpers.js';
+} from '../../../testing/regression-tests/initialization.js';
+import type { ArangoDBConfig } from '../../config.js';
+import { isArangoDBDisabled } from '../../testing/is-arangodb-disabled.js';
+import { SchemaAnalyzer } from '../analyzer.js';
 import {
     CreateVectorIndexMigration,
-    DropIndexMigration,
+    DropVectorIndexMigration,
     RecreateVectorIndexMigration,
-} from './migrations.js';
-import { MigrationPerformer } from './performer.js';
+} from '../migrations.js';
+import { MigrationPerformer } from '../performer.js';
+import { vectorIndexSlotName } from './vector-index-helpers.js';
 
 let dbConfig: ArangoDBConfig;
 
@@ -88,7 +88,7 @@ describe.skipIf(isArangoDBDisabled())(
         });
 
         // -----------------------------------------------------------------------
-        // Recreation: metric change triggers A → B slot swap
+        // Recreation: metric change triggers A -> B slot swap
         // -----------------------------------------------------------------------
 
         it('schedules RecreateVectorIndexMigration when the metric changes', async () => {
@@ -126,14 +126,14 @@ describe.skipIf(isArangoDBDisabled())(
             expect(vectorIndexes[0].name).toEqual(vectorIndexSlotName('embedding', 'b'));
         });
 
-        it('places the re-recreated index back in slot A (A→B→A cycle)', async () => {
+        it('places the re-recreated index back in slot A (A->B->A cycle)', async () => {
             const cosineProject = buildVectorProject({ nLists: 1 });
             const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
             const innerProductProject = buildVectorProject({ metric: 'INNER_PRODUCT', nLists: 1 });
             const db = getTempDatabase();
             await db.collection('articles').save({ embedding: [1, 0, 0, 0] });
 
-            // A (COSINE) → B (L2) → A (INNER_PRODUCT)
+            // A (COSINE) -> B (L2) -> A (INNER_PRODUCT)
             await runMigrations(cosineProject);
             await runMigrations(l2Project);
             await runMigrations(innerProductProject);
@@ -235,7 +235,7 @@ describe.skipIf(isArangoDBDisabled())(
         // Drop when removed from model
         // -----------------------------------------------------------------------
 
-        it('schedules DropIndexMigration when a vector index is removed from the model', async () => {
+        it('schedules DropVectorIndexMigration when a vector index is removed from the model', async () => {
             const withIndexProject = buildVectorProject({ nLists: 1 });
             const withoutIndexProject = buildProject(gql`
                 type Article @rootEntity {
@@ -251,7 +251,7 @@ describe.skipIf(isArangoDBDisabled())(
                 withoutIndexProject.getModel(),
             );
             expect(migrations).toHaveLength(1);
-            expect(migrations[0]).toBeInstanceOf(DropIndexMigration);
+            expect(migrations[0]).toBeInstanceOf(DropVectorIndexMigration);
         });
 
         it('is stable (no migrations) after the index is dropped', async () => {
@@ -278,7 +278,7 @@ describe.skipIf(isArangoDBDisabled())(
         // Recovery: both A and B slots present (aborted recreation)
         // -----------------------------------------------------------------------
 
-        it('schedules DropIndexMigration for B when both A and B are present (stuck recreation)', async () => {
+        it('schedules DropVectorIndexMigration for B when both A and B are present (stuck recreation)', async () => {
             const project = buildVectorProject({ nLists: 1 });
             const db = getTempDatabase();
             await seedArticles(db);
@@ -289,14 +289,14 @@ describe.skipIf(isArangoDBDisabled())(
             // Simulate a stuck recreation by manually creating slot B directly in ArangoDB
             await ensureSlotIndex(db, 'b', 'cosine');
 
-            // Now the analyzer should detect the stuck state and produce exactly one DropIndexMigration for B
+            // Now the analyzer should detect the stuck state and produce exactly one DropVectorIndexMigration for B
             const analyzer = makeAnalyzer();
             const migrations = await analyzer.getVectorIndexMigrations(project.getModel());
             expect(migrations).toHaveLength(1);
             const [m] = migrations;
-            expect(m).toBeInstanceOf(DropIndexMigration);
-            if (m instanceof DropIndexMigration) {
-                expect(m.index.name).toEqual(vectorIndexSlotName('embedding', 'b'));
+            expect(m).toBeInstanceOf(DropVectorIndexMigration);
+            if (m instanceof DropVectorIndexMigration) {
+                expect(m.indexName).toEqual(vectorIndexSlotName('embedding', 'b'));
             }
         });
 
@@ -315,14 +315,14 @@ describe.skipIf(isArangoDBDisabled())(
             const beforeVector = await getVectorIndexes(db);
             expect(beforeVector).toHaveLength(2);
 
-            // Step 3: the analyzer must find exactly one DropIndexMigration targeting slot B
+            // Step 3: the analyzer must find exactly one DropVectorIndexMigration targeting slot B
             const analyzer = makeAnalyzer();
             const performer = makePerformer();
             const migrations = await analyzer.getVectorIndexMigrations(project.getModel());
             expect(migrations).toHaveLength(1);
             const [drop] = migrations;
-            expect(drop).toBeInstanceOf(DropIndexMigration);
-            expect((drop as DropIndexMigration).index.name).toEqual(
+            expect(drop).toBeInstanceOf(DropVectorIndexMigration);
+            expect((drop as DropVectorIndexMigration).indexName).toEqual(
                 vectorIndexSlotName('embedding', 'b'),
             );
 
@@ -366,11 +366,11 @@ describe.skipIf(isArangoDBDisabled())(
 
         // Covers the scenario where B was built with the correct params (L2) but the "drop A"
         // step was interrupted, and accounts for an ArangoDB behavioral difference:
-        //   < 3.12.9 : ensureIndex() blocks until training is complete → B is ready immediately
-        //   ≥ 3.12.9 : ensureIndex() returns while training is still ongoing
-        // In both cases the final state after training must be: one DropIndexMigration for A,
+        //   < 3.12.9 : ensureIndex() blocks until training is complete -> B is ready immediately
+        //   >= 3.12.9 : ensureIndex() returns while training is still ongoing
+        // In both cases the final state after training must be: one DropVectorIndexMigration for A,
         // and no spurious RecreateVectorIndexMigration.
-        it('when B (correct, L2) matches but A (stale, COSINE) does not — drops A, no spurious recreate', async () => {
+        it('when B (correct, L2) matches but A (stale, COSINE) does not - drops A, no spurious recreate', async () => {
             const cosineProject = buildVectorProject({ nLists: 1 });
             const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
             const db = getTempDatabase();
@@ -379,14 +379,14 @@ describe.skipIf(isArangoDBDisabled())(
             // A = COSINE (stale)
             await runMigrations(cosineProject);
             // B = L2 (correct new index; drop of A was interrupted).
-            // ensureSlotIndex uses inBackground — on ArangoDB ≥3.12.9 B may still be training.
+            // ensureSlotIndex uses inBackground - on ArangoDB >=3.12.9 B may still be training.
             await ensureSlotIndex(db, 'b', 'l2', 4, 1, true);
 
             const analyzer = makeAnalyzer();
             const performer = makePerformer();
             const bSlotName = vectorIndexSlotName('embedding', 'b');
 
-            // On ArangoDB ≥3.12.9 B may report trainingState != "ready" immediately after creation.
+            // On ArangoDB >=3.12.9 B may report trainingState != "ready" immediately after creation.
             // The planner must NOT generate any create/recreate migrations during that window.
             const indexesAfterEnsure = await db.collection('articles').indexes();
             const bIndexAfterEnsure = indexesAfterEnsure.find(
@@ -400,7 +400,7 @@ describe.skipIf(isArangoDBDisabled())(
                 const migrationsDuringTraining = await analyzer.getVectorIndexMigrations(
                     l2Project.getModel(),
                 );
-                // Planner returns early when B is still training — no create/recreate allowed
+                // Planner returns early when B is still training - no create/recreate allowed
                 const spurious = migrationsDuringTraining.filter(
                     (m) =>
                         m instanceof RecreateVectorIndexMigration ||
@@ -414,14 +414,14 @@ describe.skipIf(isArangoDBDisabled())(
                 pollIntervalMs: 100,
             });
 
-            // B is now ready — planner identifies B as correct and schedules Drop A only
+            // B is now ready - planner identifies B as correct and schedules Drop A only
             const migrations = await analyzer.getVectorIndexMigrations(l2Project.getModel());
-            const dropMigrations = migrations.filter((m) => m instanceof DropIndexMigration);
+            const dropMigrations = migrations.filter((m) => m instanceof DropVectorIndexMigration);
             const recreateMigrations = migrations.filter(
                 (m) => m instanceof RecreateVectorIndexMigration,
             );
             expect(dropMigrations).toHaveLength(1);
-            expect((dropMigrations[0] as DropIndexMigration).index.name).toEqual(
+            expect((dropMigrations[0] as DropVectorIndexMigration).indexName).toEqual(
                 vectorIndexSlotName('embedding', 'a'),
             );
             expect(recreateMigrations).toHaveLength(0);
@@ -438,11 +438,11 @@ describe.skipIf(isArangoDBDisabled())(
             // Slot A has COSINE
             await runMigrations(cosineProject);
 
-            // Inject stuck B (L2, sparse=true) — B is the correct new index; drop of A was interrupted
+            // Inject stuck B (L2, sparse=true) - B is the correct new index; drop of A was interrupted
             await ensureSlotIndex(db, 'b', 'l2', 4, 1, true);
 
             // Wait for B to be fully ready before asking the planner to act.
-            // On ArangoDB ≥3.12.9, ensureSlotIndex returns while training is still in progress.
+            // On ArangoDB >=3.12.9, ensureSlotIndex returns while training is still in progress.
             const performer = makePerformer();
             await performer.waitForVectorIndexReady(
                 'articles',
@@ -467,8 +467,8 @@ describe.skipIf(isArangoDBDisabled())(
         it('when neither A nor B matches required, drops B and schedules recreation of A', async () => {
             // Scenario: both slots exist with the wrong metric; model now requires L2.
             // The stuck-slot detection falls into the "else" branch (B doesn't match, A doesn't
-            // match either) → drop B. Then the main loop sees A (COSINE) for an L2 model and
-            // schedules RecreateVectorIndexMigration(A → slot B).
+            // match either) -> drop B. Then the main loop sees A (COSINE) for an L2 model and
+            // schedules RecreateVectorIndexMigration(A -> slot B).
             const cosineProject = buildVectorProject({ nLists: 1 });
             const l2Project = buildVectorProject({ metric: 'L2', nLists: 1 });
             const db = getTempDatabase();
@@ -481,13 +481,13 @@ describe.skipIf(isArangoDBDisabled())(
 
             const analyzer = makeAnalyzer();
             const migrations = await analyzer.getVectorIndexMigrations(l2Project.getModel());
-            const dropMigrations = migrations.filter((m) => m instanceof DropIndexMigration);
+            const dropMigrations = migrations.filter((m) => m instanceof DropVectorIndexMigration);
             const recreateMigrations = migrations.filter(
                 (m) => m instanceof RecreateVectorIndexMigration,
             );
             // Stuck B (COSINE) is dropped by the stuck-slot handler
             expect(dropMigrations).toHaveLength(1);
-            expect((dropMigrations[0] as DropIndexMigration).index.name).toEqual(
+            expect((dropMigrations[0] as DropVectorIndexMigration).indexName).toEqual(
                 vectorIndexSlotName('embedding', 'b'),
             );
             // A (COSINE) is scheduled for recreation to become L2
@@ -521,9 +521,11 @@ describe.skipIf(isArangoDBDisabled())(
             const migrations = await analyzer.getVectorIndexMigrations(
                 withoutIndexProject.getModel(),
             );
-            const dropMigrations = migrations.filter((m) => m instanceof DropIndexMigration);
+            const dropMigrations = migrations.filter((m) => m instanceof DropVectorIndexMigration);
             expect(dropMigrations).toHaveLength(2);
-            const droppedNames = dropMigrations.map((m) => (m as DropIndexMigration).index.name);
+            const droppedNames = dropMigrations.map(
+                (m) => (m as DropVectorIndexMigration).indexName,
+            );
             expect(droppedNames).toContain(vectorIndexSlotName('embedding', 'a'));
             expect(droppedNames).toContain(vectorIndexSlotName('embedding', 'b'));
         });
@@ -584,18 +586,10 @@ describe.skipIf(isArangoDBDisabled())(
             }
             await db.collection('articles').dropIndex(vectorIndex.id);
 
-            // Now perform a DropIndexMigration for the already-gone index — should not throw
-            const dropMigration = new DropIndexMigration({
-                index: {
-                    id: vectorIndex.id,
-                    name: vectorIndex.name,
-                    collectionName: 'articles',
-                    fields: ['embedding'],
-                    sparse: false,
-                    type: 'vector' as const,
-                    params: { metric: 'cosine', dimension: 4, nLists: 1 },
-                    rootEntity: model.rootEntityTypes.find((r) => r.name === 'Article')!,
-                },
+            // Now perform a DropVectorIndexMigration for the already-gone index - should not throw
+            const dropMigration = new DropVectorIndexMigration({
+                indexName: vectorIndex.name,
+                collectionName: 'articles',
             });
 
             await expect(performer.performMigration(dropMigration)).resolves.not.toThrow();
@@ -612,10 +606,10 @@ describe.skipIf(isArangoDBDisabled())(
             const pinnedProject = buildVectorProject({ dimension: 4, nLists: 1 });
             const autoProject = buildVectorProject({ dimension: 4 });
             const db = getTempDatabase();
-            // Only 2 documents → auto-computed nLists = max(1, min(2, round(15*sqrt(2)))) = 2
+            // Only 2 documents -> auto-computed nLists = max(1, min(2, round(15*sqrt(2)))) = 2
             // Drift from existing nLists=1: |2-1|/1 = 100%, so use a threshold > 1.0
             // Actually, let's use a large number of docs with nLists close to auto-computed.
-            // With 1 doc → auto nLists = 1 → 0% drift
+            // With 1 doc -> auto nLists = 1 -> 0% drift
             await seedArticles(db, 1);
 
             await runMigrations(pinnedProject);
@@ -632,7 +626,7 @@ describe.skipIf(isArangoDBDisabled())(
         });
 
         // -----------------------------------------------------------------------
-        // Stuck A+B: both match, both ready — drops B conservatively
+        // Stuck A+B: both match, both ready - drops B conservatively
         // -----------------------------------------------------------------------
 
         it('drops B when both A and B match and are ready (tiebreaker)', async () => {
@@ -654,15 +648,16 @@ describe.skipIf(isArangoDBDisabled())(
                 { pollIntervalMs: 100 },
             );
 
-            // Analyzer should detect stuck state — both match, both ready
-            const analyzer = makeAnalyzer({ vectorIndexStuckSlotWaitMs: 0 });
+            // Analyzer should detect stuck state - both match, both ready
+            // Tiebreaker: A was created first (lower numeric ID) -> drop A, keep B
+            const analyzer = makeAnalyzer();
             const migrations = await analyzer.getVectorIndexMigrations(project.getModel());
 
-            // Exactly one DropIndexMigration for slot B
+            // Exactly one DropVectorIndexMigration for the lower-ID index (slot A, created first)
             expect(migrations).toHaveLength(1);
-            expect(migrations[0]).toBeInstanceOf(DropIndexMigration);
-            expect((migrations[0] as DropIndexMigration).index.name).toEqual(
-                vectorIndexSlotName('embedding', 'b'),
+            expect(migrations[0]).toBeInstanceOf(DropVectorIndexMigration);
+            expect((migrations[0] as DropVectorIndexMigration).indexName).toEqual(
+                vectorIndexSlotName('embedding', 'a'),
             );
         });
     },

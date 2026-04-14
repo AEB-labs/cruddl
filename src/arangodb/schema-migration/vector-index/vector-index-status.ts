@@ -1,7 +1,8 @@
-import type { Field } from '../core/model/implementation/field.js';
-import type { RootEntityType } from '../core/model/implementation/root-entity-type.js';
-import type { VectorIndex } from '../core/model/implementation/vector-index.js';
-import type { SchemaMigration } from './schema-migration/migrations.js';
+import type { VectorIndexTrainingState } from 'arangojs/indexes';
+import type { Field } from '../../../core/model/implementation/field.js';
+import type { RootEntityType } from '../../../core/model/implementation/root-entity-type.js';
+import type { VectorIndex } from '../../../core/model/implementation/vector-index.js';
+import type { SchemaMigration } from '../migrations.js';
 
 export enum VectorIndexState {
     /** The existing index matches the model - no action needed. */
@@ -16,14 +17,16 @@ export enum VectorIndexState {
     STUCK_CLEANUP = 'STUCK_CLEANUP',
     /**
      * The sole existing index is present but not yet ready (still training).
+     *
      * No correct ready index is available to serve queries.
      */
     TRAINING = 'TRAINING',
     /**
      * A correct, ready index exists and is serving queries.
+     *
      * A second slot is currently training (e.g. an in-progress forced recreation).
      * No action is required - wait for training to complete; the next analysis run will
-     * perform stuck-slot cleanup via the tiebreaker (the tiebreaker).
+     * perform stuck-slot cleanup via the tiebreaker.
      */
     RETRAINING = 'RETRAINING',
 }
@@ -38,7 +41,7 @@ export interface VectorIndexExistingInfo {
      * Training state reported by ArangoDB 3.12.9+.
      * "ready" indicates the index has been fully trained and is usable.
      */
-    readonly trainingState?: string;
+    readonly trainingState?: VectorIndexTrainingState;
 }
 
 export interface VectorIndexStatus {
