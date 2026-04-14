@@ -26,6 +26,28 @@ export type VectorIndexFieldMigrations = Array<
     CreateVectorIndexMigration | RecreateVectorIndexMigration | DropIndexMigration
 >;
 
+export interface PlanVectorIndexMigrationsArgs {
+    /** All vector index definitions currently stored in ArangoDB for this field. */
+    readonly existingForField: ReadonlyArray<VectorIndexDefinition>;
+    /** The desired index definition from the model (nLists must be resolved). */
+    readonly requiredIndex: VectorIndexDefinition;
+    /** Effective document count (sparse-aware) for the collection. */
+    readonly documentCount: number;
+    /** Whether the model explicitly pins nLists (vs. auto-computation). */
+    readonly nListsPinned: boolean;
+    /** Fractional threshold for auto-computed nLists drift that triggers a recreate. */
+    readonly nListsRebuildThreshold?: number;
+    /** Callback to re-fetch indices for stuck-slot ambiguity resolution. */
+    readonly refreshIndicesForStuckCheck: () => Promise<ReadonlyArray<VectorIndexDefinition>>;
+    /** Milliseconds to wait during the "both match" stuck-slot re-check. Defaults to 5 000. */
+    readonly stuckSlotWaitMs?: number;
+    /**
+     * When true, emit a {@link RecreateVectorIndexMigration} even if the existing index
+     * already matches the required parameters. This requests a zero-downtime A/B rebuild.
+     */
+    readonly forceRecreate?: boolean;
+}
+
 /**
  * Plans migrations for a single vector index field.
  *
@@ -40,53 +62,23 @@ export type VectorIndexFieldMigrations = Array<
  *
  * What this function does NOT do:
  * - Drop indexes for fields that have been removed from the model. That is the caller's
- *   responsibility (the `SchemaAnalyzer` handles it in its outer drop loop).
- *
- * @param existingForField  All vector index definitions currently stored in ArangoDB for this
- *                          specific field (typically 0, 1, or at most 2 during A/B recreation).
- * @param requiredIndex     The desired index definition from the model.
- *                          `nLists` must already be resolved (auto-computed or pinned).
- * @param documentCount     Effective document count for nLists auto-computation and for
- *                          deciding whether to skip creation on an empty collection.
- * @param options           Planning options.
+ *   responsibility (the service / analyzer handles it in its outer drop loop).
  */
 export async function planVectorIndexMigrationsForField(
-    existingForField: ReadonlyArray<VectorIndexDefinition>,
-    requiredIndex: VectorIndexDefinition,
-    documentCount: number,
-    options: {
-        /**
-         * Whether the model explicitly pins nLists (true) or relies on auto-computation (false).
-         * Affects whether any nLists difference triggers recreation or only if drift exceeds the threshold.
-         */
-        nListsPinned: boolean;
-        /**
-         * Fractional threshold for auto-computed nLists drift that triggers a recreate migration.
-         * When `undefined`, nLists drift alone never causes a rebuild.
-         */
-        nListsRebuildThreshold?: number;
-        /**
-         * Callback to re-fetch the current vector index definitions for this field from the
-         * database.  Used by the "both match" ambiguity resolution to verify state after a delay.
-         * Only called in the rare case that both A and B slots exist with matching params.
-         */
-        refreshIndicesForStuckCheck: () => Promise<ReadonlyArray<VectorIndexDefinition>>;
-        /**
-         * Milliseconds to wait before re-checking state when both A and B slots exist with
-         * matching params (the "two runners" race condition). Defaults to 5 000 ms.
-         * Set to 0 in tests to keep them fast.
-         */
-        stuckSlotWaitMs?: number;
-    },
+    args: PlanVectorIndexMigrationsArgs,
 ): Promise<VectorIndexFieldMigrations> {
     const migrations: VectorIndexFieldMigrations = [];
 
     const {
+        existingForField,
+        requiredIndex,
+        documentCount,
         nListsPinned,
         nListsRebuildThreshold,
         refreshIndicesForStuckCheck,
         stuckSlotWaitMs = 5_000,
-    } = options;
+        forceRecreate = false,
+    } = args;
 
     // --- Stuck A/B slot detection ---
     //
@@ -204,12 +196,14 @@ export async function planVectorIndexMigrationsForField(
             }),
         );
     } else {
-        const needsRecreate = vectorIndexNeedsRecreation(
-            surviving,
-            requiredIndex,
-            nListsPinned,
-            nListsRebuildThreshold,
-        );
+        const needsRecreate =
+            forceRecreate ||
+            vectorIndexNeedsRecreation(
+                surviving,
+                requiredIndex,
+                nListsPinned,
+                nListsRebuildThreshold,
+            );
 
         if (needsRecreate) {
             migrations.push(

@@ -6,7 +6,10 @@ import {
     DropIndexMigration,
     RecreateVectorIndexMigration,
 } from './migrations.js';
-import { planVectorIndexMigrationsForField } from './vector-index-migration-planner.js';
+import {
+    planVectorIndexMigrationsForField,
+    type PlanVectorIndexMigrationsArgs,
+} from './vector-index-migration-planner.js';
 
 const stubRootEntity = {} as any;
 
@@ -42,15 +45,21 @@ const required = makeIndex(null, { nLists: 10 });
 /** refreshIndicesForStuckCheck that should never be called */
 const neverRefresh = vi.fn<() => Promise<ReadonlyArray<VectorIndexDefinition>>>();
 
-/** Default planning options (stuckSlotWaitMs=0 to keep tests fast) */
-function opts(
-    refreshFn: () => Promise<ReadonlyArray<VectorIndexDefinition>> = neverRefresh,
-): Parameters<typeof planVectorIndexMigrationsForField>[3] {
-    return {
+/** Builds default planning options, merging any overrides. */
+function plan(
+    existingForField: ReadonlyArray<VectorIndexDefinition>,
+    documentCount: number,
+    overrides: Partial<PlanVectorIndexMigrationsArgs> = {},
+) {
+    return planVectorIndexMigrationsForField({
+        existingForField,
+        requiredIndex: required,
+        documentCount,
         nListsPinned: true,
         stuckSlotWaitMs: 0,
-        refreshIndicesForStuckCheck: refreshFn,
-    };
+        refreshIndicesForStuckCheck: neverRefresh,
+        ...overrides,
+    });
 }
 
 // ---------------------------------------------------------------------------
@@ -58,13 +67,13 @@ function opts(
 // ---------------------------------------------------------------------------
 describe('no existing indexes', () => {
     it('generates CreateVectorIndexMigration when collection has documents', async () => {
-        const migrations = await planVectorIndexMigrationsForField([], required, 100, opts());
+        const migrations = await plan([], 100);
         expect(migrations).toHaveLength(1);
         expect(migrations[0]).toBeInstanceOf(CreateVectorIndexMigration);
     });
 
     it('generates nothing when collection is empty', async () => {
-        const migrations = await planVectorIndexMigrationsForField([], required, 0, opts());
+        const migrations = await plan([], 0);
         expect(migrations).toHaveLength(0);
     });
 });
@@ -75,15 +84,40 @@ describe('no existing indexes', () => {
 describe('only A slot', () => {
     it('generates nothing when A matches', async () => {
         const aIndex = makeIndex('a');
-        const migrations = await planVectorIndexMigrationsForField([aIndex], required, 100, opts());
+        const migrations = await plan([aIndex], 100);
         expect(migrations).toHaveLength(0);
     });
 
     it('generates RecreateVectorIndexMigration when A params differ', async () => {
         const aIndex = makeIndex('a', { metric: 'l2' }); // metric mismatch
-        const migrations = await planVectorIndexMigrationsForField([aIndex], required, 100, opts());
+        const migrations = await plan([aIndex], 100);
         expect(migrations).toHaveLength(1);
         expect(migrations[0]).toBeInstanceOf(RecreateVectorIndexMigration);
+    });
+});
+
+// ---------------------------------------------------------------------------
+// forceRecreate
+// ---------------------------------------------------------------------------
+describe('forceRecreate', () => {
+    it('generates RecreateVectorIndexMigration even when A matches', async () => {
+        const aIndex = makeIndex('a'); // params match
+        const migrations = await plan([aIndex], 100, { forceRecreate: true });
+        expect(migrations).toHaveLength(1);
+        expect(migrations[0]).toBeInstanceOf(RecreateVectorIndexMigration);
+    });
+
+    it('does not double-recreate when params already differ', async () => {
+        const aIndex = makeIndex('a', { metric: 'l2' }); // mismatch
+        const migrations = await plan([aIndex], 100, { forceRecreate: true });
+        expect(migrations).toHaveLength(1);
+        expect(migrations[0]).toBeInstanceOf(RecreateVectorIndexMigration);
+    });
+
+    it('still creates when no index exists', async () => {
+        const migrations = await plan([], 100, { forceRecreate: true });
+        expect(migrations).toHaveLength(1);
+        expect(migrations[0]).toBeInstanceOf(CreateVectorIndexMigration);
     });
 });
 
@@ -95,12 +129,7 @@ describe('stuck A+B: B matches, A does not', () => {
         const aIndex = makeIndex('a', { metric: 'l2', trainingState: 'ready' }); // stale
         const bIndex = makeIndex('b', { trainingState: 'ready' }); // correct
 
-        const migrations = await planVectorIndexMigrationsForField(
-            [aIndex, bIndex],
-            required,
-            100,
-            opts(),
-        );
+        const migrations = await plan([aIndex, bIndex], 100);
 
         expect(migrations).toHaveLength(1);
         expect(migrations[0]).toBeInstanceOf(DropIndexMigration);
@@ -118,12 +147,7 @@ describe('stuck A+B: B matches, A does not', () => {
         const aIndex = makeIndex('a', { metric: 'l2', trainingState: 'ready' }); // stale
         const bIndex = makeIndex('b', { trainingState: 'training' }); // correct but not ready
 
-        const migrations = await planVectorIndexMigrationsForField(
-            [aIndex, bIndex],
-            required,
-            100,
-            opts(),
-        );
+        const migrations = await plan([aIndex, bIndex], 100);
 
         // Planner waits — no migration generated
         expect(migrations).toHaveLength(0);
@@ -141,12 +165,9 @@ describe('stuck A+B: both match (parallel race)', () => {
         // Simulate: both slots still exist after the wait
         const refresh = vi.fn().mockResolvedValue([aIndex, bIndex]);
 
-        const migrations = await planVectorIndexMigrationsForField(
-            [aIndex, bIndex],
-            required,
-            100,
-            opts(refresh),
-        );
+        const migrations = await plan([aIndex, bIndex], 100, {
+            refreshIndicesForStuckCheck: refresh,
+        });
 
         expect(refresh).toHaveBeenCalledOnce();
         expect(migrations).toHaveLength(1);
@@ -163,12 +184,9 @@ describe('stuck A+B: both match (parallel race)', () => {
         // Simulate: the other process finished and dropped B before our re-check
         const refresh = vi.fn().mockResolvedValue([aIndex]);
 
-        const migrations = await planVectorIndexMigrationsForField(
-            [aIndex, bIndex],
-            required,
-            100,
-            opts(refresh),
-        );
+        const migrations = await plan([aIndex, bIndex], 100, {
+            refreshIndicesForStuckCheck: refresh,
+        });
 
         expect(refresh).toHaveBeenCalledOnce();
         // No action needed: A is the surviving index and it matches.
@@ -179,12 +197,7 @@ describe('stuck A+B: both match (parallel race)', () => {
         const aIndex = makeIndex('a', { trainingState: 'ready' });
         const bIndex = makeIndex('b', { trainingState: 'training' }); // still training
 
-        const migrations = await planVectorIndexMigrationsForField(
-            [aIndex, bIndex],
-            required,
-            100,
-            opts(),
-        );
+        const migrations = await plan([aIndex, bIndex], 100);
 
         // Neither ready/ready → the wait+refresh path is skipped entirely; leave intact.
         expect(migrations).toHaveLength(0);
@@ -199,12 +212,7 @@ describe('stuck A+B: B does not match', () => {
         const aIndex = makeIndex('a', { trainingState: 'ready' }); // correct
         const bIndex = makeIndex('b', { metric: 'l2', trainingState: 'ready' }); // wrong
 
-        const migrations = await planVectorIndexMigrationsForField(
-            [aIndex, bIndex],
-            required,
-            100,
-            opts(),
-        );
+        const migrations = await plan([aIndex, bIndex], 100);
 
         expect(migrations).toHaveLength(1);
         expect(migrations[0]).toBeInstanceOf(DropIndexMigration);
@@ -217,12 +225,7 @@ describe('stuck A+B: B does not match', () => {
         const aIndex = makeIndex('a', { trainingState: 'training' }); // not yet usable
         const bIndex = makeIndex('b', { metric: 'l2', trainingState: 'ready' }); // wrong
 
-        const migrations = await planVectorIndexMigrationsForField(
-            [aIndex, bIndex],
-            required,
-            100,
-            opts(),
-        );
+        const migrations = await plan([aIndex, bIndex], 100);
 
         // A is not confirmed ready — wait for next run before dropping B.
         expect(migrations).toHaveLength(0);

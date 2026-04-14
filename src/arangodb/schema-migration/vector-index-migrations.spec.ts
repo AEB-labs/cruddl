@@ -15,7 +15,7 @@ import {
 import type { ArangoDBConfig } from '../config.js';
 import { isArangoDBDisabled } from '../testing/is-arangodb-disabled.js';
 import { SchemaAnalyzer } from './analyzer.js';
-import { getVectorIndexSlot, vectorIndexSlotName } from './index-helpers.js';
+import { vectorIndexSlotName } from './index-helpers.js';
 import {
     CreateVectorIndexMigration,
     DropIndexMigration,
@@ -124,7 +124,6 @@ describe.skipIf(isArangoDBDisabled())(
             const vectorIndexes = indexes.filter((i: any) => i.type === 'vector');
             expect(vectorIndexes).toHaveLength(1);
             expect(vectorIndexes[0].name).toEqual(vectorIndexSlotName('embedding', 'b'));
-            expect(getVectorIndexSlot(vectorIndexes[0].name)).toEqual('b');
         });
 
         it('places the re-recreated index back in slot A (A→B→A cycle)', async () => {

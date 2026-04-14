@@ -235,9 +235,8 @@ describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {
 
         it('always recreates even when the existing index already matches (force rebuild)', async () => {
             // This is the key differentiator of recreateVectorIndex: even if the existing
-            // index has matching params, it always rebuilds. Because ArangoDB deduplicates
-            // ensureIndex calls with identical params, the adapter drops and re-creates in
-            // slot A rather than using an A/B rotation.
+            // index has matching params, it always rebuilds using A/B slot rotation for
+            // zero-downtime operation.
             const model = createSimpleModel(gql`
                 type Article @rootEntity {
                     embedding: [Float]
@@ -252,7 +251,7 @@ describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {
 
             const field = model.rootEntityTypes[0].fields.find((f) => f.name === 'embedding')!;
 
-            // First call: creates slot A
+            // First call: creates slot A (no existing index)
             await adapter.recreateVectorIndex(field);
 
             const afterFirst = await db.collection('articles').indexes();
@@ -260,16 +259,14 @@ describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {
             expect(vectorAfterFirst).toHaveLength(1);
             expect(vectorAfterFirst[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
 
-            // Second call: drops the current index and rebuilds in slot A.
-            // ArangoDB's ensureIndex deduplication would return the existing index when params
-            // are identical, so a zero-downtime A/B rotation is not possible here. Instead we
-            // drop first and create fresh, ending up back in slot A.
+            // Second call: uses A/B rotation — builds slot B while slot A is still live,
+            // then drops slot A once slot B is ready. Zero-downtime even for identical params.
             await adapter.recreateVectorIndex(field);
 
             const afterSecond = await db.collection('articles').indexes();
             const vectorAfterSecond = afterSecond.filter((i: any) => i.type === 'vector');
             expect(vectorAfterSecond).toHaveLength(1);
-            expect(vectorAfterSecond[0].name).toEqual(vectorIndexSlotName('embedding', 'a'));
+            expect(vectorAfterSecond[0].name).toEqual(vectorIndexSlotName('embedding', 'b'));
         }, 30_000);
 
         it('throws when the collection has no documents', async () => {
