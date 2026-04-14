@@ -20,7 +20,7 @@ import {
     getFlexSearchViewNameForRootEntity,
     getRequiredViewsFromModel,
 } from './arango-search-helpers.js';
-import type { IndexDefinition } from './index-helpers.js';
+import type { PersistentIndexDefinition } from './index-helpers.js';
 import { calculateRequiredIndexOperations, getRequiredIndicesFromModel } from './index-helpers.js';
 import type { CreateArangoSearchAnalyzerMigrationConfig, SchemaMigration } from './migrations.js';
 import {
@@ -28,13 +28,18 @@ import {
     CreateDocumentCollectionMigration,
     CreateEdgeCollectionMigration,
     CreateIndexMigration,
+    CreateVectorIndexMigration,
     DropIndexMigration,
+    DropVectorIndexMigration,
+    RecreateVectorIndexMigration,
     UpdateArangoSearchAnalyzerMigration,
 } from './migrations.js';
+import { VectorIndexAnalyzer } from './vector-index/vector-index-analyzer.js';
 
 export class SchemaAnalyzer {
     private readonly db: Database;
     private readonly logger: Logger;
+    private readonly vectorIndexAnalyzer: VectorIndexAnalyzer;
 
     constructor(
         readonly config: ArangoDBConfig,
@@ -42,13 +47,15 @@ export class SchemaAnalyzer {
     ) {
         this.db = initDatabase(config);
         this.logger = getArangoDBLogger(schemaContext);
+        this.vectorIndexAnalyzer = new VectorIndexAnalyzer(this.db, config);
     }
 
     async getOutstandingMigrations(model: Model): Promise<ReadonlyArray<SchemaMigration>> {
         return [
             ...(await this.getDocumentCollectionMigrations(model)),
             ...(await this.getEdgeCollectionMigrations(model)),
-            ...(await this.getIndexMigrations(model)),
+            ...(await this.getPersistentIndexMigrations(model)),
+            ...(await this.getVectorIndexMigrations(model)),
             ...(await this.getArangoSearchMigrations(model)),
         ];
     }
@@ -104,63 +111,137 @@ export class SchemaAnalyzer {
         return migrations;
     }
 
-    async getIndexMigrations(
+    /**
+     * Returns migrations needed to bring persistent (non-vector) indexes in sync with the model.
+     */
+    async getPersistentIndexMigrations(
         model: Model,
     ): Promise<ReadonlyArray<CreateIndexMigration | DropIndexMigration>> {
-        // update indices
-        const requiredIndices = getRequiredIndicesFromModel(model);
+        // Fetch all existing indices and separate out persistent ones
         const existingIndicesPromises = model.rootEntityTypes.map((rootEntityType) =>
-            this.getPersistentCollectionIndices(rootEntityType),
+            this.getPersistentIndices(rootEntityType),
         );
-        let existingIndices: IndexDefinition[] = [];
-        await Promise.all(existingIndicesPromises).then((promiseResults) =>
-            promiseResults.forEach((indices) =>
-                indices.forEach((index) => existingIndices.push(index)),
-            ),
-        );
-        const { indicesToDelete, indicesToCreate } = calculateRequiredIndexOperations(
-            existingIndices,
-            requiredIndices,
-            this.config,
+        const existingIndices = (await Promise.all(existingIndicesPromises)).flat();
+
+        const requiredIndices = getRequiredIndicesFromModel(model).filter(
+            (i) => i.type === 'persistent',
         );
 
-        // this is useful to show a warning on large collections which would take a while to create an index
-        // (or even automatically defer large indices)
-        let collectionSizes = new Map<string, number>();
-        for (let index of [...indicesToCreate, ...indicesToDelete]) {
+        const { persistentIndicesToDelete, persistentIndicesToCreate } =
+            calculateRequiredIndexOperations(existingIndices, requiredIndices, this.config);
+
+        // Fetch collection document counts for the affected collections
+        const collectionSizes = new Map<string, number>();
+        for (const index of [...persistentIndicesToCreate, ...persistentIndicesToDelete]) {
             if (!collectionSizes.has(index.collectionName)) {
-                let collectionSize;
                 try {
-                    let countResult = await this.db.collection(index.collectionName).count();
-                    collectionSize = countResult.count;
-                    collectionSizes.set(index.collectionName, collectionSize);
+                    const countResult = await this.db.collection(index.collectionName).count();
+                    collectionSizes.set(index.collectionName, countResult.count);
                 } catch (e) {
-                    // ignore
+                    // ignore - collection may not exist yet
                 }
             }
         }
 
-        return [
-            ...indicesToCreate.map(
-                (index) =>
-                    new CreateIndexMigration({
-                        index,
-                        collectionSize: collectionSizes.get(index.collectionName),
-                    }),
-            ),
-            ...indicesToDelete.map(
-                (index) =>
-                    new DropIndexMigration({
-                        index,
-                        collectionSize: collectionSizes.get(index.collectionName),
-                    }),
-            ),
-        ];
+        const migrations: Array<CreateIndexMigration | DropIndexMigration> = [];
+        for (const index of persistentIndicesToCreate) {
+            migrations.push(
+                new CreateIndexMigration({
+                    index,
+                    collectionSize: collectionSizes.get(index.collectionName),
+                }),
+            );
+        }
+        for (const index of persistentIndicesToDelete) {
+            migrations.push(
+                new DropIndexMigration({
+                    index,
+                    collectionSize: collectionSizes.get(index.collectionName),
+                }),
+            );
+        }
+        return migrations;
     }
 
-    async getPersistentCollectionIndices(
+    /**
+     * Returns migrations needed to bring vector indexes in sync with the model.
+     *
+     * Phase 1: For each vector-indexed field, call analyzeField() and collect migrations.
+     * Phase 2: Drop orphaned vector indexes whose field is no longer in the model.
+     */
+    async getVectorIndexMigrations(
+        model: Model,
+    ): Promise<
+        ReadonlyArray<
+            CreateVectorIndexMigration | RecreateVectorIndexMigration | DropVectorIndexMigration
+        >
+    > {
+        const migrations: Array<
+            CreateVectorIndexMigration | RecreateVectorIndexMigration | DropVectorIndexMigration
+        > = [];
+
+        // Phase 1 - Per-field analysis
+        for (const rootEntityType of model.rootEntityTypes) {
+            for (const vectorIndex of rootEntityType.vectorIndices) {
+                const status = await this.vectorIndexAnalyzer.analyzeField(
+                    vectorIndex.field,
+                    false,
+                );
+                for (const migration of status.migrations) {
+                    migrations.push(
+                        migration as
+                            | CreateVectorIndexMigration
+                            | RecreateVectorIndexMigration
+                            | DropVectorIndexMigration,
+                    );
+                }
+            }
+        }
+
+        // Phase 2 - Orphaned index cleanup
+        for (const rootEntityType of model.rootEntityTypes) {
+            const collectionName = getCollectionNameForRootEntity(rootEntityType);
+            const coll = this.db.collection(collectionName);
+            if (!(await coll.exists())) {
+                continue;
+            }
+
+            const allIndexes = await coll.indexes();
+            const vectorIndexedFieldNames = new Set(
+                rootEntityType.vectorIndices.map((vi) => vi.field.name),
+            );
+
+            for (const index of allIndexes) {
+                if (index.type !== 'vector') {
+                    continue;
+                }
+                const indexName: string = index.name ?? '';
+                if (!indexName.startsWith('vector_')) {
+                    continue;
+                }
+                // Extract field name from the index fields array (should be a single element)
+                const indexFields: string[] = index.fields ?? [];
+                if (indexFields.length !== 1) {
+                    continue;
+                }
+                const indexFieldName = indexFields[0];
+                if (!vectorIndexedFieldNames.has(indexFieldName)) {
+                    migrations.push(
+                        new DropVectorIndexMigration({
+                            index,
+                            collectionName,
+                        }),
+                    );
+                }
+            }
+        }
+
+        return migrations;
+    }
+
+    private async getPersistentIndices(
         rootEntityType: RootEntityType,
-    ): Promise<ReadonlyArray<IndexDefinition>> {
+    ): Promise<ReadonlyArray<PersistentIndexDefinition>> {
         const collectionName = getCollectionNameForRootEntity(rootEntityType);
         const coll = this.db.collection(collectionName);
         if (!(await coll.exists())) {
@@ -168,17 +249,15 @@ export class SchemaAnalyzer {
         }
 
         const result = await this.db.collection(collectionName).indexes();
-        return result.flatMap((index) =>
-            index.type === 'persistent'
-                ? [
-                      {
-                          ...index,
-                          rootEntity: rootEntityType,
-                          collectionName,
-                      },
-                  ]
-                : [],
-        );
+        return result
+            .filter((index) => index.type === 'persistent')
+            .map(
+                (index): PersistentIndexDefinition => ({
+                    ...index,
+                    rootEntity: rootEntityType,
+                    collectionName,
+                }),
+            );
     }
 
     /**

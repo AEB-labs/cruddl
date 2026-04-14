@@ -1,0 +1,8 @@
+# Accessing _vectorScore outside a vectorSearch* field is a runtime error.
+# This test verifies that requesting it in allArticles produces a GraphQL error
+query vectorScoreInAllArticles {
+    allArticles(orderBy: title_ASC) {
+        title
+        _vectorScore
+    }
+}

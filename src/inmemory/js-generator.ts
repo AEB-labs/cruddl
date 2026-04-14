@@ -83,6 +83,7 @@ import {
     VariableAssignmentQueryNode,
     VariableQueryNode,
 } from '../core/query-tree/variables.js';
+import { VectorScoreQueryNode, VectorSearchQueryNode } from '../core/query-tree/vector-search.js';
 import { createFieldPathNode } from '../core/schema-generation/field-path-node.js';
 import { not } from '../core/schema-generation/utils/input-types.js';
 import { likePatternToRegExp } from '../core/utils/like-helpers.js';
@@ -1224,6 +1225,14 @@ register(FlexSearchQueryNode, (node, context) => {
         js.indent(js.lines(isFiltered ? js`.filter(${lambda(node.flexFilterNode)})` : js``)),
         orderFrag,
     );
+});
+
+register(VectorSearchQueryNode, () => {
+    throw new Error('Vector search is not supported by InMemoryAdapter');
+});
+
+register(VectorScoreQueryNode, (node) => {
+    throw new Error('Vector search is not supported by InMemoryAdapter');
 });
 
 register(FlexSearchFieldExistsQueryNode, (node, context) => {

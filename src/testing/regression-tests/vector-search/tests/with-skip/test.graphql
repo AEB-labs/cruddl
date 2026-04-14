@@ -1,0 +1,6 @@
+query withSkip {
+    vectorSearchArticles(field: embedding, vector: [1.0, 0.0, 0.0, 0.0], first: 5, skip: 10) {
+        title
+        _vectorScore
+    }
+}

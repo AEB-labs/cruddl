@@ -1,0 +1,23 @@
+{
+  "authRestricted": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "category": "tech",
+          "_vectorScore": 1
+        },
+        {
+          "title": "Gamma",
+          "category": "tech",
+          "_vectorScore": 0.7071067690849304
+        },
+        {
+          "title": "Epsilon",
+          "category": "tech",
+          "_vectorScore": 0
+        }
+      ]
+    }
+  }
+}

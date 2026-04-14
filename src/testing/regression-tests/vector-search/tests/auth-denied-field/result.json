@@ -1,0 +1,22 @@
+{
+  "authDeniedField": {
+    "errors": [
+      {
+        "message": "Not authorized to read Article.secretEmbedding",
+        "locations": [
+          {
+            "line": 2,
+            "column": 5
+          }
+        ],
+        "path": ["vectorSearchArticles"],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
+      }
+    ],
+    "data": {
+      "vectorSearchArticles": null
+    }
+  }
+}

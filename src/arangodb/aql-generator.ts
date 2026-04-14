@@ -95,6 +95,7 @@ import {
     VariableAssignmentQueryNode,
     VariableQueryNode,
 } from '../core/query-tree/variables.js';
+import { VectorScoreQueryNode, VectorSearchQueryNode } from '../core/query-tree/vector-search.js';
 import { not } from '../core/schema-generation/utils/input-types.js';
 import { analyzeLikePatternPrefix } from '../core/utils/like-helpers.js';
 import { isStringCaseInsensitive } from '../core/utils/string-utils.js';
@@ -184,6 +185,7 @@ class QueryContext {
         newContext.explicitlyReadAccessedCollections = this.explicitlyReadAccessedCollections;
         newContext.writeAccessedCollections = this.writeAccessedCollections;
         newContext.implicitlyReadAccessedCollections = this.implicitlyReadAccessedCollections;
+        newContext.extensions = this.extensions ? new Map(this.extensions.entries()) : undefined;
         return newContext;
     }
 
@@ -203,6 +205,7 @@ class QueryContext {
         newContext.explicitlyReadAccessedCollections = this.explicitlyReadAccessedCollections;
         newContext.writeAccessedCollections = this.writeAccessedCollections;
         newContext.implicitlyReadAccessedCollections = this.implicitlyReadAccessedCollections;
+        newContext.extensions = this.extensions ? new Map(this.extensions.entries()) : undefined;
         return newContext;
     }
 
@@ -400,7 +403,8 @@ function createAQLCompoundQuery(
 
 type NodeProcessor<T extends QueryNode> = (node: T, context: QueryContext) => AQLFragment;
 
-const inFlexSearchFilterSymbol = Symbol('inFlexSearchFilter');
+const inFlexSearchFilterContextKey = Symbol('inFlexSearchFilter');
+const vectorScoreContextKey = Symbol('VectorScoreQueryNode/scoreVar');
 
 namespace aqlExt {
     export function safeJSONKey(key: string): AQLFragment {
@@ -582,7 +586,7 @@ register(RevisionQueryNode, (node, context) => {
 register(FlexSearchQueryNode, (node, context) => {
     let itemContext = context
         .bindVariable(node.itemVariable)
-        .withExtension(inFlexSearchFilterSymbol, true);
+        .withExtension(inFlexSearchFilterContextKey, true);
     const viewName = getFlexSearchViewNameForRootEntity(node.rootEntityType!);
     context.addCollectionAccess(viewName, AccessType.EXPLICIT_READ);
     return aqlExt.subquery(
@@ -592,6 +596,107 @@ register(FlexSearchQueryNode, (node, context) => {
         node.isOptimisationsDisabled ? aql`OPTIONS { conditionOptimization: 'none' }` : aql``,
         aql`RETURN ${itemContext.getVariable(node.itemVariable)}`,
     );
+});
+
+register(VectorScoreQueryNode, (node, context) => {
+    const scoreVar = context.getExtension(vectorScoreContextKey) as AQLFragment | undefined;
+    if (!scoreVar) {
+        // VectorSearchGenerator makes sure such query trees are not generated
+        throw new Error(`Cannot use VectorScoreQueryNode outside of VectorSearchQueryNode`);
+    }
+    return scoreVar;
+});
+
+register(VectorSearchQueryNode, (node, context) => {
+    const collectionName = getCollectionNameForRootEntity(node.rootEntityType);
+    context.addCollectionAccess(collectionName, AccessType.EXPLICIT_READ);
+    const itemContext = context.bindVariable(node.itemVariable);
+    const itemVar = itemContext.getVariable(node.itemVariable);
+
+    // Determine the AQL function name and sort direction based on the vector similarity metric
+    const metric = node.field.vectorIndex!.metric;
+    let approxFnName: string;
+    let sortDesc: boolean;
+    switch (metric) {
+        case 'L2':
+            approxFnName = 'APPROX_NEAR_L2';
+            sortDesc = false;
+            break;
+        case 'INNER_PRODUCT':
+            approxFnName = 'APPROX_NEAR_INNER_PRODUCT';
+            sortDesc = true;
+            break;
+        case 'COSINE':
+        default:
+            approxFnName = 'APPROX_NEAR_COSINE';
+            sortDesc = true;
+            break;
+    }
+
+    // Build the APPROX_NEAR_* function call
+    const vectorArg = processNode(node.vectorNode, itemContext);
+    const fieldAccess = aql`${itemVar}.${aql.identifier(node.field.name)}`;
+    let approxCall: AQLFragment;
+    if (node.nProbe != null) {
+        approxCall = aql`${aql.code(approxFnName)}(${fieldAccess}, ${vectorArg}, { nProbe: ${aql.value(node.nProbe)} })`;
+    } else {
+        approxCall = aql`${aql.code(approxFnName)}(${fieldAccess}, ${vectorArg})`;
+    }
+
+    // Use a dedicated AQL variable for the score to avoid name collisions
+    const scoreVar = new AQLVariable('vectorScore');
+
+    // Make scoreVar available inside innerNode via context extension so that
+    // VectorScoreQueryNode handler can retrieve it without pattern matching.
+    const innerContext = itemContext.withExtension(vectorScoreContextKey, scoreVar);
+
+    // Build the query parts
+    const parts: AQLFragment[] = [];
+
+    parts.push(aql`FOR ${itemVar} IN ${aql.collection(collectionName)}`);
+
+    // Pre-filter (between FOR and SORT, for ArangoDB vector index pre-filtering in v3.12.6+)
+    const simplifiedFilterNode = simplifyBooleans(node.filterNode);
+    if (!simplifiedFilterNode.equals(ConstBoolQueryNode.TRUE)) {
+        parts.push(aql`FILTER ${processNode(simplifiedFilterNode, itemContext)}`);
+    }
+
+    // Compute similarity/distance score
+    parts.push(aql`LET ${scoreVar} = ${approxCall}`);
+
+    // Sort by score (DESC for similarity metrics, ASC for distance metrics)
+    if (sortDesc) {
+        parts.push(aql`SORT ${scoreVar} DESC`);
+    } else {
+        parts.push(aql`SORT ${scoreVar}`);
+    }
+
+    // maxCountNode is required because the vector search does not work without a LIMIT
+    const maxCount = processNode(node.maxCountNode, itemContext);
+    if (node.skipNode) {
+        const skip = processNode(node.skipNode, itemContext);
+        parts.push(aql`LIMIT ${skip}, ${maxCount}`);
+    } else {
+        parts.push(aql`LIMIT ${maxCount}`);
+    }
+
+    // Score threshold filter placed AFTER LIMIT.
+    //
+    // ArangoDB's query optimizer tries to push any FILTER on an APPROX_NEAR_* score variable
+    // into the EnumerateNearVector plan node, which it cannot do when the FILTER references
+    // the computed score variable (rather than a document field). Placing the FILTER after
+    // LIMIT side-steps this restriction: by then the result set has already been materialised
+    // and sorted, so ArangoDB treats it as a plain post-processing step.
+    if (node.minScore != null) {
+        parts.push(aql`FILTER ${scoreVar} >= ${aql.value(node.minScore)}`);
+    }
+    if (node.maxDistance != null) {
+        parts.push(aql`FILTER ${scoreVar} <= ${aql.value(node.maxDistance)}`);
+    }
+
+    parts.push(aql`RETURN ${processNode(node.innerNode, innerContext)}`);
+
+    return aqlExt.subquery(...parts);
 });
 
 register(TransformListQueryNode, (node, context) => {
@@ -1018,7 +1123,7 @@ register(BinaryOperationQueryNode, (node, context) => {
         node.operator === BinaryOperator.UNEQUAL &&
         (node.rhs instanceof NullQueryNode ||
             (node.rhs instanceof LiteralQueryNode && !isDefined(node.rhs.value))) &&
-        !context.getExtension(inFlexSearchFilterSymbol)
+        !context.getExtension(inFlexSearchFilterContextKey)
     ) {
         return aql`(${lhs} > NULL)`;
     }

@@ -1,0 +1,53 @@
+{
+  "withMinScore": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "_vectorScore": 1
+        },
+        {
+          "title": "Gamma",
+          "_vectorScore": 0.7071067690849304
+        }
+      ]
+    }
+  },
+  "withoutMinScore": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "_vectorScore": 1
+        },
+        {
+          "title": "Gamma",
+          "_vectorScore": 0.7071067690849304
+        },
+        {
+          "title": "Epsilon",
+          "_vectorScore": 0
+        },
+        {
+          "title": "Delta",
+          "_vectorScore": 0
+        },
+        {
+          "title": "Beta",
+          "_vectorScore": 0
+        }
+      ]
+    }
+  },
+  "withFilterAndMinScore": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "isPublished": true,
+          "_vectorScore": 1
+        }
+      ]
+    }
+  }
+}

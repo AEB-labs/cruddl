@@ -19,6 +19,7 @@ import type { QueryNodeField, QueryNodeObjectType } from './query-node-object-ty
 import { QueryNodeListType, QueryNodeNonNullType } from './query-node-object-type/definition.js';
 import type { UniqueFieldArgumentsGenerator } from './unique-field-arguments-generator.js';
 import { getEntitiesByUniqueFieldQuery } from './utils/entities-by-unique-field.js';
+import type { VectorSearchGenerator } from './vector-search-generator.js';
 
 export class QueryTypeGenerator {
     constructor(
@@ -29,6 +30,7 @@ export class QueryTypeGenerator {
         private readonly metaTypeGenerator: MetaTypeGenerator,
         private readonly flexSearchGenerator: FlexSearchGenerator,
         private readonly uniqueFieldArgumentsGenerator: UniqueFieldArgumentsGenerator,
+        private readonly vectorSearchGenerator: VectorSearchGenerator,
     ) {}
 
     @memorize()
@@ -72,6 +74,9 @@ export class QueryTypeGenerator {
         if (rootEntityType.isFlexSearchIndexed) {
             queryNodeFields.push(this.getFlexSearchEntitiesField(rootEntityType));
             queryNodeFields.push(this.getFlexSearchEntitiesFieldMeta(rootEntityType));
+        }
+        if (rootEntityType.vectorIndices.length > 0) {
+            queryNodeFields.push(this.getVectorSearchEntitiesField(rootEntityType));
         }
         return queryNodeFields;
     }
@@ -151,5 +156,9 @@ export class QueryTypeGenerator {
     private getFlexSearchEntitiesFieldMeta(rootEntityType: RootEntityType): QueryNodeField {
         const metaType = this.metaTypeGenerator.generate();
         return this.flexSearchGenerator.generateMeta(rootEntityType, metaType);
+    }
+
+    private getVectorSearchEntitiesField(rootEntityType: RootEntityType): QueryNodeField {
+        return this.vectorSearchGenerator.generate(rootEntityType);
     }
 }
