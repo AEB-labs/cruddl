@@ -74,7 +74,7 @@ function makeRequired(
     } = {},
 ): VectorIndexDefinition {
     return {
-        fields: ['embedding'] as [string],
+        fieldName: ['embedding'] as [string],
         collectionName: 'articles',
         sparse: 'sparse' in overrides ? overrides.sparse! : true,
         params: {

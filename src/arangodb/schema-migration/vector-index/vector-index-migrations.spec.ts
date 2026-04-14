@@ -296,7 +296,7 @@ describe.skipIf(isArangoDBDisabled())(
             const [m] = migrations;
             expect(m).toBeInstanceOf(DropVectorIndexMigration);
             if (m instanceof DropVectorIndexMigration) {
-                expect(m.indexName).toEqual(vectorIndexSlotName('embedding', 'b'));
+                expect(m.index.name).toEqual(vectorIndexSlotName('embedding', 'b'));
             }
         });
 
@@ -322,7 +322,7 @@ describe.skipIf(isArangoDBDisabled())(
             expect(migrations).toHaveLength(1);
             const [drop] = migrations;
             expect(drop).toBeInstanceOf(DropVectorIndexMigration);
-            expect((drop as DropVectorIndexMigration).indexName).toEqual(
+            expect((drop as DropVectorIndexMigration).index.name).toEqual(
                 vectorIndexSlotName('embedding', 'b'),
             );
 
@@ -421,7 +421,7 @@ describe.skipIf(isArangoDBDisabled())(
                 (m) => m instanceof RecreateVectorIndexMigration,
             );
             expect(dropMigrations).toHaveLength(1);
-            expect((dropMigrations[0] as DropVectorIndexMigration).indexName).toEqual(
+            expect((dropMigrations[0] as DropVectorIndexMigration).index.name).toEqual(
                 vectorIndexSlotName('embedding', 'a'),
             );
             expect(recreateMigrations).toHaveLength(0);
@@ -487,7 +487,7 @@ describe.skipIf(isArangoDBDisabled())(
             );
             // Stuck B (COSINE) is dropped by the stuck-slot handler
             expect(dropMigrations).toHaveLength(1);
-            expect((dropMigrations[0] as DropVectorIndexMigration).indexName).toEqual(
+            expect((dropMigrations[0] as DropVectorIndexMigration).index.name).toEqual(
                 vectorIndexSlotName('embedding', 'b'),
             );
             // A (COSINE) is scheduled for recreation to become L2
@@ -524,7 +524,7 @@ describe.skipIf(isArangoDBDisabled())(
             const dropMigrations = migrations.filter((m) => m instanceof DropVectorIndexMigration);
             expect(dropMigrations).toHaveLength(2);
             const droppedNames = dropMigrations.map(
-                (m) => (m as DropVectorIndexMigration).indexName,
+                (m) => (m as DropVectorIndexMigration).index.name,
             );
             expect(droppedNames).toContain(vectorIndexSlotName('embedding', 'a'));
             expect(droppedNames).toContain(vectorIndexSlotName('embedding', 'b'));
@@ -579,7 +579,9 @@ describe.skipIf(isArangoDBDisabled())(
 
             // Get the index id, then drop the index with the raw API to simulate concurrent removal
             const indexes = await db.collection('articles').indexes();
-            const vectorIndex = indexes.find((i: any) => i.type === 'vector');
+            const vectorIndex = indexes.find(
+                (i): i is VectorIndexDescription => i.type === 'vector',
+            );
             expect(vectorIndex).toBeDefined();
             if (!vectorIndex) {
                 return; // type guard for TS
@@ -588,7 +590,7 @@ describe.skipIf(isArangoDBDisabled())(
 
             // Now perform a DropVectorIndexMigration for the already-gone index - should not throw
             const dropMigration = new DropVectorIndexMigration({
-                indexName: vectorIndex.name,
+                index: vectorIndex,
                 collectionName: 'articles',
             });
 
@@ -656,7 +658,7 @@ describe.skipIf(isArangoDBDisabled())(
             // Exactly one DropVectorIndexMigration for the lower-ID index (slot A, created first)
             expect(migrations).toHaveLength(1);
             expect(migrations[0]).toBeInstanceOf(DropVectorIndexMigration);
-            expect((migrations[0] as DropVectorIndexMigration).indexName).toEqual(
+            expect((migrations[0] as DropVectorIndexMigration).index.name).toEqual(
                 vectorIndexSlotName('embedding', 'a'),
             );
         });

@@ -72,7 +72,7 @@ export class VectorIndexAnalyzer {
             : computeAutoNLists(vectorDocumentCount);
 
         const requiredIndex: VectorIndexDefinition = {
-            fields: [fieldName] as [string],
+            fieldName,
             collectionName,
             sparse: vectorIndex.sparse,
             params: {

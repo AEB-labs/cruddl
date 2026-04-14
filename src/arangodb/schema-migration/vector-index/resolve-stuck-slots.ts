@@ -83,7 +83,7 @@ export function resolveStuckSlots(params: ResolveStuckSlotsParams): ResolveStuck
             survivingIndex: slotB,
             migrations: [
                 new DropVectorIndexMigration({
-                    indexName: slotA.name,
+                    index: slotA,
                     collectionName,
                 }),
             ],
@@ -109,7 +109,7 @@ export function resolveStuckSlots(params: ResolveStuckSlotsParams): ResolveStuck
             survivingIndex: toKeep,
             migrations: [
                 new DropVectorIndexMigration({
-                    indexName: toDrop.name,
+                    index: toDrop,
                     collectionName,
                 }),
             ],
@@ -137,7 +137,7 @@ export function resolveStuckSlots(params: ResolveStuckSlotsParams): ResolveStuck
             survivingIndex: slotA,
             migrations: [
                 new DropVectorIndexMigration({
-                    indexName: slotB.name,
+                    index: slotB,
                     collectionName,
                 }),
             ],
@@ -186,7 +186,7 @@ export function resolveStuckSlots(params: ResolveStuckSlotsParams): ResolveStuck
             survivingIndex: slotA,
             migrations: [
                 new DropVectorIndexMigration({
-                    indexName: slotB.name,
+                    index: slotB,
                     collectionName,
                 }),
             ],
@@ -200,7 +200,7 @@ export function resolveStuckSlots(params: ResolveStuckSlotsParams): ResolveStuck
         survivingIndex: slotA,
         migrations: [
             new DropVectorIndexMigration({
-                indexName: slotB.name,
+                index: slotB,
                 collectionName,
             }),
         ],

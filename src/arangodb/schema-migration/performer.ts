@@ -90,9 +90,7 @@ export class MigrationPerformer {
 
     private async dropVectorIndex(migration: DropVectorIndexMigration) {
         try {
-            await this.db
-                .collection(migration.collectionName)
-                .dropIndex({ name: migration.indexName });
+            await this.db.collection(migration.collectionName).dropIndex(migration.index);
         } catch (e: any) {
             if (e.errorNum === ERROR_ARANGO_INDEX_NOT_FOUND) {
                 return;
@@ -115,7 +113,7 @@ export class MigrationPerformer {
     ) {
         const requiredIndex = migration.requiredIndex;
         const slot = requiredIndex.slot ?? 'a';
-        const fieldName = requiredIndex.fields[0];
+        const fieldName = requiredIndex.fieldName;
         const indexName = vectorIndexSlotName(fieldName, slot);
         const collectionName = requiredIndex.collectionName;
 

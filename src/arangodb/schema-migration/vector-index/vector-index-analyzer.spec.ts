@@ -1,3 +1,5 @@
+// noinspection GraphQLUnresolvedReference
+
 import type { VectorIndexDescription, VectorIndexTrainingState } from 'arangojs/indexes';
 import { gql } from 'graphql-tag';
 import { describe, expect, it, vi } from 'vitest';
@@ -7,132 +9,6 @@ import { VectorIndexAnalyzer } from './vector-index-analyzer.js';
 import type { VectorIndexSlot } from './vector-index-definition.js';
 import { computeAutoNLists, vectorIndexSlotName } from './vector-index-helpers.js';
 import { VectorIndexState } from './vector-index-status.js';
-
-// ---------------------------------------------------------------------------
-// Test helpers
-// ---------------------------------------------------------------------------
-
-function makeExistingIndex(
-    fieldName: string,
-    slot: VectorIndexSlot,
-    overrides: {
-        metric?: 'cosine' | 'l2' | 'innerProduct';
-        dimension?: number;
-        nLists?: number;
-        sparse?: boolean;
-        storedValues?: string[];
-        trainingState?: VectorIndexTrainingState;
-    } = {},
-): VectorIndexDescription {
-    const name = vectorIndexSlotName(fieldName, slot);
-    return {
-        id: `coll/${slot === 'a' ? 100 : 200}`,
-        name,
-        type: 'vector',
-        fields: [fieldName] as [string],
-        sparse: overrides.sparse ?? true,
-        unique: false,
-        parallelism: 1,
-        inBackground: true,
-        params: {
-            metric: overrides.metric ?? 'cosine',
-            dimension: overrides.dimension ?? 4,
-            nLists: overrides.nLists ?? 1,
-        },
-        storedValues: overrides.storedValues ?? ['title'],
-        trainingState: overrides.trainingState ?? 'ready',
-    };
-}
-
-interface MockCollection {
-    exists: ReturnType<typeof vi.fn>;
-    indexes: ReturnType<typeof vi.fn>;
-    count: ReturnType<typeof vi.fn>;
-}
-
-interface MockDatabase {
-    collection: ReturnType<typeof vi.fn>;
-    query: ReturnType<typeof vi.fn>;
-}
-
-function createMockDb(coll: MockCollection, sparseCount?: number): MockDatabase {
-    const mockCursor = { next: vi.fn().mockResolvedValue(sparseCount ?? 0) };
-    return {
-        collection: vi.fn().mockReturnValue(coll),
-        query: vi.fn().mockResolvedValue(mockCursor),
-    };
-}
-
-function createMockCollection(overrides: {
-    exists?: boolean;
-    indexes?: object[];
-    count?: number;
-}): MockCollection {
-    return {
-        exists: vi.fn().mockResolvedValue(overrides.exists ?? true),
-        indexes: vi.fn().mockResolvedValue(overrides.indexes ?? []),
-        count: vi.fn().mockResolvedValue({ count: overrides.count ?? 0 }),
-    };
-}
-
-const defaultConfig: ArangoDBConfig = {
-    url: '',
-    databaseName: '',
-    vectorIndexNListsRebuildThreshold: undefined,
-};
-
-// ---------------------------------------------------------------------------
-// Models
-// ---------------------------------------------------------------------------
-
-const model = createSimpleModel(gql`
-    type Article @rootEntity {
-        title: String
-        embedding: [Float]
-            @vectorIndex(dimension: 4, defaultNProbe: 10, maxNProbe: 50, storedValues: ["title"])
-    }
-`);
-
-const rootEntity = model.rootEntityTypes.find((r) => r.name === 'Article')!;
-const field = rootEntity.fields.find((f) => f.name === 'embedding')!;
-
-const modelWithNLists = createSimpleModel(gql`
-    type Article @rootEntity {
-        title: String
-        embedding: [Float]
-            @vectorIndex(
-                dimension: 4
-                nLists: 42
-                defaultNProbe: 10
-                maxNProbe: 50
-                storedValues: ["title"]
-            )
-    }
-`);
-const fieldWithNLists = modelWithNLists.rootEntityTypes
-    .find((r) => r.name === 'Article')!
-    .fields.find((f) => f.name === 'embedding')!;
-
-const nonSparseModel = createSimpleModel(gql`
-    type Article @rootEntity {
-        title: String
-        embedding: [Float]
-            @vectorIndex(
-                dimension: 4
-                sparse: false
-                defaultNProbe: 10
-                maxNProbe: 50
-                storedValues: ["title"]
-            )
-    }
-`);
-const nonSparseField = nonSparseModel.rootEntityTypes
-    .find((r) => r.name === 'Article')!
-    .fields.find((f) => f.name === 'embedding')!;
-
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
 
 describe('VectorIndexAnalyzer', () => {
     describe('analyzeField', () => {
@@ -353,3 +229,129 @@ describe('VectorIndexAnalyzer', () => {
         });
     });
 });
+
+// ---------------------------------------------------------------------------
+// Test helpers
+// ---------------------------------------------------------------------------
+
+function makeExistingIndex(
+    fieldName: string,
+    slot: VectorIndexSlot,
+    overrides: {
+        metric?: 'cosine' | 'l2' | 'innerProduct';
+        dimension?: number;
+        nLists?: number;
+        sparse?: boolean;
+        storedValues?: string[];
+        trainingState?: VectorIndexTrainingState;
+    } = {},
+): VectorIndexDescription {
+    const name = vectorIndexSlotName(fieldName, slot);
+    return {
+        id: `coll/${slot === 'a' ? 100 : 200}`,
+        name,
+        type: 'vector',
+        fields: [fieldName] as [string],
+        sparse: overrides.sparse ?? true,
+        unique: false,
+        parallelism: 1,
+        inBackground: true,
+        params: {
+            metric: overrides.metric ?? 'cosine',
+            dimension: overrides.dimension ?? 4,
+            nLists: overrides.nLists ?? 1,
+        },
+        storedValues: overrides.storedValues ?? ['title'],
+        trainingState: overrides.trainingState ?? 'ready',
+    };
+}
+
+interface MockCollection {
+    exists: ReturnType<typeof vi.fn>;
+    indexes: ReturnType<typeof vi.fn>;
+    count: ReturnType<typeof vi.fn>;
+}
+
+interface MockDatabase {
+    collection: ReturnType<typeof vi.fn>;
+    query: ReturnType<typeof vi.fn>;
+}
+
+function createMockDb(coll: MockCollection, sparseCount?: number): MockDatabase {
+    const mockCursor = { next: vi.fn().mockResolvedValue(sparseCount ?? 0) };
+    return {
+        collection: vi.fn().mockReturnValue(coll),
+        query: vi.fn().mockResolvedValue(mockCursor),
+    };
+}
+
+function createMockCollection(overrides: {
+    exists?: boolean;
+    indexes?: object[];
+    count?: number;
+}): MockCollection {
+    return {
+        exists: vi.fn().mockResolvedValue(overrides.exists ?? true),
+        indexes: vi.fn().mockResolvedValue(overrides.indexes ?? []),
+        count: vi.fn().mockResolvedValue({ count: overrides.count ?? 0 }),
+    };
+}
+
+const defaultConfig: ArangoDBConfig = {
+    url: '',
+    databaseName: '',
+    vectorIndexNListsRebuildThreshold: undefined,
+};
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+const model = createSimpleModel(gql`
+    type Article @rootEntity {
+        title: String
+        embedding: [Float]
+            @vectorIndex(dimension: 4, defaultNProbe: 10, maxNProbe: 50, storedValues: ["title"])
+    }
+`);
+
+const rootEntity = model.rootEntityTypes.find((r) => r.name === 'Article')!;
+const field = rootEntity.fields.find((f) => f.name === 'embedding')!;
+
+const modelWithNLists = createSimpleModel(gql`
+    type Article @rootEntity {
+        title: String
+        embedding: [Float]
+            @vectorIndex(
+                dimension: 4
+                nLists: 42
+                defaultNProbe: 10
+                maxNProbe: 50
+                storedValues: ["title"]
+            )
+    }
+`);
+const fieldWithNLists = modelWithNLists.rootEntityTypes
+    .find((r) => r.name === 'Article')!
+    .fields.find((f) => f.name === 'embedding')!;
+
+const nonSparseModel = createSimpleModel(gql`
+    type Article @rootEntity {
+        title: String
+        embedding: [Float]
+            @vectorIndex(
+                dimension: 4
+                sparse: false
+                defaultNProbe: 10
+                maxNProbe: 50
+                storedValues: ["title"]
+            )
+    }
+`);
+const nonSparseField = nonSparseModel.rootEntityTypes
+    .find((r) => r.name === 'Article')!
+    .fields.find((f) => f.name === 'embedding')!;
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------

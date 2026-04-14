@@ -101,11 +101,11 @@ export class CreateVectorIndexMigration {
     }
 
     get description() {
-        return `create vector index ${this.requiredIndex.collectionName}/${this.requiredIndex.fields[0]}`;
+        return `create vector index ${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName[0]}`;
     }
 
     get id() {
-        return `createVectorIndex/${this.requiredIndex.collectionName}/${this.requiredIndex.fields[0]}`;
+        return `createVectorIndex/${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName[0]}`;
     }
 
     get isMandatory() {
@@ -137,11 +137,11 @@ export class RecreateVectorIndexMigration {
     }
 
     get description() {
-        return `recreate vector index ${this.requiredIndex.collectionName}/${this.requiredIndex.fields[0]} with updated parameters`;
+        return `recreate vector index ${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName[0]} with updated parameters`;
     }
 
     get id() {
-        return `recreateVectorIndex/${this.requiredIndex.collectionName}/${this.requiredIndex.fields[0]}`;
+        return `recreateVectorIndex/${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName[0]}`;
     }
 
     get isMandatory() {
@@ -150,8 +150,8 @@ export class RecreateVectorIndexMigration {
 }
 
 interface DropVectorIndexMigrationConfig {
-    readonly indexName: string;
     readonly collectionName: string;
+    readonly index: VectorIndexDescription;
 }
 
 /**
@@ -159,20 +159,20 @@ interface DropVectorIndexMigrationConfig {
  */
 export class DropVectorIndexMigration {
     readonly type: 'dropVectorIndex' = 'dropVectorIndex';
-    readonly indexName: string;
     readonly collectionName: string;
+    readonly index: VectorIndexDescription;
 
     constructor(config: DropVectorIndexMigrationConfig) {
-        this.indexName = config.indexName;
+        this.index = config.index;
         this.collectionName = config.collectionName;
     }
 
     get description() {
-        return `drop vector index "${this.indexName}" on collection ${this.collectionName}`;
+        return `drop vector index "${this.index.name}" (${this.index.id}) on collection ${this.collectionName}`;
     }
 
     get id() {
-        return `dropVectorIndex/${this.collectionName}/${this.indexName}`;
+        return `dropVectorIndex/${this.collectionName}/${this.index.id}`;
     }
 
     get isMandatory() {

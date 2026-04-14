@@ -211,16 +211,16 @@ export class SchemaAnalyzer {
                 rootEntityType.vectorIndices.map((vi) => vi.field.name),
             );
 
-            for (const idx of allIndexes) {
-                if ((idx as any).type !== 'vector') {
+            for (const index of allIndexes) {
+                if (index.type !== 'vector') {
                     continue;
                 }
-                const indexName: string = (idx as any).name ?? '';
+                const indexName: string = index.name ?? '';
                 if (!indexName.startsWith('vector_')) {
                     continue;
                 }
                 // Extract field name from the index fields array (should be a single element)
-                const indexFields: string[] = (idx as any).fields ?? [];
+                const indexFields: string[] = index.fields ?? [];
                 if (indexFields.length !== 1) {
                     continue;
                 }
@@ -228,7 +228,7 @@ export class SchemaAnalyzer {
                 if (!vectorIndexedFieldNames.has(indexFieldName)) {
                     migrations.push(
                         new DropVectorIndexMigration({
-                            indexName: indexName,
+                            index,
                             collectionName,
                         }),
                     );

@@ -10,7 +10,7 @@ export type ArangoVectorSimilarityMetric = 'cosine' | 'l2' | 'innerProduct';
  */
 export interface VectorIndexDefinition {
     readonly collectionName: string;
-    readonly fields: [string];
+    readonly fieldName: string;
     readonly sparse: boolean;
     /**
      * Target A/B slot for creation or recreation.
