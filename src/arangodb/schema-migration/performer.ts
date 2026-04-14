@@ -143,9 +143,7 @@ export class MigrationPerformer {
                     : {}),
                 defaultNProbe,
             },
-            ...(requiredIndex.storedValues && requiredIndex.storedValues.length > 0
-                ? { storedValues: requiredIndex.storedValues.map((f) => [f]) }
-                : {}),
+            storedValues: requiredIndex.storedValues,
             inBackground: true,
         } as any);
 
@@ -195,7 +193,7 @@ export class MigrationPerformer {
 
         while (true) {
             const indexes = await this.db.collection(collectionName).indexes();
-            const index = indexes.find((i: any) => i.name === indexName) as any;
+            const index = indexes.find((i) => i.name === indexName);
 
             if (!index) {
                 throw new Error(

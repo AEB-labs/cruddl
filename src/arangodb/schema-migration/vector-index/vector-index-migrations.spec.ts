@@ -628,10 +628,10 @@ describe.skipIf(isArangoDBDisabled())(
         });
 
         // -----------------------------------------------------------------------
-        // Stuck A+B: both match, both ready - drops B conservatively
+        // Stuck A+B: both match, both ready - drops older one conservatively
         // -----------------------------------------------------------------------
 
-        it('drops B when both A and B match and are ready (tiebreaker)', async () => {
+        it('drops oldest when both A and B match and are ready (tiebreaker)', async () => {
             const project = buildVectorProject({ nLists: 1 });
             const db = getTempDatabase();
             await seedArticles(db);
@@ -640,7 +640,7 @@ describe.skipIf(isArangoDBDisabled())(
             await runMigrations(project);
 
             // Inject a matching slot B (same params)
-            await ensureSlotIndex(db, 'b', 'cosine', 4, 1);
+            await ensureSlotIndex(db, 'b', 'cosine', 4, 1, true);
 
             // Wait for B to be ready
             const performer = makePerformer();
@@ -738,7 +738,15 @@ async function ensureSlotIndex(
         name: vectorIndexSlotName('embedding', slot),
         fields: ['embedding'],
         sparse,
-        params: { metric, dimension, nLists },
+        params: {
+            metric,
+            dimension,
+            nLists,
+            // arangodb does not allow us to create two identical indices, but we need this sometimes
+            // we don't use defaultNProbe anyway, so set that based on slot
+            // (this is also done in the actual performer)
+            defaultNProbe: slot === 'a' ? 1 : 2,
+        },
         inBackground: true,
     } as EnsureVectorIndexOptions & {
         // currently missing in arangojs types

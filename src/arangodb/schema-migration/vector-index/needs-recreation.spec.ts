@@ -1,3 +1,5 @@
+// noinspection GraphQLUnresolvedReference
+
 import type { VectorIndexDescription, VectorIndexTrainingState } from 'arangojs/indexes';
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
@@ -64,7 +66,7 @@ function makeRequired(
     } = {},
 ): VectorIndexDefinition {
     return {
-        fieldName: ['embedding'] as [string],
+        fieldName: 'embedding',
         collectionName: 'articles',
         sparse: 'sparse' in overrides ? overrides.sparse! : true,
         params: {

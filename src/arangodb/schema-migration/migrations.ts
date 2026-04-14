@@ -101,11 +101,11 @@ export class CreateVectorIndexMigration {
     }
 
     get description() {
-        return `create vector index ${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName[0]}`;
+        return `create vector index ${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName}`;
     }
 
     get id() {
-        return `createVectorIndex/${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName[0]}`;
+        return `createVectorIndex/${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName}`;
     }
 
     get isMandatory() {
@@ -137,11 +137,11 @@ export class RecreateVectorIndexMigration {
     }
 
     get description() {
-        return `recreate vector index ${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName[0]} with updated parameters`;
+        return `recreate vector index ${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName} with updated parameters`;
     }
 
     get id() {
-        return `recreateVectorIndex/${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName[0]}`;
+        return `recreateVectorIndex/${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName}`;
     }
 
     get isMandatory() {

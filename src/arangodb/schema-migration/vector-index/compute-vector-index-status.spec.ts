@@ -1,3 +1,5 @@
+// noinspection GraphQLUnresolvedReference
+
 import type { VectorIndexDescription, VectorIndexTrainingState } from 'arangojs/indexes';
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
@@ -74,7 +76,7 @@ function makeRequired(
     } = {},
 ): VectorIndexDefinition {
     return {
-        fieldName: ['embedding'] as [string],
+        fieldName: 'embedding',
         collectionName: 'articles',
         sparse: 'sparse' in overrides ? overrides.sparse! : true,
         params: {
@@ -231,7 +233,7 @@ describe('computeVectorIndexStatus', () => {
             expect(status.state).toBe(VectorIndexState.STUCK_CLEANUP);
             const drops = status.migrations.filter((m) => m instanceof DropVectorIndexMigration);
             expect(drops).toHaveLength(1);
-            expect((drops[0] as DropVectorIndexMigration).indexName).toBe(
+            expect((drops[0] as DropVectorIndexMigration).index.name).toBe(
                 vectorIndexSlotName('embedding', 'b'),
             );
         });
@@ -245,7 +247,7 @@ describe('computeVectorIndexStatus', () => {
             expect(status.state).toBe(VectorIndexState.STUCK_CLEANUP);
             const drops = status.migrations.filter((m) => m instanceof DropVectorIndexMigration);
             expect(drops).toHaveLength(1);
-            expect((drops[0] as DropVectorIndexMigration).indexName).toBe(
+            expect((drops[0] as DropVectorIndexMigration).index.name).toBe(
                 vectorIndexSlotName('embedding', 'a'),
             );
         });
@@ -262,7 +264,7 @@ describe('computeVectorIndexStatus', () => {
                 (m) => m instanceof RecreateVectorIndexMigration,
             );
             expect(drops).toHaveLength(1);
-            expect((drops[0] as DropVectorIndexMigration).indexName).toBe(
+            expect((drops[0] as DropVectorIndexMigration).index.name).toBe(
                 vectorIndexSlotName('embedding', 'b'),
             );
             expect(recreates).toHaveLength(1);
@@ -279,7 +281,7 @@ describe('computeVectorIndexStatus', () => {
             expect(status.state).toBe(VectorIndexState.STUCK_CLEANUP);
             const drops = status.migrations.filter((m) => m instanceof DropVectorIndexMigration);
             expect(drops).toHaveLength(1);
-            expect((drops[0] as DropVectorIndexMigration).indexName).toBe(
+            expect((drops[0] as DropVectorIndexMigration).index.name).toBe(
                 vectorIndexSlotName('embedding', 'a'),
             );
         });
@@ -292,7 +294,7 @@ describe('computeVectorIndexStatus', () => {
             );
             const drops = status.migrations.filter((m) => m instanceof DropVectorIndexMigration);
             expect(drops).toHaveLength(1);
-            expect((drops[0] as DropVectorIndexMigration).indexName).toBe(
+            expect((drops[0] as DropVectorIndexMigration).index.name).toBe(
                 vectorIndexSlotName('embedding', 'b'),
             );
         });
@@ -305,7 +307,7 @@ describe('computeVectorIndexStatus', () => {
             );
             const drops = status.migrations.filter((m) => m instanceof DropVectorIndexMigration);
             expect(drops).toHaveLength(1);
-            expect((drops[0] as DropVectorIndexMigration).indexName).toBe(
+            expect((drops[0] as DropVectorIndexMigration).index.name).toBe(
                 vectorIndexSlotName('embedding', 'b'),
             );
         });
@@ -339,7 +341,7 @@ describe('computeVectorIndexStatus', () => {
             expect(status.state).toBe(VectorIndexState.STUCK_CLEANUP);
             const drops = status.migrations.filter((m) => m instanceof DropVectorIndexMigration);
             expect(drops).toHaveLength(1);
-            expect((drops[0] as DropVectorIndexMigration).indexName).toBe(
+            expect((drops[0] as DropVectorIndexMigration).index.name).toBe(
                 vectorIndexSlotName('embedding', 'b'),
             );
         });
@@ -363,7 +365,7 @@ describe('computeVectorIndexStatus', () => {
             expect(status.state).toBe(VectorIndexState.STUCK_CLEANUP);
             const drops = status.migrations.filter((m) => m instanceof DropVectorIndexMigration);
             expect(drops).toHaveLength(1);
-            expect((drops[0] as DropVectorIndexMigration).indexName).toBe(
+            expect((drops[0] as DropVectorIndexMigration).index.name).toBe(
                 vectorIndexSlotName('embedding', 'a'),
             );
         });
@@ -558,7 +560,7 @@ describe('computeVectorIndexStatus', () => {
                 (m) => m instanceof DropVectorIndexMigration,
             ) as DropVectorIndexMigration;
             expect(drop).toBeDefined();
-            expect(drop.indexName).toBe(vectorIndexSlotName('embedding', 'b'));
+            expect(drop.index.name).toBe(vectorIndexSlotName('embedding', 'b'));
             expect(drop.collectionName).toBe('articles');
         });
     });
