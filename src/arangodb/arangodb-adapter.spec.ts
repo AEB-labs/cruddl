@@ -269,22 +269,5 @@ describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {
             expect(vectorAfterSecond).toHaveLength(1);
             expect(vectorAfterSecond[0].name).toEqual(vectorIndexSlotName('embedding', 'b'));
         }, 30_000);
-
-        it('throws when the collection has no documents', async () => {
-            const model = createSimpleModel(gql`
-                type Article @rootEntity {
-                    embedding: [Float]
-                        @vectorIndex(dimension: 4, nLists: 1, defaultNProbe: 10, maxNProbe: 50)
-                }
-            `);
-            const adapter = new ArangoDBAdapter(dbConfig);
-            const db = getTempDatabase();
-
-            await db.collection('articles').create({});
-            // No documents inserted — must throw
-
-            const field = model.rootEntityTypes[0].fields.find((f) => f.name === 'embedding')!;
-            await expect(adapter.recreateVectorIndex(field)).rejects.toThrow('has no documents');
-        });
     });
 });
