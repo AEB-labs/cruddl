@@ -33,7 +33,6 @@ import {
     RecreateVectorIndexMigration,
     UpdateArangoSearchAnalyzerMigration,
 } from './migrations.js';
-import { VectorIndexMigrationService } from './vector-index-migration-service.js';
 
 export class SchemaAnalyzer {
     private readonly db: Database;
@@ -162,9 +161,6 @@ export class SchemaAnalyzer {
 
     /**
      * Returns migrations needed to bring vector indexes in sync with the model.
-     *
-     * Delegates to {@link VectorIndexMigrationService} which handles deferred creation,
-     * nLists auto-computation, drift detection, A/B slot naming, and stuck-slot cleanup.
      */
     async getVectorIndexMigrations(
         model: Model,
@@ -173,8 +169,7 @@ export class SchemaAnalyzer {
             CreateVectorIndexMigration | RecreateVectorIndexMigration | DropIndexMigration
         >
     > {
-        const service = new VectorIndexMigrationService(this.db, this.config);
-        return service.getVectorIndexMigrations(model);
+        throw new Error('not implemented yet');
     }
 
     private async getPersistentIndices(
