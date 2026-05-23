@@ -105,6 +105,14 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         private schemaContext?: ProjectOptions,
     ) {
         this.logger = getArangoDBLogger(schemaContext);
+        if (
+            config.collectionNamePrefix !== undefined &&
+            !/^[a-zA-Z0-9_]+$/.test(config.collectionNamePrefix)
+        ) {
+            throw new Error(
+                `ArangoDBConfig.collectionNamePrefix must consist only of letters, digits, and underscores, but got: ${JSON.stringify(config.collectionNamePrefix)}`,
+            );
+        }
         this.db = initDatabase(config);
         this.analyzer = new SchemaAnalyzer(config, schemaContext);
         this.migrationPerformer = new MigrationPerformer(config);
@@ -338,6 +346,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 clock: options.clock,
                 idGenerator: options.idGenerator,
                 maxProjections: options.maxProjections,
+                collectionNamePrefix: this.config.collectionNamePrefix,
             });
             executableQueries = aqlQuery.getExecutableQueries();
         } finally {

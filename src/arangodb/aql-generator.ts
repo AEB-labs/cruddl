@@ -153,6 +153,12 @@ export interface QueryGenerationOptions {
      * See {@link ExecutionOptions.maxProjections} for details.
      */
     readonly maxProjections?: number;
+
+    /**
+     * An optional prefix prepended to all collection and view names in generated AQL queries.
+     * See {@link ArangoDBConfig.collectionNamePrefix} for details.
+     */
+    readonly collectionNamePrefix?: string;
 }
 
 class QueryContext {
@@ -583,7 +589,9 @@ register(FlexSearchQueryNode, (node, context) => {
     let itemContext = context
         .bindVariable(node.itemVariable)
         .withExtension(inFlexSearchFilterSymbol, true);
-    const viewName = getFlexSearchViewNameForRootEntity(node.rootEntityType!);
+    const viewName = getFlexSearchViewNameForRootEntity(node.rootEntityType!, {
+        prefix: context.options.collectionNamePrefix,
+    });
     context.addCollectionAccess(viewName, AccessType.EXPLICIT_READ);
     return aqlExt.subquery(
         aql`FOR ${itemContext.getVariable(node.itemVariable)}`,
@@ -2617,11 +2625,13 @@ function getRelationTraversalForStatements({
             sourceFrag = getFullIDFromKeysFragment(
                 plainSourceFrag,
                 node.relationSegments[0].relationSide.sourceType,
+                context,
             );
         } else {
             sourceFrag = getFullIDFromKeyFragment(
                 plainSourceFrag,
                 node.relationSegments[0].relationSide.sourceType,
+                context,
             );
         }
     } else {
@@ -2733,7 +2743,9 @@ function getRelationTraversalForStatements({
         }
 
         context.addCollectionAccess(
-            getCollectionNameForRootEntity(segment.relationSide.targetType),
+            getCollectionNameForRootEntity(segment.relationSide.targetType, {
+                prefix: context.options.collectionNamePrefix,
+            }),
             AccessType.IMPLICIT_READ,
         );
 
@@ -3041,7 +3053,7 @@ function getFullIDFromKeyNode(
     // special handling to avoid concat if possible - do not alter the behavior
     if (node instanceof LiteralQueryNode && typeof node.value == 'string') {
         // just append the node to the literal key in JavaScript and bind it as a string
-        return aql`${getCollectionNameForRootEntity(rootEntityType) + '/' + node.value}`;
+        return aql`${getCollectionNameForRootEntity(rootEntityType, { prefix: context.options.collectionNamePrefix }) + '/' + node.value}`;
     }
     if (node instanceof RootEntityIDQueryNode) {
         // access the _id field. processNode(node) would access the _key field instead.
@@ -3049,7 +3061,7 @@ function getFullIDFromKeyNode(
     }
 
     // fall back to general case
-    return getFullIDFromKeyFragment(processNode(node, context), rootEntityType);
+    return getFullIDFromKeyFragment(processNode(node, context), rootEntityType, context);
 }
 
 function getFullIDsFromKeysNode(
@@ -3069,29 +3081,34 @@ function getFullIDsFromKeysNode(
         isReadonlyArray(idsNode.value) &&
         idsNode.value.every((v) => typeof v === 'string')
     ) {
-        const collName = getCollectionNameForRootEntity(rootEntityType);
+        const collName = getCollectionNameForRootEntity(rootEntityType, {
+            prefix: context.options.collectionNamePrefix,
+        });
         const ids = idsNode.value.map((val) => collName + '/' + val);
         return aql.value(ids);
     }
 
-    return getFullIDFromKeysFragment(processNode(idsNode, context), rootEntityType);
+    return getFullIDFromKeysFragment(processNode(idsNode, context), rootEntityType, context);
 }
 
 function getFullIDFromKeyFragment(
     keyFragment: AQLFragment,
     rootEntityType: RootEntityType,
+    context: QueryContext,
 ): AQLFragment {
-    return aql`CONCAT(${getCollectionNameForRootEntity(rootEntityType) + '/'}, ${keyFragment})`;
+    return aql`CONCAT(${getCollectionNameForRootEntity(rootEntityType, { prefix: context.options.collectionNamePrefix }) + '/'}, ${keyFragment})`;
 }
 
 function getFullIDFromKeysFragment(
     keysFragment: AQLFragment,
     rootEntityType: RootEntityType,
+    context: QueryContext,
 ): AQLFragment {
     const idVar = aql.variable('id');
     return aql`(FOR ${idVar} IN ${keysFragment} RETURN ${getFullIDFromKeyFragment(
         idVar,
         rootEntityType,
+        context,
     )})`;
 }
 
@@ -3189,18 +3206,21 @@ export function getAQLQuery(
             clock: options.clock ?? new DefaultClock(),
             idGenerator: options.idGenerator ?? new UUIDGenerator(),
             maxProjections: options.maxProjections,
+            collectionNamePrefix: options.collectionNamePrefix,
         }),
     );
 }
 
 function getCollectionForBilling(accessType: AccessType, context: QueryContext) {
-    const name = billingCollectionName;
+    const name = (context.options.collectionNamePrefix ?? '') + billingCollectionName;
     context.addCollectionAccess(name, accessType);
     return aql.collection(name);
 }
 
 function getCollectionForType(type: RootEntityType, accessType: AccessType, context: QueryContext) {
-    const name = getCollectionNameForRootEntity(type);
+    const name = getCollectionNameForRootEntity(type, {
+        prefix: context.options.collectionNamePrefix,
+    });
     context.addCollectionAccess(name, accessType);
     return aql.collection(name);
 }
@@ -3210,7 +3230,9 @@ function getCollectionForRelation(
     accessType: AccessType,
     context: QueryContext,
 ) {
-    const name = getCollectionNameForRelation(relation);
+    const name = getCollectionNameForRelation(relation, {
+        prefix: context.options.collectionNamePrefix,
+    });
     context.addCollectionAccess(name, accessType);
     return aql.collection(name);
 }
@@ -3225,7 +3247,9 @@ function getSimpleFollowEdgeFragment(
 ): AQLFragment {
     const dir = node.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
     context.addCollectionAccess(
-        getCollectionNameForRootEntity(node.relationSide.targetType),
+        getCollectionNameForRootEntity(node.relationSide.targetType, {
+            prefix: context.options.collectionNamePrefix,
+        }),
         AccessType.IMPLICIT_READ,
     );
     return aql`${dir} ${processNode(node.sourceEntityNode, context)} ${getCollectionForRelation(
