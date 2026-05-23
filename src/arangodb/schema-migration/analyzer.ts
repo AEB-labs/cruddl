@@ -65,18 +65,22 @@ export class SchemaAnalyzer {
         const migrations: CreateDocumentCollectionMigration[] = [];
 
         for (const rootEntity of model.rootEntityTypes) {
-            const collectionName = getCollectionNameForRootEntity(rootEntity);
+            const collectionName = getCollectionNameForRootEntity(rootEntity, {
+                prefix: this.config.collectionNamePrefix,
+            });
             if (existingCollectionNames.has(collectionName)) {
                 continue;
             }
             migrations.push(new CreateDocumentCollectionMigration(collectionName));
         }
 
+        const prefixedBillingCollectionName =
+            (this.config.collectionNamePrefix ?? '') + billingCollectionName;
         if (
-            !existingCollectionNames.has(billingCollectionName) &&
-            !migrations.some((value) => value.collectionName === billingCollectionName)
+            !existingCollectionNames.has(prefixedBillingCollectionName) &&
+            !migrations.some((value) => value.collectionName === prefixedBillingCollectionName)
         ) {
-            migrations.push(new CreateDocumentCollectionMigration(billingCollectionName));
+            migrations.push(new CreateDocumentCollectionMigration(prefixedBillingCollectionName));
         }
 
         return migrations;
@@ -94,7 +98,9 @@ export class SchemaAnalyzer {
         const migrations: CreateEdgeCollectionMigration[] = [];
 
         for (const relation of model.relations) {
-            const collectionName = getCollectionNameForRelation(relation);
+            const collectionName = getCollectionNameForRelation(relation, {
+                prefix: this.config.collectionNamePrefix,
+            });
             if (existingCollectionNames.has(collectionName)) {
                 continue;
             }
@@ -108,7 +114,9 @@ export class SchemaAnalyzer {
         model: Model,
     ): Promise<ReadonlyArray<CreateIndexMigration | DropIndexMigration>> {
         // update indices
-        const requiredIndices = getRequiredIndicesFromModel(model);
+        const requiredIndices = getRequiredIndicesFromModel(model, {
+            prefix: this.config.collectionNamePrefix,
+        });
         const existingIndicesPromises = model.rootEntityTypes.map((rootEntityType) =>
             this.getPersistentCollectionIndices(rootEntityType),
         );
@@ -161,7 +169,9 @@ export class SchemaAnalyzer {
     async getPersistentCollectionIndices(
         rootEntityType: RootEntityType,
     ): Promise<ReadonlyArray<IndexDefinition>> {
-        const collectionName = getCollectionNameForRootEntity(rootEntityType);
+        const collectionName = getCollectionNameForRootEntity(rootEntityType, {
+            prefix: this.config.collectionNamePrefix,
+        });
         const coll = this.db.collection(collectionName);
         if (!(await coll.exists())) {
             return [];
@@ -204,14 +214,19 @@ export class SchemaAnalyzer {
         }
 
         // the views that match the model
-        const requiredViews = getRequiredViewsFromModel(model);
+        const requiredViews = getRequiredViewsFromModel(model, {
+            prefix: this.config.collectionNamePrefix,
+        });
         // the currently existing views
         const views = (await this.db.listViews())
             .map((value) => this.db.view(value.name))
             .filter((view) =>
                 model.rootEntityTypes.some(
                     (rootEntityType) =>
-                        view.name === getFlexSearchViewNameForRootEntity(rootEntityType),
+                        view.name ===
+                        getFlexSearchViewNameForRootEntity(rootEntityType, {
+                            prefix: this.config.collectionNamePrefix,
+                        }),
                 ),
             );
 

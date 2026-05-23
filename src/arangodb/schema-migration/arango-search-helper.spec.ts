@@ -16,7 +16,7 @@ describe('arango-search-helper', () => {
                 }
             `);
 
-            const views = getRequiredViewsFromModel(model);
+            const views = getRequiredViewsFromModel(model, { prefix: undefined });
             expect(views).to.have.lengthOf(1);
             const view = views[0];
             expect(view.primarySort).to.deep.equal([
@@ -40,7 +40,7 @@ describe('arango-search-helper', () => {
                 }
             `);
 
-            const views = getRequiredViewsFromModel(model);
+            const views = getRequiredViewsFromModel(model, { prefix: undefined });
             expect(views).to.have.lengthOf(1);
             const view = views[0];
             expect(view.primarySort).to.deep.equal([
@@ -65,7 +65,7 @@ describe('arango-search-helper', () => {
                 }
             `);
 
-            const views = getRequiredViewsFromModel(model);
+            const views = getRequiredViewsFromModel(model, { prefix: undefined });
             expect(views).to.have.lengthOf(1);
             const view = views[0];
             expect(view.primarySort).to.deep.equal([
@@ -87,7 +87,7 @@ describe('arango-search-helper', () => {
                 }
             `);
 
-            const views = getRequiredViewsFromModel(model);
+            const views = getRequiredViewsFromModel(model, { prefix: undefined });
             expect(views).to.have.lengthOf(1);
             const view = views[0];
             expect(view.primarySort).to.deep.equal([

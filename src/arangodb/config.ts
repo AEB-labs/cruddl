@@ -73,6 +73,19 @@ export interface ArangoDBConfig {
      * Indices without names will never be ignored.
      */
     readonly nonManagedIndexNamesPattern?: RegExp;
+
+    /**
+     * An optional prefix that is prepended to all collection names (document collections, edge
+     * collections) and FlexSearch view names managed by this adapter.
+     *
+     * This allows multiple cruddl instances to share a single ArangoDB database without collection
+     * name collisions. Must consist only of letters, digits, and underscores
+     * (characters matching /^[a-zA-Z0-9_]+$/).
+     *
+     * Example: if set to "myapp_", a type "Order" will be stored in "myapp_orders" instead of
+     * "orders".
+     */
+    readonly collectionNamePrefix?: string;
 }
 
 export function initDatabase(config: ArangoDBConfig): Database {

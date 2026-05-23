@@ -56,14 +56,22 @@ function indexDefinitionsEqual(a: IndexDefinition, b: IndexDefinition) {
     );
 }
 
-export function getRequiredIndicesFromModel(model: Model): ReadonlyArray<IndexDefinition> {
-    return model.rootEntityTypes.flatMap((rootEntity) => getIndicesForRootEntity(rootEntity));
+export function getRequiredIndicesFromModel(
+    model: Model,
+    { prefix }: { prefix: string | undefined },
+): ReadonlyArray<IndexDefinition> {
+    return model.rootEntityTypes.flatMap((rootEntity) =>
+        getIndicesForRootEntity(rootEntity, prefix),
+    );
 }
 
-function getIndicesForRootEntity(rootEntity: RootEntityType): ReadonlyArray<IndexDefinition> {
+function getIndicesForRootEntity(
+    rootEntity: RootEntityType,
+    prefix: string | undefined,
+): ReadonlyArray<IndexDefinition> {
     return rootEntity.indices.map((index) => ({
         rootEntity,
-        collectionName: getCollectionNameForRootEntity(rootEntity),
+        collectionName: getCollectionNameForRootEntity(rootEntity, { prefix }),
         name: index.name,
         fields: index.fields.map(getArangoFieldPath),
         unique: index.unique,

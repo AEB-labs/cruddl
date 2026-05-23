@@ -84,21 +84,34 @@ export interface ArangoSearchConfiguration {
     readonly useRenameStrategyToRecreate?: boolean;
 }
 
-export function getRequiredViewsFromModel(model: Model): ReadonlyArray<ArangoSearchDefinition> {
+export function getRequiredViewsFromModel(
+    model: Model,
+    { prefix }: { prefix: string | undefined },
+): ReadonlyArray<ArangoSearchDefinition> {
     return model.rootEntityTypes
         .filter((value) => value.isFlexSearchIndexed)
-        .map((rootEntity) => getViewForRootEntity(rootEntity));
+        .map((rootEntity) => getViewForRootEntity(rootEntity, prefix));
 }
 
-export function getFlexSearchViewNameForRootEntity(rootEntity: RootEntityType) {
-    return FLEX_SEARCH_VIEW_PREFIX + getCollectionNameForRootEntity(rootEntity);
+export function getFlexSearchViewNameForRootEntity(
+    rootEntity: RootEntityType,
+    { prefix }: { prefix: string | undefined },
+) {
+    return (
+        (prefix ?? '') +
+        FLEX_SEARCH_VIEW_PREFIX +
+        getCollectionNameForRootEntity(rootEntity, { prefix: undefined })
+    );
 }
 
-function getViewForRootEntity(rootEntityType: RootEntityType): ArangoSearchDefinition {
+function getViewForRootEntity(
+    rootEntityType: RootEntityType,
+    prefix: string | undefined,
+): ArangoSearchDefinition {
     return {
         rootEntityType,
-        viewName: getFlexSearchViewNameForRootEntity(rootEntityType),
-        collectionName: getCollectionNameForRootEntity(rootEntityType),
+        viewName: getFlexSearchViewNameForRootEntity(rootEntityType, { prefix }),
+        collectionName: getCollectionNameForRootEntity(rootEntityType, { prefix }),
         primarySort: rootEntityType.flexSearchPrimarySort.map((clause) => ({
             field: getPrimarySortFieldPath(clause.field),
             asc: clause.direction === OrderDirection.ASCENDING,

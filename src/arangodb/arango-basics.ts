@@ -4,10 +4,20 @@ import { decapitalize } from '../core/utils/utils.js';
 
 export const billingCollectionName = 'billingEntities';
 
-export function getCollectionNameForRootEntity(type: RootEntityType) {
-    return decapitalize(type.pluralName);
+export function getCollectionNameForRootEntity(
+    type: RootEntityType,
+    { prefix }: { prefix: string | undefined },
+) {
+    return (prefix ?? '') + decapitalize(type.pluralName);
 }
 
-export function getCollectionNameForRelation(relation: Relation) {
-    return getCollectionNameForRootEntity(relation.fromType) + '_' + relation.fromField.name;
+export function getCollectionNameForRelation(
+    relation: Relation,
+    { prefix }: { prefix: string | undefined },
+) {
+    return (
+        getCollectionNameForRootEntity(relation.fromType, { prefix }) +
+        '_' +
+        relation.fromField.name
+    );
 }
