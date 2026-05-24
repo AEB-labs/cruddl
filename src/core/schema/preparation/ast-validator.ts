@@ -7,6 +7,7 @@ import type { ParsedProjectSource } from '../parsing/parsed-project.js';
 import { IndicesValidator } from './ast-validation-modules/indices-validator.js';
 import { KeyFieldValidator } from './ast-validation-modules/key-field-validator.js';
 import { NoListsOfListsValidator } from './ast-validation-modules/no-lists-of-lists-validator.js';
+import { NoNonNullTypesValidator } from './ast-validation-modules/no-non-null-types-validator.js';
 import { NoUnusedNonRootObjectTypesValidator } from './ast-validation-modules/no-unused-non-root-object-types-validator.js';
 import { RolesOnNonRootEntityTypesValidator } from './ast-validation-modules/roles-on-non-root-entity-types.js';
 import { GraphQLRulesValidator } from './source-validation-modules/graphql-rules.js';
@@ -25,6 +26,7 @@ const postMergeValidators: ReadonlyArray<ASTValidator> = [
     new KeyFieldValidator(),
     new NoUnusedNonRootObjectTypesValidator(),
     new NoListsOfListsValidator(),
+    new NoNonNullTypesValidator(),
     new RolesOnNonRootEntityTypesValidator(),
     new IndicesValidator(),
 ];

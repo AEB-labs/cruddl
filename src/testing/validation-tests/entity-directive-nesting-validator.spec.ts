@@ -72,14 +72,6 @@ describe('entity directive nesting validator', () => {
         `);
     });
 
-    it('accepts nesting non-nullable @valueObject lists', () => {
-        assertValidatorAcceptsAndDoesNotWarn(`
-            type Foo @valueObject { fooo: String }
-            type Bar @valueObject { foo: [Foo!]! }
-            type Root @rootEntity { bar: Bar } # to avoid warning because Bar is not used
-        `);
-    });
-
     it('rejects nesting an entity into @valueObjects', () => {
         assertValidatorRejects(
             `
