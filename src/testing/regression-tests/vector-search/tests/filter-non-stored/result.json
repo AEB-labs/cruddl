@@ -1,0 +1,80 @@
+{
+  "withFilterLanguage": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "language": "en",
+          "_vectorScore": 1
+        },
+        {
+          "title": "Gamma",
+          "language": "en",
+          "_vectorScore": 0.7071067690849304
+        },
+        {
+          "title": "Epsilon",
+          "language": "en",
+          "_vectorScore": 0
+        }
+      ]
+    }
+  },
+  "withFilterViewCount": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Epsilon",
+          "viewCount": 150,
+          "_vectorScore": 0
+        },
+        {
+          "title": "Delta",
+          "viewCount": 300,
+          "_vectorScore": 0
+        },
+        {
+          "title": "Beta",
+          "viewCount": 200,
+          "_vectorScore": 0
+        }
+      ]
+    }
+  },
+  "withoutFilter": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "language": "en",
+          "viewCount": 100,
+          "_vectorScore": 1
+        },
+        {
+          "title": "Gamma",
+          "language": "en",
+          "viewCount": 50,
+          "_vectorScore": 0.7071067690849304
+        },
+        {
+          "title": "Epsilon",
+          "language": "en",
+          "viewCount": 150,
+          "_vectorScore": 0
+        },
+        {
+          "title": "Delta",
+          "language": "fr",
+          "viewCount": 300,
+          "_vectorScore": 0
+        },
+        {
+          "title": "Beta",
+          "language": "de",
+          "viewCount": 200,
+          "_vectorScore": 0
+        }
+      ]
+    }
+  }
+}

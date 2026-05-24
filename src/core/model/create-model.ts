@@ -1,26 +1,18 @@
-import type {
-    ArgumentNode,
-    DirectiveNode,
-    EnumTypeDefinitionNode,
-    EnumValueDefinitionNode,
-    EnumValueNode,
-    FieldDefinitionNode,
-    ObjectTypeDefinitionNode,
-    ObjectValueNode,
-    StringValueNode,
-    TypeDefinitionNode,
-    ValueNode,
-} from 'graphql';
 import {
-    GraphQLBoolean,
-    GraphQLEnumType,
-    GraphQLInputObjectType,
+    type ArgumentNode,
+    type DirectiveNode,
+    type EnumTypeDefinitionNode,
+    type EnumValueDefinitionNode,
+    type EnumValueNode,
+    type FieldDefinitionNode,
     GraphQLInt,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLString,
     Kind,
+    type ObjectTypeDefinitionNode,
+    type ObjectValueNode,
+    type StringValueNode,
+    type TypeDefinitionNode,
     valueFromAST,
+    type ValueNode,
 } from 'graphql';
 import type { ModelOptions } from '../config/interfaces.js';
 import { getValueFromAST } from '../graphql/value-from-ast.js';
@@ -73,7 +65,17 @@ import {
     UNIQUE_DIRECTIVE,
     VALUE_ARG,
     VALUE_OBJECT_DIRECTIVE,
+    VECTOR_INDEX_DEFAULT_N_PROBE_ARG,
+    VECTOR_INDEX_DIMENSION_ARG,
+    VECTOR_INDEX_DIRECTIVE,
+    VECTOR_INDEX_FACTORY_ARG,
+    VECTOR_INDEX_MAX_N_PROBE_ARG,
+    VECTOR_INDEX_METRIC_ARG,
+    VECTOR_INDEX_N_LISTS_ARG,
+    VECTOR_INDEX_STORED_VALUES_ARG,
+    VECTOR_INDEX_TRAINING_ITERATIONS_ARG,
 } from '../schema/constants.js';
+import { getBaseDirective, getBaseInputObjectType } from '../schema/graphql-base.js';
 import type {
     ParsedGraphQLProjectSource,
     ParsedObjectProjectSource,
@@ -83,6 +85,7 @@ import { ParsedProjectSourceBaseKind } from '../schema/parsing/parsed-project.js
 import {
     findDirectiveWithName,
     getDeprecationReason,
+    getDirectiveValuesWithoutApplyingDefaults,
     getNamedTypeNodeIgnoringNonNullAndList,
     getNodeByName,
     getTypeNameIgnoringNonNullAndList,
@@ -104,6 +107,8 @@ import type {
     FlexSearchPerformanceParams,
     FlexSearchPrimarySortClauseConfig,
     IndexDefinitionConfig,
+    VectorIndexDefinitionConfig,
+    VectorSimilarityMetric,
 } from './config/indices.js';
 import type {
     FieldModuleSpecificationConfig,
@@ -701,6 +706,7 @@ function createFieldInput(
         isHidden: !!hiddenDirectiveASTNode,
         isHiddenASTNode: hiddenDirectiveASTNode,
         moduleSpecification: getFieldModuleSpecification(fieldNode, context, options),
+        vectorIndex: createVectorIndexDefinitionInput(fieldNode),
     };
 }
 
@@ -842,6 +848,98 @@ function createFieldBasedIndices(
             };
         })
         .filter(isDefined);
+}
+
+function createVectorIndexDefinitionInput(
+    field: FieldDefinitionNode,
+): VectorIndexDefinitionConfig | undefined {
+    const vectorIndexDirective = findDirectiveWithName(field, VECTOR_INDEX_DIRECTIVE);
+    if (!vectorIndexDirective) {
+        return undefined;
+    }
+
+    // defaults in the schema are just for information purposes. They will be applied by ArangoDB
+    // (we don't want to apply them here because e.g. printing the vector index for
+    // Project.checkCompatibility() should not include the defaults)
+    const mappedValues = getDirectiveValuesWithoutApplyingDefaults(
+        vectorIndexDirectiveInputObjectType,
+        field,
+    ) as {
+        sparse?: boolean;
+        metric?: VectorSimilarityMetric;
+        dimension?: number;
+        nLists?: number;
+        defaultNProbe?: number;
+        maxNProbe?: number;
+        trainingIterations?: number;
+        factory?: string;
+        storedValues?: ReadonlyArray<string>;
+    };
+
+    const metricArgValue = getNodeByName(
+        vectorIndexDirective.arguments,
+        VECTOR_INDEX_METRIC_ARG,
+    )?.value;
+    const dimensionArgValue = getNodeByName(
+        vectorIndexDirective.arguments,
+        VECTOR_INDEX_DIMENSION_ARG,
+    )?.value;
+    const nListsArgValue = getNodeByName(
+        vectorIndexDirective.arguments,
+        VECTOR_INDEX_N_LISTS_ARG,
+    )?.value;
+    const defaultNProbeArgValue = getNodeByName(
+        vectorIndexDirective.arguments,
+        VECTOR_INDEX_DEFAULT_N_PROBE_ARG,
+    )?.value;
+    const maxNProbeArgValue = getNodeByName(
+        vectorIndexDirective.arguments,
+        VECTOR_INDEX_MAX_N_PROBE_ARG,
+    )?.value;
+    const trainingIterationsArgValue = getNodeByName(
+        vectorIndexDirective.arguments,
+        VECTOR_INDEX_TRAINING_ITERATIONS_ARG,
+    )?.value;
+    const factoryArgValue = getNodeByName(
+        vectorIndexDirective.arguments,
+        VECTOR_INDEX_FACTORY_ARG,
+    )?.value;
+    const storedValuesArgValue = getNodeByName(
+        vectorIndexDirective.arguments,
+        VECTOR_INDEX_STORED_VALUES_ARG,
+    )?.value;
+
+    const storedValuesASTNodes: ReadonlyArray<StringValueNode | undefined> | undefined =
+        storedValuesArgValue?.kind === Kind.LIST
+            ? storedValuesArgValue.values.map((value) =>
+                  value.kind === Kind.STRING ? value : undefined,
+              )
+            : storedValuesArgValue?.kind === Kind.STRING
+              ? [storedValuesArgValue]
+              : undefined;
+
+    return {
+        astNode: vectorIndexDirective,
+        sparse: mappedValues.sparse,
+        metric: mappedValues.metric,
+        metricASTNode: metricArgValue?.kind === Kind.ENUM ? metricArgValue : undefined,
+        dimension: mappedValues.dimension,
+        dimensionASTNode: dimensionArgValue?.kind === Kind.INT ? dimensionArgValue : undefined,
+        nLists: mappedValues.nLists,
+        nListsASTNode: nListsArgValue?.kind === Kind.INT ? nListsArgValue : undefined,
+        defaultNProbe: mappedValues.defaultNProbe,
+        defaultNProbeASTNode:
+            defaultNProbeArgValue?.kind === Kind.INT ? defaultNProbeArgValue : undefined,
+        maxNProbe: mappedValues.maxNProbe,
+        maxNProbeASTNode: maxNProbeArgValue?.kind === Kind.INT ? maxNProbeArgValue : undefined,
+        trainingIterations: mappedValues.trainingIterations,
+        trainingIterationsASTNode:
+            trainingIterationsArgValue?.kind === Kind.INT ? trainingIterationsArgValue : undefined,
+        factory: mappedValues.factory,
+        factoryASTNode: factoryArgValue?.kind === Kind.STRING ? factoryArgValue : undefined,
+        storedValues: mappedValues.storedValues,
+        storedValuesASTNodes,
+    };
 }
 
 function buildIndexDefinitionFromObjectValue(
@@ -1227,29 +1325,8 @@ function extractModules(
         .reduce((previousValue, currentValue) => previousValue.concat(currentValue), []);
 }
 
-// fake input type for index mapping
-const indexDefinitionInputObjectType: GraphQLInputObjectType = new GraphQLInputObjectType({
-    fields: {
-        id: { type: GraphQLString },
-        fields: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) },
-        unique: { type: GraphQLBoolean, defaultValue: false },
-        sparse: { type: GraphQLBoolean },
-    },
-    name: INDEX_DEFINITION_INPUT_TYPE,
-});
-
-const flexSearchOrderInputObjectType: GraphQLInputObjectType = new GraphQLInputObjectType({
-    name: 'FlexSearchOrderArgument',
-    fields: {
-        field: { type: GraphQLString },
-        direction: {
-            type: new GraphQLEnumType({
-                name: 'OrderDirection',
-                values: { ASC: { value: 'ASC' }, DESC: { value: 'DESC' } },
-            }),
-        },
-    },
-});
+const indexDefinitionInputObjectType = getBaseInputObjectType(INDEX_DEFINITION_INPUT_TYPE);
+const vectorIndexDirectiveInputObjectType = getBaseDirective(VECTOR_INDEX_DIRECTIVE);
 
 function getCombinedModuleSpecification(
     definition: ObjectTypeDefinitionNode | EnumTypeDefinitionNode | FieldDefinitionNode,

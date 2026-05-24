@@ -1,0 +1,44 @@
+# Tests that vector-search pre-filtering works on fields NOT listed in storedValues.
+# language and viewCount are intentionally absent from storedValues of the embedding index.
+# The withoutFilter query is the shared baseline: all 5 articles appear.
+
+# language: "en" keeps Alpha (score=1.0), Gamma (score≈0.707), Epsilon (score=0).
+# Beta (de) and Delta (fr) are excluded, even though they would otherwise appear.
+query withFilterLanguage {
+    vectorSearchArticles(
+        field: embedding
+        vector: [1.0, 0.0, 0.0, 0.0]
+        first: 5
+        filter: { language: "en" }
+    ) {
+        title
+        language
+        _vectorScore
+    }
+}
+
+# viewCount_gt: 100 keeps Beta (200), Delta (300), Epsilon (150).
+# Notably, Alpha (viewCount=100, score=1.0) is excluded despite being the closest match.
+# This proves the filter is evaluated and is not just coincidentally absent from the result.
+query withFilterViewCount {
+    vectorSearchArticles(
+        field: embedding
+        vector: [1.0, 0.0, 0.0, 0.0]
+        first: 5
+        filter: { viewCount_gt: 100 }
+    ) {
+        title
+        viewCount
+        _vectorScore
+    }
+}
+
+# Baseline: unfiltered — all 5 articles appear, including Beta/Delta and Alpha/Gamma.
+query withoutFilter {
+    vectorSearchArticles(field: embedding, vector: [1.0, 0.0, 0.0, 0.0], first: 5) {
+        title
+        language
+        viewCount
+        _vectorScore
+    }
+}

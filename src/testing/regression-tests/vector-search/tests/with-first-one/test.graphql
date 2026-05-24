@@ -1,0 +1,6 @@
+query withFirstOne {
+    vectorSearchArticles(field: embedding, vector: [1.0, 0.0, 0.0, 0.0], first: 1) {
+        title
+        _vectorScore
+    }
+}

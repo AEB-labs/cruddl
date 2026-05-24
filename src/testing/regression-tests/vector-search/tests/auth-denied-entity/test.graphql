@@ -1,0 +1,6 @@
+query authDeniedEntity {
+    vectorSearchArticles(field: embedding, vector: [1.0, 0.0, 0.0, 0.0], first: 3) {
+        title
+        _vectorScore
+    }
+}

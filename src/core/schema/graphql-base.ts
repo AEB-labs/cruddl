@@ -1,5 +1,12 @@
-import type { DocumentNode, EnumTypeDefinitionNode, EnumValueDefinitionNode } from 'graphql';
-import { Kind } from 'graphql';
+import {
+    buildASTSchema,
+    type DocumentNode,
+    type EnumTypeDefinitionNode,
+    type EnumValueDefinitionNode,
+    type GraphQLDirective,
+    GraphQLInputObjectType,
+    Kind,
+} from 'graphql';
 import { gql } from 'graphql-tag';
 import type { MessageCodes } from '../model/validation/suppress/message-codes.js';
 import {
@@ -296,6 +303,103 @@ const directivesBase: DocumentNode = gql`
     enum CompatibilityIssueCode {
         DUMMY
     }
+
+    """
+    The similarity metric used by a vector index to rank nearest neighbors.
+
+    Choose the metric that matches your embedding model and query semantics.
+    """
+    enum VectorSimilarityMetric {
+        "Cosine similarity. Vectors are normalized for comparison."
+        COSINE
+
+        "Euclidean distance (L2). Lower distance means more similar vectors."
+        L2
+
+        """
+        Inner product similarity.
+        """
+        INNER_PRODUCT
+    }
+
+    """
+    Declares a vector index on a [Float] field that stores embedding vectors.
+
+    A vector index is defined on exactly one field and is used for approximate nearest-neighbor
+    search. The indexed field should contain numeric vectors of fixed length.
+
+    This feature requires vector index support to be enabled on the ArangoDB server.
+    """
+    directive @vectorIndex(
+        """
+        Whether documents with missing or null vector values are excluded from the index.
+
+        Defaults to true for safer behavior with partially populated datasets.
+        """
+        sparse: Boolean = true
+
+        """
+        The similarity metric used for nearest-neighbor ranking.
+
+        Defaults to COSINE, which is the recommended choice for most embedding models
+        because it is invariant to vector magnitude and focuses on directional similarity.
+        """
+        metric: VectorSimilarityMetric
+
+        """
+        Vector dimension (number of elements per embedding).
+
+        Must match the embedding length stored in the indexed field.
+        """
+        dimension: Int!
+
+        """
+        Number of Voronoi cells (centroids) used to partition the vector space.
+
+        Higher values can improve recall but increase index build time and memory usage.
+        When omitted, it is auto-computed from the document count at index creation time.
+        """
+        nLists: Int
+
+        """
+        Default number of neighboring centroids to probe at query time.
+
+        Higher values improve recall but increase query latency. Typical values
+        range from 10 to 50, but the optimal setting depends on your data
+        distribution, index size, and latency requirements.
+        """
+        defaultNProbe: Int!
+
+        """
+        Maximum allowed nProbe value for queries on this index.
+
+        If a query specifies an nProbe value greater than maxNProbe, a runtime
+        error is returned. This acts as a safety guard against excessively
+        expensive queries.
+        """
+        maxNProbe: Int!
+
+        """
+        Number of training iterations for index building.
+
+        Lower values can speed up index creation at the cost of search quality.
+        """
+        trainingIterations: Int = 25
+
+        """
+        Optional Faiss index factory string for advanced index layouts.
+
+        The base index must be IVF-compatible for ArangoDB vector indexes.
+        """
+        factory: String
+
+        """
+        Additional attribute paths stored with vector index entries.
+
+        This can improve performance for common filter attributes during vector queries.
+        """
+        storedValues: [String!]
+    ) on FIELD_DEFINITION
 `;
 
 export const DIRECTIVES = generateDirectivesAst();
@@ -439,3 +543,38 @@ export const CORE_SCALARS: DocumentNode = gql`
     """
     scalar Decimal3
 `;
+
+const schemaBase: DocumentNode = gql`
+    schema {
+        query: DummyQueryType___
+    }
+
+    type DummyQueryType___ {
+        field: ID
+    }
+`;
+
+export const BASE_SCHEMA = buildASTSchema({
+    kind: Kind.DOCUMENT,
+    definitions: [
+        ...DIRECTIVES.definitions,
+        ...CORE_SCALARS.definitions,
+        ...schemaBase.definitions,
+    ],
+});
+
+export function getBaseInputObjectType(name: string): GraphQLInputObjectType {
+    const type = BASE_SCHEMA.getType(name);
+    if (!type || !(type instanceof GraphQLInputObjectType)) {
+        throw new Error(`Expected input object type ${name} to exist in base schema`);
+    }
+    return type;
+}
+
+export function getBaseDirective(name: string): GraphQLDirective {
+    const directive = BASE_SCHEMA.getDirective(name);
+    if (!directive) {
+        throw new Error(`Expected directive ${name} to exist in base schema`);
+    }
+    return directive;
+}

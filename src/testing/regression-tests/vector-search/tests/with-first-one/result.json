@@ -1,0 +1,12 @@
+{
+  "withFirstOne": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "_vectorScore": 1
+        }
+      ]
+    }
+  }
+}

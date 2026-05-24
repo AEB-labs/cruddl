@@ -1,0 +1,80 @@
+{
+  "vectorScoreInAllArticles": {
+    "errors": [
+      {
+        "message": "_vectorScore is only available when queried via a vectorSearch* field",
+        "locations": [
+          {
+            "line": 6,
+            "column": 9
+          }
+        ],
+        "path": ["allArticles", 0, "_vectorScore"]
+      },
+      {
+        "message": "_vectorScore is only available when queried via a vectorSearch* field",
+        "locations": [
+          {
+            "line": 6,
+            "column": 9
+          }
+        ],
+        "path": ["allArticles", 1, "_vectorScore"]
+      },
+      {
+        "message": "_vectorScore is only available when queried via a vectorSearch* field",
+        "locations": [
+          {
+            "line": 6,
+            "column": 9
+          }
+        ],
+        "path": ["allArticles", 2, "_vectorScore"]
+      },
+      {
+        "message": "_vectorScore is only available when queried via a vectorSearch* field",
+        "locations": [
+          {
+            "line": 6,
+            "column": 9
+          }
+        ],
+        "path": ["allArticles", 3, "_vectorScore"]
+      },
+      {
+        "message": "_vectorScore is only available when queried via a vectorSearch* field",
+        "locations": [
+          {
+            "line": 6,
+            "column": 9
+          }
+        ],
+        "path": ["allArticles", 4, "_vectorScore"]
+      }
+    ],
+    "data": {
+      "allArticles": [
+        {
+          "title": "Alpha",
+          "_vectorScore": null
+        },
+        {
+          "title": "Beta",
+          "_vectorScore": null
+        },
+        {
+          "title": "Delta",
+          "_vectorScore": null
+        },
+        {
+          "title": "Epsilon",
+          "_vectorScore": null
+        },
+        {
+          "title": "Gamma",
+          "_vectorScore": null
+        }
+      ]
+    }
+  }
+}

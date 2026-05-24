@@ -25,7 +25,7 @@ jobs:
           cache: 'npm'
       - run:
           docker run --name arangodb -p 127.0.0.1:8529:8529 -d -e ARANGO_NO_AUTH=1 -e LANG=en_US ${{
-          matrix.arango-image }}
+          matrix.arango-image }} --vector-index
       - run: timeout 10 docker logs --follow arangodb || true # wait until arangodb is started
       - run: curl -L http://localhost:8529/_api/version
       - run: npm ci
