@@ -1,4 +1,4 @@
-import * as __func2Module from 'ajv/dist/runtime/ucs2length';
+import * as __func2Module from 'ajv/dist/runtime/ucs2length.js';
 const func2 = __func2Module?.default?.default ?? __func2Module?.default ?? __func2Module;
 ('use strict');
 export const validate = validate10;
