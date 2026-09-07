@@ -48,6 +48,8 @@ describe('regression tests', async () => {
                             const result = await suite.runTest(testName);
                             expect(result.actualResult).to.deep.equal(result.expectedResult);
 
+                            const peakMemoryUsageErrors: string[] = [];
+
                             for (const aqlResult of result.aql) {
                                 const aqlFileName = `regression/${suiteName}/tests/${testName}/aql/${aqlResult.operationName}.aql`;
 
@@ -71,6 +73,22 @@ describe('regression tests', async () => {
                                         `AQL of operation ${aqlResult.operationName} does not match expected AQL in "${aqlFileName}" (run with CRUDDL_UPDATE_EXPECTED=true to update the file)`,
                                     );
                                 }
+
+                                // collected so that one run reports all deviations - the values of
+                                // the other arangodb versions can only be updated by running the
+                                // tests on those versions
+                                peakMemoryUsageErrors.push(
+                                    ...aqlResult.peakMemoryUsageErrors.map(
+                                        (error) => `- ${error} (in "${aqlFileName}")`,
+                                    ),
+                                );
+                            }
+
+                            if (peakMemoryUsageErrors.length) {
+                                throw new Error(
+                                    `Peak memory usage does not match the expected AQL files (run with CRUDDL_UPDATE_EXPECTED=true to update them):\n` +
+                                        peakMemoryUsageErrors.join('\n'),
+                                );
                             }
                         });
                     }
