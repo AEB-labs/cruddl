@@ -66,8 +66,17 @@ function rewriteRequireStatementsToImports(code) {
 
     const imports = requireStatements
         .map(({ varName, modulePath, hasDefault }) => {
+            // Node's ESM loader requires explicit file extensions for deep package
+            // imports that aren't exposed via the package's `exports` field
+            // (e.g. `ajv/dist/runtime/ucs2length`). Append `.js` when the path
+            // points to a subpath without an extension.
+            const esmModulePath =
+                /\/[^./]+$/.test(modulePath) && !/\.[a-z]+$/i.test(modulePath)
+                    ? `${modulePath}.js`
+                    : modulePath;
+
             if (!hasDefault) {
-                return `import * as ${varName} from '${modulePath}';`;
+                return `import * as ${varName} from '${esmModulePath}';`;
             }
 
             const moduleNamespaceName = `__${varName}Module`;
@@ -78,7 +87,7 @@ function rewriteRequireStatementsToImports(code) {
             // may expose this CJS default as either `ns.default` or `ns.default.default`.
             // Resolve both shapes so the generated ESM validator is robust in library builds.
             return [
-                `import * as ${moduleNamespaceName} from '${modulePath}';`,
+                `import * as ${moduleNamespaceName} from '${esmModulePath}';`,
                 `const ${varName} = ${moduleNamespaceName}?.default?.default ?? ${moduleNamespaceName}?.default ?? ${moduleNamespaceName};`,
             ].join('\n');
         })
