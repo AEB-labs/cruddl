@@ -14,7 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arango-image: ['arangodb:3.12', 'arangodb:3.12.6']
+        # pinned to exact patch versions because the AQL files record the peak memory usage per
+        # version - keep in sync with TESTED_ARANGODB_VERSIONS in
+        # src/testing/regression-tests/aql-golden-file.ts
+        arango-image: ['arangodb:3.12.6', 'arangodb:3.12.11']
         node-version: [20.x, 22.x, 24.x, 25.x]
     steps:
       - uses: actions/checkout@v4

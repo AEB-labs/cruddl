@@ -13,7 +13,16 @@ import { loadProjectFromDir } from '../../core/project/project-from-fs.js';
 import type { ProjectOptions } from '../../core/project/project.js';
 import { ErrorWithCause } from '../../core/utils/error-with-cause.js';
 import { InMemoryAdapter, InMemoryDB } from '../../inmemory/inmemory-adapter.js';
+import { formatWhitespaceInFile } from '../utils/format-whitespace-in-file.js';
 import { parseJSONCOrThrow } from '../utils/parse-jsonc-or-throw.js';
+import type { ActualTransactionStep } from './aql-golden-file.js';
+import {
+    buildUpdatedAqlGoldenFile,
+    getPeakMemoryUsageErrors,
+    parseAqlGoldenFile,
+    serializeQueries,
+    TESTED_ARANGODB_VERSIONS,
+} from './aql-golden-file.js';
 import { InitTestDataContext } from './init-test-data-context.js';
 import type { TestDataEnvironment } from './initialization.js';
 import { createTempDatabase, initTestData, TEMP_DATABASE_CONFIG } from './initialization.js';
@@ -29,8 +38,18 @@ export interface RegressionSuiteOptions {
 
 export interface AqlResult {
     readonly operationName: string;
+
+    /** The AQL queries of the expected file, without the peak memory usage annotations */
     readonly expected: string | null;
+
+    /** The actually generated AQL queries, without the peak memory usage annotations */
     readonly actual: string | null;
+
+    /**
+     * Descriptions of the differences in peak memory usage between the expected file and the
+     * actual execution (empty if there are none)
+     */
+    readonly peakMemoryUsageErrors: ReadonlyArray<string>;
 }
 
 export interface RunTestResult {
@@ -42,6 +61,8 @@ export interface RunTestResult {
 const QUERY_MEMORY_LIMIT_FOR_TESTS = 1_000_000;
 const QUERY_MEMORY_LIMIT_FOR_INITIALIZATION = 1_000_000_000;
 
+let didWarnAboutVersion = false;
+
 export class RegressionSuite {
     private schema: GraphQLSchema | undefined;
     private testDataEnvironment: TestDataEnvironment | undefined;
@@ -50,6 +71,7 @@ export class RegressionSuite {
     private databaseSpecifier: DatabaseSpecifier;
     private readonly idGenerator = new PredictableIDGenerator();
     private databaseVersion: string | undefined;
+    private arangoDBVersion: string | undefined;
     private nodeVersion: string;
     private lastProfile: RequestProfile | undefined;
     private meta: RegressionMeta | undefined;
@@ -171,6 +193,16 @@ export class RegressionSuite {
             const version = await (initAdapter as ArangoDBAdapter).getArangoDBVersion();
             if (version) {
                 this.databaseVersion = `${version.major}.${version.minor}`;
+                this.arangoDBVersion = `${version.major}.${version.minor}.${version.patch}`;
+                if (
+                    !TESTED_ARANGODB_VERSIONS.includes(this.arangoDBVersion) &&
+                    !didWarnAboutVersion
+                ) {
+                    didWarnAboutVersion = true;
+                    console.warn(
+                        `Not checking the peak memory usage because arangodb ${this.arangoDBVersion} is not one of the tested versions (${TESTED_ARANGODB_VERSIONS.join(', ')})`,
+                    );
+                }
             }
         }
 
@@ -346,32 +378,41 @@ export class RegressionSuite {
                 // during graphql execution -> use type assertions to get correct type
                 const profile = this.lastProfile as RequestProfile | undefined;
 
-                const queries = (profile?.plan?.transactionSteps ?? []).map(
-                    (s) =>
-                        s.query +
-                        (typeof s.stats?.peakMemoryUsage === 'number'
-                            ? `\n\n// Peak memory usage: ${s.stats.peakMemoryUsage} bytes`
-                            : ''),
-                );
-                const actualAql = queries.length
-                    ? formatWhitespaceInFile(
-                          queries.join(
-                              '\n\n// ----------------------------------------------------------------\n\n',
-                          ),
-                      )
-                    : null;
+                const actualSteps: ReadonlyArray<ActualTransactionStep> = (
+                    profile?.plan?.transactionSteps ?? []
+                ).map((s) => ({
+                    query: s.query,
+                    peakMemoryUsage:
+                        typeof s.stats?.peakMemoryUsage === 'number'
+                            ? s.stats.peakMemoryUsage
+                            : undefined,
+                }));
 
                 const aqlFilePath = resolve(aqlDir, `${operationName}.aql`);
 
-                const expectedAql = existsSync(aqlFilePath)
+                const goldenFileContent = existsSync(aqlFilePath)
                     ? readFileSync(aqlFilePath, 'utf-8')
                     : null;
+                const goldenSteps =
+                    goldenFileContent !== null ? parseAqlGoldenFile(goldenFileContent) : undefined;
 
-                if (this.options.saveActualAsExpected && actualAql !== expectedAql) {
-                    if (actualAql !== null) {
-                        mkdirSync(aqlDir, { recursive: true });
-                        writeFileSync(aqlFilePath, actualAql, 'utf-8');
-                    } else {
+                // the peak memory usage is not part of this comparison because it differs between
+                // arangodb versions - it is compared separately below
+                const actualAql = serializeQueries(actualSteps);
+                const expectedAql = goldenSteps ? serializeQueries(goldenSteps) : null;
+
+                if (this.options.saveActualAsExpected) {
+                    if (actualSteps.length) {
+                        const newFileContent = buildUpdatedAqlGoldenFile({
+                            actualSteps,
+                            goldenSteps,
+                            arangoDBVersion: this.arangoDBVersion,
+                        });
+                        if (newFileContent !== goldenFileContent) {
+                            mkdirSync(aqlDir, { recursive: true });
+                            writeFileSync(aqlFilePath, newFileContent, 'utf-8');
+                        }
+                    } else if (goldenFileContent !== null) {
                         unlinkSync(aqlFilePath);
                     }
                 }
@@ -384,6 +425,13 @@ export class RegressionSuite {
                     operationName,
                     expected: expectedAql,
                     actual: actualAql,
+                    peakMemoryUsageErrors: goldenSteps
+                        ? getPeakMemoryUsageErrors({
+                              actualSteps,
+                              goldenSteps,
+                              arangoDBVersion: this.arangoDBVersion,
+                          })
+                        : [],
                 });
             }
 
@@ -399,6 +447,7 @@ export class RegressionSuite {
                 operationName: superfluousAqlFile,
                 expected: readFileSync(aqlFilePath, 'utf8'),
                 actual: null,
+                peakMemoryUsageErrors: [],
             });
 
             if (this.options.saveActualAsExpected) {
@@ -437,18 +486,4 @@ class PredictableIDGenerator implements IDGenerator {
         this.phase = phase;
         this.nextNumberPerType = new Map();
     }
-}
-
-function formatWhitespaceInFile(s: string) {
-    if (!s.endsWith('\n')) {
-        s += '\n';
-    }
-
-    // remove trailing whitespace in lines
-    // (editors remove that, so it's hard to keep it in expected files)
-    s = s
-        .split('\n')
-        .map((line) => line.replace(/\s+$/g, ''))
-        .join('\n');
-    return s;
 }
