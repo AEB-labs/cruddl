@@ -55,11 +55,14 @@ export const QUERY_META_TYPE = '_QueryMeta';
 
 export const ALL_ENTITIES_FIELD_PREFIX = 'all';
 export const CREATE_ENTITY_FIELD_PREFIX = 'create';
+export const CREATE_MANY_ENTITIES_FIELD_PREFIX = 'createMany';
 export const CREATE_ENTITY_TYPE_SUFFIX = 'Input';
 export const UPDATE_ENTITY_FIELD_PREFIX = 'update';
+export const UPDATE_MANY_ENTITIES_FIELD_PREFIX = 'updateMany';
 export const UPDATE_ALL_ENTITIES_FIELD_PREFIX = 'updateAll';
 export const FLEX_SEARCH_ENTITIES_FIELD_PREFIX = 'flexSearch';
 export const DELETE_ENTITY_FIELD_PREFIX = 'delete';
+export const DELETE_MANY_ENTITIES_FIELD_PREFIX = 'deleteMany';
 export const DELETE_ALL_ENTITIES_FIELD_PREFIX = 'deleteAll';
 export const ADD_CHILD_ENTITIES_FIELD_PREFIX = 'add';
 export const UPDATE_CHILD_ENTITIES_FIELD_PREFIX = 'update';

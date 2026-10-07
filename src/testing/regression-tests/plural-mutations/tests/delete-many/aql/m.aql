@@ -1,0 +1,34 @@
+WITH @@data
+RETURN (
+  FOR v_item1
+  IN [
+    DOCUMENT(@@data, @var1),
+    DOCUMENT(@@data, @var2)
+  ]
+  FILTER (v_item1 > NULL)
+  RETURN v_item1._key
+)
+
+// ----------------------------------------------------------------
+
+WITH @@data
+RETURN (
+  FOR v_data1
+  IN (
+    FOR v_data2
+    IN @v_ids1
+    REMOVE v_data2
+    IN @@data
+    RETURN OLD
+  )
+  RETURN {
+    "foo": v_data1.`foo`
+  }
+)
+
+// ----------------------------------------------------------------
+
+WITH @@data
+RETURN {
+  "deleteManyData": @v_deleteManyData1
+}

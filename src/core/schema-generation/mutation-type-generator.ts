@@ -107,16 +107,14 @@ export class MutationTypeGenerator {
     }
 
     private generateFields(rootEntityType: RootEntityType): ReadonlyArray<QueryNodeField> {
-        const canCreatePluralFields = rootEntityType.name !== rootEntityType.pluralName;
-
         return [
             this.generateCreateField(rootEntityType),
-            canCreatePluralFields ? this.generateCreateManyField(rootEntityType) : undefined,
+            this.generateCreateManyField(rootEntityType),
             this.generateUpdateField(rootEntityType),
-            canCreatePluralFields ? this.generateUpdateManyField(rootEntityType) : undefined,
+            this.generateUpdateManyField(rootEntityType),
             this.generateUpdateAllField(rootEntityType),
             this.generateDeleteField(rootEntityType),
-            canCreatePluralFields ? this.generateDeleteManyField(rootEntityType) : undefined,
+            this.generateDeleteManyField(rootEntityType),
             this.generateDeleteAllField(rootEntityType),
             this.billingTypeGenerator.getMutationField(rootEntityType),
         ].filter(isDefined);

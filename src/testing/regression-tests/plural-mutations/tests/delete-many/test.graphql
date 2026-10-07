@@ -1,0 +1,5 @@
+mutation m {
+    deleteManyData(ids: ["@{ids/Data/1}", "@{ids/Data/2}"]) {
+        foo
+    }
+}
