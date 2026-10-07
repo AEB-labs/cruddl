@@ -1,0 +1,19 @@
+{
+  "roles": ["allusers"],
+  "rootEntities": {
+    "Data": [
+      {
+        "@id": "1",
+        "foo": "a"
+      },
+      {
+        "@id": "2",
+        "foo": "b"
+      },
+      {
+        "@id": "3",
+        "foo": "c"
+      }
+    ]
+  }
+}

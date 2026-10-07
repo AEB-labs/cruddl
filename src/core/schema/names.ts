@@ -6,15 +6,18 @@ import {
     ALL_ENTITIES_FIELD_PREFIX,
     CONFIRM_FOR_BILLING_FIELD_PREFIX,
     CREATE_ENTITY_FIELD_PREFIX,
+    CREATE_MANY_ENTITIES_FIELD_PREFIX,
     CREATE_RELATED_ENTITY_FIELD_PREFIX,
     DELETE_ALL_ENTITIES_FIELD_PREFIX,
     DELETE_ENTITY_FIELD_PREFIX,
+    DELETE_MANY_ENTITIES_FIELD_PREFIX,
     FLEX_SEARCH_ENTITIES_FIELD_PREFIX,
     REMOVE_CHILD_ENTITIES_FIELD_PREFIX,
     REMOVE_EDGES_FIELD_PREFIX,
     UPDATE_ALL_ENTITIES_FIELD_PREFIX,
     UPDATE_CHILD_ENTITIES_FIELD_PREFIX,
     UPDATE_ENTITY_FIELD_PREFIX,
+    UPDATE_MANY_ENTITIES_FIELD_PREFIX,
 } from './constants.js';
 
 export function getAllEntitiesFieldName(rootEntityType: RootEntityType) {
@@ -30,7 +33,11 @@ export function getCreateEntityFieldName(rootEntityType: RootEntityType) {
 }
 
 export function getCreateEntitiesFieldName(rootEntityType: RootEntityType) {
-    return CREATE_ENTITY_FIELD_PREFIX + rootEntityType.pluralName;
+    if (rootEntityType.name === rootEntityType.pluralName) {
+        return CREATE_MANY_ENTITIES_FIELD_PREFIX + rootEntityType.pluralName;
+    } else {
+        return CREATE_ENTITY_FIELD_PREFIX + rootEntityType.pluralName;
+    }
 }
 
 export function getUpdateEntityFieldName(rootEntityType: RootEntityType) {
@@ -38,7 +45,11 @@ export function getUpdateEntityFieldName(rootEntityType: RootEntityType) {
 }
 
 export function getUpdateEntitiesFieldName(rootEntityType: RootEntityType) {
-    return UPDATE_ENTITY_FIELD_PREFIX + rootEntityType.pluralName;
+    if (rootEntityType.name === rootEntityType.pluralName) {
+        return UPDATE_MANY_ENTITIES_FIELD_PREFIX + rootEntityType.pluralName;
+    } else {
+        return UPDATE_ENTITY_FIELD_PREFIX + rootEntityType.pluralName;
+    }
 }
 
 export function getUpdateAllEntitiesFieldName(rootEntityType: RootEntityType) {
@@ -50,7 +61,11 @@ export function getDeleteEntityFieldName(rootEntityType: RootEntityType) {
 }
 
 export function getDeleteEntitiesFieldName(rootEntityType: RootEntityType) {
-    return DELETE_ENTITY_FIELD_PREFIX + rootEntityType.pluralName;
+    if (rootEntityType.name === rootEntityType.pluralName) {
+        return DELETE_MANY_ENTITIES_FIELD_PREFIX + rootEntityType.pluralName;
+    } else {
+        return DELETE_ENTITY_FIELD_PREFIX + rootEntityType.pluralName;
+    }
 }
 
 export function getDeleteAllEntitiesFieldName(rootEntityType: RootEntityType) {
