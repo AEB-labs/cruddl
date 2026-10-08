@@ -9,9 +9,7 @@ function stringify(val: any) {
     return JSON.stringify(val);
 }
 
-export namespace aqlConfig {
-    export let enableIndentationForCode = false;
-}
+export const aqlConfig = { enableIndentationForCode: false };
 
 const INDENTATION = '  ';
 /**

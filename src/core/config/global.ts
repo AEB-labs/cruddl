@@ -2,26 +2,25 @@ import { DEFAULT_LOGGER_PROVIDER } from './console-logger.js';
 import type { ProjectOptions } from './interfaces.js';
 import type { LoggerProvider } from './logging.js';
 
-export namespace globalContext {
-    export let loggerProvider: LoggerProvider;
+class GlobalContext {
+    loggerProvider: LoggerProvider = DEFAULT_LOGGER_PROVIDER;
 
     /**
      * Restores default values in the global context
      */
-    export function unregisterContext() {
-        loggerProvider = DEFAULT_LOGGER_PROVIDER;
+    unregisterContext() {
+        this.loggerProvider = DEFAULT_LOGGER_PROVIDER;
     }
 
     /**
      * Resets the global context and applies values of a given schema context
      */
-    export function registerContext(context: ProjectOptions | undefined) {
-        unregisterContext();
+    registerContext(context: ProjectOptions | undefined) {
+        this.unregisterContext();
         if (context && context.loggerProvider) {
-            loggerProvider = context.loggerProvider;
+            this.loggerProvider = context.loggerProvider;
         }
     }
-
-    // init
-    unregisterContext();
 }
+
+export const globalContext = new GlobalContext();
