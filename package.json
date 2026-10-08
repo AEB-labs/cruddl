@@ -54,6 +54,7 @@
     "prepublishOnly": "npm run build",
     "typecheck": "tsc -p tsconfig.test.json && tsc -p tsconfig.build.json",
     "test": "vitest run",
+    "test:no-arango": "CRUDDL_DB=in-memory vitest run",
     "test:watch": "vitest",
     "test:regression": "vitest run src/testing/regression-tests/regressions.spec.ts",
     "test:regression:in-memory": "CRUDDL_DB=in-memory vitest run src/testing/regression-tests/regressions.spec.ts",

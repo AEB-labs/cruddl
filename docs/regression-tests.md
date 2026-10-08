@@ -44,12 +44,12 @@ Example — skip in-memory and wait for ArangoSearch:
 
 ## Environment Variables
 
-| Variable                   | Description                                                 | Values                                  |
-| -------------------------- | ----------------------------------------------------------- | --------------------------------------- |
-| `CRUDDL_DB`                | Restrict to a single database adapter                       | `in-memory`, `arangodb` (default: both) |
-| `CRUDDL_REGRESSION_FILTER` | Filter tests by glob pattern                                | e.g. `logistics/*`, `papers/create?`    |
-| `CRUDDL_UPDATE_EXPECTED`   | Overwrite `result.json` and `.aql` files with actual output | `1` or `true`                           |
-| `CRUDDL_TRACE`             | Enable trace-level logging for database adapters            | `1` or `true`                           |
+| Variable                   | Description                                                                                                     | Values                                  |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `CRUDDL_DB`                | Restrict to a single database adapter (`in-memory` also skips all ArangoDB specs, see `npm run test:no-arango`) | `in-memory`, `arangodb` (default: both) |
+| `CRUDDL_REGRESSION_FILTER` | Filter tests by glob pattern                                                                                    | e.g. `logistics/*`, `papers/create?`    |
+| `CRUDDL_UPDATE_EXPECTED`   | Overwrite `result.json` and `.aql` files with actual output                                                     | `1` or `true`                           |
+| `CRUDDL_TRACE`             | Enable trace-level logging for database adapters                                                                | `1` or `true`                           |
 
 ## npm Scripts
 

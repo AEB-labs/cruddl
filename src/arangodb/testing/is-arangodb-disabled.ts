@@ -1,3 +1,3 @@
 export function isArangoDBDisabled() {
-    return process.argv.includes('--db=in-memory');
+    return process.env.CRUDDL_DB === 'in-memory';
 }
