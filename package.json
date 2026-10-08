@@ -80,14 +80,14 @@
   "author": "",
   "engines": {
     "npm": ">=6.0.0",
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "devDependencies": {
     "@apollo/server": "^5.4.0",
     "@graphql-tools/utils": "^8.8.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
-    "@types/node": "^20.14.8",
+    "@types/node": "^22.0.0",
     "@types/pluralize": "0.0.29",
     "@types/stats-lite": "^2.2.2",
     "@vitest/coverage-v8": "^4.0.18",
