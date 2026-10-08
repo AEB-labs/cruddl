@@ -1,0 +1,5 @@
+mutation m {
+    createManyData(input: [{ foo: "d" }, { foo: "e" }]) {
+        foo
+    }
+}

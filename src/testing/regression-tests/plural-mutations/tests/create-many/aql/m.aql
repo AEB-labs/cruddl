@@ -1,0 +1,27 @@
+RETURN (
+  FOR v_entity1 IN @var1
+  INSERT v_entity1 IN @@data
+  RETURN NEW._key
+)
+
+// ----------------------------------------------------------------
+
+WITH @@data
+RETURN (
+  FOR v_data1
+  IN (
+    FOR v_id1
+    IN @v_newEntityIds1
+    RETURN DOCUMENT(@@data, v_id1)
+  )
+  RETURN {
+    "foo": v_data1.`foo`
+  }
+)
+
+// ----------------------------------------------------------------
+
+WITH @@data
+RETURN {
+  "createManyData": @v_createManyData1
+}
