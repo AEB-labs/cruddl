@@ -1,5 +1,5 @@
 name: Dependabot auto-merge
-on: pull_request_target
+on: pull_request
 
 permissions:
   contents: write
@@ -17,11 +17,15 @@ jobs:
         with:
           github-token: '${{ secrets.GITHUB_TOKEN }}'
 
-      # only enables auto-merge; GitHub merges once the required checks of the branch ruleset pass.
+      # Adds the PR to the merge queue (or enables auto-merge if there is none). The merge queue
+      # re-runs the tests on the PR merged into the latest main before merging.
+      # GITHUB_TOKEN cannot add PRs to a merge queue, so AUTO_MERGE_TOKEN (a fine-grained PAT or
+      # GitHub App token with contents + pull requests write access, stored as a Dependabot secret)
+      # is needed once the queue is enabled.
       # major updates are left for manual review
       - name: Enable auto-merge
         if: steps.metadata.outputs.update-type != 'version-update:semver-major'
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.AUTO_MERGE_TOKEN || secrets.GITHUB_TOKEN }}
