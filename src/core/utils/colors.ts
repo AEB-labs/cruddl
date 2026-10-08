@@ -4,9 +4,7 @@ import style from 'ansi-styles';
 // we can neither use colors nor chalk because they import node-specific modules which would not work in a pure
 // webpack environment
 
-namespace colors {
-    export let enabled = false;
-}
+const colors = { enabled: false };
 export default colors;
 
 function applyColorFn(color: CSPair) {
