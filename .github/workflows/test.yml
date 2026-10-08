@@ -5,9 +5,6 @@ run-name: >-
   github.ref_name) }}
 on:
   pull_request:
-  # the branch ruleset uses a merge queue, which tests the PR merged into the latest main (plus the
-  # PRs ahead of it in the queue) before it is actually merged
-  merge_group:
   push:
     branches:
       - main
