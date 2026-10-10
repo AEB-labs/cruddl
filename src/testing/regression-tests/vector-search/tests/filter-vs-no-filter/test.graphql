@@ -1,0 +1,23 @@
+# Two operations with the same vector and first:5 — one with isPublished filter, one without.
+# The unfiltered query returns Gamma (isPublished: false, score ≈ 0.707) while the filtered
+# query excludes it, proving the filter is actually evaluated and not just coincidentally absent.
+query withFilterIsPublished {
+    vectorSearchArticles(
+        field: embedding
+        vector: [1.0, 0.0, 0.0, 0.0]
+        first: 5
+        filter: { isPublished: true }
+    ) {
+        title
+        isPublished
+        _vectorScore
+    }
+}
+
+query withoutFilter {
+    vectorSearchArticles(field: embedding, vector: [1.0, 0.0, 0.0, 0.0], first: 5) {
+        title
+        isPublished
+        _vectorScore
+    }
+}

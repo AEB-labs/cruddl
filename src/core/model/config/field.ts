@@ -8,6 +8,7 @@ import type {
     StringValueNode,
     ValueNode,
 } from 'graphql';
+import type { VectorIndexDefinitionConfig } from './indices.js';
 import type { FieldModuleSpecificationConfig } from './module-specification.js';
 import type { PermissionsConfig } from './permissions.js';
 
@@ -81,6 +82,7 @@ export interface FieldConfig {
     readonly isHiddenASTNode?: DirectiveNode;
 
     readonly moduleSpecification?: FieldModuleSpecificationConfig;
+    readonly vectorIndex?: VectorIndexDefinitionConfig;
 }
 
 export enum RelationDeleteAction {

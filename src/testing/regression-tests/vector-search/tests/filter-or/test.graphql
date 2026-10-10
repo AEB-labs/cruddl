@@ -1,0 +1,15 @@
+# OR filter: articles where isPublished is false OR title is "Beta".
+# Data: Gamma (isPublished: false, score ≈ 0.707), Beta (isPublished: true, title="Beta", score=0).
+# Alpha, Delta, Epsilon are published and title != "Beta" — excluded.
+query filterWithOr {
+    vectorSearchArticles(
+        field: embedding
+        vector: [1.0, 0.0, 0.0, 0.0]
+        first: 5
+        filter: { OR: [{ isPublished: false }, { title: "Beta" }] }
+    ) {
+        title
+        isPublished
+        _vectorScore
+    }
+}

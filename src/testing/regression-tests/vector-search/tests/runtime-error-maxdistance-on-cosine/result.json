@@ -1,0 +1,19 @@
+{
+  "runtimeErrorMaxDistanceOnCosine": {
+    "data": {
+      "vectorSearchArticles": null
+    },
+    "errors": [
+      {
+        "message": "Field \"embedding\" uses the COSINE similarity metric — use \"minScore\" instead of \"maxDistance\"",
+        "locations": [
+          {
+            "line": 2,
+            "column": 5
+          }
+        ],
+        "path": ["vectorSearchArticles"]
+      }
+    ]
+  }
+}

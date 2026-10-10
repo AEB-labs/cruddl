@@ -1,0 +1,19 @@
+query withMaxDistance {
+    vectorSearchArticles(
+        field: imageEmbedding
+        vector: [1.0, 0.0, 0.0, 0.0]
+        first: 5
+        maxDistance: 0.8
+    ) {
+        title
+        _vectorScore
+    }
+}
+
+# Paired unfiltered query: proves maxDistance actually removes Beta/Delta/Epsilon (L2 dist ≈ 1.414)
+query withoutMaxDistance {
+    vectorSearchArticles(field: imageEmbedding, vector: [1.0, 0.0, 0.0, 0.0], first: 5) {
+        title
+        _vectorScore
+    }
+}

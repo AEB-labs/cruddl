@@ -1,0 +1,19 @@
+{
+  "runtimeErrorMinScoreOnL2": {
+    "data": {
+      "vectorSearchArticles": null
+    },
+    "errors": [
+      {
+        "message": "Field \"imageEmbedding\" uses the L2 distance metric — use \"maxDistance\" instead of \"minScore\"",
+        "locations": [
+          {
+            "line": 2,
+            "column": 5
+          }
+        ],
+        "path": ["vectorSearchArticles"]
+      }
+    ]
+  }
+}

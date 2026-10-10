@@ -1,15 +1,20 @@
 import type { CreateAnalyzerOptions } from 'arangojs/analyzers';
+import type { VectorIndexDescription } from 'arangojs/indexes';
 import type {
     ArangoSearchViewPropertiesOptions,
     CreateArangoSearchViewOptions,
 } from 'arangojs/views';
 import type { Relation } from '../../core/model/implementation/relation.js';
-import type { IndexDefinition } from './index-helpers.js';
+import type { PersistentIndexDefinition } from './index-helpers.js';
 import { describeIndex, getIndexDescriptor } from './index-helpers.js';
+import type { VectorIndexDefinition } from './vector-index/vector-index-definition.js';
 
 export type SchemaMigration =
     | CreateIndexMigration
     | DropIndexMigration
+    | CreateVectorIndexMigration
+    | RecreateVectorIndexMigration
+    | DropVectorIndexMigration
     | CreateDocumentCollectionMigration
     | CreateEdgeCollectionMigration
     | CreateArangoSearchViewMigration
@@ -20,13 +25,13 @@ export type SchemaMigration =
     | UpdateArangoSearchAnalyzerMigration;
 
 interface CreateIndexMigrationConfig {
-    readonly index: IndexDefinition;
+    readonly index: PersistentIndexDefinition;
     readonly collectionSize?: number;
 }
 
 export class CreateIndexMigration {
     readonly type: 'createIndex' = 'createIndex';
-    readonly index: IndexDefinition;
+    readonly index: PersistentIndexDefinition;
     readonly collectionSize: number | undefined;
 
     constructor(config: CreateIndexMigrationConfig) {
@@ -48,13 +53,13 @@ export class CreateIndexMigration {
 }
 
 interface DropIndexMigrationConfig {
-    readonly index: IndexDefinition;
+    readonly index: PersistentIndexDefinition;
     readonly collectionSize?: number;
 }
 
 export class DropIndexMigration {
     readonly type: 'dropIndex' = 'dropIndex';
-    readonly index: IndexDefinition;
+    readonly index: PersistentIndexDefinition;
     readonly collectionSize: number | undefined;
 
     constructor(config: DropIndexMigrationConfig) {
@@ -68,6 +73,106 @@ export class DropIndexMigration {
 
     get id() {
         return `dropIndex/${getIndexDescriptor(this.index)}`;
+    }
+
+    get isMandatory() {
+        return false;
+    }
+}
+
+interface CreateVectorIndexMigrationConfig {
+    readonly requiredIndex: VectorIndexDefinition;
+    readonly vectorDocumentCount?: number;
+}
+
+/**
+ * Migration that creates a new vector index for the first time (no existing index is present).
+ * The index is always created in slot 'a'. The actual index name is derived by the performer
+ * using vectorIndexSlotName(field, 'a').
+ */
+export class CreateVectorIndexMigration {
+    readonly type: 'createVectorIndex' = 'createVectorIndex';
+    readonly requiredIndex: VectorIndexDefinition;
+    readonly vectorDocumentCount: number | undefined;
+
+    constructor(config: CreateVectorIndexMigrationConfig) {
+        this.requiredIndex = config.requiredIndex;
+        this.vectorDocumentCount = config.vectorDocumentCount;
+    }
+
+    get description() {
+        return `create vector index ${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName}`;
+    }
+
+    get id() {
+        return `createVectorIndex/${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName}`;
+    }
+
+    get isMandatory() {
+        return false;
+    }
+}
+
+interface RecreateVectorIndexMigrationConfig {
+    readonly existingIndex: VectorIndexDescription;
+    readonly requiredIndex: VectorIndexDefinition;
+    readonly vectorDocumentCount?: number;
+}
+
+/**
+ * Migration that recreates an existing vector index with updated parameters (e.g. changed metric,
+ * dimension, or nLists). Uses the A/B slot naming scheme: the new index is created in the slot
+ * opposite to the existing one, and the old index is dropped once the new one is ready.
+ */
+export class RecreateVectorIndexMigration {
+    readonly type: 'recreateVectorIndex' = 'recreateVectorIndex';
+    readonly existingIndex: VectorIndexDescription;
+    readonly requiredIndex: VectorIndexDefinition;
+    readonly vectorDocumentCount: number | undefined;
+
+    constructor(config: RecreateVectorIndexMigrationConfig) {
+        this.existingIndex = config.existingIndex;
+        this.requiredIndex = config.requiredIndex;
+        this.vectorDocumentCount = config.vectorDocumentCount;
+    }
+
+    get description() {
+        return `recreate vector index ${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName} with updated parameters`;
+    }
+
+    get id() {
+        return `recreateVectorIndex/${this.requiredIndex.collectionName}/${this.requiredIndex.fieldName}`;
+    }
+
+    get isMandatory() {
+        return false;
+    }
+}
+
+interface DropVectorIndexMigrationConfig {
+    readonly collectionName: string;
+    readonly index: VectorIndexDescription;
+}
+
+/**
+ * Migration that drops a vector index, identified solely by its name.
+ */
+export class DropVectorIndexMigration {
+    readonly type: 'dropVectorIndex' = 'dropVectorIndex';
+    readonly collectionName: string;
+    readonly index: VectorIndexDescription;
+
+    constructor(config: DropVectorIndexMigrationConfig) {
+        this.index = config.index;
+        this.collectionName = config.collectionName;
+    }
+
+    get description() {
+        return `drop vector index "${this.index.name}" (${this.index.id}) on collection ${this.collectionName}`;
+    }
+
+    get id() {
+        return `dropVectorIndex/${this.collectionName}/${this.index.id}`;
     }
 
     get isMandatory() {

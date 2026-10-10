@@ -1,0 +1,16 @@
+RETURN {
+  "vectorSearchArticles": (
+    FOR v_article1 IN @@articles
+    FILTER (v_article1.`isPublished` == @var1)
+    LET v_vectorScore1 = APPROX_NEAR_COSINE(v_article1.`embedding`, @var2, { nProbe: @var3 })
+    SORT v_vectorScore1 DESC
+    LIMIT @var4
+    RETURN {
+      "title": v_article1.`title`,
+      "isPublished": v_article1.`isPublished`,
+      @var5: v_vectorScore1
+    }
+  )
+}
+
+// Peak memory usage: 65536 bytes

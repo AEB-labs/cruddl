@@ -1,0 +1,11 @@
+query runtimeErrorMinScoreOnL2 {
+    vectorSearchArticles(
+        field: imageEmbedding
+        vector: [1.0, 0.0, 0.0, 0.0]
+        minScore: 0.5
+        first: 3
+    ) {
+        title
+        _vectorScore
+    }
+}

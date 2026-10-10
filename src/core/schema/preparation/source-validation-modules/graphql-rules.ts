@@ -1,7 +1,5 @@
-import type { DocumentNode, GraphQLError, Location, ValidationRule } from 'graphql';
+import type { GraphQLError, Location, ValidationRule } from 'graphql';
 import {
-    buildASTSchema,
-    Kind,
     KnownArgumentNamesRule,
     KnownDirectivesRule,
     ProvidedRequiredArgumentsRule,
@@ -11,9 +9,8 @@ import {
     ValuesOfCorrectTypeRule,
     VariablesInAllowedPositionRule,
 } from 'graphql';
-import { gql } from 'graphql-tag';
 import { ValidationMessage } from '../../../model/validation/message.js';
-import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base.js';
+import { BASE_SCHEMA } from '../../graphql-base.js';
 import type { ParsedProjectSource } from '../../parsing/parsed-project.js';
 import { ParsedProjectSourceBaseKind } from '../../parsing/parsed-project.js';
 import type { ParsedSourceValidator } from '../ast-validator.js';
@@ -40,7 +37,7 @@ export class GraphQLRulesValidator implements ParsedSourceValidator {
 
         let ast = source.document;
 
-        const results = [...validate(coreSchema, ast, rules)];
+        const results = [...validate(BASE_SCHEMA, ast, rules)];
 
         return results.map((error) =>
             ValidationMessage.error(error.message, getMessageLocation(error)),
@@ -53,31 +50,4 @@ function getMessageLocation(error: GraphQLError): Location | undefined {
         return undefined;
     }
     return error.nodes[0].loc;
-}
-
-const schemaBase: DocumentNode = gql`
-    schema {
-        query: DummyQueryType___
-    }
-
-    type DummyQueryType___ {
-        field: ID
-    }
-`;
-
-const coreSchema = buildASTSchema({
-    kind: Kind.DOCUMENT,
-    definitions: [
-        ...DIRECTIVES.definitions,
-        ...CORE_SCALARS.definitions,
-        ...schemaBase.definitions,
-    ],
-});
-
-function getDescriptionFromSyntaxError(error: GraphQLError) {
-    const captures = error.message.match(/Syntax Error .* \(\d+:\d+\) (.*)/);
-    if (!captures) {
-        return error.message;
-    }
-    return captures[1];
 }

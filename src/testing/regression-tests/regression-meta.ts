@@ -30,9 +30,21 @@ interface MetaConfig {
     readonly waitForArangoSearch?: boolean;
     /** Test timeout in milliseconds */
     readonly timeoutInMs?: number;
+    /**
+     * Run schema migrations a second time after test data is seeded.
+     *
+     * Required for index types that cannot be created on an empty collection (e.g. ArangoDB vector
+     * indices, which need at least one document present for the training phase).
+     * Only meaningful for suite-level meta; test-level setting is ignored.
+     */
+    readonly migrateAfterSeed?: boolean;
 }
 
 const DEFAULT_TEST_TIMEOUT_IN_MS = 5_000;
+
+export interface ResolvedSuiteMeta {
+    readonly migrateAfterSeed: boolean;
+}
 
 export interface ResolvedTestMeta {
     readonly waitForArangoSearch: boolean;
@@ -56,6 +68,13 @@ export class RegressionMeta {
         private readonly databaseVersion: string | undefined,
         private readonly nodeVersion: string,
     ) {}
+
+    resolveSuiteMeta(): ResolvedSuiteMeta {
+        const suiteMeta = this.getSuiteMeta();
+        return {
+            migrateAfterSeed: suiteMeta.migrateAfterSeed ?? false,
+        };
+    }
 
     resolveTestMeta(name: string): ResolvedTestMeta {
         const suiteMeta = this.getSuiteMeta();

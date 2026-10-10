@@ -16,6 +16,8 @@ import {
     VariableAssignmentQueryNode,
     VariableQueryNode,
 } from '../../query-tree/variables.js';
+import type { VectorSearchQueryNodeParams } from '../../query-tree/vector-search.js';
+import { VectorSearchQueryNode } from '../../query-tree/vector-search.js';
 import { groupByEquivalence } from '../../utils/group-by-equivalence.js';
 import type { RequireAllProperties } from '../../utils/util-types.js';
 import { decapitalize } from '../../utils/utils.js';
@@ -303,6 +305,23 @@ function applyListTransformations(
             itemVariable,
             rootEntityVariable,
         } satisfies RequireAllProperties<TraversalQueryNodeParams>);
+    }
+
+    // VectorSearchQueryNode: inline the mapping into the innerNode to avoid an extra FOR loop
+    if (listNode instanceof VectorSearchQueryNode && listNode.innerNode === listNode.itemVariable) {
+        return new VectorSearchQueryNode({
+            rootEntityType: listNode.rootEntityType,
+            field: listNode.field,
+            vectorNode: listNode.vectorNode,
+            nProbe: listNode.nProbe,
+            minScore: listNode.minScore,
+            maxDistance: listNode.maxDistance,
+            filterNode: listNode.filterNode,
+            itemVariable: listNode.itemVariable,
+            innerNode: buildObjectQueryNode(listNode.itemVariable, itemType, selectionSet, context),
+            skipNode: listNode.skipNode,
+            maxCountNode: listNode.maxCountNode,
+        } satisfies RequireAllProperties<VectorSearchQueryNodeParams>);
     }
 
     const itemVariable = new VariableQueryNode(decapitalize(itemType.name));

@@ -37,6 +37,7 @@ import type { Relation, RelationSide } from './relation.js';
 import { RolesSpecifier } from './roles-specifier.js';
 import type { ScalarType } from './scalar-type.js';
 import type { TimeToLiveType } from './time-to-live.js';
+import { VectorIndex } from './vector-index.js';
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};
@@ -135,6 +136,11 @@ export class RootEntityType extends ObjectTypeBase {
         return indices.filter(
             (index, i1) => !indices.some((other, i2) => i1 < i2 && other.equals(index)),
         );
+    }
+
+    @memorize()
+    get vectorIndices(): ReadonlyArray<VectorIndex> {
+        return this.fields.flatMap((f) => (f.vectorIndex ? [f.vectorIndex] : []));
     }
 
     get hasFieldsIncludedInSearch() {
