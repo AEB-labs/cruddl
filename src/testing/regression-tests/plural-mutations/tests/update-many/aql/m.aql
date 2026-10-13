@@ -1,0 +1,60 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_data1
+    IN @@data
+    FILTER (v_data1._key == @var1)
+    LIMIT @var2
+    RETURN v_data1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "foo": @var3,
+    "updatedAt": @var4
+  }
+  IN @@data
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// ----------------------------------------------------------------
+
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_data1
+    IN @@data
+    FILTER (v_data1._key == @var1)
+    LIMIT @var2
+    RETURN v_data1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "foo": @var3,
+    "updatedAt": @var4
+  }
+  IN @@data
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// ----------------------------------------------------------------
+
+WITH @@data
+RETURN (
+  FOR v_data1
+  IN [
+    DOCUMENT(@@data, @var1),
+    DOCUMENT(@@data, @var2)
+  ]
+  RETURN {
+    "foo": v_data1.`foo`
+  }
+)
+
+// ----------------------------------------------------------------
+
+WITH @@data
+RETURN {
+  "updateManyData": @v_updateManyData1
+}

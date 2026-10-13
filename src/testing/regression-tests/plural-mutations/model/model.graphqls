@@ -1,0 +1,4 @@
+# The plural of "data" is "data", causing a naming conflict between singular and plural.
+type Data @rootEntity @roles(readWrite: "allusers") {
+    foo: String
+}
