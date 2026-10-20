@@ -1,0 +1,14 @@
+{
+  "m": {
+    "data": {
+      "createManyData": [
+        {
+          "foo": "d"
+        },
+        {
+          "foo": "e"
+        }
+      ]
+    }
+  }
+}

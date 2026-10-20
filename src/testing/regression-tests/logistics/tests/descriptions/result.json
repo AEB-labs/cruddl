@@ -9980,13 +9980,28 @@
                 "deprecationReason": null
               },
               {
+                "name": "createManyOnlyRelations",
+                "description": "Creates multiple new OnlyRelations",
+                "deprecationReason": null
+              },
+              {
                 "name": "updateOnlyRelations",
                 "description": "Updates an existing OnlyRelations",
                 "deprecationReason": null
               },
               {
+                "name": "updateManyOnlyRelations",
+                "description": "Updates multiple existing OnlyRelations (referenced by their ids)",
+                "deprecationReason": null
+              },
+              {
                 "name": "deleteOnlyRelations",
                 "description": "Deletes a OnlyRelations by id",
+                "deprecationReason": null
+              },
+              {
+                "name": "deleteManyOnlyRelations",
+                "description": "Deletes multiple OnlyRelations by their ids.\n\nIDs that are not found are silently ignored.",
                 "deprecationReason": null
               },
               {
