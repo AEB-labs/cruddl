@@ -1,0 +1,12 @@
+query AllDeliveries {
+    model {
+        allDeliveries(
+            filter: {
+                deliveryNumber_in: ["CUS824271438210", "CUS613349126430"]
+                deliveryNumber_like: "CUS613349126430%"
+            }
+        ) {
+            deliveryNumber
+        }
+    }
+}

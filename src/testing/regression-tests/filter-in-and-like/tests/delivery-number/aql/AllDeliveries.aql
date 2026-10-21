@@ -1,0 +1,12 @@
+RETURN {
+  "model": {
+    "allDeliveries": (
+      FOR v_delivery1
+      IN @@deliveries
+      FILTER ((v_delivery1.`deliveryNumber` IN @var1) && (v_delivery1.`deliveryNumber` >= UPPER(@var2) && v_delivery1.`deliveryNumber` < LOWER(@var3)))
+      RETURN {
+        "deliveryNumber": v_delivery1.`deliveryNumber`
+      }
+    )
+  }
+}

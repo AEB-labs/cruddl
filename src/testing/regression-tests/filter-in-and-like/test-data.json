@@ -1,0 +1,13 @@
+{
+  "roles": ["allusers"],
+  "rootEntities": {
+    "model.Delivery": [
+      {
+        "deliveryNumber": "CUS824271438210"
+      },
+      {
+        "deliveryNumber": "CUS613349126430"
+      }
+    ]
+  }
+}
