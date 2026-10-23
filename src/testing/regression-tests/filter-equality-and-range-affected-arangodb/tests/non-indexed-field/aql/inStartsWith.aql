@@ -1,0 +1,13 @@
+RETURN {
+  "allUsers": (
+    FOR v_user1
+    IN @@users
+    FILTER ((v_user1.`nickname` IN @var1) && (v_user1.`nickname` >= UPPER(@var2) && v_user1.`nickname` < LOWER(@var3)) && (LEFT(v_user1.`nickname`, LENGTH(@var4)) == @var5))
+    SORT (v_user1.`nickname`)
+    RETURN {
+      "username": v_user1.`username`
+    }
+  )
+}
+
+// Peak memory usage (arangodb 3.12.11): 65536 bytes

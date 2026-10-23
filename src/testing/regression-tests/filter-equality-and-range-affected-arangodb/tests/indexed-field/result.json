@@ -1,0 +1,110 @@
+{
+  "eqLt": {
+    "data": {
+      "allUsers": []
+    }
+  },
+  "eqGt": {
+    "data": {
+      "allUsers": []
+    }
+  },
+  "eqLtExcluded": {
+    "data": {
+      "allUsers": [
+        {
+          "username": "Bob"
+        }
+      ]
+    }
+  },
+  "eqGteExcluded": {
+    "data": {
+      "allUsers": [
+        {
+          "username": "alice"
+        }
+      ]
+    }
+  },
+  "inRange": {
+    "data": {
+      "allUsers": []
+    }
+  },
+  "inRangeExcluded": {
+    "data": {
+      "allUsers": [
+        {
+          "username": "Bob"
+        },
+        {
+          "username": "Zoe"
+        }
+      ]
+    }
+  },
+  "inLikePrefix": {
+    "data": {
+      "allUsers": [
+        {
+          "username": "Bob"
+        },
+        {
+          "username": "Zoe"
+        }
+      ]
+    }
+  },
+  "eqLikePrefix": {
+    "data": {
+      "allUsers": [
+        {
+          "username": "Zoe"
+        }
+      ]
+    }
+  },
+  "inLikeLiteral": {
+    "data": {
+      "allUsers": [
+        {
+          "username": "Bob"
+        },
+        {
+          "username": "Zoe"
+        }
+      ]
+    }
+  },
+  "eqLikeLiteral": {
+    "data": {
+      "allUsers": [
+        {
+          "username": "Bob"
+        }
+      ]
+    }
+  },
+  "inLikePrefixAllMatch": {
+    "data": {
+      "allUsers": [
+        {
+          "username": "Bob"
+        },
+        {
+          "username": "bobby"
+        }
+      ]
+    }
+  },
+  "inStartsWith": {
+    "data": {
+      "allUsers": [
+        {
+          "username": "Bob"
+        }
+      ]
+    }
+  }
+}
