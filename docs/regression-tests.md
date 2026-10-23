@@ -27,6 +27,8 @@ Each suite lives in `src/testing/regression-tests/<suite>/` and contains:
 | ------------------------------------ | ------- | ------------------------------------------------------------------- | -------------------------------------------- |
 | `databases.<db>.ignore`              | boolean | Skip this suite/test for the given database adapter                 | Independent: suite skips all, test skips one |
 | `databases.<db>.versions.<v>.ignore` | boolean | Skip for a database version given as `major.minor`, e.g. `3.12`     | Independent (same as above)                  |
+| `databases.<db>.minVersion`          | string  | Skip for database versions below this one (`major.minor.patch`)     | Independent (same as above)                  |
+| `databases.<db>.maxVersion`          | string  | Skip for database versions above this one (`major.minor.patch`)     | Independent (same as above)                  |
 | `node.versions.<v>.ignore`           | boolean | Skip for a specific Node.js major version                           | Independent (same as above)                  |
 | `waitForArangoSearch`                | boolean | Wait for ArangoSearch views to sync before queries (default: false) | Test overrides suite                         |
 | `timeoutInMs`                        | number  | Test timeout in milliseconds (default: 5000)                        | Test overrides suite                         |
@@ -41,6 +43,21 @@ Example — skip in-memory and wait for ArangoSearch:
     "waitForArangoSearch": true
 }
 ```
+
+Example: only run for ArangoDB 3.12.10 up to and including 3.12.12:
+
+```json
+{
+    "databases": {
+        "arangodb": { "minVersion": "3.12.10", "maxVersion": "3.12.12" }
+    }
+}
+```
+
+Both bounds are inclusive and compared as `major.minor.patch`. A suffix of the server version such
+as `-nightly.20261023` is ignored, so that nightly counts as 3.12.13. The version is read from the
+server before the tests are collected. If the server cannot be reached, nothing is ignored by
+version.
 
 ## Environment Variables
 
