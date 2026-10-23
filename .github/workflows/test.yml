@@ -19,7 +19,20 @@ jobs:
         # pinned to exact patch versions because the AQL files record the peak memory usage per
         # version - keep in sync with TESTED_ARANGODB_VERSIONS in
         # src/testing/regression-tests/aql-golden-file.ts
-        arango-image: ['arangodb:3.12.6', 'arangodb:3.12.11']
+        #
+        # The nightly is pinned to a build that contains the fix for wrong results of equality
+        # combined with range filters (ArangoDB COR-1152), which the regression suite
+        # filter-equality-and-range needs. It is not in TESTED_ARANGODB_VERSIONS, so peak memory
+        # usage is not checked for it. Replace it with arangodb:3.12.13 once that is released, then
+        # remove the minVersion of filter-equality-and-range and delete
+        # filter-equality-and-range-affected-arangodb once no tested version is in 3.12.10 to
+        # 3.12.12.
+        arango-image:
+          [
+            'arangodb:3.12.6',
+            'arangodb:3.12.11',
+            'arangodb/enterprise-preview:3.12.13-nightly.20261023',
+          ]
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js 24.x # default Node.js version, keep in sync with deploy.yml
