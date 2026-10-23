@@ -1,6 +1,7 @@
 import { readdirSync, statSync } from 'fs';
 import { resolve } from 'path';
 import { describe, expect, it } from 'vitest';
+import { getArangoDBVersion } from './initialization.js';
 import { getRegressionOptions } from './regression-options.js';
 import type { RegressionSuiteOptions } from './regression-suite.js';
 import { RegressionSuite } from './regression-suite.js';
@@ -19,12 +20,17 @@ describe('regression tests', async () => {
 
     for (const database of databases) {
         describe(`for ${database}`, async () => {
+            // needed before the tests are collected so that meta.json can ignore them by version
+            const arangoDBVersion =
+                database === 'arangodb' ? await getArangoDBVersion() : undefined;
+
             for (const suiteName of dirs) {
                 const suitePath = resolve(regressionRootDir, suiteName);
                 const options: RegressionSuiteOptions = {
                     saveActualAsExpected,
                     trace,
                     database,
+                    arangoDBVersion,
                 };
                 const suite = new RegressionSuite(suitePath, options);
 

@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
+import type { ArangoDBVersion } from '../../arangodb/version-helper.js';
 import { parseJSONCOrThrow } from '../utils/parse-jsonc-or-throw.js';
 
 interface DatabaseMetaConfig {
@@ -53,7 +54,7 @@ export class RegressionMeta {
         private readonly suitePath: string,
         private readonly testsPath: string,
         private readonly databaseSpecifier: string,
-        private readonly databaseVersion: string | undefined,
+        private readonly arangoDBVersion: ArangoDBVersion | undefined,
         private readonly nodeVersion: string,
     ) {}
 
@@ -81,7 +82,12 @@ export class RegressionMeta {
         if (dbMeta?.ignore) {
             return true;
         }
-        if (this.databaseVersion && dbMeta?.versions?.[this.databaseVersion]?.ignore) {
+        if (
+            this.arangoDBVersion &&
+            this.databaseSpecifier === 'arangodb' &&
+            dbMeta?.versions?.[`${this.arangoDBVersion.major}.${this.arangoDBVersion.minor}`]
+                ?.ignore
+        ) {
             return true;
         }
         if (meta.node?.versions?.[this.nodeVersion]?.ignore) {

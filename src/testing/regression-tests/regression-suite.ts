@@ -5,6 +5,7 @@ import { graphql, OperationTypeNode, parse } from 'graphql';
 import { unlinkSync } from 'node:fs';
 import { resolve } from 'path';
 import { ArangoDBAdapter } from '../../arangodb/arangodb-adapter.js';
+import type { ArangoDBVersion } from '../../arangodb/version-helper.js';
 import { ConsoleLoggerProvider } from '../../core/config/console-logger.js';
 import type { RequestProfile } from '../../core/config/interfaces.js';
 import type { DatabaseAdapter } from '../../core/database/database-adapter.js';
@@ -34,6 +35,14 @@ export interface RegressionSuiteOptions {
     readonly saveActualAsExpected?: boolean;
     readonly trace?: boolean;
     readonly database?: DatabaseSpecifier;
+
+    /**
+     * The version of the ArangoDB server (only for database 'arangodb')
+     *
+     * It needs to be known before the tests are collected so that meta.json can ignore suites and
+     * tests based on the version.
+     */
+    readonly arangoDBVersion?: ArangoDBVersion;
 }
 
 export interface AqlResult {
@@ -70,7 +79,6 @@ export class RegressionSuite {
     private inMemoryDB: InMemoryDB = new InMemoryDB();
     private databaseSpecifier: DatabaseSpecifier;
     private readonly idGenerator = new PredictableIDGenerator();
-    private databaseVersion: string | undefined;
     private arangoDBVersion: string | undefined;
     private nodeVersion: string;
     private lastProfile: RequestProfile | undefined;
@@ -192,7 +200,6 @@ export class RegressionSuite {
         if (this.databaseSpecifier === 'arangodb') {
             const version = await (initAdapter as ArangoDBAdapter).getArangoDBVersion();
             if (version) {
-                this.databaseVersion = `${version.major}.${version.minor}`;
                 this.arangoDBVersion = `${version.major}.${version.minor}.${version.patch}`;
                 if (
                     !TESTED_ARANGODB_VERSIONS.includes(this.arangoDBVersion) &&
@@ -261,7 +268,7 @@ export class RegressionSuite {
                 this.path,
                 this.testsPath,
                 this.databaseSpecifier,
-                this.databaseVersion,
+                this.options.arangoDBVersion,
                 this.nodeVersion,
             );
         }

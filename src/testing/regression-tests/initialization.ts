@@ -2,6 +2,8 @@ import { Database } from 'arangojs';
 import { existsSync, readFileSync } from 'fs';
 import type { ExecutionResult } from 'graphql';
 import type { ArangoDBConfig } from '../../arangodb/config.js';
+import type { ArangoDBVersion } from '../../arangodb/version-helper.js';
+import { ArangoDBVersionHelper } from '../../arangodb/version-helper.js';
 import { isDefined } from '../../core/utils/utils.js';
 import { generateRandomString } from '../utils/generate-random-string.js';
 import { parseJSONCOrThrow } from '../utils/parse-jsonc-or-throw.js';
@@ -35,6 +37,27 @@ export async function createTempDatabase(): Promise<ArangoDBConfig> {
         await systemDatabase.createDatabase(DATABASE_NAME);
     }
     return TEMP_DATABASE_CONFIG;
+}
+
+/**
+ * Asks the ArangoDB server for its version
+ *
+ * Returns undefined if the server cannot be reached so that tests which do not need ArangoDB
+ * (CRUDDL_DB=in-memory) are not affected. Tests that need it fail with a connection error anyway.
+ */
+export async function getArangoDBVersion(): Promise<ArangoDBVersion | undefined> {
+    const db = new Database({
+        url: DATABASE_URL,
+        auth: {
+            username: DATABASE_USER,
+            password: DATABASE_PASSWORD,
+        },
+    });
+    try {
+        return await new ArangoDBVersionHelper(db).getArangoDBVersion();
+    } catch {
+        return undefined;
+    }
 }
 
 export async function dropTempDatabase(): Promise<void> {
