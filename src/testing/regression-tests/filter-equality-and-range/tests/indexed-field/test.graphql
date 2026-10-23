@@ -1,0 +1,86 @@
+query eqLt {
+    allUsers(filter: { username: "alice", username_lt: "Bob" }, orderBy: username_ASC) {
+        username
+    }
+}
+
+query eqGt {
+    allUsers(filter: { username: "Bob", username_gt: "alice" }, orderBy: username_ASC) {
+        username
+    }
+}
+
+query eqLtExcluded {
+    allUsers(filter: { username: "Bob", username_lt: "alice" }, orderBy: username_ASC) {
+        username
+    }
+}
+
+query eqGteExcluded {
+    allUsers(filter: { username: "alice", username_gte: "Bob" }, orderBy: username_ASC) {
+        username
+    }
+}
+
+query inRange {
+    allUsers(
+        filter: { username_in: ["Bob"], username_gte: "alice", username_lt: "carol" }
+        orderBy: username_ASC
+    ) {
+        username
+    }
+}
+
+query inRangeExcluded {
+    allUsers(
+        filter: { username_in: ["Zoe", "Bob"], username_gte: "Bob", username_lt: "bobby" }
+        orderBy: username_ASC
+    ) {
+        username
+    }
+}
+
+query inLikePrefix {
+    allUsers(
+        filter: { username_in: ["Zoe", "Bob"], username_like: "bob%" }
+        orderBy: username_ASC
+    ) {
+        username
+    }
+}
+
+query eqLikePrefix {
+    allUsers(filter: { username: "Zoe", username_like: "bob%" }, orderBy: username_ASC) {
+        username
+    }
+}
+
+query inLikeLiteral {
+    allUsers(filter: { username_in: ["Zoe", "Bob"], username_like: "bob" }, orderBy: username_ASC) {
+        username
+    }
+}
+
+query eqLikeLiteral {
+    allUsers(filter: { username: "Bob", username_like: "bob" }, orderBy: username_ASC) {
+        username
+    }
+}
+
+query inLikePrefixAllMatch {
+    allUsers(
+        filter: { username_in: ["Bob", "bobby"], username_like: "bob%" }
+        orderBy: username_ASC
+    ) {
+        username
+    }
+}
+
+query inStartsWith {
+    allUsers(
+        filter: { username_in: ["Zoe", "Bob"], username_starts_with: "Bob" }
+        orderBy: username_ASC
+    ) {
+        username
+    }
+}
