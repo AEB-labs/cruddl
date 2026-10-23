@@ -1,0 +1,23 @@
+{
+  "roles": ["allusers"],
+  "rootEntities": {
+    "User": [
+      {
+        "username": "alice",
+        "nickname": "alice"
+      },
+      {
+        "username": "Bob",
+        "nickname": "Bob"
+      },
+      {
+        "username": "bobby",
+        "nickname": "bobby"
+      },
+      {
+        "username": "Zoe",
+        "nickname": "Zoe"
+      }
+    ]
+  }
+}
