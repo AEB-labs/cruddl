@@ -1,0 +1,15 @@
+{
+  // Documents the wrong results of ArangoDB 3.12.10 to 3.12.12 for filters that combine an
+  // equality (== or IN) with a range comparison (<, <=, >, >=) on the same string attribute.
+  // The optimizer compared the constants bytewise while the query compares strings with the
+  // server's ICU collation (e.g. "alice" < "Bob" in the collation, but not bytewise). The
+  // expected results in this suite are what these versions actually return, not what is correct.
+  // Regression introduced by ArangoDB PR #22718 (COR-471), fixed by COR-1152 (3.12.13).
+  //
+  // The correct results are tested by filter-equality-and-range, which runs for 3.12.13 and later.
+  // Delete this suite once none of the ArangoDB versions in the CI matrix is in the range below.
+  "databases": {
+    "in-memory": { "ignore": true },
+    "arangodb": { "minVersion": "3.12.10", "maxVersion": "3.12.12" }
+  }
+}

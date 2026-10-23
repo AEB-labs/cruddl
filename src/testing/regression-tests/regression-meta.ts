@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
+import type { ArangoDBVersion } from '../../arangodb/version-helper.js';
 import { parseJSONCOrThrow } from '../utils/parse-jsonc-or-throw.js';
 
 interface DatabaseMetaConfig {
@@ -7,6 +8,24 @@ interface DatabaseMetaConfig {
     readonly versions?: {
         readonly [version: string]: { readonly ignore?: boolean } | undefined;
     };
+
+    /** Ignore for database versions below this one (`major.minor.patch`, inclusive bound) */
+    readonly minVersion?: string;
+
+    /** Ignore for database versions above this one (`major.minor.patch`, inclusive bound) */
+    readonly maxVersion?: string;
+}
+
+function parseVersionBound(value: string, field: string): ArangoDBVersion {
+    const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(value);
+    if (!match) {
+        throw new Error(`Invalid ${field} "${value}" in meta.json, expected "major.minor.patch"`);
+    }
+    return { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3]) };
+}
+
+function compareVersions(a: ArangoDBVersion, b: ArangoDBVersion): number {
+    return a.major - b.major || a.minor - b.minor || a.patch - b.patch;
 }
 
 /**
@@ -53,7 +72,7 @@ export class RegressionMeta {
         private readonly suitePath: string,
         private readonly testsPath: string,
         private readonly databaseSpecifier: string,
-        private readonly databaseVersion: string | undefined,
+        private readonly arangoDBVersion: ArangoDBVersion | undefined,
         private readonly nodeVersion: string,
     ) {}
 
@@ -81,13 +100,43 @@ export class RegressionMeta {
         if (dbMeta?.ignore) {
             return true;
         }
-        if (this.databaseVersion && dbMeta?.versions?.[this.databaseVersion]?.ignore) {
+        if (
+            this.arangoDBVersion &&
+            this.databaseSpecifier === 'arangodb' &&
+            dbMeta?.versions?.[`${this.arangoDBVersion.major}.${this.arangoDBVersion.minor}`]
+                ?.ignore
+        ) {
+            return true;
+        }
+        if (this.isOutsideVersionRange(dbMeta)) {
             return true;
         }
         if (meta.node?.versions?.[this.nodeVersion]?.ignore) {
             return true;
         }
         return false;
+    }
+
+    private isOutsideVersionRange(dbMeta: DatabaseMetaConfig | undefined): boolean {
+        if (!dbMeta) {
+            return false;
+        }
+        // validate even if the version is unknown so that typos are found without a server
+        const min =
+            dbMeta.minVersion !== undefined
+                ? parseVersionBound(dbMeta.minVersion, 'minVersion')
+                : undefined;
+        const max =
+            dbMeta.maxVersion !== undefined
+                ? parseVersionBound(dbMeta.maxVersion, 'maxVersion')
+                : undefined;
+        if (!this.arangoDBVersion) {
+            return false;
+        }
+        return (
+            (!!min && compareVersions(this.arangoDBVersion, min) < 0) ||
+            (!!max && compareVersions(this.arangoDBVersion, max) > 0)
+        );
     }
 
     private getSuiteMeta(): MetaConfig {

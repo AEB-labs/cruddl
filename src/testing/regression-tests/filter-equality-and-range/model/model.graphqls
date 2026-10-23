@@ -1,0 +1,7 @@
+type User @rootEntity @roles(readWrite: ["allusers"]) {
+    # has a unique index, so ArangoDB can use an index for the filters
+    username: String @key
+
+    # has no index
+    nickname: String
+}

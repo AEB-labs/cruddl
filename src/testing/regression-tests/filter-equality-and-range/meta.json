@@ -1,0 +1,17 @@
+{
+  // Combining an equality (== or IN) with a range comparison (<, <=, >, >=) on the same string
+  // attribute returned wrong results on ArangoDB 3.12.10 to 3.12.12: the optimizer compared the
+  // constants bytewise while the query compares strings with the server's ICU collation (e.g.
+  // "alice" < "Bob" in the collation, but not bytewise). Regression introduced by ArangoDB
+  // PR #22718 (COR-471), fixed by COR-1152.
+  //
+  // These tests expect the correct results. They are only run for versions that contain the fix.
+  // Versions 3.12.10 to 3.12.12 are covered by filter-equality-and-range-affected-arangodb.
+  //
+  // The in-memory adapter compares strings by code unit instead of with a collation, so the
+  // expected results cannot be the same there.
+  "databases": {
+    "in-memory": { "ignore": true },
+    "arangodb": { "minVersion": "3.12.13" }
+  }
+}
