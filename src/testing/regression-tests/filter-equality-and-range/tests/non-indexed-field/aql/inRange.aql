@@ -1,0 +1,11 @@
+RETURN {
+  "allUsers": (
+    FOR v_user1
+    IN @@users
+    FILTER (((v_user1.`nickname` IN @var1) && (v_user1.`nickname` < @var2)) && (v_user1.`nickname` >= @var3))
+    SORT (v_user1.`nickname`)
+    RETURN {
+      "username": v_user1.`username`
+    }
+  )
+}
