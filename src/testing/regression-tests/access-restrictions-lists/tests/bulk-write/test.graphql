@@ -1,0 +1,69 @@
+# should fail: "05 public" is visible, but only readable
+mutation updateAllWithReadOnlyObject {
+    updateAllShipments(input: { name: "renamed" }) {
+        name
+    }
+}
+
+# should fail: none of the objects would be accessible afterwards
+mutation updateAllToInaccessibleValues {
+    updateAllShipments(filter: { tags_some: { equal: "a" } }, input: { tags: ["z"] }) {
+        name
+    }
+}
+
+# should fail: "05 public" is only readable
+mutation updateManyWithReadOnlyObject {
+    updateShipments(
+        input: [
+            { id: "@{ids/Shipment/5}", category: "changed" }
+            { id: "@{ids/Shipment/1}", category: "changed" }
+        ]
+    ) {
+        name
+    }
+}
+
+# should fail: "05 public" is only readable
+mutation deleteAllWithReadOnlyObject {
+    deleteAllShipments {
+        name
+    }
+}
+
+# should fail: "05 public" is only readable
+mutation deleteManyWithReadOnlyObject {
+    deleteShipments(ids: ["@{ids/Shipment/5}", "@{ids/Shipment/1}"]) {
+        name
+    }
+}
+
+query listAfterDeniedMutations {
+    allShipments(orderBy: name_ASC) {
+        name
+        tags
+        category
+    }
+}
+
+# should pass
+mutation updateAllWritableObjects {
+    updateAllShipments(filter: { tags_some: { equal: "a" } }, input: { category: "changed" }) {
+        category
+    }
+}
+
+# should pass
+mutation deleteAllWritableObjects {
+    deleteAllShipments(filter: { name_in: ["06 a", "07 a c"] }) {
+        __typename
+    }
+}
+
+query listAfterAllowedMutations {
+    allShipments(orderBy: name_ASC) {
+        name
+        tags
+        category
+    }
+}

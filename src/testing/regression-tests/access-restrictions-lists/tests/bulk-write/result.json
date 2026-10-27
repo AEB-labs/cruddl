@@ -1,0 +1,163 @@
+{
+  "updateAllWithReadOnlyObject": {
+    "errors": [
+      {
+        "message": "Not authorized to update this Shipment object",
+        "locations": [
+          {
+            "line": 3,
+            "column": 5
+          }
+        ],
+        "path": ["updateAllShipments"]
+      }
+    ],
+    "data": null
+  },
+  "updateAllToInaccessibleValues": {
+    "errors": [
+      {
+        "message": "Not authorized to set Shipment.tags to these values (each added or removed value needs to be allowed on its own, and the resulting object needs to be accessible)",
+        "locations": [
+          {
+            "line": 10,
+            "column": 5
+          }
+        ],
+        "path": ["updateAllShipments"]
+      }
+    ],
+    "data": null
+  },
+  "updateManyWithReadOnlyObject": {
+    "errors": [
+      {
+        "message": "Not authorized to update this Shipment object",
+        "locations": [
+          {
+            "line": 17,
+            "column": 5
+          }
+        ],
+        "path": ["updateShipments"]
+      }
+    ],
+    "data": {
+      "updateShipments": null
+    }
+  },
+  "deleteAllWithReadOnlyObject": {
+    "errors": [
+      {
+        "message": "Not authorized to delete this Shipment object",
+        "locations": [
+          {
+            "line": 29,
+            "column": 5
+          }
+        ],
+        "path": ["deleteAllShipments"]
+      }
+    ],
+    "data": null
+  },
+  "deleteManyWithReadOnlyObject": {
+    "errors": [
+      {
+        "message": "Not authorized to delete this Shipment object",
+        "locations": [
+          {
+            "line": 36,
+            "column": 5
+          }
+        ],
+        "path": ["deleteShipments"]
+      }
+    ],
+    "data": {
+      "deleteShipments": null
+    }
+  },
+  "listAfterDeniedMutations": {
+    "data": {
+      "allShipments": [
+        {
+          "name": "01 a b",
+          "tags": ["a", "b"],
+          "category": null
+        },
+        {
+          "name": "05 public",
+          "tags": ["public"],
+          "category": null
+        },
+        {
+          "name": "06 a",
+          "tags": ["a"],
+          "category": null
+        },
+        {
+          "name": "07 a c",
+          "tags": ["a", "c"],
+          "category": null
+        },
+        {
+          "name": "09 a category x",
+          "tags": ["a"],
+          "category": "x"
+        }
+      ]
+    }
+  },
+  "updateAllWritableObjects": {
+    "data": {
+      "updateAllShipments": [
+        {
+          "category": "changed"
+        },
+        {
+          "category": "changed"
+        },
+        {
+          "category": "changed"
+        },
+        {
+          "category": "changed"
+        }
+      ]
+    }
+  },
+  "deleteAllWritableObjects": {
+    "data": {
+      "deleteAllShipments": [
+        {
+          "__typename": "Shipment"
+        },
+        {
+          "__typename": "Shipment"
+        }
+      ]
+    }
+  },
+  "listAfterAllowedMutations": {
+    "data": {
+      "allShipments": [
+        {
+          "name": "01 a b",
+          "tags": ["a", "b"],
+          "category": "changed"
+        },
+        {
+          "name": "05 public",
+          "tags": ["public"],
+          "category": null
+        },
+        {
+          "name": "09 a category x",
+          "tags": ["a"],
+          "category": "changed"
+        }
+      ]
+    }
+  }
+}
