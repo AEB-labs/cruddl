@@ -1,73 +1,78 @@
 import {
-    Kind,
-    load,
-    type YAMLAnchorReference,
-    type YamlMap,
-    type YAMLMapping,
-    type YAMLNode,
-    type YAMLScalar,
-    type YAMLSequence,
-} from 'yaml-ast-parser';
+    isAlias,
+    isMap,
+    isScalar,
+    isSeq,
+    parseDocument,
+    Scalar,
+    type YAMLError,
+    type Node as YamlNode,
+} from 'yaml';
 import type { ProjectOptions } from '../../config/interfaces.js';
-import { MessageLocation, SourcePosition } from '../../model/validation/location.js';
+import { MessageLocation } from '../../model/validation/location.js';
 import { Severity, ValidationMessage } from '../../model/validation/message.js';
 import { ValidationContext } from '../../model/validation/validation-context.js';
 import { ProjectSource } from '../../project/source.js';
-import { isReadonlyArray, type PlainObject } from '../../utils/utils.js';
-import { getLineEndPosition } from '../schema-utils.js';
+import type { Mutable } from '../../utils/util-types.js';
+import { type PlainObject } from '../../utils/utils.js';
+import { toJsonPointer } from './json-pointer.js';
 import { getNamespaceFromSourceName } from './namespace-from-source-name.js';
-import { type ParsedObjectProjectSource, ParsedProjectSourceBaseKind } from './parsed-project.js';
+import {
+    ParsedProjectSourceBaseKind,
+    type ParsedObjectProjectSource,
+    type PathLocationMap,
+} from './parsed-project.js';
 
 export function parseYAMLSource(
     projectSource: ProjectSource,
     options: ProjectOptions,
     validationContext: ValidationContext,
 ): ParsedObjectProjectSource | undefined {
-    const root: YAMLNode | undefined = load(projectSource.body);
-
-    if (!root) {
-        return undefined;
-    }
-
-    root.errors.forEach((error) => {
-        const severity = error.isWarning ? Severity.WARNING : Severity.ERROR;
-
-        // Errors reported do not have an end, only a start. We just choose the line end as the end.
-        // While there is a toLineEnd boolean, we ignore this, because what else would we really do?
-        let location: MessageLocation;
-        if (error.mark.position < projectSource.body.length) {
-            location = new MessageLocation(
-                projectSource,
-                new SourcePosition(error.mark.position, error.mark.line + 1, error.mark.column + 1),
-                getLineEndPosition(error.mark.line + 1, projectSource),
-            );
-        } else {
-            // This is an exception: An error can be reported at the EOL. Calculating the EOL would not work
-            // -> just report the error at the last character
-            location = new MessageLocation(
-                projectSource,
-                projectSource.body.length - 1,
-                projectSource.body.length,
-            );
-        }
-
-        validationContext.addMessage(
-            new ValidationMessage({ severity, message: error.reason, location }),
-        );
+    const doc = parseDocument(projectSource.body, {
+        // YAML 1.2 core schema: no !!binary or !!timestamp, which would not survive JSON validation
+        schema: 'core',
+        // "<<" merge keys are a YAML 1.1 feature and rely on aliases, which we do not support
+        merge: false,
+        // the yaml package compares resolved keys ("True" equals "true"), but we use plain keys as
+        // written, so we check for duplicates ourselves
+        uniqueKeys: false,
+        // keep error messages short; we report the location separately
+        prettyErrors: false,
     });
 
-    if (root.errors.some((error) => !error.isWarning)) {
+    const messages = [
+        ...doc.errors.map((error) => convertError(error, getSeverity(error), projectSource)),
+        ...doc.warnings.map((warning) =>
+            convertError(warning, getSeverity(warning), projectSource),
+        ),
+    ];
+    messages.forEach((message) => validationContext.addMessage(message));
+    if (messages.some((message) => message.severity === Severity.ERROR)) {
         // returning undefined will lead to ignoring this source file in future steps
         return undefined;
     }
 
-    const yamlData = extractJSONFromYAML(root, validationContext, projectSource);
-
-    if (yamlData === undefined) {
+    // empty file or only comments
+    if (!doc.contents || (isScalar(doc.contents) && doc.contents.value === null)) {
         return undefined;
     }
 
-    const pathLocationMap = extractMessageLocationsFromYAML(root, projectSource);
+    if (!isMap(doc.contents)) {
+        validationContext.addMessage(
+            ValidationMessage.error(
+                `YAML file should define an object (is ${describeNodeType(doc.contents)})`,
+                new MessageLocation(projectSource, 0, projectSource.body.length),
+            ),
+        );
+        return undefined;
+    }
+
+    const conversionMessages: ValidationMessage[] = [];
+    const data = convertNode(doc.contents, projectSource, conversionMessages);
+    conversionMessages.forEach((message) => validationContext.addMessage(message));
+    if (conversionMessages.some((message) => message.severity === Severity.ERROR)) {
+        return undefined;
+    }
 
     return {
         kind: ParsedProjectSourceBaseKind.OBJECT,
@@ -75,172 +80,212 @@ export function parseYAMLSource(
             options.modelOptions?.useSourceDirectoriesAsNamespaces === false
                 ? []
                 : getNamespaceFromSourceName(projectSource.name),
-        object: (yamlData as PlainObject) || {},
-        pathLocationMap: pathLocationMap,
+        object: data as PlainObject,
+        pathLocationMap: getPathLocationMap(doc.contents, projectSource),
     };
 }
 
-/**
- * extracts out of a given YAML a set of paths (fields concatenated with '/') and returns corresponding MessageLocations
- * @param {ProjectSource} source containing valid YAML (returns error if source is not valid)
- * @returns {{[p: string]: MessageLocation}} a map of paths to message locations
- */
-function extractMessageLocationsFromYAML(
-    root: YAMLNode,
-    source: ProjectSource,
-): { [path: string]: MessageLocation } {
-    const result = extractAllPaths(root, [] as ReadonlyArray<string | number>);
-    let messageLocations: { [path: string]: MessageLocation } = {};
-    result.forEach(
-        (val) =>
-            (messageLocations['/' + val.path.join('/')] = new MessageLocation(
-                source,
-                val.node.startPosition,
-                val.node.endPosition,
-            )),
-    );
+function getSeverity(error: YAMLError): Severity {
+    switch (error.code) {
+        case 'TAB_AS_INDENT':
+            // yaml-ast-parser only warned about tabs and the resulting tree is the same
+            return Severity.WARNING;
+        case 'TAG_RESOLVE_FAILED':
+            // the yaml package falls back to a string (e.g. for "!!int abc"), we don't want to guess
+            return Severity.ERROR;
+        default:
+            return error.name === 'YAMLWarning' ? Severity.WARNING : Severity.ERROR;
+    }
+}
 
-    return messageLocations;
+function convertError(error: YAMLError, severity: Severity, source: ProjectSource) {
+    // pos can be empty (end equals start) or point at the end of the source; make sure the
+    // location covers at least one character within the source
+    const start = Math.min(error.pos[0], Math.max(source.body.length - 1, 0));
+    const end = Math.min(Math.max(error.pos[1], start + 1), source.body.length);
+    return new ValidationMessage({
+        severity,
+        message: getErrorMessage(error),
+        location: new MessageLocation(source, start, end),
+    });
+}
+
+function getErrorMessage(error: YAMLError): string {
+    switch (error.code) {
+        case 'MULTIPLE_DOCS':
+            return 'YAML file should contain a single document';
+        case 'TAB_AS_INDENT':
+            return 'Using tabs can lead to unpredictable results';
+        default:
+            return error.message;
+    }
+}
+
+function describeNodeType(node: YamlNode): string {
+    if (isSeq(node)) {
+        return 'array';
+    }
+    if (isScalar(node)) {
+        return typeof node.value;
+    }
+    return 'alias';
 }
 
 /**
- * recursive function which traverses the abstract syntax tree of the YAML source
- * @param {YAMLNode} node root node
- * @param {ReadonlyArray<string | number>} curPath
- * @returns {{path: ReadonlyArray<string | number>; node: YAMLNode}[]}
+ * Converts the YAML AST into plain JSON-like data, reporting unsupported constructs
  */
-function extractAllPaths(
-    node: YAMLNode,
-    curPath: ReadonlyArray<string | number>,
-): { path: ReadonlyArray<string | number>; node: YAMLNode }[] {
-    switch (node.kind) {
-        case Kind.MAP:
-            const mapNode = node as YamlMap;
-            const mergedMap = (
-                [] as { path: ReadonlyArray<string | number>; node: YAMLNode }[]
-            ).concat(
-                ...mapNode.mappings.map((childNode) => extractAllPaths(childNode, [...curPath])),
-            );
-            return [...mergedMap];
-        case Kind.MAPPING:
-            const mappingNode = node as YAMLMapping;
-            const path: ReadonlyArray<string | number> = [...curPath, mappingNode.key.value];
-            if (mappingNode.value) {
-                return [{ path, node: mappingNode }, ...extractAllPaths(mappingNode.value, path)];
-            } else {
-                return [{ path, node: mappingNode }];
-            }
-        case Kind.SCALAR:
-            const scalarNode = node as YAMLScalar;
-            if (scalarNode.parent && scalarNode.parent.kind == Kind.SEQ) {
-                return [{ path: curPath, node: scalarNode }];
-            } else {
-                return [{ path: curPath, node: scalarNode.parent }];
-            }
-        case Kind.SEQ:
-            const seqNode = node as YAMLSequence;
-            const mergedSequence = (
-                [] as { path: ReadonlyArray<string | number>; node: YAMLNode }[]
-            ).concat(
-                ...seqNode.items.map((childNode, index) =>
-                    extractAllPaths(childNode, [...curPath, index]),
-                ),
-            );
-            return [...mergedSequence];
-        case Kind.INCLUDE_REF:
-        case Kind.ANCHOR_REF:
-            const refNode = node as YAMLAnchorReference;
-            return extractAllPaths(refNode.value, [...curPath]);
-    }
-    return [{ path: curPath, node: node }];
-}
-
-function extractJSONFromYAML(
-    root: YAMLNode,
-    validationContext: ValidationContext,
+function convertNode(
+    node: YamlNode | null,
     source: ProjectSource,
-): PlainObject | undefined {
-    const result = recursiveObjectExtraction(root, {}, validationContext, source);
-    if (typeof result !== 'object') {
-        validationContext.addMessage(
-            ValidationMessage.error(
-                `YAML file should define an object (is ${typeof result})`,
-                new MessageLocation(source, 0, source.body.length),
-            ),
-        );
-        return undefined;
+    messages: ValidationMessage[],
+): unknown {
+    // kept for compatibility: "key:" or "- " without a value used to produce an empty object
+    if (!node || isEmptyValue(node)) {
+        return {};
     }
-
-    if (isReadonlyArray(result)) {
-        validationContext.addMessage(
-            ValidationMessage.error(
-                `YAML file should define an object (is array)`,
-                new MessageLocation(source, 0, source.body.length),
-            ),
-        );
-        return undefined;
-    }
-
-    return result as PlainObject;
-}
-
-function recursiveObjectExtraction(
-    node: YAMLNode | undefined,
-    object: PlainObject,
-    validationContext: ValidationContext,
-    source: ProjectSource,
-): any {
-    // ATTENTION: Typings of the yaml ast parser are wrong
-    if (!node) {
+    if (isMap(node)) {
+        // null-prototype so keys like "__proto__" or "toString" are plain data
+        const object: PlainObject = Object.create(null);
+        for (const pair of node.items) {
+            if (!isScalar(pair.key)) {
+                messages.push(
+                    ValidationMessage.error(
+                        `Only simple keys are supported`,
+                        getNodeLocation(pair.key as YamlNode, source),
+                    ),
+                );
+                continue;
+            }
+            const key = getKeyString(pair.key);
+            if (key in object) {
+                messages.push(
+                    ValidationMessage.error(
+                        `Duplicate key "${key}"`,
+                        getNodeLocation(pair.key, source),
+                    ),
+                );
+                continue;
+            }
+            object[key] = convertNode(pair.value as YamlNode | null, source, messages);
+        }
         return object;
     }
-    switch (node.kind) {
-        case Kind.MAP:
-            const mapNode = node as YamlMap;
-            mapNode.mappings.forEach((val) => {
-                object[val.key.value] = recursiveObjectExtraction(
-                    val.value,
-                    {},
-                    validationContext,
-                    source,
-                );
-            });
-            return object;
-        case Kind.MAPPING:
-            throw new Error('Should never be reached since a mapping can not exist without a map.');
-        case Kind.SCALAR:
-            const scalarNode = node as YAMLScalar;
-            // check whether string or number scalar
-            if (
-                scalarNode.doubleQuoted ||
-                scalarNode.singleQuoted ||
-                isNaN(Number(scalarNode.value))
-            ) {
-                return scalarNode.value;
-            } else {
-                return Number(scalarNode.value);
-            }
-        case Kind.SEQ:
-            const seqNode = node as YAMLSequence;
-            return seqNode.items.map((val) =>
-                recursiveObjectExtraction(val, {}, validationContext, source),
-            );
-        case Kind.INCLUDE_REF:
-            validationContext.addMessage(
-                ValidationMessage.error(
-                    `Include references are not supported`,
-                    new MessageLocation(source, node.startPosition, node.endPosition),
-                ),
-            );
-            return undefined;
-        case Kind.ANCHOR_REF:
-            validationContext.addMessage(
-                ValidationMessage.error(
-                    `Anchor references are not supported`,
-                    new MessageLocation(source, node.startPosition, node.endPosition),
-                ),
-            );
-            return undefined;
+    if (isSeq(node)) {
+        return node.items.map((item) => convertNode(item as YamlNode | null, source, messages));
     }
-    throw new Error('An error occured while parsing the YAML file');
+    if (isAlias(node)) {
+        messages.push(
+            ValidationMessage.error(
+                `Anchor references are not supported`,
+                getNodeLocation(node, source),
+            ),
+        );
+        return undefined;
+    }
+    if (!isScalar(node)) {
+        throw new Error(`Unexpected YAML node: ${String(node)}`);
+    }
+    return convertScalar(node, source, messages);
+}
+
+function convertScalar(node: Scalar, source: ProjectSource, messages: ValidationMessage[]) {
+    const value = node.value;
+    if (
+        (typeof value === 'boolean' || value === null) &&
+        node.type === Scalar.PLAIN &&
+        !node.tag &&
+        node.source
+    ) {
+        // yaml-ast-parser returned unquoted true/false/null as strings, keep that for compatibility
+        return node.source;
+    }
+    if (
+        value === null ||
+        typeof value === 'string' ||
+        typeof value === 'boolean' ||
+        (typeof value === 'number' && Number.isFinite(value))
+    ) {
+        return value;
+    }
+    if (typeof value === 'number' && node.source) {
+        // .inf and .nan can't be represented in JSON, so keep them as strings
+        return node.source;
+    }
+    messages.push(
+        ValidationMessage.error(
+            `Unsupported YAML value${node.tag ? ` with tag ${node.tag}` : ''}`,
+            getNodeLocation(node, source),
+        ),
+    );
+    return undefined;
+}
+
+function getKeyString(key: Scalar): string {
+    // Plain keys are names, so take them as written ("True", "null", "1.0") instead of resolving
+    // them as booleans, null or numbers first. Quoted keys need the value (with escapes resolved).
+    if (key.type === Scalar.PLAIN && key.source !== undefined) {
+        return key.source;
+    }
+    return String(key.value);
+}
+
+function isEmptyValue(node: YamlNode): boolean {
+    return isScalar(node) && node.value === null && node.source === '' && !node.tag;
+}
+
+function getPathLocationMap(rootNode: YamlNode, source: ProjectSource): PathLocationMap {
+    const pathLocationMap: Mutable<PathLocationMap> = {};
+
+    const visit = (
+        node: YamlNode | null,
+        currentPath: ReadonlyArray<string | number>,
+        location: MessageLocation,
+    ) => {
+        pathLocationMap[toJsonPointer(currentPath)] = location;
+        if (isMap(node)) {
+            for (const pair of node.items) {
+                // conversion already rejected all other keys
+                const key = pair.key as Scalar;
+                const value = pair.value as YamlNode | null;
+                // the location of a property spans the key and the value (or the colon if it's empty)
+                const end = !value
+                    ? key.range![1]
+                    : isEmptyValue(value)
+                      ? value.range![0]
+                      : value.range![1];
+                visit(
+                    value,
+                    [...currentPath, getKeyString(key)],
+                    new MessageLocation(source, key.range![0], trimEnd(end, source)),
+                );
+            }
+        } else if (isSeq(node)) {
+            for (const [index, item] of node.items.entries()) {
+                visit(
+                    item as YamlNode,
+                    [...currentPath, index],
+                    getNodeLocation(item as YamlNode, source),
+                );
+            }
+        }
+    };
+
+    visit(rootNode, [], getNodeLocation(rootNode, source));
+    return pathLocationMap;
+}
+
+function getNodeLocation(node: YamlNode, source: ProjectSource): MessageLocation {
+    // all nodes created by the parser have a range
+    const [start, end] = node.range!;
+    return new MessageLocation(source, start, trimEnd(end, source));
+}
+
+/**
+ * Block collections end after the trailing line break - move the end back to the last relevant character
+ */
+function trimEnd(end: number, source: ProjectSource): number {
+    while (end > 0 && /\s/.test(source.body[end - 1])) {
+        end--;
+    }
+    return end;
 }

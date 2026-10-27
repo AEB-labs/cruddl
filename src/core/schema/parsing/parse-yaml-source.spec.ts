@@ -123,20 +123,12 @@ i18n:
             new ProjectSource('test.yaml', 'valid\nfoo: second colon: here\n '),
         );
         expect(messages.length).to.equal(2);
-        expect(messages[0].message).to.equal(
-            'end of the stream or a document separator is expected',
-        );
-        expect(JSON.parse(JSON.stringify(messages[0].location))).to.deep.equal({
-            _end: {
-                column: 24,
-                line: 2,
-                offset: 29,
-            },
-            _start: {
-                column: 4,
-                line: 2,
-                offset: 9,
-            },
+        expect(messages[0].message).to.equal('Implicit keys need to be on a single line');
+        expect(messages[0].location?.start.line).to.equal(1);
+        expect(messages[1].message).to.equal('Nested mappings are not allowed in compact mappings');
+        expect(JSON.parse(JSON.stringify(messages[1].location))).to.deep.equal({
+            _start: 11,
+            _end: 12,
             sourceName: 'test.yaml',
         });
     });
@@ -191,8 +183,8 @@ i18n:
     });
 
     it('reads empty values as empty objects', () => {
-        const result = parse('a:\nb: x\n');
-        expect(result?.object).toEqual({ a: {}, b: 'x' });
+        const result = parse('a:\nb:\n  -\n  - x\n');
+        expect(result?.object).toEqual({ a: {}, b: [{}, 'x'] });
     });
 
     it('reads flow collections', () => {
@@ -223,6 +215,12 @@ i18n:
         expect(Object.keys(result!.object)).toEqual(['a"b', "c'd", 'True']);
     });
 
+    it('reads keys like __proto__ as plain data', () => {
+        const result = parse('__proto__:\n  polluted: yes\n');
+        expect(Object.keys(result!.object)).toEqual(['__proto__']);
+        expect(({} as any).polluted).to.be.undefined;
+    });
+
     it('warns about tabs used for indentation', () => {
         const { result, messages } = parseWithMessages('a:\n  \tb: 1\n');
         expect(result?.object).toEqual({ a: { b: 1 } });
@@ -232,7 +230,51 @@ i18n:
     it('reports an error for unresolvable tags', () => {
         const { result, messages } = parseWithMessages('a: !!int abc\n');
         expect(result).to.be.undefined;
-        expect(messages[0]).toMatchObject({ severity: Severity.ERROR });
+        expect(messages).toMatchObject([{ severity: Severity.ERROR }]);
+    });
+
+    it('escapes keys in location paths like JSON pointers', () => {
+        const result = parse('a/b: 1\nc~d: 2\n');
+        expect(Object.keys(result!.pathLocationMap)).toEqual(
+            expect.arrayContaining(['/a~1b', '/c~0d']),
+        );
+    });
+
+    it('reports locations of objects in arrays', () => {
+        const result = parse('permissions:\n  - roles: [admin]\n    access: read\n');
+        const loc = result!.pathLocationMap['/permissions/0'];
+        expect(loc.start.line).to.equal(2);
+        expect(loc.start.column).to.equal(5);
+        expect(loc.end.line).to.equal(3);
+    });
+
+    it('accepts files with only whitespace or comments', () => {
+        expect(getMessages(new ProjectSource('test.yaml', '  \n\n'))).toEqual([]);
+        expect(getMessages(new ProjectSource('test.yaml', '# comment\n'))).toEqual([]);
+    });
+
+    it('reports an error for binary values', () => {
+        const messages = getMessages(new ProjectSource('test.yaml', 'a: !!binary aGVsbG8=\n'));
+        expect(messages).toMatchObject([
+            { message: 'Unsupported YAML value with tag tag:yaml.org,2002:binary' },
+        ]);
+    });
+
+    it('reports an error for complex keys', () => {
+        const messages = getMessages(new ProjectSource('test.yaml', '? [a, b]\n: value\n'));
+        expect(messages).toMatchObject([{ message: 'Only simple keys are supported' }]);
+    });
+
+    it('reports an error for multiple documents', () => {
+        const messages = getMessages(new ProjectSource('test.yaml', 'a: 1\n---\nb: 2\n'));
+        expect(messages).toMatchObject([{ message: 'YAML file should contain a single document' }]);
+    });
+
+    it('reports an error for duplicate keys', () => {
+        const messages = getMessages(new ProjectSource('test.yaml', 'a: 1\na: 2\n'));
+        expect(messages.length).to.equal(1);
+        expect(messages[0].severity).to.equal(Severity.ERROR);
+        expect(messages[0].location?.start.line).to.equal(2);
     });
 });
 
