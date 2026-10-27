@@ -1,0 +1,30 @@
+{
+  "permissionProfiles": {
+    "everyone": {
+      "permissions": [
+        {
+          "roles": ["init", "admin", "user"],
+          "access": "readWrite"
+        }
+      ]
+    },
+    "siteAware": {
+      "permissions": [
+        {
+          "roles": ["init", "admin"],
+          "access": "readWrite"
+        },
+        {
+          "roles": ["user"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "site",
+              "claim": "site"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

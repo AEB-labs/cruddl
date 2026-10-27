@@ -1,0 +1,31 @@
+RETURN {
+  "allParcels": (
+    FOR v_parcel1
+    IN @@parcels
+    FILTER ((IS_NULL(v_parcel1.`rampNumber`) ? null : FIRST((
+      FOR v_ramp1
+      IN @@ramps
+      FILTER ((v_ramp1.`rampNumber` > NULL) && (v_ramp1.`rampNumber` == v_parcel1.`rampNumber`))
+      LIMIT @var1
+      RETURN v_ramp1
+    ))).`rampNumber` == @var2)
+    SORT (v_parcel1.`parcelNumber`)
+    LET v_ramp2 = (IS_NULL(v_parcel1.`rampNumber`) ? null : FIRST((
+      FOR v_ramp3
+      IN @@ramps
+      FILTER ((v_ramp3.`rampNumber` > NULL) && (v_ramp3.`rampNumber` == v_parcel1.`rampNumber`))
+      LIMIT @var3
+      RETURN v_ramp3
+    )))
+    RETURN {
+      "parcelNumber": v_parcel1.`parcelNumber`,
+      "site": v_parcel1.`site`,
+      "rampNumber": v_parcel1.`rampNumber`,
+      "ramp": (IS_NULL(v_ramp2) ? null : {
+        "rampNumber": v_ramp2.`rampNumber`
+      })
+    }
+  )
+}
+
+// Peak memory usage: 131072 bytes
