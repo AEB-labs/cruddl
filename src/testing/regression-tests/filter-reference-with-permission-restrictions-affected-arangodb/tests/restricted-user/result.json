@@ -1,0 +1,144 @@
+{
+  "byRamp2": {
+    "data": {
+      "allParcels": [
+        {
+          "parcelNumber": "P1",
+          "site": "Site A",
+          "rampNumber": "Ramp 1",
+          "ramp": {
+            "rampNumber": "Ramp 2"
+          }
+        },
+        {
+          "parcelNumber": "P2",
+          "site": "Site A",
+          "rampNumber": "Ramp 2",
+          "ramp": {
+            "rampNumber": "Ramp 2"
+          }
+        },
+        {
+          "parcelNumber": "P3",
+          "site": "Site A",
+          "rampNumber": "Ramp 3",
+          "ramp": {
+            "rampNumber": "Ramp 2"
+          }
+        }
+      ]
+    }
+  },
+  "byRamp1": {
+    "data": {
+      "allParcels": [
+        {
+          "parcelNumber": "P1",
+          "site": "Site A",
+          "rampNumber": "Ramp 1",
+          "ramp": {
+            "rampNumber": "Ramp 1"
+          }
+        },
+        {
+          "parcelNumber": "P2",
+          "site": "Site A",
+          "rampNumber": "Ramp 2",
+          "ramp": {
+            "rampNumber": "Ramp 1"
+          }
+        },
+        {
+          "parcelNumber": "P3",
+          "site": "Site A",
+          "rampNumber": "Ramp 3",
+          "ramp": {
+            "rampNumber": "Ramp 1"
+          }
+        }
+      ]
+    }
+  },
+  "bySiteAndRamp3": {
+    "data": {
+      "allParcels": [
+        {
+          "parcelNumber": "P1",
+          "site": "Site A",
+          "rampNumber": "Ramp 1",
+          "ramp": {
+            "rampNumber": "Ramp 3"
+          }
+        },
+        {
+          "parcelNumber": "P2",
+          "site": "Site A",
+          "rampNumber": "Ramp 2",
+          "ramp": {
+            "rampNumber": "Ramp 3"
+          }
+        },
+        {
+          "parcelNumber": "P3",
+          "site": "Site A",
+          "rampNumber": "Ramp 3",
+          "ramp": {
+            "rampNumber": "Ramp 3"
+          }
+        }
+      ]
+    }
+  },
+  "byRampIn": {
+    "data": {
+      "allParcels": [
+        {
+          "parcelNumber": "P2",
+          "site": "Site A",
+          "rampNumber": "Ramp 2",
+          "ramp": {
+            "rampNumber": "Ramp 2"
+          }
+        },
+        {
+          "parcelNumber": "P3",
+          "site": "Site A",
+          "rampNumber": "Ramp 3",
+          "ramp": {
+            "rampNumber": "Ramp 3"
+          }
+        }
+      ]
+    }
+  },
+  "withoutFilter": {
+    "data": {
+      "allParcels": [
+        {
+          "parcelNumber": "P1",
+          "site": "Site A",
+          "rampNumber": "Ramp 1",
+          "ramp": {
+            "rampNumber": "Ramp 1"
+          }
+        },
+        {
+          "parcelNumber": "P2",
+          "site": "Site A",
+          "rampNumber": "Ramp 2",
+          "ramp": {
+            "rampNumber": "Ramp 2"
+          }
+        },
+        {
+          "parcelNumber": "P3",
+          "site": "Site A",
+          "rampNumber": "Ramp 3",
+          "ramp": {
+            "rampNumber": "Ramp 3"
+          }
+        }
+      ]
+    }
+  }
+}
