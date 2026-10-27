@@ -210,6 +210,32 @@ describe('timeToLive config', () => {
         );
     });
 
+    it('warns about duplicate cascadeFields', () => {
+        assertValidatorWarns(
+            gql`
+                type Test @rootEntity {
+                    finishedAt: DateTime
+                    nested: [Nested] @relation
+                }
+
+                type Nested @rootEntity {
+                    parent: Test @relation(inverseOf: "nested")
+                }
+            `,
+            'Field "nested" is included multiple times. This will be an error in a future release.',
+            {
+                timeToLive: [
+                    {
+                        typeName: 'Test',
+                        dateField: 'finishedAt',
+                        expireAfterDays: 3,
+                        cascadeFields: ['nested', 'nested'],
+                    },
+                ],
+            },
+        );
+    });
+
     it('accepts recursive cascadeFields', () => {
         assertValidatorAcceptsAndDoesNotWarn(
             gql`

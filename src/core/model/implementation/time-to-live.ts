@@ -62,9 +62,12 @@ export class TimeToLiveType implements ModelComponent {
         const existingPaths = new Set<string>();
         for (const cascadeField of this.cascadeFields) {
             if (existingPaths.has(cascadeField.path)) {
-                ValidationMessage.error(
-                    `Field "${cascadeField.path}" is included multiple times`,
-                    cascadeField.location,
+                // this was not reported previously (and duplicates are harmless at runtime)
+                context.addMessage(
+                    ValidationMessage.nonSuppressableWarning(
+                        `Field "${cascadeField.path}" is included multiple times. This will be an error in a future release.`,
+                        cascadeField.location,
+                    ),
                 );
             } else {
                 existingPaths.add(cascadeField.path);
