@@ -118,8 +118,7 @@
     "memorize-decorator": "^0.2.2",
     "pluralize": "^8.0.0",
     "tslib": "^2.4.0",
-    "yaml": "^2.8.1",
-    "yaml-ast-parser": "0.0.43"
+    "yaml": "^2.8.1"
   },
   "peerDependencies": {
     "graphql": "^15.0.0 || ^16.0.0"
