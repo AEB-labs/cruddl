@@ -685,6 +685,16 @@ register(BinaryOperationQueryNode, (node, context) => {
             return js`${lhsListOrString}.includes(${rhs})`;
         case BinaryOperator.IN:
             return js`${rhsListOrString}.includes(${lhs})`;
+        case BinaryOperator.ANY_IN: {
+            // like in ArangoDB, a non-list value on the left side never matches
+            const anyInItemVar = js.variable('item');
+            const lhsList = jsExt.evaluatingLambda(
+                lhsVar,
+                js`(Array.isArray(${lhsVar}) ? ${lhsVar} : [])`,
+                lhs,
+            );
+            return js`${lhsList}.some(${anyInItemVar} => ${rhs}.includes(${anyInItemVar}))`;
+        }
         case BinaryOperator.STARTS_WITH:
             return js`String(${lhs}).startsWith(${rhs})`;
         case BinaryOperator.ENDS_WITH:
