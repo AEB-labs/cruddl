@@ -91,6 +91,41 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
                 if (!entry.mayHaveCapturingGroups) {
                     hasRoleExpressionWithoutCaptureGroup = true;
                 }
+                if (entry instanceof RegexRoleSpecifierEntry && entry.anchoringProblem) {
+                    const { unmatchedPart, wholeRoleSuggestion, trailingCharactersSuggestion } =
+                        entry.anchoringProblem;
+                    messages.push(
+                        ValidationMessage.nonSuppressableWarning(
+                            `Regular expression role specifier "${role}" does not need to match the whole role, so it also matches roles with additional characters at the ${unmatchedPart}, and these characters are kept when placeholders like $1 are replaced. Use "${wholeRoleSuggestion}" to match the whole role` +
+                                (trailingCharactersSuggestion
+                                    ? `, or "${trailingCharactersSuggestion}" if additional characters at the end are intended.`
+                                    : '.'),
+                            roleLocation,
+                            {
+                                quickFixes: roleLocation
+                                    ? [
+                                          getRoleReplacementQuickFix(
+                                              roleLocation,
+                                              wholeRoleSuggestion,
+                                              'Match the whole role',
+                                              true,
+                                          ),
+                                          ...(trailingCharactersSuggestion
+                                              ? [
+                                                    getRoleReplacementQuickFix(
+                                                        roleLocation,
+                                                        trailingCharactersSuggestion,
+                                                        'Allow additional characters at the end of the role',
+                                                        false,
+                                                    ),
+                                                ]
+                                              : []),
+                                      ]
+                                    : [],
+                            },
+                        ),
+                    );
+                }
                 if (entry instanceof RegexRoleSpecifierEntry && entry.ignoredFlags) {
                     messages.push(
                         ValidationMessage.nonSuppressableWarning(

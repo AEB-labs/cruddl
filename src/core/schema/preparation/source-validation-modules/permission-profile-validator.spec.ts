@@ -236,4 +236,76 @@ describe('permission-profile-validator', () => {
         expect(messages.length).to.equal(1);
         expect(messages[0].severity).to.equal(Severity.WARNING);
     });
+
+    it('warns about regular expressions in roles that do not need to match the end of the role', () => {
+        const messages = getMessagesForPermission({
+            roles: ['/^seller-(.+)_read/'],
+            restrictions: [{ field: 'seller', valueTemplate: '$1' }],
+        });
+        expect(messages.length).to.equal(1);
+        expect(messages[0].severity).to.equal(Severity.WARNING);
+        expect(messages[0].message).to.equal(
+            'Regular expression role specifier "/^seller-(.+)_read/" does not need to match the whole role, so it also matches roles with additional characters at the end, and these characters are kept when placeholders like $1 are replaced. Use "/^seller-(.+)_read$/" to match the whole role, or "/^seller-(.+)_read.*/" if additional characters at the end are intended.',
+        );
+    });
+
+    it('warns about regular expressions in roles that do not need to match the beginning of the role', () => {
+        const messages = getMessagesForPermission({
+            roles: ['/seller-(.+)$/i'],
+            restrictions: [{ field: 'seller', valueTemplate: '$1' }],
+        });
+        expect(messages.map((m) => m.message)).to.deep.equal([
+            'Regular expression role specifier "/seller-(.+)$/i" does not need to match the whole role, so it also matches roles with additional characters at the beginning, and these characters are kept when placeholders like $1 are replaced. Use "/^seller-(.+)$/i" to match the whole role.',
+        ]);
+    });
+
+    it('accepts regular expressions in roles that explicitly allow additional characters', () => {
+        const messages = getMessagesForPermission({
+            roles: ['/^seller-(.+)_read.*/', '/.*_admin$/'],
+            restrictions: [{ field: 'seller', valueTemplate: '$1' }],
+        });
+        // only the placeholder warning for the second role, no anchoring warnings
+        expect(messages.length).to.equal(1);
+        expect(messages[0].message).to.contain('Placeholder "$1"');
+    });
+
+    describe('quick fixes for regular expressions that do not match the whole role', () => {
+        function getJsonSource(roles: ReadonlyArray<string>) {
+            return new ProjectSource(
+                'permission-profiles.json',
+                JSON.stringify({
+                    permissionProfiles: {
+                        profile: { permissions: [{ roles, access: 'readWrite' }] },
+                    },
+                }),
+            );
+        }
+
+        it('offers to match the whole role', () => {
+            const source = getJsonSource(['/^seller-(.+)_read/']);
+            expect(applyQuickFix(getValidatorMessages(source), 'Match the whole role')).to.equal(
+                source.body.replace('"/^seller-(.+)_read/"', '"/^seller-(.+)_read$/"'),
+            );
+        });
+
+        it('offers to allow additional characters at the end of the role', () => {
+            const source = getJsonSource(['/^seller-(.+)_read/']);
+            expect(
+                applyQuickFix(
+                    getValidatorMessages(source),
+                    'Allow additional characters at the end of the role',
+                ),
+            ).to.equal(source.body.replace('"/^seller-(.+)_read/"', '"/^seller-(.+)_read.*/"'));
+        });
+
+        it('offers to match the whole role in YAML', () => {
+            const source = new ProjectSource(
+                'permission-profiles.yaml',
+                'permissionProfiles:\n  profile:\n    permissions:\n      - roles: [/^seller-(.+)/]\n        access: readWrite\n',
+            );
+            expect(applyQuickFix(getValidatorMessages(source), 'Match the whole role')).to.equal(
+                source.body.replace('/^seller-(.+)/', '"/^seller-(.+)$/"'),
+            );
+        });
+    });
 });
