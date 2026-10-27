@@ -1,0 +1,74 @@
+{
+  "list": {
+    "data": {
+      "allShipments": [
+        {
+          "name": "01 a b",
+          "tags": ["a", "b"],
+          "category": null
+        },
+        {
+          "name": "08 b category y",
+          "tags": ["b"],
+          "category": "y"
+        },
+        {
+          "name": "09 a category x",
+          "tags": ["a"],
+          "category": "x"
+        }
+      ]
+    }
+  },
+  "updateRemoveValueAndChangeOtherField": {
+    "errors": [
+      {
+        "message": "Not authorized to set these values in Shipment objects",
+        "locations": [
+          {
+            "line": 11,
+            "column": 5
+          }
+        ],
+        "path": ["updateShipment"]
+      }
+    ],
+    "data": {
+      "updateShipment": null
+    }
+  },
+  "updateAddValueRestrictedByOtherField": {
+    "errors": [
+      {
+        "message": "Not authorized to set these values in Shipment objects",
+        "locations": [
+          {
+            "line": 18,
+            "column": 5
+          }
+        ],
+        "path": ["updateShipment"]
+      }
+    ],
+    "data": {
+      "updateShipment": null
+    }
+  },
+  "updateAddValue": {
+    "data": {
+      "updateShipment": {
+        "name": "09 a category x",
+        "tags": ["a", "b"]
+      }
+    }
+  },
+  "updateAddValueAndChangeOtherField": {
+    "data": {
+      "updateShipment": {
+        "name": "08 b category y",
+        "tags": ["a", "b"],
+        "category": "x"
+      }
+    }
+  }
+}

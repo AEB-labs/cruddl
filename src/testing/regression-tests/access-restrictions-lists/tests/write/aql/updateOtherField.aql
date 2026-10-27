@@ -1,0 +1,102 @@
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_shipment1
+    IN (
+      FOR v_shipment2
+      IN (
+        FOR v_item2
+        IN @@shipments
+        FILTER ((v_item2.`tags` ANY IN @var1) || (v_item2.`tags` ANY IN @var2))
+        RETURN v_item2
+      )
+      FILTER (v_shipment2._key == @var3)
+      LIMIT @var4
+      RETURN v_shipment2
+    )
+    FILTER !((v_shipment1.`tags` ANY IN @var5))
+    RETURN v_shipment1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) == 0)
+
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
+
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_currentEntity1
+    IN (
+      FOR v_shipment1
+      IN (
+        FOR v_item2
+        IN @@shipments
+        FILTER ((v_item2.`tags` ANY IN @var1) || (v_item2.`tags` ANY IN @var2))
+        RETURN v_item2
+      )
+      FILTER (v_shipment1._key == @var3)
+      LIMIT @var4
+      RETURN v_shipment1
+    )
+    FILTER !((v_currentEntity1.`tags` ANY IN @var5))
+    RETURN v_currentEntity1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) == 0)
+
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
+
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_shipment1
+    IN (
+      FOR v_item1
+      IN @@shipments
+      FILTER ((v_item1.`tags` ANY IN @var1) || (v_item1.`tags` ANY IN @var2))
+      RETURN v_item1
+    )
+    FILTER (v_shipment1._key == @var3)
+    LIMIT @var4
+    RETURN v_shipment1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "name": @var5,
+    "updatedAt": @var6
+  }
+  IN @@shipments
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@shipments
+LET v_shipment1 = FIRST(
+  LET v_entity1 = DOCUMENT(@@shipments, @var1)
+  RETURN (((v_entity1.`tags` ANY IN @var2) || (v_entity1.`tags` ANY IN @var3)) ? v_entity1 : null)
+)
+RETURN (IS_NULL(v_shipment1) ? null : {
+  "name": v_shipment1.`name`,
+  "tags": v_shipment1.`tags`[*]
+})
+
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@shipments
+RETURN {
+  "updateShipment": @v_updateShipment1
+}
+
+// Peak memory usage: 0 bytes

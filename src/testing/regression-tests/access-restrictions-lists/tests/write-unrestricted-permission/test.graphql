@@ -1,0 +1,53 @@
+query list {
+    allShipments(orderBy: name_ASC) {
+        name
+        tags
+        region
+    }
+}
+
+# should pass: the region permission grants access without restricting tags
+mutation addValueWithUnrestrictedPermission {
+    updateShipment(input: { id: "@{ids/Shipment/11}", tags: ["e", "z"] }) {
+        name
+        tags
+    }
+}
+
+# should fail: the region permission does not apply to this object, and z is not permitted
+mutation addValueWithoutUnrestrictedPermission {
+    updateShipment(input: { id: "@{ids/Shipment/12}", tags: ["e", "z"] }) {
+        name
+    }
+}
+
+# should pass: the region permission still grants access afterwards
+mutation removeAllValuesWithUnrestrictedPermission {
+    updateShipment(input: { id: "@{ids/Shipment/11}", tags: [] }) {
+        name
+        tags
+    }
+}
+
+# should fail: the check uses the object after the update, where the region permission no longer applies
+mutation addValueAndChangeRegion {
+    updateShipment(input: { id: "@{ids/Shipment/11}", tags: ["e", "z"], region: "US" }) {
+        name
+    }
+}
+
+# should pass: the region permission applies to the new object
+mutation createWithUnrestrictedPermission {
+    createShipment(input: { name: "new z region EU", tags: ["z"], region: "EU" }) {
+        name
+        tags
+    }
+}
+
+# should pass: the object had no tags before (and the region permission applies)
+mutation addValueToObjectWithoutValues {
+    updateShipment(input: { id: "@{ids/Shipment/15}", tags: ["z"] }) {
+        name
+        tags
+    }
+}

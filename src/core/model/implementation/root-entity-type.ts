@@ -379,13 +379,31 @@ export class RootEntityType extends ObjectTypeBase {
                     ) {
                         nestedContext.addMessage(
                             ValidationMessage.error(
-                                `Field "${lastField.declaringType.name}.${lastField.name}" is of type "${lastField.type.name}", but only scalar and enum types fields can be used for field restrictions.`,
+                                `Field "${lastField.declaringType.name}.${lastField.name}" is of type "${lastField.type.name}", but only fields of scalar and enum types (or lists of them) can be used for field restrictions.`,
                                 restriction.fieldValueLoc,
                             ),
                         );
                     }
                 }
                 if (fieldPath.fields) {
+                    // FieldPath does not reliably detect this, so check explicitly
+                    // (lists are only supported as the last field)
+                    const listFieldInPath = fieldPath.fields
+                        .slice(0, -1)
+                        .find((field) => field.isList);
+                    if (listFieldInPath) {
+                        // we did not report this previously. In a transition period, we make it clear
+                        // that this will be an error in the future.
+                        context.addMessage(
+                            ValidationMessage.suppressableWarning(
+                                'DEPRECATED',
+                                `Permission profile "${this.permissionProfile.name}" defines a restriction on field "${restriction.field}", but field "${listFieldInPath.declaringType.name}.${listFieldInPath.name}" is a list and cannot be navigated into. Lists are only supported as the last field of a restriction path. This will be an error in a future release.`,
+                                this.astNode,
+                                { location: restriction.fieldValueLoc },
+                            ),
+                        );
+                    }
+
                     for (const field of fieldPath.fields) {
                         if (!field.isAccessField) {
                             nestedContext.addMessage(

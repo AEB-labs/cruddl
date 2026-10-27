@@ -580,6 +580,52 @@ If you supply the claims of a user's token, you can also restrict access to obje
 field's value equals this claim value (or any of the claim values, if the claim is an array), with
 `"claim": "claimName"`.
 
+#### Restrictions on list fields
+
+The last field of the path can also be a list of scalar or enum values (e.g. `tags: [String]`).
+Lists can only be used as the last field of the path. A user can read an object if _any_ of the list
+items matches the restriction.
+
+When creating or updating objects, each list item that is added or removed is checked on its own, so
+users cannot grant or revoke access for values they don't have access to themselves. The check uses
+the object as it will look after the update, with the list replaced by just the changed item:
+
+-   If one of the user's write permissions grants access to the object without restricting the list
+    field, any item can be added or removed.
+-   Otherwise, each changed item needs to match the restriction on the list field of a permission
+    whose other restrictions match the object.
+
+In addition, the user needs to be able to access the object after the update, like with all
+restrictions.
+
+Consider the following permission profile:
+
+```json
+{
+    "permissions": [
+        {
+            "roles": ["user"],
+            "access": "readWrite",
+            "restrictions": [{ "field": "tags", "claim": "tags" }]
+        },
+        {
+            "roles": ["user"],
+            "access": "readWrite",
+            "restrictions": [{ "field": "region", "value": "EU" }]
+        }
+    ]
+}
+```
+
+A user with the claim `"tags": ["a"]` can add `"a"` to any object they can access, but no other
+tags. If the object's `region` is `"EU"`, the second permission grants access regardless of the
+tags, so the user can add or remove any tag.
+
+Note that a value object field is replaced as a whole when it is updated, so omitting the list
+within a value object removes all its items. If a permission has two restrictions on the same list
+field, it never allows adding or removing items because a single item can't match both restrictions.
+Restrictions on list fields cannot use an index (with the exception of flexSearch).
+
 ## Indices
 
 cruddl supports index handling. During start up they are extracted from the schema and created or

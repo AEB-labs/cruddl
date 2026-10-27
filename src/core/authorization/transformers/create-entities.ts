@@ -3,7 +3,9 @@ import type { QueryNode } from '../../query-tree/base.js';
 import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
 import { AggregationQueryNode, TransformListQueryNode } from '../../query-tree/lists.js';
 import type { CreateEntitiesQueryNode } from '../../query-tree/mutations.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../../query-tree/operators.js';
 import { PreExecQueryParms, WithPreExecutionQueryNode } from '../../query-tree/pre-exec.js';
+import { simplifyBooleans } from '../../query-tree/utils/simplify-booleans.js';
 import { ErrorIfNotTruthyResultValidator } from '../../query-tree/validation.js';
 import { VariableQueryNode } from '../../query-tree/variables.js';
 import type { AuthContext } from '../auth-basics.js';
@@ -30,10 +32,21 @@ export function transformCreateEntitiesQueryNode(
             );
         default:
             const objectVar = new VariableQueryNode('object');
-            const singleCondition = permissionDescriptor.getAccessCondition(
-                authContext,
-                AccessOperation.CREATE,
-                objectVar,
+            const singleCondition = simplifyBooleans(
+                new BinaryOperationQueryNode(
+                    permissionDescriptor.getAccessCondition(
+                        authContext,
+                        AccessOperation.CREATE,
+                        objectVar,
+                    ),
+                    BinaryOperator.AND,
+                    permissionDescriptor.getListChangeCondition(
+                        authContext,
+                        AccessOperation.CREATE,
+                        undefined,
+                        objectVar,
+                    ),
+                ),
             );
             const condition = new AggregationQueryNode(
                 new TransformListQueryNode({

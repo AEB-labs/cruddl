@@ -1,0 +1,52 @@
+RETURN ((@var1.`details`.`groups` ANY IN @var2) && ((FIRST(
+  FOR v_item1
+  IN (
+    FOR v_item2
+    IN MINUS((IS_LIST(@var3.`details`.`groups`) ? @var4.`details`.`groups` : []), [])
+    FILTER !(([
+      v_item2
+    ] ANY IN @var5))
+    RETURN v_item2
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) == @var6) && (FIRST(
+  FOR v_item3
+  IN (
+    FOR v_item4
+    IN MINUS([], (IS_LIST(@var7.`details`.`groups`) ? @var8.`details`.`groups` : []))
+    FILTER !(([
+      v_item4
+    ] ANY IN @var9))
+    RETURN v_item4
+  )
+  COLLECT WITH COUNT INTO v_count2
+  RETURN v_count2
+) == @var10)))
+
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
+
+RETURN FIRST(
+  INSERT @var1 IN @@shipments
+  RETURN NEW._key
+)
+
+// ----------------------------------------------------------------
+
+WITH @@shipments
+LET v_shipment1 = FIRST(
+  LET v_entity1 = DOCUMENT(@@shipments, @v_newEntityId1)
+  RETURN ((v_entity1.`details`.`groups` ANY IN @var1) ? v_entity1 : null)
+)
+RETURN (IS_NULL(v_shipment1) ? null : {
+  "name": v_shipment1.`name`
+})
+
+// ----------------------------------------------------------------
+
+WITH @@shipments
+RETURN {
+  "createShipment": @v_createShipment1
+}

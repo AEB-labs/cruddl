@@ -1,0 +1,38 @@
+query list {
+    allShipments(orderBy: name_ASC) {
+        name
+        tags
+        category
+    }
+}
+
+# should fail: removing a is checked against the new category y, where a is not permitted
+mutation updateRemoveValueAndChangeOtherField {
+    updateShipment(input: { id: "@{ids/Shipment/9}", tags: ["b"], category: "y" }) {
+        name
+    }
+}
+
+# should fail: a is only permitted in combination with category x
+mutation updateAddValueRestrictedByOtherField {
+    updateShipment(input: { id: "@{ids/Shipment/8}", tags: ["a", "b"] }) {
+        name
+    }
+}
+
+# should pass: a is permitted with category x, and b is permitted on its own
+mutation updateAddValue {
+    updateShipment(input: { id: "@{ids/Shipment/9}", tags: ["a", "b"] }) {
+        name
+        tags
+    }
+}
+
+# should pass: the check uses the object after the update, where category x permits a
+mutation updateAddValueAndChangeOtherField {
+    updateShipment(input: { id: "@{ids/Shipment/8}", tags: ["a", "b"], category: "x" }) {
+        name
+        tags
+        category
+    }
+}

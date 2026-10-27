@@ -1,0 +1,110 @@
+{
+  "roles": ["admin"],
+  "rootEntities": {
+    "Shipment": [
+      {
+        "@id": "1",
+        "name": "01 a b",
+        "tags": ["a", "b"]
+      },
+      {
+        "@id": "2",
+        "name": "02 c",
+        "tags": ["c"]
+      },
+      {
+        "@id": "3",
+        "name": "03 empty",
+        "tags": []
+      },
+      {
+        "@id": "4",
+        "name": "04 no tags"
+      },
+      {
+        "@id": "5",
+        "name": "05 public",
+        "tags": ["public"]
+      },
+      {
+        "@id": "6",
+        "name": "06 a",
+        "tags": ["a"]
+      },
+      {
+        "@id": "7",
+        "name": "07 a c",
+        "tags": ["a", "c"]
+      },
+      {
+        "@id": "8",
+        "name": "08 b category y",
+        "tags": ["b"],
+        "category": "y"
+      },
+      {
+        "@id": "9",
+        "name": "09 a category x",
+        "tags": ["a"],
+        "category": "x"
+      },
+      {
+        "@id": "10",
+        "name": "10 nested a x",
+        "details": {
+          "groups": ["a", "x"],
+          "note": "note"
+        },
+        "extension": {
+          "groups": ["a", "x"],
+          "note": "note"
+        }
+      },
+      {
+        "@id": "11",
+        "name": "11 e region EU",
+        "tags": ["e"],
+        "region": "EU"
+      },
+      {
+        "@id": "12",
+        "name": "12 e region US",
+        "tags": ["e"],
+        "region": "US"
+      },
+      {
+        "@id": "13",
+        "name": "13 e logistics",
+        "tags": ["e"],
+        "accessGroup": "logistics"
+      },
+      {
+        "@id": "14",
+        "name": "14 e other group",
+        "tags": ["e"],
+        "accessGroup": "other"
+      },
+      {
+        "@id": "15",
+        "name": "15 no tags region EU",
+        "region": "EU"
+      },
+      {
+        "@id": "16",
+        "name": "16 m details m",
+        "tags": ["m"],
+        "details": {
+          "groups": ["m"]
+        }
+      },
+      {
+        "@id": "17",
+        "name": "17 m details x",
+        "tags": ["m"],
+        "details": {
+          "groups": ["x"]
+        }
+      }
+    ]
+  }
+}

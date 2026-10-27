@@ -1,0 +1,6 @@
+query list {
+    allShipments(orderBy: name_ASC) {
+        name
+        tags
+    }
+}

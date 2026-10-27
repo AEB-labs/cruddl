@@ -41,10 +41,7 @@ RETURN (FIRST(
       LIMIT @var4
       RETURN v_file1
     )
-    FILTER !((MERGE(v_currentEntity1, {
-      "name": @var5,
-      "updatedAt": @var6
-    }).`customerName` IN @var7))
+    FILTER !((v_currentEntity1.`customerName` IN @var5))
     RETURN v_currentEntity1
   )
   COLLECT WITH COUNT INTO v_count1

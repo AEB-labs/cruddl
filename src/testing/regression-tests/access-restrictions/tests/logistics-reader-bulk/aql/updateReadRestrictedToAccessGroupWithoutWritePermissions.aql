@@ -39,10 +39,7 @@ RETURN (FIRST(
       FILTER (v_file1._key == @var3)
       RETURN v_file1
     )
-    FILTER !((MERGE(v_currentEntity1, {
-      "accessGroup": @var4,
-      "updatedAt": @var5
-    }).`accessGroup` == @var6))
+    FILTER !((@var4 == @var5))
     RETURN v_currentEntity1
   )
   COLLECT WITH COUNT INTO v_count1

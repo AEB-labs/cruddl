@@ -1,0 +1,29 @@
+query list {
+    allShipments(orderBy: name_ASC) {
+        name
+        tags
+        accessGroup
+    }
+}
+
+# should pass: the access group permission grants access without restricting tags
+mutation addValueInAccessGroup {
+    updateShipment(input: { id: "@{ids/Shipment/13}", tags: ["e", "z"] }) {
+        name
+        tags
+    }
+}
+
+# should fail: the access group permission does not apply to this object, and z is not permitted
+mutation addValueInOtherAccessGroup {
+    updateShipment(input: { id: "@{ids/Shipment/14}", tags: ["e", "z"] }) {
+        name
+    }
+}
+
+# should pass: e2 is permitted via the tags permission
+mutation addPermittedValueInOtherAccessGroup {
+    updateShipment(input: { id: "@{ids/Shipment/14}", tags: ["e", "e2"] }) {
+        name
+    }
+}

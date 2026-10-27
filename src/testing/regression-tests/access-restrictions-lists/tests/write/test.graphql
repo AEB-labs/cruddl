@@ -1,0 +1,153 @@
+# should pass
+mutation createWithPermittedValues {
+    createShipment(input: { name: "new a b", tags: ["a", "b"] }) {
+        name
+        tags
+    }
+}
+
+# should pass
+mutation createManyWithPermittedValues {
+    createShipments(input: [{ name: "new a", tags: ["a"] }, { name: "new b", tags: ["b"] }]) {
+        tags
+    }
+}
+
+# should pass
+mutation updateManyWithPermittedValues {
+    updateShipments(
+        input: [
+            { id: "@{ids/Shipment/9}", tags: ["a", "b"] }
+            { id: "@{ids/Shipment/6}", tags: ["b", "a"] }
+        ]
+    ) {
+        name
+        tags
+    }
+}
+
+# should fail: the object is not visible because none of its values match
+mutation updateObjectWithoutMatchingValue {
+    updateShipment(input: { id: "@{ids/Shipment/2}", tags: ["c", "a"] }) {
+        name
+    }
+}
+
+# should fail: the object is not visible because none of its values match
+mutation deleteObjectWithoutMatchingValue {
+    deleteShipment(id: "@{ids/Shipment/2}") {
+        name
+    }
+}
+
+# should fail because z is not permitted
+mutation createWithUnpermittedValue {
+    createShipment(input: { name: "new a z", tags: ["a", "z"] }) {
+        name
+    }
+}
+
+# should fail because public is only permitted for reading
+mutation createWithReadOnlyValue {
+    createShipment(input: { name: "new a public", tags: ["a", "public"] }) {
+        name
+    }
+}
+
+# should fail because one of the objects contains z
+mutation createManyWithUnpermittedValue {
+    createShipments(
+        input: [{ name: "new a", tags: ["a"] }, { name: "new b z", tags: ["b", "z"] }]
+    ) {
+        name
+    }
+}
+
+# should pass
+mutation updateAddPermittedValue {
+    updateShipment(input: { id: "@{ids/Shipment/6}", tags: ["a", "b"] }) {
+        name
+        tags
+    }
+}
+
+# should fail because z is not permitted
+mutation updateAddUnpermittedValue {
+    updateShipment(input: { id: "@{ids/Shipment/1}", tags: ["a", "b", "z"] }) {
+        name
+    }
+}
+
+# should fail because c is not permitted
+mutation updateRemoveUnpermittedValue {
+    updateShipment(input: { id: "@{ids/Shipment/7}", tags: ["a"] }) {
+        name
+    }
+}
+
+# should fail because the object would no longer be accessible
+mutation updateRemoveAllValues {
+    updateShipment(input: { id: "@{ids/Shipment/1}", tags: [] }) {
+        name
+    }
+}
+
+# should pass
+mutation updateRemovePermittedValue {
+    updateShipment(input: { id: "@{ids/Shipment/1}", tags: ["a"] }) {
+        name
+        tags
+    }
+}
+
+# should pass, even though the object contains c (no list values are changed)
+mutation updateOtherField {
+    updateShipment(input: { id: "@{ids/Shipment/7}", name: "07 a c renamed" }) {
+        name
+        tags
+    }
+}
+
+# should fail because c would be removed from the first object
+# (the failing object comes first because the in-memory database does not roll back the other updates)
+mutation updateManyRemovingUnpermittedValue {
+    updateShipments(
+        input: [
+            { id: "@{ids/Shipment/7}", tags: ["a", "b"] }
+            { id: "@{ids/Shipment/1}", tags: ["a", "b"] }
+        ]
+    ) {
+        name
+    }
+}
+
+# should fail because c would be removed from one of the objects
+mutation updateAllRemovingUnpermittedValue {
+    updateAllShipments(
+        filter: { name_in: ["01 a b", "07 a c renamed"] }
+        input: { tags: ["a", "b"] }
+    ) {
+        name
+    }
+}
+
+# should pass because no object contains other values than a and b
+mutation updateAllWithPermittedValues {
+    updateAllShipments(filter: { tags_some: { equal: "b" } }, input: { tags: ["a", "b"] }) {
+        tags
+    }
+}
+
+# should pass because deleting only requires one matching value
+mutation deleteWithUnpermittedValue {
+    deleteShipment(id: "@{ids/Shipment/7}") {
+        name
+    }
+}
+
+query listAfterwards {
+    allShipments(orderBy: name_ASC) {
+        name
+        tags
+    }
+}
