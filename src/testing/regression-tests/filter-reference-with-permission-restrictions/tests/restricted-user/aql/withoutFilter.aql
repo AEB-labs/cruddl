@@ -1,0 +1,27 @@
+RETURN {
+  "allParcels": (
+    FOR v_parcel1
+    IN (
+      FOR v_item1
+      IN @@parcels
+      FILTER (v_item1.`site` IN @var1)
+      RETURN v_item1
+    )
+    SORT (v_parcel1.`parcelNumber`)
+    LET v_ramp1 = (IS_NULL(v_parcel1.`rampNumber`) ? null : FIRST((
+      FOR v_ramp2
+      IN @@ramps
+      FILTER ((v_ramp2.`rampNumber` > NULL) && (v_ramp2.`rampNumber` == v_parcel1.`rampNumber`))
+      LIMIT @var2
+      RETURN v_ramp2
+    )))
+    RETURN {
+      "parcelNumber": v_parcel1.`parcelNumber`,
+      "site": v_parcel1.`site`,
+      "rampNumber": v_parcel1.`rampNumber`,
+      "ramp": (IS_NULL(v_ramp1) ? null : {
+        "rampNumber": v_ramp1.`rampNumber`
+      })
+    }
+  )
+}
