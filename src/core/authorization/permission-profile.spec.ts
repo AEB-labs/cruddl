@@ -119,6 +119,14 @@ describe('RoleSpecifier', () => {
         expect(roleSpecifier.includesRole('role-ABC')).to.be.true;
     });
 
+    it('ignores the g and y flags in regular expressions', () => {
+        // with these flags, RegExp.test() would continue at the position of the previous match
+        const roleSpecifier = new RoleSpecifier(['/^role-[a-z]+$/gy']);
+        expect(roleSpecifier.includesRole('role-abc')).to.be.true;
+        expect(roleSpecifier.includesRole('role-abc')).to.be.true;
+        expect(roleSpecifier.includesRole('role-def')).to.be.true;
+    });
+
     it('throws on invalid regular expressions', () => {
         expect(() => new RoleSpecifier(['/role-[a-z]+'])).to.throw(
             InvalidRoleSpecifierError,

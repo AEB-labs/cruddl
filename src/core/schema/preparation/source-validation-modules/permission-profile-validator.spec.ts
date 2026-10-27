@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { applyQuickFix } from '../../../../testing/utils/source-validation-utils.js';
 import type { ValidationMessage } from '../../../model/validation/message.js';
+import { Severity } from '../../../model/validation/message.js';
 import { ValidationContext } from '../../../model/validation/validation-context.js';
 import { ProjectSource } from '../../../project/source.js';
 import { parseProjectSource } from '../../parsing/parse-project-source.js';
@@ -130,5 +132,44 @@ describe('permission-profile-validator', () => {
             ),
         );
         expect(messages.length).to.equal(0);
+    });
+
+    it('warns about g and y flags in regular expressions in roles', () => {
+        const messages = getValidatorMessages(
+            new ProjectSource(
+                'permission-profiles.json',
+                JSON.stringify({
+                    permissionProfiles: {
+                        flags: {
+                            permissions: [
+                                {
+                                    roles: ['/^role-(.*)$/gi'],
+                                    access: 'readWrite',
+                                },
+                            ],
+                        },
+                    },
+                }),
+            ),
+        );
+        expect(messages.length).to.equal(1);
+        expect(messages[0].severity).to.equal(Severity.WARNING);
+        expect(messages[0].message).to.equal(
+            'Regular expression flags "g" and "y" have no effect in role specifiers. Remove them. This will be an error in a future release.',
+        );
+    });
+
+    it('offers to remove the g and y flags', () => {
+        const source = new ProjectSource(
+            'permission-profiles.json',
+            JSON.stringify({
+                permissionProfiles: {
+                    flags: { permissions: [{ roles: ['/^role-(.*)$/gyi'], access: 'readWrite' }] },
+                },
+            }),
+        );
+        expect(applyQuickFix(getValidatorMessages(source), 'Remove flags "g" and "y"')).to.equal(
+            source.body.replace('"/^role-(.*)$/gyi"', '"/^role-(.*)$/i"'),
+        );
     });
 });
