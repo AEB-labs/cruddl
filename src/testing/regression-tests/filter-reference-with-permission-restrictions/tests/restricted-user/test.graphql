@@ -1,0 +1,60 @@
+query byRamp2 {
+    allParcels(filter: { ramp: { rampNumber: "Ramp 2" } }, orderBy: parcelNumber_ASC) {
+        parcelNumber
+        site
+        rampNumber
+        ramp {
+            rampNumber
+        }
+    }
+}
+
+query byRamp1 {
+    allParcels(filter: { ramp: { rampNumber: "Ramp 1" } }, orderBy: parcelNumber_ASC) {
+        parcelNumber
+        site
+        rampNumber
+        ramp {
+            rampNumber
+        }
+    }
+}
+
+query bySiteAndRamp3 {
+    allParcels(
+        filter: { site: "Site A", ramp: { rampNumber: "Ramp 3" } }
+        orderBy: parcelNumber_ASC
+    ) {
+        parcelNumber
+        site
+        rampNumber
+        ramp {
+            rampNumber
+        }
+    }
+}
+
+query byRampIn {
+    allParcels(
+        filter: { ramp: { rampNumber_in: ["Ramp 2", "Ramp 3"] } }
+        orderBy: parcelNumber_ASC
+    ) {
+        parcelNumber
+        site
+        rampNumber
+        ramp {
+            rampNumber
+        }
+    }
+}
+
+query withoutFilter {
+    allParcels(orderBy: parcelNumber_ASC) {
+        parcelNumber
+        site
+        rampNumber
+        ramp {
+            rampNumber
+        }
+    }
+}

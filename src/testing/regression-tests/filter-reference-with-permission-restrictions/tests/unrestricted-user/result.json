@@ -1,0 +1,38 @@
+{
+  "byRamp2": {
+    "data": {
+      "allParcels": [
+        {
+          "parcelNumber": "P2",
+          "site": "Site A",
+          "rampNumber": "Ramp 2",
+          "ramp": {
+            "rampNumber": "Ramp 2"
+          }
+        },
+        {
+          "parcelNumber": "P4",
+          "site": "Site B",
+          "rampNumber": "Ramp 2",
+          "ramp": {
+            "rampNumber": "Ramp 2"
+          }
+        }
+      ]
+    }
+  },
+  "byRamp1": {
+    "data": {
+      "allParcels": [
+        {
+          "parcelNumber": "P1",
+          "site": "Site A",
+          "rampNumber": "Ramp 1",
+          "ramp": {
+            "rampNumber": "Ramp 1"
+          }
+        }
+      ]
+    }
+  }
+}
