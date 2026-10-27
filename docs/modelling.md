@@ -506,9 +506,13 @@ groups. For example:
 {
     "permissionProfiles": {
         "forwarders": {
-            "roles": ["/^forwarder-(.+)$/"],
-            "access": "readWrite",
-            "restrictToAccessGroups": ["forwarded-by-$1", "forwarded-by-anyone"]
+            "permissions": [
+                {
+                    "roles": ["/^forwarder-(.+)$/"],
+                    "access": "readWrite",
+                    "restrictToAccessGroups": ["forwarded-by-$1", "forwarded-by-anyone"]
+                }
+            ]
         }
     }
 }
