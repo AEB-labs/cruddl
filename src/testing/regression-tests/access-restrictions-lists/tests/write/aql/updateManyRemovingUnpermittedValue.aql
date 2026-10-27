@@ -46,39 +46,19 @@ RETURN (FIRST(
         "tags": @var5,
         "updatedAt": @var6
       })
-      RETURN ((v_postUpdate1.`tags` ANY IN @var7) && ((FIRST(
-        FOR v_item3
-        IN (
-          FOR v_item4
-          IN MINUS((IS_LIST(v_postUpdate1.`tags`) ? v_postUpdate1.`tags` : []), (IS_LIST(v_currentEntity1.`tags`) ? v_currentEntity1.`tags` : []))
-          FILTER !(([
-            v_item4
-          ] ANY IN @var8))
-          RETURN v_item4
-        )
-        COLLECT WITH COUNT INTO v_count1
-        RETURN v_count1
-      ) == @var9) && (FIRST(
-        FOR v_item5
-        IN (
-          FOR v_item6
-          IN MINUS((IS_LIST(v_currentEntity1.`tags`) ? v_currentEntity1.`tags` : []), (IS_LIST(v_postUpdate1.`tags`) ? v_postUpdate1.`tags` : []))
-          FILTER !(([
-            v_item6
-          ] ANY IN @var10))
-          RETURN v_item6
-        )
-        COLLECT WITH COUNT INTO v_count2
-        RETURN v_count2
-      ) == @var11)))
+      RETURN ((v_postUpdate1.`tags` ANY IN @var7) && ((LENGTH(MINUS((IS_LIST(v_postUpdate1.`tags`) ? v_postUpdate1.`tags` : []), (IS_LIST(v_currentEntity1.`tags`) ? v_currentEntity1.`tags` : []))[* FILTER !(([
+        CURRENT
+      ] ANY IN @var8))]) == 0) && (LENGTH(MINUS((IS_LIST(v_currentEntity1.`tags`) ? v_currentEntity1.`tags` : []), (IS_LIST(v_postUpdate1.`tags`) ? v_postUpdate1.`tags` : []))[* FILTER !(([
+        CURRENT
+      ] ANY IN @var9))]) == 0)))
     ))
     RETURN v_currentEntity1
   )
-  COLLECT WITH COUNT INTO v_count3
-  RETURN v_count3
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
 ) == 0)
 
-// Peak memory usage: 131072 bytes
+// Peak memory usage: 65536 bytes
 
 // ----------------------------------------------------------------
 
@@ -154,36 +134,16 @@ RETURN (FIRST(
         "tags": @var5,
         "updatedAt": @var6
       })
-      RETURN ((v_postUpdate1.`tags` ANY IN @var7) && ((FIRST(
-        FOR v_item3
-        IN (
-          FOR v_item4
-          IN MINUS((IS_LIST(v_postUpdate1.`tags`) ? v_postUpdate1.`tags` : []), (IS_LIST(v_currentEntity1.`tags`) ? v_currentEntity1.`tags` : []))
-          FILTER !(([
-            v_item4
-          ] ANY IN @var8))
-          RETURN v_item4
-        )
-        COLLECT WITH COUNT INTO v_count1
-        RETURN v_count1
-      ) == @var9) && (FIRST(
-        FOR v_item5
-        IN (
-          FOR v_item6
-          IN MINUS((IS_LIST(v_currentEntity1.`tags`) ? v_currentEntity1.`tags` : []), (IS_LIST(v_postUpdate1.`tags`) ? v_postUpdate1.`tags` : []))
-          FILTER !(([
-            v_item6
-          ] ANY IN @var10))
-          RETURN v_item6
-        )
-        COLLECT WITH COUNT INTO v_count2
-        RETURN v_count2
-      ) == @var11)))
+      RETURN ((v_postUpdate1.`tags` ANY IN @var7) && ((LENGTH(MINUS((IS_LIST(v_postUpdate1.`tags`) ? v_postUpdate1.`tags` : []), (IS_LIST(v_currentEntity1.`tags`) ? v_currentEntity1.`tags` : []))[* FILTER !(([
+        CURRENT
+      ] ANY IN @var8))]) == 0) && (LENGTH(MINUS((IS_LIST(v_currentEntity1.`tags`) ? v_currentEntity1.`tags` : []), (IS_LIST(v_postUpdate1.`tags`) ? v_postUpdate1.`tags` : []))[* FILTER !(([
+        CURRENT
+      ] ANY IN @var9))]) == 0)))
     ))
     RETURN v_currentEntity1
   )
-  COLLECT WITH COUNT INTO v_count3
-  RETURN v_count3
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
 ) == 0)
 
 // ----------------------------------------------------------------

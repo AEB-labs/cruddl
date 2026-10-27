@@ -1,30 +1,10 @@
-RETURN ((@var1.`details`.`groups` ANY IN @var2) && ((FIRST(
-  FOR v_item1
-  IN (
-    FOR v_item2
-    IN MINUS((IS_LIST(@var3.`details`.`groups`) ? @var4.`details`.`groups` : []), [])
-    FILTER !(([
-      v_item2
-    ] ANY IN @var5))
-    RETURN v_item2
-  )
-  COLLECT WITH COUNT INTO v_count1
-  RETURN v_count1
-) == @var6) && (FIRST(
-  FOR v_item3
-  IN (
-    FOR v_item4
-    IN MINUS([], (IS_LIST(@var7.`details`.`groups`) ? @var8.`details`.`groups` : []))
-    FILTER !(([
-      v_item4
-    ] ANY IN @var9))
-    RETURN v_item4
-  )
-  COLLECT WITH COUNT INTO v_count2
-  RETURN v_count2
-) == @var10)))
+RETURN ((@var1.`details`.`groups` ANY IN @var2) && ((LENGTH(MINUS((IS_LIST(@var3.`details`.`groups`) ? @var4.`details`.`groups` : []), [])[* FILTER !(([
+  CURRENT
+] ANY IN @var5))]) == 0) && (LENGTH(MINUS([], (IS_LIST(@var6.`details`.`groups`) ? @var7.`details`.`groups` : []))[* FILTER !(([
+  CURRENT
+] ANY IN @var8))]) == 0)))
 
-// Peak memory usage: 65536 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
