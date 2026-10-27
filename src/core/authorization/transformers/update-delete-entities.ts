@@ -169,29 +169,19 @@ function getIsTrueInEachItemQueryNode(
     itemVarNode: VariableQueryNode,
     condition: QueryNode,
 ) {
-    // items.map(itemVar => !condition(itemVar)).length == 0
-    const entitiesWithWriteRestrictions = getFilteredListQueryNode(
-        listNode,
-        itemVarNode,
-        new UnaryOperationQueryNode(condition, UnaryOperator.NOT),
-    );
+    // items.filter(itemVar => !condition(itemVar)).length == 0
+    // (one item that does not fulfill the condition is enough, so we can stop after the first one)
+    const firstEntityWithWriteRestrictions = new TransformListQueryNode({
+        itemVariable: itemVarNode,
+        listNode: listNode,
+        filterNode: new UnaryOperationQueryNode(condition, UnaryOperator.NOT),
+        maxCount: 1,
+    });
     return new BinaryOperationQueryNode(
-        new CountQueryNode(entitiesWithWriteRestrictions),
+        new CountQueryNode(firstEntityWithWriteRestrictions),
         BinaryOperator.EQUAL,
         ConstIntQueryNode.ZERO,
     );
-}
-
-function getFilteredListQueryNode(
-    listNode: QueryNode,
-    itemVarNode: VariableQueryNode,
-    condition: QueryNode,
-) {
-    return new TransformListQueryNode({
-        itemVariable: itemVarNode,
-        listNode: listNode,
-        filterNode: condition,
-    });
 }
 
 /**

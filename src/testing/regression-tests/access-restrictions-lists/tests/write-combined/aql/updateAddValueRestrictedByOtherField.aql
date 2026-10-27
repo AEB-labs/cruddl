@@ -15,6 +15,7 @@ RETURN (FIRST(
       RETURN v_shipment2
     )
     FILTER !((((v_shipment1.`tags` ANY IN @var6) && (v_shipment1.`category` == @var7)) || (v_shipment1.`tags` ANY IN @var8)))
+    LIMIT @var9
     RETURN v_shipment1
   )
   COLLECT WITH COUNT INTO v_count1
@@ -56,13 +57,14 @@ RETURN (FIRST(
         CURRENT
       ] ANY IN @var16)))]) == 0)))
     ))
+    LIMIT @var17
     RETURN v_currentEntity1
   )
   COLLECT WITH COUNT INTO v_count1
   RETURN v_count1
 ) == 0)
 
-// Peak memory usage: 65536 bytes
+// Peak memory usage: 98304 bytes
 
 // ----------------------------------------------------------------
 

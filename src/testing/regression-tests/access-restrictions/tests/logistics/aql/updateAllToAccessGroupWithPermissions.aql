@@ -14,6 +14,7 @@ RETURN (FIRST(
       RETURN v_file2
     )
     FILTER !(((v_file1.`accessGroup` == @var4) || (v_file1.`accessGroup` == @var5)))
+    LIMIT @var6
     RETURN v_file1
   )
   COLLECT WITH COUNT INTO v_count1
@@ -40,6 +41,7 @@ RETURN (FIRST(
       RETURN v_file1
     )
     FILTER !(((@var4 == @var5) || (@var6 == @var7)))
+    LIMIT @var8
     RETURN v_currentEntity1
   )
   COLLECT WITH COUNT INTO v_count1

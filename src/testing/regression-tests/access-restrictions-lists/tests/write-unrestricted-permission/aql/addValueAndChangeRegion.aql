@@ -15,6 +15,7 @@ RETURN (FIRST(
       RETURN v_shipment2
     )
     FILTER !(((v_shipment1.`tags` ANY IN @var5) || (v_shipment1.`region` == @var6)))
+    LIMIT @var7
     RETURN v_shipment1
   )
   COLLECT WITH COUNT INTO v_count1
@@ -53,6 +54,7 @@ RETURN (FIRST(
         CURRENT
       ] ANY IN @var13) || (v_postUpdate1.`region` == @var14)))]) == 0))))
     ))
+    LIMIT @var15
     RETURN v_currentEntity1
   )
   COLLECT WITH COUNT INTO v_count1

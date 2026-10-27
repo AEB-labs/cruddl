@@ -22,6 +22,7 @@ RETURN (FIRST(
     FOR v_shipment1
     IN @v_ids1
     FILTER !((DOCUMENT(@@shipments, v_shipment1).`tags` ANY IN @var1))
+    LIMIT @var2
     RETURN v_shipment1
   )
   COLLECT WITH COUNT INTO v_count1
