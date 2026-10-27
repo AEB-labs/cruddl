@@ -28,6 +28,14 @@ export class PermissionProfile implements ModelComponent {
     }
 
     validate(context: ValidationContext) {
+        if (!this.permissions.length) {
+            context.addMessage(
+                ValidationMessage.nonSuppressableWarning(
+                    `Permission profile "${this.name}" does not define any permissions, so access is denied for everyone.`,
+                    this.loc,
+                ),
+            );
+        }
         for (const permission of this.permissions) {
             permission.validate(context);
         }

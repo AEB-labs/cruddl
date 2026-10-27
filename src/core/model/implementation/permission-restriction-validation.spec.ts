@@ -444,4 +444,16 @@ describe('permission profile restrictions', () => {
             schema.replace('other: String @accessField @key', 'other: String @key'),
         );
     });
+
+    it('warns about permission profiles without permissions', () => {
+        assertValidatorWarns(
+            `
+                type Shipment @rootEntity(permissionProfile: "restricted") {
+                    group: String
+                }
+            `,
+            'Permission profile "restricted" does not define any permissions, so access is denied for everyone.',
+            { permissionProfiles: { restricted: { permissions: [] } } },
+        );
+    });
 });
