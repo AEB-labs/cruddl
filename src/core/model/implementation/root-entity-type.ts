@@ -18,6 +18,7 @@ import { GraphQLInt53 } from '../../schema/scalars/int53.js';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
 import { isDefined } from '../../utils/utils.js';
 import { ChangeSet, TextChange } from '../change-set/change-set.js';
+import { createValueReplacementChange } from '../change-set/replace-value.js';
 import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
 import type {
     FlexSearchPerformanceParams,
@@ -39,11 +40,84 @@ import type { Model } from './model.js';
 import { EffectiveModuleSpecification } from './modules/effective-module-specification.js';
 import { ObjectTypeBase } from './object-type-base.js';
 import { OrderDirection } from './order.js';
-import type { PermissionProfile } from './permission-profile.js';
+import type { PermissionProfile, PermissionRestriction } from './permission-profile.js';
 import type { Relation, RelationSide } from './relation.js';
 import { RolesSpecifier } from './roles-specifier.js';
 import type { ScalarType } from './scalar-type.js';
 import type { TimeToLiveType } from './time-to-live.js';
+
+/**
+ * Scalar types that are stored as objects, so restrictions on them never match
+ */
+const UNSUPPORTED_RESTRICTION_SCALAR_TYPES: ReadonlyArray<string> = [
+    'I18nString',
+    'StringMap',
+    'JSON',
+    'JSONObject',
+    'OffsetDateTime',
+];
+
+/**
+ * The JavaScript type a restriction value needs to have for fields of these scalar types
+ */
+const EXPECTED_RESTRICTION_VALUE_TYPES: { readonly [typeName: string]: string } = {
+    String: 'string',
+    ID: 'string',
+    Boolean: 'boolean',
+    Int: 'number',
+    Int53: 'number',
+    Float: 'number',
+};
+
+/**
+ * Finds the enum value that only differs from the given value in casing (if there is exactly one)
+ */
+function getEnumValueWithDifferentCase(
+    validValues: ReadonlyArray<string>,
+    value: string,
+): string | undefined {
+    const matchingValues = validValues.filter((v) => v.toLowerCase() === value.toLowerCase());
+    return matchingValues.length === 1 ? matchingValues[0] : undefined;
+}
+
+/**
+ * Converts a restriction value to the expected type if this is possible without losing information
+ */
+function convertRestrictionValue(
+    value: unknown,
+    expectedType: string,
+    typeName: string,
+): unknown | undefined {
+    switch (expectedType) {
+        case 'string':
+            return typeof value === 'number' || typeof value === 'boolean'
+                ? String(value)
+                : undefined;
+        case 'boolean':
+            return value === 'true' ? true : value === 'false' ? false : undefined;
+        case 'number': {
+            if (typeof value !== 'string' || !/^-?\d+(\.\d+)?$/.test(value)) {
+                return undefined;
+            }
+            const number = Number(value);
+            return typeName === 'Float' || Number.isInteger(number) ? number : undefined;
+        }
+        default:
+            return undefined;
+    }
+}
+
+function getChangeValueQuickFix(
+    location: MessageLocation,
+    key: string | undefined,
+    value: unknown,
+) {
+    return new QuickFix({
+        description: `Change value to ${JSON.stringify(value)}`,
+        isPreferred: true,
+        changeSet: new ChangeSet([createValueReplacementChange(location, key, value)]),
+    });
+}
 
 export class RootEntityType extends ObjectTypeBase {
     private readonly permissions: PermissionsConfig & {};
@@ -359,6 +433,7 @@ export class RootEntityType extends ObjectTypeBase {
                 );
             }
             if (accessGroupField) {
+                this.validateAccessGroupValues(accessGroupField, context);
                 if (accessGroupField.isList) {
                     // this was not reported previously, but never worked as expected (normal queries never match,
                     // flexSearch queries match if any item matches)
@@ -373,6 +448,113 @@ export class RootEntityType extends ObjectTypeBase {
                 this.validateModulesOfAccessField(accessGroupField, context);
             }
         }
+    }
+
+    private validateAccessGroupValues(accessGroupField: Field, context: ValidationContext) {
+        if (!this.permissionProfile || !accessGroupField.type.isEnumType) {
+            return;
+        }
+        const enumType = accessGroupField.type;
+        const validValues = enumType.values.map((v) => v.value);
+        for (const permission of this.permissionProfile.permissions) {
+            for (const [index, accessGroup] of (
+                permission.restrictToAccessGroups ?? []
+            ).entries()) {
+                // placeholders are only known at runtime
+                if (accessGroup.includes('$') || validValues.includes(accessGroup)) {
+                    continue;
+                }
+                const accessGroupLocation = permission.restrictToAccessGroupsLocs?.[index];
+                const suggestedValue = getEnumValueWithDifferentCase(validValues, accessGroup);
+                context.addMessage(
+                    ValidationMessage.suppressableWarning(
+                        'DEPRECATED',
+                        `Access group "${accessGroup}" in permission profile "${this.permissionProfile.name}" is not a value of enum "${enumType.name}" (field "${this.name}.${ACCESS_GROUP_FIELD}"), so it never matches. Valid values: ${validValues.join(', ')}. This will be an error in a future release.`,
+                        this.astNode,
+                        {
+                            location:
+                                accessGroupLocation ?? permission.loc ?? this.permissionProfile.loc,
+                            quickFixes:
+                                accessGroupLocation && suggestedValue !== undefined
+                                    ? [
+                                          getChangeValueQuickFix(
+                                              accessGroupLocation,
+                                              undefined,
+                                              suggestedValue,
+                                          ),
+                                      ]
+                                    : [],
+                        },
+                    ),
+                );
+            }
+        }
+    }
+
+    /**
+     * Gets a description of a problem with the value of a restriction, or undefined if there is none
+     *
+     * These problems were not reported previously, so they are reported as deprecations
+     */
+    private getRestrictionValueProblem(
+        restriction: PermissionRestriction,
+        lastField: Field,
+    ): { readonly message: string; readonly suggestedValue?: unknown } | undefined {
+        const fieldDesc = `field "${lastField.declaringType.name}.${lastField.name}"`;
+        if (UNSUPPORTED_RESTRICTION_SCALAR_TYPES.includes(lastField.type.name)) {
+            return {
+                message: `Fields of type "${lastField.type.name}" cannot be used in permission restrictions (${fieldDesc}).`,
+            };
+        }
+
+        if (restriction.value === null) {
+            return { message: `Restriction value null on ${fieldDesc} has no defined behavior.` };
+        }
+        if (restriction.value !== undefined) {
+            if (typeof restriction.value === 'object') {
+                return {
+                    message: `Restriction value on ${fieldDesc} is a list or an object, which is not supported. Use one permission per value, or "claim" with a list claim.`,
+                };
+            }
+            if (lastField.type.isEnumType) {
+                const validValues = lastField.type.values.map((v) => v.value);
+                if (!validValues.includes(restriction.value as string)) {
+                    return {
+                        message: `Restriction value ${JSON.stringify(restriction.value)} on ${fieldDesc} is not a value of enum "${lastField.type.name}". Valid values: ${validValues.join(', ')}.`,
+                        suggestedValue:
+                            typeof restriction.value === 'string'
+                                ? getEnumValueWithDifferentCase(validValues, restriction.value)
+                                : undefined,
+                    };
+                }
+                return undefined;
+            }
+            const expectedType = EXPECTED_RESTRICTION_VALUE_TYPES[lastField.type.name];
+            if (expectedType && typeof restriction.value !== expectedType) {
+                return {
+                    message: `Restriction value ${JSON.stringify(restriction.value)} on ${fieldDesc} must be a ${expectedType} because the field is of type "${lastField.type.name}".`,
+                    suggestedValue: convertRestrictionValue(
+                        restriction.value,
+                        expectedType,
+                        lastField.type.name,
+                    ),
+                };
+            }
+            return undefined;
+        }
+
+        // valueTemplate and claim produce strings
+        if (
+            (restriction.valueTemplate !== undefined || restriction.claim !== undefined) &&
+            !lastField.type.isEnumType &&
+            lastField.type.name !== GraphQLString.name &&
+            lastField.type.name !== GraphQLID.name
+        ) {
+            return {
+                message: `"valueTemplate" and "claim" produce strings and can only be used on fields of type String, ID or an enum type, but ${fieldDesc} is of type "${lastField.type.name}".`,
+            };
+        }
+        return undefined;
     }
 
     /**
@@ -457,6 +639,34 @@ export class RootEntityType extends ObjectTypeBase {
                                 restriction.fieldValueLoc,
                             ),
                         );
+                    } else {
+                        const valueProblem = this.getRestrictionValueProblem(
+                            restriction,
+                            lastField,
+                        );
+                        if (valueProblem) {
+                            context.addMessage(
+                                ValidationMessage.suppressableWarning(
+                                    'DEPRECATED',
+                                    `Permission profile "${this.permissionProfile.name}" defines an unsupported restriction: ${valueProblem.message} This will be an error in a future release.`,
+                                    this.astNode,
+                                    {
+                                        location: restriction.loc ?? restriction.fieldValueLoc,
+                                        quickFixes:
+                                            restriction.valueLoc &&
+                                            valueProblem.suggestedValue !== undefined
+                                                ? [
+                                                      getChangeValueQuickFix(
+                                                          restriction.valueLoc,
+                                                          'value',
+                                                          valueProblem.suggestedValue,
+                                                      ),
+                                                  ]
+                                                : [],
+                                    },
+                                ),
+                            );
+                        }
                     }
                 }
                 if (fieldPath.fields) {

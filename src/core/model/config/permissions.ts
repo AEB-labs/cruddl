@@ -43,6 +43,11 @@ export interface PermissionConfig {
     readonly restrictions?: ReadonlyArray<PermissionRestrictionConfig>;
 
     readonly loc?: MessageLocation;
+
+    /**
+     * The locations of the items in restrictToAccessGroups
+     */
+    readonly restrictToAccessGroupsLocs?: ReadonlyArray<MessageLocation | undefined>;
 }
 
 export interface PermissionRestrictionConfig {
@@ -69,4 +74,5 @@ export interface PermissionRestrictionConfig {
 
     readonly loc?: MessageLocation;
     readonly fieldValueLoc?: MessageLocation;
+    readonly valueLoc?: MessageLocation;
 }

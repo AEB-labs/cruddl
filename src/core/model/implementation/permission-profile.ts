@@ -40,6 +40,8 @@ export class Permission implements ModelComponent {
     readonly restrictToAccessGroups?: ReadonlyArray<string>;
     readonly hasDynamicAccessGroups: boolean;
     readonly restrictions: ReadonlyArray<PermissionRestriction>;
+    readonly loc: MessageLocation | undefined;
+    readonly restrictToAccessGroupsLocs: ReadonlyArray<MessageLocation | undefined> | undefined;
 
     constructor(config: PermissionConfig) {
         this.roles = new RoleSpecifier(config.roles);
@@ -51,6 +53,8 @@ export class Permission implements ModelComponent {
         this.restrictions = config.restrictions
             ? config.restrictions.map((c) => new PermissionRestriction(c))
             : [];
+        this.loc = config.loc;
+        this.restrictToAccessGroupsLocs = config.restrictToAccessGroupsLocs;
     }
 
     appliesToAuthContext(authContext: AuthContext) {
@@ -261,6 +265,7 @@ export class PermissionRestriction implements ModelComponent {
     readonly claim?: string;
     readonly loc?: MessageLocation;
     readonly fieldValueLoc?: MessageLocation;
+    readonly valueLoc?: MessageLocation;
 
     constructor(config: PermissionRestrictionConfig) {
         this.field = config.field;
@@ -269,6 +274,7 @@ export class PermissionRestriction implements ModelComponent {
         this.claim = config.claim;
         this.loc = config.loc;
         this.fieldValueLoc = config.fieldValueLoc;
+        this.valueLoc = config.valueLoc;
     }
 
     validate(context: ValidationContext) {
