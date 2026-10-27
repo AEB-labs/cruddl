@@ -1,3 +1,4 @@
+import { WILDCARD_CHARACTER } from '../../schema/constants.js';
 import type { RolesSpecifierConfig } from '../config/permissions.js';
 import { ValidationMessage } from '../validation/message.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
@@ -22,6 +23,21 @@ export class RolesSpecifier implements ModelComponent {
                 ValidationMessage.suppressableWarning(
                     'NO_ROLES',
                     `No roles with read access are specified. Access is denied for everyone.`,
+                    this.declaringFieldOrType.astNode,
+                    { location: this.input.astNode },
+                ),
+            );
+        }
+
+        // permission profiles support these, but @roles always matches literally
+        const patternRole = [...this.read, ...this.readWrite].find(
+            (role) => role.includes(WILDCARD_CHARACTER) || role.startsWith('/'),
+        );
+        if (patternRole !== undefined) {
+            context.addMessage(
+                ValidationMessage.suppressableWarning(
+                    'DEPRECATED',
+                    `@roles does not support wildcards or regular expressions; "${patternRole}" is matched literally. Use a permission profile, or list the exact role names. This will be an error in a future release.`,
                     this.declaringFieldOrType.astNode,
                     { location: this.input.astNode },
                 ),
