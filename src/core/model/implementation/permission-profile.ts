@@ -177,6 +177,9 @@ export interface RoleSpecifierEntry {
     readonly capturingGroupCount: number;
 }
 
+const REGEX_ROLE_SPECIFIER_HINT =
+    'Role specifiers starting with a slash (/) are interpreted as regular expressions, e.g. "/^supplier-([a-z]+)$/".';
+
 /**
  * Regular expression flags that do not have an effect on role specifiers (and would make matching stateful)
  */
@@ -211,7 +214,7 @@ export class RegexRoleSpecifierEntry implements RoleSpecifierEntry {
         const parts = /^\/(.*)\/([^\/]*)$/.exec(expression);
         if (!parts) {
             throw new InvalidRoleSpecifierError(
-                `Role specifier starts with a slash (/), but is not a valid regular expression: ${expression}`,
+                `Role specifier "${expression}" is not a valid regular expression. ${REGEX_ROLE_SPECIFIER_HINT}`,
             );
         }
         const source = parts[1] || '';
@@ -241,7 +244,9 @@ export class RegexRoleSpecifierEntry implements RoleSpecifierEntry {
             this.regexp = new RegExp(parts[1] || '', flags.replace(IGNORED_REGEX_FLAGS, ''));
         } catch (e) {
             if (e instanceof SyntaxError) {
-                throw new InvalidRoleSpecifierError(e.message);
+                throw new InvalidRoleSpecifierError(
+                    `Role specifier "${expression}" is not a valid regular expression (${e.message}). ${REGEX_ROLE_SPECIFIER_HINT}`,
+                );
             }
             throw e;
         }

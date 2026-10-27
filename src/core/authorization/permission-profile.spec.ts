@@ -136,14 +136,14 @@ describe('RoleSpecifier', () => {
     it('throws on invalid regular expressions', () => {
         expect(() => new RoleSpecifier(['/role-[a-z]+'])).to.throw(
             InvalidRoleSpecifierError,
-            'Role specifier starts with a slash (/), but is not a valid regular expression: /role-[a-z]+',
+            'Role specifier "/role-[a-z]+" is not a valid regular expression. Role specifiers starting with a slash (/) are interpreted as regular expressions, e.g. "/^supplier-([a-z]+)$/".',
         );
     });
 
     it('throws on invalid regular expressions (2)', () => {
         expect(() => new RoleSpecifier(['/role-[a-z+/'])).to.throw(
             InvalidRoleSpecifierError,
-            'Invalid regular expression: /role-[a-z+/: Unterminated character class',
+            'Role specifier "/role-[a-z+/" is not a valid regular expression (Invalid regular expression: /role-[a-z+/: Unterminated character class). Role specifiers starting with a slash (/) are interpreted as regular expressions, e.g. "/^supplier-([a-z]+)$/".',
         );
     });
 });

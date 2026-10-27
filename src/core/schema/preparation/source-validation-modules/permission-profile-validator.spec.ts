@@ -40,7 +40,7 @@ describe('permission-profile-validator', () => {
         );
         expect(messages.length).to.equal(1);
         expect(messages[0].message).to.equal(
-            'Role specifier starts with a slash (/), but is not a valid regular expression: /invalid-regex',
+            'Role specifier "/invalid-regex" is not a valid regular expression. Role specifiers starting with a slash (/) are interpreted as regular expressions, e.g. "/^supplier-([a-z]+)$/".',
         );
     });
 
