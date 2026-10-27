@@ -1,6 +1,7 @@
 import type { ArgumentNode } from 'graphql';
 import { GraphQLID, GraphQLString } from 'graphql';
 import { memorize } from 'memorize-decorator';
+import { ProjectSource } from '../../project/source.js';
 import {
     ACCESS_FIELD_DIRECTIVE,
     ACCESS_GROUP_FIELD,
@@ -8,12 +9,16 @@ import {
     FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
     FLEX_SEARCH_INDEXED_DIRECTIVE,
     ID_FIELD,
+    MODULES_ALL_ARG,
+    MODULES_DIRECTIVE,
     SCALAR_INT,
     SCALAR_STRING,
 } from '../../schema/constants.js';
 import { GraphQLInt53 } from '../../schema/scalars/int53.js';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
 import { isDefined } from '../../utils/utils.js';
+import { ChangeSet, TextChange } from '../change-set/change-set.js';
+import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
 import type {
     FlexSearchPerformanceParams,
     FlexSearchPrimarySortClauseConfig,
@@ -22,7 +27,9 @@ import type {
 import type { PermissionsConfig } from '../config/permissions.js';
 import type { RootEntityTypeConfig } from '../config/type.js';
 import { TypeKind } from '../config/type.js';
+import { MessageLocation } from '../validation/location.js';
 import { ValidationMessage } from '../validation/message.js';
+import { QuickFix } from '../validation/quick-fix.js';
 import { ValidationContext } from '../validation/validation-context.js';
 import { FieldPath } from './field-path.js';
 import type { Field, SystemFieldConfig } from './field.js';
@@ -351,6 +358,61 @@ export class RootEntityType extends ObjectTypeBase {
                     ),
                 );
             }
+            if (accessGroupField) {
+                this.validateModulesOfAccessField(accessGroupField, context);
+            }
+        }
+    }
+
+    /**
+     * Checks that a field used for access control is included in all modules of its declaring type
+     *
+     * Otherwise, the permission profile would not work in projects generated from some module selections
+     */
+    private validateModulesOfAccessField(field: Field, context: ValidationContext) {
+        if (!field.moduleSpecification || field.moduleSpecification.all) {
+            return;
+        }
+        const missingClauses =
+            field.declaringType.effectiveModuleSpecification.orCombinedClauses.filter(
+                (clause) =>
+                    !field.effectiveModuleSpecification.includedIn(clause.andCombinedModules),
+            );
+        if (missingClauses.length) {
+            const desc = describeModuleSpecification(
+                new EffectiveModuleSpecification({ orCombinedClauses: missingClauses }),
+                { preposition: 'in' },
+            );
+            const modulesDirectiveLocation = field.moduleSpecification.astNode?.loc;
+            context.addMessage(
+                ValidationMessage.error(
+                    `Fields used for access control must always be included in all modules of their declaring type. Set @modules(all: true). (Field "${field.declaringType.name}.${field.name}" is used by permission profile "${this.permissionProfile?.name}". Type "${field.declaringType.name}" is included ${desc}, but the field is not.)`,
+                    field.astNode,
+                    {
+                        quickFixes: modulesDirectiveLocation
+                            ? [
+                                  new QuickFix({
+                                      description: 'Include in all modules',
+                                      isPreferred: true,
+                                      changeSet: new ChangeSet([
+                                          new TextChange(
+                                              new MessageLocation(
+                                                  new ProjectSource(
+                                                      modulesDirectiveLocation.source.name,
+                                                      modulesDirectiveLocation.source.body,
+                                                  ),
+                                                  modulesDirectiveLocation.start,
+                                                  modulesDirectiveLocation.end,
+                                              ),
+                                              `@${MODULES_DIRECTIVE}(${MODULES_ALL_ARG}: true)`,
+                                          ),
+                                      ]),
+                                  }),
+                              ]
+                            : [],
+                    },
+                ),
+            );
         }
     }
 
@@ -358,6 +420,7 @@ export class RootEntityType extends ObjectTypeBase {
         if (!this.permissionProfile) {
             return;
         }
+        const restrictedFields = new Set<Field>();
         for (const permission of this.permissionProfile.permissions) {
             for (const restriction of permission.restrictions) {
                 const nestedContext = new ValidationContext();
@@ -405,6 +468,7 @@ export class RootEntityType extends ObjectTypeBase {
                     }
 
                     for (const field of fieldPath.fields) {
+                        restrictedFields.add(field);
                         if (!field.isAccessField) {
                             nestedContext.addMessage(
                                 ValidationMessage.error(
@@ -445,6 +509,10 @@ export class RootEntityType extends ObjectTypeBase {
                     );
                 }
             }
+        }
+
+        for (const field of restrictedFields) {
+            this.validateModulesOfAccessField(field, context);
         }
     }
 

@@ -1,7 +1,9 @@
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
+    validate,
 } from '../utils/source-validation-utils.js';
 
 describe('modules validator', () => {
@@ -349,6 +351,92 @@ describe('modules validator', () => {
                     }
                 `,
                 'Key fields must always be included in all modules of their declaring type. Set @modules(all: true). (Type "Foo" is included in module "module1", but the key field is not.)',
+                { withModuleDefinitions: true },
+            );
+        });
+    });
+
+    describe('fields used for access control', () => {
+        const accessGroupProfiles = {
+            restricted: {
+                permissions: [
+                    {
+                        roles: ['user'],
+                        access: 'readWrite' as const,
+                        restrictToAccessGroups: ['group1'],
+                    },
+                ],
+            },
+        };
+        const restrictionProfiles = {
+            restricted: {
+                permissions: [
+                    {
+                        roles: ['user'],
+                        access: 'readWrite' as const,
+                        restrictions: [{ field: 'customer', claim: 'customer' }],
+                    },
+                ],
+            },
+        };
+
+        it('accepts an accessGroup field included in all modules', () => {
+            assertValidatorAcceptsAndDoesNotWarn(
+                `
+                    type Foo @rootEntity(permissionProfile: "restricted") @modules(in: ["module1", "module2"]) {
+                        accessGroup: String @modules(all: true)
+                    }
+                `,
+                { withModuleDefinitions: true, permissionProfiles: accessGroupProfiles },
+            );
+        });
+
+        it('rejects an accessGroup field restricted more than the type', () => {
+            assertValidatorRejects(
+                `
+                    type Foo @rootEntity(permissionProfile: "restricted") @modules(in: ["module1", "module2"]) {
+                        accessGroup: String @modules(in: ["module1"])
+                    }
+                `,
+                'Fields used for access control must always be included in all modules of their declaring type. Set @modules(all: true). (Field "Foo.accessGroup" is used by permission profile "restricted". Type "Foo" is included in module "module2", but the field is not.)',
+                { withModuleDefinitions: true, permissionProfiles: accessGroupProfiles },
+            );
+        });
+
+        it('rejects a restricted field restricted more than the type', () => {
+            assertValidatorRejects(
+                `
+                    type Foo @rootEntity(permissionProfile: "restricted") @modules(in: ["module1", "module2"]) {
+                        customer: String @accessField @modules(in: ["module1"])
+                    }
+                `,
+                'Fields used for access control must always be included in all modules of their declaring type. Set @modules(all: true). (Field "Foo.customer" is used by permission profile "restricted". Type "Foo" is included in module "module2", but the field is not.)',
+                { withModuleDefinitions: true, permissionProfiles: restrictionProfiles },
+            );
+        });
+
+        it('offers to include a restricted field in all modules', () => {
+            const schema = `
+                    type Foo @rootEntity(permissionProfile: "restricted") @modules(in: ["module1", "module2"]) {
+                        customer: String @accessField @modules(in: ["module1"])
+                    }
+                `;
+            const result = validate(schema, {
+                withModuleDefinitions: true,
+                permissionProfiles: restrictionProfiles,
+            });
+            expect(applyQuickFix(result.messages, 'Include in all modules')).to.equal(
+                schema.replace('@modules(in: ["module1"])', '@modules(all: true)'),
+            );
+        });
+
+        it('accepts a field restricted more than the type if it is not used for access control', () => {
+            assertValidatorAcceptsAndDoesNotWarn(
+                `
+                    type Foo @rootEntity @modules(in: ["module1", "module2"]) {
+                        accessGroup: String @modules(in: ["module1"])
+                    }
+                `,
                 { withModuleDefinitions: true },
             );
         });
