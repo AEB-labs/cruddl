@@ -1,5 +1,6 @@
 import { ChangeSet } from '../../../model/change-set/change-set.js';
 import { createValueReplacementChange } from '../../../model/change-set/replace-value.js';
+import type { RoleSpecifierEntry } from '../../../model/implementation/permission-profile.js';
 import {
     createRoleSpecifierEntry,
     InvalidRoleSpecifierError,
@@ -73,6 +74,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
         }
 
         const messages: ValidationMessage[] = [];
+        const roleEntries: Array<{ role: string; entry: RoleSpecifierEntry }> = [];
         let roleIndex = 0;
         let hasRoleExpressionWithoutCaptureGroup = false;
         for (const role of permission.roles) {
@@ -85,6 +87,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
                 ];
             try {
                 const entry = createRoleSpecifierEntry(role);
+                roleEntries.push({ role, entry });
                 if (!entry.mayHaveCapturingGroups) {
                     hasRoleExpressionWithoutCaptureGroup = true;
                 }
@@ -142,6 +145,51 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
                 }
                 accessGroupIndex++;
             }
+        }
+
+        // placeholders that refer to capturing groups that do not exist are not replaced
+        const templates: Array<{ template: unknown; path: string }> = [
+            ...(isReadonlyArray(permission.restrictToAccessGroups)
+                ? permission.restrictToAccessGroups.map((template: unknown, i: number) => ({
+                      template,
+                      path: `restrictToAccessGroups/${i}`,
+                  }))
+                : []),
+            ...(isReadonlyArray(permission.restrictions)
+                ? permission.restrictions.map((restriction: any, i: number) => ({
+                      template: restriction?.valueTemplate,
+                      path: `restrictions/${i}/valueTemplate`,
+                  }))
+                : []),
+        ];
+        for (const { template, path } of templates) {
+            if (typeof template !== 'string') {
+                continue;
+            }
+            const isAccessGroupTemplate = path.startsWith('restrictToAccessGroups');
+            const placeholderNumbers = Array.from(template.matchAll(/\$(\d+)/g), (m) =>
+                Number(m[1]),
+            );
+            if (!placeholderNumbers.length) {
+                continue;
+            }
+            const maxPlaceholderNumber = Math.max(...placeholderNumbers);
+            const insufficientRole = roleEntries.find(
+                ({ entry }) =>
+                    entry.capturingGroupCount < maxPlaceholderNumber &&
+                    // this is already reported as an error
+                    !(isAccessGroupTemplate && !entry.mayHaveCapturingGroups),
+            );
+            if (!insufficientRole) {
+                continue;
+            }
+            const count = insufficientRole.entry.capturingGroupCount;
+            messages.push(
+                ValidationMessage.nonSuppressableWarning(
+                    `Placeholder "$${maxPlaceholderNumber}" refers to capturing group ${maxPlaceholderNumber}, but role specifier "${insufficientRole.role}" only has ${count} capturing group${count === 1 ? '' : 's'}. All roles of a permission that uses placeholders must be regular expressions with enough capturing groups. This will be an error in a future release.`,
+                    pathLocationMap[`/permissionProfiles/${name}/permissions/${index}/${path}`],
+                ),
+            );
         }
 
         return messages;

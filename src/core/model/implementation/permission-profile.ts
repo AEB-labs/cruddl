@@ -158,6 +158,11 @@ export interface RoleSpecifierEntry {
     getReplacementForRole(role: string, replacementExpression: string): string | undefined;
 
     readonly mayHaveCapturingGroups: boolean;
+
+    /**
+     * The number of capturing groups that can be referenced with placeholders like $1
+     */
+    readonly capturingGroupCount: number;
 }
 
 /**
@@ -167,6 +172,7 @@ const IGNORED_REGEX_FLAGS = /[gy]/g;
 
 export class RegexRoleSpecifierEntry implements RoleSpecifierEntry {
     readonly mayHaveCapturingGroups: boolean;
+    readonly capturingGroupCount: number;
 
     /**
      * The flags of the expression that are ignored (g and y)
@@ -195,6 +201,8 @@ export class RegexRoleSpecifierEntry implements RoleSpecifierEntry {
 
         // it's hard to reliably check this, but this at least offers some santiy check
         this.mayHaveCapturingGroups = this.regexp.source.includes('(');
+        // an alternative that matches the empty string results in one array item per capturing group
+        this.capturingGroupCount = new RegExp(this.regexp.source + '|').exec('')!.length - 1;
     }
 
     matchesRole(role: string): boolean {
@@ -214,6 +222,7 @@ export class RegexRoleSpecifierEntry implements RoleSpecifierEntry {
 
 export class WildcardRoleSpecifierEntry implements RoleSpecifierEntry {
     readonly mayHaveCapturingGroups = false;
+    readonly capturingGroupCount = 0;
     private readonly regexp: RegExp;
 
     constructor(pattern: string) {
@@ -232,6 +241,7 @@ export class WildcardRoleSpecifierEntry implements RoleSpecifierEntry {
 
 export class LiteralRoleSpecifierEntry implements RoleSpecifierEntry {
     readonly mayHaveCapturingGroups = false;
+    readonly capturingGroupCount = 0;
 
     constructor(private readonly role: string) {}
 
