@@ -12,6 +12,7 @@ import { ValidationContext } from '../../model/validation/validation-context.js'
 import { ProjectSource } from '../../project/source.js';
 import type { Mutable } from '../../utils/util-types.js';
 import { type PlainObject } from '../../utils/utils.js';
+import { toJsonPointer } from './json-pointer.js';
 import { getNamespaceFromSourceName } from './namespace-from-source-name.js';
 import {
     ParsedProjectSourceBaseKind,
@@ -119,16 +120,6 @@ function getPathLocationMap(rootNode: JsonNode, source: ProjectSource): PathLoca
 
     visit(rootNode, []);
     return pathLocationMap;
-}
-
-function toJsonPointer(path: ReadonlyArray<string | number>): string {
-    // https://datatracker.ietf.org/doc/html/rfc6901
-    return path.map((part) => '/' + escapeJsonPointer(String(part))).join('');
-}
-
-function escapeJsonPointer(part: string): string {
-    // defined by https://datatracker.ietf.org/doc/html/rfc6901#section-3
-    return part.replace(/~/g, '~0').replace(/\//g, '~1');
 }
 
 export function getMessageFromJSONSyntaxError(source: string, error: ParseError): string {
