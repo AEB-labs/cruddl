@@ -359,6 +359,17 @@ export class RootEntityType extends ObjectTypeBase {
                 );
             }
             if (accessGroupField) {
+                if (accessGroupField.isList) {
+                    // this was not reported previously, but never worked as expected (normal queries never match,
+                    // flexSearch queries match if any item matches)
+                    context.addMessage(
+                        ValidationMessage.suppressableWarning(
+                            'DEPRECATED',
+                            `Field "${ACCESS_GROUP_FIELD}" must not be a list to be used with "restrictToAccessGroups" (permission profile "${this.permissionProfile?.name}"). Use a String or enum field, or use "restrictions" on an @accessField list field. This will be an error in a future release.`,
+                            accessGroupField.astNode,
+                        ),
+                    );
+                }
                 this.validateModulesOfAccessField(accessGroupField, context);
             }
         }

@@ -156,4 +156,28 @@ describe('permission profile restrictions', () => {
             { permissionProfiles: getPermissionProfiles('infos.group') },
         );
     });
+
+    it('warns about list accessGroup fields used with restrictToAccessGroups', () => {
+        assertValidatorWarns(
+            `
+                type Shipment @rootEntity(permissionProfile: "restricted") {
+                    accessGroup: [String]
+                }
+            `,
+            'Field "accessGroup" must not be a list to be used with "restrictToAccessGroups" (permission profile "restricted"). Use a String or enum field, or use "restrictions" on an @accessField list field. This will be an error in a future release.',
+            {
+                permissionProfiles: {
+                    restricted: {
+                        permissions: [
+                            {
+                                roles: ['user'],
+                                access: 'readWrite',
+                                restrictToAccessGroups: ['group1'],
+                            },
+                        ],
+                    },
+                },
+            },
+        );
+    });
 });
