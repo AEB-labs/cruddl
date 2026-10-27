@@ -5,6 +5,7 @@ import { prettyPrint } from '../../core/graphql/pretty-print.js';
 import type { PermissionProfileConfigMap } from '../../core/model/config/permissions.js';
 import type { TimeToLiveConfig } from '../../core/model/config/time-to-live.js';
 import { createModel } from '../../core/model/create-model.js';
+import { Severity } from '../../core/model/validation/message.js';
 import { ValidationResult } from '../../core/model/validation/result.js';
 import { ValidationContext } from '../../core/model/validation/validation-context.js';
 import { ProjectSource } from '../../core/project/source.js';
@@ -30,18 +31,23 @@ export function assertValidatorRejects(
     ).to.deep.equal(messages);
 }
 
+/**
+ * Asserts that there are no errors and that the warnings are exactly the given messages
+ */
 export function assertValidatorWarns(
     source: string | DocumentNode,
-    msg: string,
+    msg: string | ReadonlyArray<string>,
     options?: ValidationOptions,
 ) {
+    const messages = typeof msg === 'string' ? [msg] : msg;
     const validationResult = validate(source, options);
     expect(validationResult.hasErrors(), validationResult.toString()).to.be.false;
-    expect(validationResult.hasWarnings()).to.be.true;
     expect(
-        validationResult.messages.find((validatedMsg) => validatedMsg.message === msg),
+        validationResult.messages
+            .filter((m) => m.severity === Severity.WARNING)
+            .map((m) => m.message),
         validationResult.toString(),
-    ).to.not.be.undefined;
+    ).to.deep.equal(messages);
 }
 
 export function assertValidatorAcceptsAndDoesNotWarn(

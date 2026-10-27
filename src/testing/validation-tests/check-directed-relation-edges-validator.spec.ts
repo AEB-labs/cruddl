@@ -57,7 +57,10 @@ describe('check-directed-relation-edges-validator', () => {
             type Foo @rootEntity { bar: Bar @relation }
             type Bar @rootEntity { foo: Foo @relation }
         `,
-            'This field and "Bar.foo" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.',
+            [
+                'This field and "Bar.foo" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.',
+                'This field and "Foo.bar" define separate relations. Consider using the "inverseOf" argument to add a backlink to an existing relation.',
+            ],
         );
     });
 
