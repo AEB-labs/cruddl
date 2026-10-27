@@ -715,6 +715,16 @@ export class RootEntityType extends ObjectTypeBase {
 
                     for (const field of fieldPath.fields) {
                         restrictedFields.add(field);
+                        // system fields can't be annotated with @accessField
+                        if (field.isSystemField) {
+                            nestedContext.addMessage(
+                                ValidationMessage.error(
+                                    `System field "${field.declaringType.name}.${field.name}" cannot be used in permission restrictions.`,
+                                    restriction.fieldValueLoc,
+                                ),
+                            );
+                            continue;
+                        }
                         if (!field.isAccessField) {
                             nestedContext.addMessage(
                                 ValidationMessage.error(
