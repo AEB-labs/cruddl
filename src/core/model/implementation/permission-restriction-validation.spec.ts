@@ -456,4 +456,24 @@ describe('permission profile restrictions', () => {
             { permissionProfiles: { restricted: { permissions: [] } } },
         );
     });
+
+    it('names the default permission profile in messages', () => {
+        assertValidatorRejects(
+            `
+                type Shipment @rootEntity {
+                    name: String
+                }
+            `,
+            'The permission profile "default" uses "restrictToAccessGroups", but this root entity does not have a "accessGroup" field.',
+            {
+                permissionProfiles: {
+                    default: {
+                        permissions: [
+                            { roles: ['user'], access: 'readWrite', restrictToAccessGroups: ['a'] },
+                        ],
+                    },
+                },
+            },
+        );
+    });
 });

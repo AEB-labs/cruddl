@@ -417,7 +417,7 @@ export class RootEntityType extends ObjectTypeBase {
             if (!accessGroupField) {
                 context.addMessage(
                     ValidationMessage.error(
-                        `The permission profile "${this.permissions.permissionProfileName}" uses "restrictToAccessGroups", but this root entity does not have a "${ACCESS_GROUP_FIELD}" field.`,
+                        `The permission profile "${this.permissionProfile!.name}" uses "restrictToAccessGroups", but this root entity does not have a "${ACCESS_GROUP_FIELD}" field.`,
                         this.permissions.permissionProfileNameAstNode || this.nameASTNode,
                     ),
                 );
@@ -427,7 +427,7 @@ export class RootEntityType extends ObjectTypeBase {
             ) {
                 context.addMessage(
                     ValidationMessage.error(
-                        `This field must be of String or enum type to be used as "accessGroup" with the permission profile "${this.permissions.permissionProfileName}".`,
+                        `This field must be of String or enum type to be used as "accessGroup" with the permission profile "${this.permissionProfile!.name}".`,
                         accessGroupField.astNode || this.nameASTNode,
                     ),
                 );
@@ -741,7 +741,10 @@ export class RootEntityType extends ObjectTypeBase {
                         new ValidationMessage({
                             severity: message.severity,
                             message: `Permission profile "${this.permissionProfile.name}" defines restrictions that cannot be applied to type "${this.name}": ${message.message}`,
-                            location: this.input.permissions?.permissionProfileNameAstNode,
+                            // the default profile is not referenced explicitly
+                            location:
+                                this.input.permissions?.permissionProfileNameAstNode ??
+                                this.nameASTNode,
                             quickFixes: message.quickFixes,
                         }),
                     );
