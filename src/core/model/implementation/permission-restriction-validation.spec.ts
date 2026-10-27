@@ -476,4 +476,19 @@ describe('permission profile restrictions', () => {
             },
         );
     });
+
+    it('rejects system fields', () => {
+        assertValidatorRejects(
+            `
+                type Shipment @rootEntity(permissionProfile: "restricted") {
+                    name: String
+                }
+            `,
+            [
+                'Permission profile "restricted" defines restrictions that cannot be applied to type "Shipment": System field "Shipment.createdAt" cannot be used in permission restrictions.',
+                'Cannot be applied to type "Shipment": System field "Shipment.createdAt" cannot be used in permission restrictions.',
+            ],
+            { permissionProfiles: getPermissionProfiles('createdAt') },
+        );
+    });
 });
