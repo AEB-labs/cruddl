@@ -4,10 +4,12 @@ import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
+    validate,
 } from '../../../testing/utils/source-validation-utils.js';
 import { Project } from '../../project/project.js';
 import { ProjectSource } from '../../project/source.js';
 import type { PermissionProfileConfigMap } from '../config/permissions.js';
+import { Severity } from '../validation/message.js';
 
 function getPermissionProfiles(field: string): PermissionProfileConfigMap {
     return {
@@ -407,5 +409,39 @@ describe('permission profile restrictions', () => {
                 source.body.replace('"logistics"', '"LOGISTICS"'),
             );
         });
+    });
+
+    it('informs about @accessField on fields that are not used in restrictions', () => {
+        const result = validate(
+            `
+                type Shipment @rootEntity(permissionProfile: "restricted") {
+                    group: String @accessField
+                    other: String @accessField
+                }
+            `,
+            { permissionProfiles: getPermissionProfiles('group') },
+        );
+        expect(
+            result.messages.map((m) => ({ severity: m.severity, message: m.message })),
+        ).to.deep.equal([
+            {
+                severity: Severity.INFO,
+                message:
+                    '@accessField has no effect because field "Shipment.other" is not used in a restriction of a permission profile. Note that @accessField makes flexSearch filters on this field case-sensitive.',
+            },
+        ]);
+    });
+
+    it('offers to remove @accessField from fields that are not used in restrictions', () => {
+        const schema = `
+                type Shipment @rootEntity(permissionProfile: "restricted") {
+                    group: String @accessField
+                    other: String @accessField @key
+                }
+            `;
+        const result = validate(schema, { permissionProfiles: getPermissionProfiles('group') });
+        expect(applyQuickFix(result.messages, 'Remove @accessField')).to.equal(
+            schema.replace('other: String @accessField @key', 'other: String @key'),
+        );
     });
 });

@@ -37,6 +37,9 @@ export type WarningCode = keyof typeof WARNING_CODES;
 
 export const INFO_CODES = {
     NO_TYPE_CHECKS: '@defaultValue currently does not have type checks for the value',
+
+    INEFFECTIVE_ACCESS_FIELD:
+        '@accessField is specified but the field is not used in a restriction of a permission profile',
 } as const satisfies MessageCodes;
 
 export type InfoCode = keyof typeof INFO_CODES;

@@ -609,6 +609,29 @@ export class RootEntityType extends ObjectTypeBase {
         }
     }
 
+    /**
+     * All fields that are used in the restriction paths of the permission profile of this type
+     */
+    @memorize()
+    get fieldsUsedInPermissionRestrictions(): ReadonlySet<Field> {
+        const fields = new Set<Field>();
+        for (const permission of this.permissionProfile?.permissions ?? []) {
+            for (const restriction of permission.restrictions) {
+                const fieldPath = new FieldPath({
+                    path: restriction.field,
+                    baseType: this,
+                    canUseCollectFields: false,
+                    canTraverseRootEntities: false,
+                    canNavigateIntoLists: true,
+                });
+                for (const field of fieldPath.fields ?? []) {
+                    fields.add(field);
+                }
+            }
+        }
+        return fields;
+    }
+
     private validatePermissionProfileRestrictions(context: ValidationContext) {
         if (!this.permissionProfile) {
             return;
