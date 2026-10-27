@@ -191,6 +191,20 @@ export class RegexRoleSpecifierEntry implements RoleSpecifierEntry {
      */
     readonly ignoredFlags: string;
 
+    /**
+     * If the expression does not need to match the whole role, a description of the unmatched part and suggested
+     * expressions that make this explicit
+     *
+     * An expression matches the whole role if it starts with ^ (or .*) and ends with $ (or .*).
+     */
+    readonly anchoringProblem:
+        | {
+              readonly unmatchedPart: 'beginning' | 'end' | 'beginning and end';
+              readonly wholeRoleSuggestion: string;
+              readonly trailingCharactersSuggestion: string | undefined;
+          }
+        | undefined;
+
     private readonly regexp: RegExp;
 
     constructor(expression: string) {
@@ -200,7 +214,28 @@ export class RegexRoleSpecifierEntry implements RoleSpecifierEntry {
                 `Role specifier starts with a slash (/), but is not a valid regular expression: ${expression}`,
             );
         }
+        const source = parts[1] || '';
         const flags = parts[2] || '';
+        const isStartAnchored = source.startsWith('^') || source.startsWith('.*');
+        const isEndAnchored =
+            (source.endsWith('$') && !source.endsWith('\\$')) ||
+            (source.endsWith('.*') && !source.endsWith('\\.*'));
+        if (isStartAnchored && isEndAnchored) {
+            this.anchoringProblem = undefined;
+        } else {
+            const startAnchoredSource = isStartAnchored ? source : '^' + source;
+            this.anchoringProblem = {
+                unmatchedPart: !isStartAnchored
+                    ? !isEndAnchored
+                        ? 'beginning and end'
+                        : 'beginning'
+                    : 'end',
+                wholeRoleSuggestion: `/${startAnchoredSource}${isEndAnchored ? '' : '$'}/${flags}`,
+                trailingCharactersSuggestion: isEndAnchored
+                    ? undefined
+                    : `/${startAnchoredSource}.*/${flags}`,
+            };
+        }
         this.ignoredFlags = (flags.match(IGNORED_REGEX_FLAGS) ?? []).join('');
         try {
             this.regexp = new RegExp(parts[1] || '', flags.replace(IGNORED_REGEX_FLAGS, ''));
