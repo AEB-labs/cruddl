@@ -172,4 +172,68 @@ describe('permission-profile-validator', () => {
             source.body.replace('"/^role-(.*)$/gyi"', '"/^role-(.*)$/i"'),
         );
     });
+
+    function getMessagesForPermission(permission: object) {
+        return getValidatorMessages(
+            new ProjectSource(
+                'permission-profiles.json',
+                JSON.stringify({
+                    permissionProfiles: {
+                        profile: {
+                            permissions: [{ access: 'readWrite', ...permission }],
+                        },
+                    },
+                }),
+            ),
+        );
+    }
+
+    it('accepts placeholders in valueTemplate if all roles have enough capturing groups', () => {
+        const messages = getMessagesForPermission({
+            roles: ['/^seller-(.+)-(.+)$/', '/^buyer-(.+)-(.+)$/'],
+            restrictions: [{ field: 'seller', valueTemplate: '$1-$2' }],
+        });
+        expect(messages).to.deep.equal([]);
+    });
+
+    it('warns about placeholders in valueTemplate with roles without capturing groups', () => {
+        const messages = getMessagesForPermission({
+            roles: ['/^seller-(.+)$/', 'admin'],
+            restrictions: [{ field: 'seller', valueTemplate: '$1' }],
+        });
+        expect(messages.length).to.equal(1);
+        expect(messages[0].severity).to.equal(Severity.WARNING);
+        expect(messages[0].message).to.equal(
+            'Placeholder "$1" refers to capturing group 1, but role specifier "admin" only has 0 capturing groups. All roles of a permission that uses placeholders must be regular expressions with enough capturing groups. This will be an error in a future release.',
+        );
+    });
+
+    it('warns about placeholders in valueTemplate that refer to missing capturing groups', () => {
+        const messages = getMessagesForPermission({
+            roles: ['/^seller-(.+)$/'],
+            restrictions: [{ field: 'seller', valueTemplate: '$2' }],
+        });
+        expect(messages.length).to.equal(1);
+        expect(messages[0].message).to.equal(
+            'Placeholder "$2" refers to capturing group 2, but role specifier "/^seller-(.+)$/" only has 1 capturing group. All roles of a permission that uses placeholders must be regular expressions with enough capturing groups. This will be an error in a future release.',
+        );
+    });
+
+    it('does not count non-capturing groups', () => {
+        const messages = getMessagesForPermission({
+            roles: ['/^(?:seller|buyer)-(.+)$/'],
+            restrictions: [{ field: 'seller', valueTemplate: '$2' }],
+        });
+        expect(messages.length).to.equal(1);
+        expect(messages[0].message).to.contain('only has 1 capturing group.');
+    });
+
+    it('warns about placeholders in restrictToAccessGroups that refer to missing capturing groups', () => {
+        const messages = getMessagesForPermission({
+            roles: ['/^role-(.+)$/'],
+            restrictToAccessGroups: ['group-$2'],
+        });
+        expect(messages.length).to.equal(1);
+        expect(messages[0].severity).to.equal(Severity.WARNING);
+    });
 });
