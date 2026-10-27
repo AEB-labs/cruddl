@@ -1,0 +1,59 @@
+WITH @@shipments
+RETURN (
+  FOR v_item1
+  IN [
+    FIRST(
+      LET v_entity1 = DOCUMENT(@@shipments, @var1)
+      RETURN (((v_entity1.`tags` ANY IN @var2) || (v_entity1.`tags` ANY IN @var3)) ? v_entity1 : null)
+    ),
+    FIRST(
+      LET v_entity2 = DOCUMENT(@@shipments, @var4)
+      RETURN (((v_entity2.`tags` ANY IN @var5) || (v_entity2.`tags` ANY IN @var6)) ? v_entity2 : null)
+    )
+  ]
+  FILTER (v_item1 > NULL)
+  RETURN v_item1._key
+)
+
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@shipments
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_shipment1
+    IN @v_ids1
+    FILTER !((DOCUMENT(@@shipments, v_shipment1).`tags` ANY IN @var1))
+    RETURN v_shipment1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) == 0)
+
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@shipments
+RETURN (
+  FOR v_shipment1
+  IN (
+    FOR v_shipment2
+    IN @v_ids1
+    REMOVE v_shipment2
+    IN @@shipments
+    RETURN OLD
+  )
+  RETURN {
+    "name": v_shipment1.`name`
+  }
+)
+
+// ----------------------------------------------------------------
+
+WITH @@shipments
+RETURN {
+  "deleteShipments": @v_deleteShipments1
+}

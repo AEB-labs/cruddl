@@ -1,0 +1,41 @@
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_shipment1
+    IN (
+      FOR v_item2
+      IN @@shipments
+      FILTER ((v_item2.`tags` ANY IN @var1) || (v_item2.`tags` ANY IN @var2))
+      RETURN v_item2
+    )
+    FILTER !((v_shipment1.`tags` ANY IN @var3))
+    RETURN v_shipment1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) == 0)
+
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
+
+RETURN (
+  FOR v_shipment1
+  IN (
+    FOR v_shipment2
+    IN @@shipments
+    FILTER ((v_shipment2.`tags` ANY IN @var1) || (v_shipment2.`tags` ANY IN @var2))
+    REMOVE v_shipment2
+    IN @@shipments
+    RETURN OLD
+  )
+  RETURN {
+    "name": v_shipment1.`name`
+  }
+)
+
+// ----------------------------------------------------------------
+
+RETURN {
+  "deleteAllShipments": @v_deleteAllShipments1
+}
