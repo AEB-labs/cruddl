@@ -72,6 +72,8 @@ export class BinaryOperationQueryNode extends QueryNode {
                 return '<=';
             case BinaryOperator.IN:
                 return 'IN';
+            case BinaryOperator.ANY_IN:
+                return 'ANY IN';
             case BinaryOperator.CONTAINS:
                 return 'CONTAINS';
             case BinaryOperator.STARTS_WITH:
@@ -125,6 +127,14 @@ export enum BinaryOperator {
     GREATER_THAN_OR_EQUAL = 'GREATER_THAN_OR_EQUAL',
 
     IN = 'IN',
+
+    /**
+     * Checks if at least one item of the lhs list is contained in the rhs list
+     *
+     * Evaluates to false if the lhs is null or an empty list.
+     */
+    ANY_IN = 'ANY_IN',
+
     CONTAINS = 'CONTAINS',
     STARTS_WITH = 'STARTS_WITH',
     ENDS_WITH = 'ENDS_WITH',

@@ -1018,6 +1018,20 @@ register(ListItemQueryNode, (node, context) => {
 });
 
 register(BinaryOperationQueryNode, (node, context) => {
+    if (node.operator === BinaryOperator.ANY_IN) {
+        // ANY IN treats null / non-list values gracefully, so we don't need the SafeListQueryNode wrapper
+        // (and its ternary operator is not supported within SEARCH anyway)
+        const listNode = node.lhs instanceof SafeListQueryNode ? node.lhs.sourceNode : node.lhs;
+        const listFrag = processNode(listNode, context);
+        const valuesFrag = processNode(node.rhs, context);
+        if (context.getExtension(inFlexSearchFilterSymbol)) {
+            // ArangoSearch indexes list items individually, so IN matches if any list item is in the values
+            // (the ANY IN array comparison operator is not supported in SEARCH)
+            return aql`(${listFrag} IN ${valuesFrag})`;
+        }
+        return aql`(${listFrag} ANY IN ${valuesFrag})`;
+    }
+
     const lhs = processNode(node.lhs, context);
 
     // a > NULL is equivalent to a != NULL, and it can use indices better
