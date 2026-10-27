@@ -1158,10 +1158,20 @@ function extractPermissionProfiles(
                                     source.pathLocationMap[
                                         `/permissionProfiles/${name}/permissions/${permissionIndex}/restrictions/${restrictionIndex}/field`
                                     ],
+                                valueLoc:
+                                    source.pathLocationMap[
+                                        `/permissionProfiles/${name}/permissions/${permissionIndex}/restrictions/${restrictionIndex}/value`
+                                    ],
                                 loc: source.pathLocationMap[
                                     `/permissionProfiles/${name}/permissions/${permissionIndex}/restrictions/${restrictionIndex}`
                                 ],
                             }),
+                        ),
+                        restrictToAccessGroupsLocs: permission.restrictToAccessGroups?.map(
+                            (_, accessGroupIndex) =>
+                                source.pathLocationMap[
+                                    `/permissionProfiles/${name}/permissions/${permissionIndex}/restrictToAccessGroups/${accessGroupIndex}`
+                                ],
                         ),
                         loc: source.pathLocationMap[
                             `/permissionProfiles/${name}/permissions/${permissionIndex}`

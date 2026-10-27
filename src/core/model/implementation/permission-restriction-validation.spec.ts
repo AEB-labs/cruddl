@@ -1,9 +1,12 @@
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
 } from '../../../testing/utils/source-validation-utils.js';
+import { Project } from '../../project/project.js';
+import { ProjectSource } from '../../project/source.js';
 import type { PermissionProfileConfigMap } from '../config/permissions.js';
 
 function getPermissionProfiles(field: string): PermissionProfileConfigMap {
@@ -179,5 +182,230 @@ describe('permission profile restrictions', () => {
                 },
             },
         );
+    });
+
+    function getProfilesWithRestriction(restriction: object): PermissionProfileConfigMap {
+        return {
+            restricted: {
+                permissions: [
+                    {
+                        roles: ['user'],
+                        access: 'readWrite',
+                        restrictions: [restriction as { field: string }],
+                    },
+                ],
+            },
+        };
+    }
+
+    const prefix = 'Permission profile "restricted" defines an unsupported restriction: ';
+    const suffix = ' This will be an error in a future release.';
+
+    it('warns about fields of types that are stored as objects', () => {
+        assertValidatorWarns(
+            `
+                type Shipment @rootEntity(permissionProfile: "restricted") {
+                    description: I18nString @accessField
+                }
+            `,
+            `${prefix}Fields of type "I18nString" cannot be used in permission restrictions (field "Shipment.description").${suffix}`,
+            {
+                permissionProfiles: getProfilesWithRestriction({
+                    field: 'description',
+                    value: 'a',
+                }),
+            },
+        );
+    });
+
+    it('warns about null values', () => {
+        assertValidatorWarns(
+            `
+                type Shipment @rootEntity(permissionProfile: "restricted") {
+                    owner: String @accessField
+                }
+            `,
+            `${prefix}Restriction value null on field "Shipment.owner" has no defined behavior.${suffix}`,
+            { permissionProfiles: getProfilesWithRestriction({ field: 'owner', value: null }) },
+        );
+    });
+
+    it('warns about list values', () => {
+        assertValidatorWarns(
+            `
+                type Shipment @rootEntity(permissionProfile: "restricted") {
+                    owner: String @accessField
+                }
+            `,
+            `${prefix}Restriction value on field "Shipment.owner" is a list or an object, which is not supported. Use one permission per value, or "claim" with a list claim.${suffix}`,
+            {
+                permissionProfiles: getProfilesWithRestriction({
+                    field: 'owner',
+                    value: ['a', 'b'],
+                }),
+            },
+        );
+    });
+
+    it('warns about values that are not part of the enum', () => {
+        assertValidatorWarns(
+            `
+                enum Region { EUROPE, ASIA }
+                type Shipment @rootEntity(permissionProfile: "restricted") {
+                    region: Region @accessField
+                }
+            `,
+            `${prefix}Restriction value "EUROP" on field "Shipment.region" is not a value of enum "Region". Valid values: EUROPE, ASIA.${suffix}`,
+            { permissionProfiles: getProfilesWithRestriction({ field: 'region', value: 'EUROP' }) },
+        );
+    });
+
+    it('warns about values that do not match the field type', () => {
+        assertValidatorWarns(
+            `
+                type Shipment @rootEntity(permissionProfile: "restricted") {
+                    isTopSecret: Boolean @accessField
+                }
+            `,
+            `${prefix}Restriction value "false" on field "Shipment.isTopSecret" must be a boolean because the field is of type "Boolean".${suffix}`,
+            {
+                permissionProfiles: getProfilesWithRestriction({
+                    field: 'isTopSecret',
+                    value: 'false',
+                }),
+            },
+        );
+    });
+
+    it('accepts values that match the field type', () => {
+        assertValidatorAcceptsAndDoesNotWarn(
+            `
+                type Shipment @rootEntity(permissionProfile: "restricted") {
+                    isTopSecret: Boolean @accessField
+                }
+            `,
+            {
+                permissionProfiles: getProfilesWithRestriction({
+                    field: 'isTopSecret',
+                    value: false,
+                }),
+            },
+        );
+    });
+
+    it('warns about claims on fields that are not strings', () => {
+        assertValidatorWarns(
+            `
+                type Shipment @rootEntity(permissionProfile: "restricted") {
+                    count: Int @accessField
+                }
+            `,
+            `${prefix}"valueTemplate" and "claim" produce strings and can only be used on fields of type String, ID or an enum type, but field "Shipment.count" is of type "Int".${suffix}`,
+            { permissionProfiles: getProfilesWithRestriction({ field: 'count', claim: 'count' }) },
+        );
+    });
+
+    it('warns about access groups that are not part of the enum', () => {
+        assertValidatorWarns(
+            `
+                enum Group { ACCOUNTING, LOGISTICS }
+                type Shipment @rootEntity(permissionProfile: "restricted") {
+                    accessGroup: Group
+                }
+            `,
+            `Access group "LOGISTIC" in permission profile "restricted" is not a value of enum "Group" (field "Shipment.accessGroup"), so it never matches. Valid values: ACCOUNTING, LOGISTICS.${suffix}`,
+            {
+                permissionProfiles: {
+                    restricted: {
+                        permissions: [
+                            {
+                                roles: ['user'],
+                                access: 'readWrite',
+                                restrictToAccessGroups: ['ACCOUNTING', 'LOGISTIC'],
+                            },
+                        ],
+                    },
+                },
+            },
+        );
+    });
+
+    describe('quick fixes for restriction values', () => {
+        function getMessages(schema: string, profilesSource: ProjectSource) {
+            return new Project([
+                new ProjectSource('schema.graphqls', schema),
+                profilesSource,
+            ]).validate().messages;
+        }
+
+        function getProfilesJson(permission: object) {
+            return new ProjectSource(
+                'permission-profiles.json',
+                JSON.stringify({
+                    permissionProfiles: {
+                        restricted: {
+                            permissions: [{ roles: ['user'], access: 'readWrite', ...permission }],
+                        },
+                    },
+                }),
+            );
+        }
+
+        it('offers to convert a restriction value to the field type', () => {
+            const source = getProfilesJson({
+                restrictions: [{ field: 'isTopSecret', value: 'false' }],
+            });
+            const messages = getMessages(
+                `type Shipment @rootEntity(permissionProfile: "restricted") { isTopSecret: Boolean @accessField }`,
+                source,
+            );
+            expect(applyQuickFix(messages, 'Change value to false')).to.equal(
+                source.body.replace('"value":"false"', '"value":false'),
+            );
+        });
+
+        it('offers to convert a restriction value to the field type in YAML', () => {
+            const source = new ProjectSource(
+                'permission-profiles.yaml',
+                'permissionProfiles:\n  restricted:\n    permissions:\n      - roles: [user]\n        access: readWrite\n        restrictions:\n          - field: count\n            value: "5"\n',
+            );
+            const messages = getMessages(
+                `type Shipment @rootEntity(permissionProfile: "restricted") { count: Int @accessField }`,
+                source,
+            );
+            expect(applyQuickFix(messages, 'Change value to 5')).to.equal(
+                source.body.replace('value: "5"', 'value: 5'),
+            );
+        });
+
+        it('offers to fix the case of an enum value', () => {
+            const source = getProfilesJson({
+                restrictions: [{ field: 'region', value: 'europe' }],
+            });
+            const messages = getMessages(
+                `
+                    enum Region { EUROPE, ASIA }
+                    type Shipment @rootEntity(permissionProfile: "restricted") { region: Region @accessField }
+                `,
+                source,
+            );
+            expect(applyQuickFix(messages, 'Change value to "EUROPE"')).to.equal(
+                source.body.replace('"europe"', '"EUROPE"'),
+            );
+        });
+
+        it('offers to fix the case of an access group', () => {
+            const source = getProfilesJson({ restrictToAccessGroups: ['ACCOUNTING', 'logistics'] });
+            const messages = getMessages(
+                `
+                    enum Group { ACCOUNTING, LOGISTICS }
+                    type Shipment @rootEntity(permissionProfile: "restricted") { accessGroup: Group }
+                `,
+                source,
+            );
+            expect(applyQuickFix(messages, 'Change value to "LOGISTICS"')).to.equal(
+                source.body.replace('"logistics"', '"LOGISTICS"'),
+            );
+        });
     });
 });
