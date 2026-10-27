@@ -47,43 +47,23 @@ RETURN (FIRST(
         "category": @var7,
         "updatedAt": @var8
       })
-      RETURN ((((v_postUpdate1.`tags` ANY IN @var9) && (v_postUpdate1.`category` == @var10)) || (v_postUpdate1.`tags` ANY IN @var11)) && ((FIRST(
-        FOR v_item3
-        IN (
-          FOR v_item4
-          IN MINUS((IS_LIST(v_postUpdate1.`tags`) ? v_postUpdate1.`tags` : []), (IS_LIST(v_currentEntity1.`tags`) ? v_currentEntity1.`tags` : []))
-          FILTER !(((([
-            v_item4
-          ] ANY IN @var12) && (v_postUpdate1.`category` == @var13)) || ([
-            v_item4
-          ] ANY IN @var14)))
-          RETURN v_item4
-        )
-        COLLECT WITH COUNT INTO v_count1
-        RETURN v_count1
-      ) == @var15) && (FIRST(
-        FOR v_item5
-        IN (
-          FOR v_item6
-          IN MINUS((IS_LIST(v_currentEntity1.`tags`) ? v_currentEntity1.`tags` : []), (IS_LIST(v_postUpdate1.`tags`) ? v_postUpdate1.`tags` : []))
-          FILTER !(((([
-            v_item6
-          ] ANY IN @var16) && (v_postUpdate1.`category` == @var17)) || ([
-            v_item6
-          ] ANY IN @var18)))
-          RETURN v_item6
-        )
-        COLLECT WITH COUNT INTO v_count2
-        RETURN v_count2
-      ) == @var19)))
+      RETURN ((((v_postUpdate1.`tags` ANY IN @var9) && (v_postUpdate1.`category` == @var10)) || (v_postUpdate1.`tags` ANY IN @var11)) && ((LENGTH(MINUS((IS_LIST(v_postUpdate1.`tags`) ? v_postUpdate1.`tags` : []), (IS_LIST(v_currentEntity1.`tags`) ? v_currentEntity1.`tags` : []))[* FILTER !(((([
+        CURRENT
+      ] ANY IN @var12) && (v_postUpdate1.`category` == @var13)) || ([
+        CURRENT
+      ] ANY IN @var14)))]) == 0) && (LENGTH(MINUS((IS_LIST(v_currentEntity1.`tags`) ? v_currentEntity1.`tags` : []), (IS_LIST(v_postUpdate1.`tags`) ? v_postUpdate1.`tags` : []))[* FILTER !(((([
+        CURRENT
+      ] ANY IN @var15) && (v_postUpdate1.`category` == @var16)) || ([
+        CURRENT
+      ] ANY IN @var17)))]) == 0)))
     ))
     RETURN v_currentEntity1
   )
-  COLLECT WITH COUNT INTO v_count3
-  RETURN v_count3
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
 ) == 0)
 
-// Peak memory usage: 163840 bytes
+// Peak memory usage: 65536 bytes
 
 // ----------------------------------------------------------------
 

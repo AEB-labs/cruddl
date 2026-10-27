@@ -48,39 +48,19 @@ RETURN (FIRST(
         }),
         "updatedAt": @var5
       })
-      RETURN ((v_postUpdate1.`extension`.`groups` ANY IN @var6) && ((FIRST(
-        FOR v_item3
-        IN (
-          FOR v_item4
-          IN MINUS((IS_LIST(v_postUpdate1.`extension`.`groups`) ? v_postUpdate1.`extension`.`groups` : []), (IS_LIST(v_currentEntity1.`extension`.`groups`) ? v_currentEntity1.`extension`.`groups` : []))
-          FILTER !(([
-            v_item4
-          ] ANY IN @var7))
-          RETURN v_item4
-        )
-        COLLECT WITH COUNT INTO v_count1
-        RETURN v_count1
-      ) == @var8) && (FIRST(
-        FOR v_item5
-        IN (
-          FOR v_item6
-          IN MINUS((IS_LIST(v_currentEntity1.`extension`.`groups`) ? v_currentEntity1.`extension`.`groups` : []), (IS_LIST(v_postUpdate1.`extension`.`groups`) ? v_postUpdate1.`extension`.`groups` : []))
-          FILTER !(([
-            v_item6
-          ] ANY IN @var9))
-          RETURN v_item6
-        )
-        COLLECT WITH COUNT INTO v_count2
-        RETURN v_count2
-      ) == @var10)))
+      RETURN ((v_postUpdate1.`extension`.`groups` ANY IN @var6) && ((LENGTH(MINUS((IS_LIST(v_postUpdate1.`extension`.`groups`) ? v_postUpdate1.`extension`.`groups` : []), (IS_LIST(v_currentEntity1.`extension`.`groups`) ? v_currentEntity1.`extension`.`groups` : []))[* FILTER !(([
+        CURRENT
+      ] ANY IN @var7))]) == 0) && (LENGTH(MINUS((IS_LIST(v_currentEntity1.`extension`.`groups`) ? v_currentEntity1.`extension`.`groups` : []), (IS_LIST(v_postUpdate1.`extension`.`groups`) ? v_postUpdate1.`extension`.`groups` : []))[* FILTER !(([
+        CURRENT
+      ] ANY IN @var8))]) == 0)))
     ))
     RETURN v_currentEntity1
   )
-  COLLECT WITH COUNT INTO v_count3
-  RETURN v_count3
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
 ) == 0)
 
-// Peak memory usage: 131072 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 

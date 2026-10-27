@@ -2,17 +2,7 @@ RETURN {
   "allPapers": (
     FOR v_paper1
     IN @@papers
-    FILTER (FIRST(
-      FOR v_item1
-      IN (
-        FOR v_literatureReferences1
-        IN (IS_LIST(v_paper1.`literatureReferences`) ? v_paper1.`literatureReferences` : [])
-        FILTER (v_literatureReferences1.`title` >= UPPER(@var1) && v_literatureReferences1.`title` < LOWER(@var2)) && (LEFT(v_literatureReferences1.`title`, LENGTH(@var3)) == @var4)
-        RETURN v_literatureReferences1
-      )
-      COLLECT WITH COUNT INTO v_count1
-      RETURN v_count1
-    ) > @var5)
+    FILTER (LENGTH((IS_LIST(v_paper1.`literatureReferences`) ? v_paper1.`literatureReferences` : [])[* FILTER (CURRENT.`title` >= UPPER(@var1) && CURRENT.`title` < LOWER(@var2)) && (LEFT(CURRENT.`title`, LENGTH(@var3)) == @var4)]) > 0)
     SORT (v_paper1.`key`)
     RETURN {
       "key": v_paper1.`key`,
@@ -28,4 +18,4 @@ RETURN {
   )
 }
 
-// Peak memory usage: 131072 bytes
+// Peak memory usage: 65536 bytes

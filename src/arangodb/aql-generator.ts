@@ -1353,6 +1353,24 @@ register(QuantifierFilterNode, (node, context) => {
 
     let { quantifier, conditionNode } = node;
     conditionNode = simplifyBooleans(conditionNode);
+
+    // an inline filter avoids a subquery, but CURRENT only refers to the innermost item, so it can only be used
+    // if the condition does not contain nested list operations
+    if (isSimpleExpressionNode(conditionNode)) {
+        const listFrag = processNode(node.listNode, context);
+        const conditionFrag = processNode(
+            conditionNode,
+            context.bindVariable(node.itemVariable, aql`CURRENT`),
+        );
+        switch (quantifier) {
+            case 'some':
+                return aql`(LENGTH(${listFrag}[* FILTER ${conditionFrag}]) > 0)`;
+            case 'every':
+                return aql`(LENGTH(${listFrag}[* FILTER !(${conditionFrag})]) == 0)`;
+            case 'none':
+                return aql`(LENGTH(${listFrag}[* FILTER ${conditionFrag}]) == 0)`;
+        }
+    }
     // reduce 'every' to 'none' so that count-based evaluation is possible
     if (quantifier === 'every') {
         quantifier = 'none';
@@ -1372,6 +1390,50 @@ register(QuantifierFilterNode, (node, context) => {
     );
     return processNode(finalNode, context);
 });
+
+/**
+ * Determines whether a node is rendered as a plain expression (without subqueries or inline array expressions)
+ */
+function isSimpleExpressionNode(node: QueryNode): boolean {
+    if (
+        node instanceof VariableQueryNode ||
+        node instanceof LiteralQueryNode ||
+        node instanceof ConstBoolQueryNode ||
+        node instanceof ConstIntQueryNode ||
+        node instanceof NullQueryNode
+    ) {
+        return true;
+    }
+    if (node instanceof BinaryOperationQueryNode) {
+        return isSimpleExpressionNode(node.lhs) && isSimpleExpressionNode(node.rhs);
+    }
+    if (node instanceof UnaryOperationQueryNode || node instanceof TypeCheckQueryNode) {
+        return isSimpleExpressionNode(node.valueNode);
+    }
+    if (node instanceof ConditionalQueryNode) {
+        return (
+            isSimpleExpressionNode(node.condition) &&
+            isSimpleExpressionNode(node.expr1) &&
+            isSimpleExpressionNode(node.expr2)
+        );
+    }
+    if (node instanceof SafeListQueryNode) {
+        return isSimpleExpressionNode(node.sourceNode);
+    }
+    if (node instanceof FieldQueryNode) {
+        return isSimpleExpressionNode(node.objectNode);
+    }
+    if (node instanceof ListQueryNode) {
+        return node.itemNodes.every(isSimpleExpressionNode);
+    }
+    if (node instanceof ObjectQueryNode) {
+        return node.properties.every((p) => isSimpleExpressionNode(p.valueNode));
+    }
+    if (node instanceof MergeObjectsQueryNode) {
+        return node.objectNodes.every(isSimpleExpressionNode);
+    }
+    return false;
+}
 
 // uses the array expansion operator (https://docs.arangodb.com/3.0/AQL/Advanced/ArrayOperators.html#array-expansion)
 // that can utilize an index like "items[*].itemNumber" if possible
