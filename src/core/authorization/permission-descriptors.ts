@@ -4,10 +4,23 @@ import type { Permission, PermissionProfile } from '../model/implementation/perm
 import type { RootEntityType } from '../model/implementation/root-entity-type.js';
 import type { QueryNode } from '../query-tree/base.js';
 import { UnknownValueQueryNode } from '../query-tree/errors.js';
+import { ListQueryNode } from '../query-tree/lists.js';
 import { ConstBoolQueryNode, LiteralQueryNode } from '../query-tree/literals.js';
-import { BinaryOperationQueryNode, BinaryOperator } from '../query-tree/operators.js';
+import {
+    MergeObjectsQueryNode,
+    ObjectQueryNode,
+    PropertySpecification,
+} from '../query-tree/objects.js';
+import {
+    BinaryOperationQueryNode,
+    BinaryOperator,
+    ConditionalQueryNode,
+} from '../query-tree/operators.js';
+import { QuantifierFilterNode } from '../query-tree/quantifiers.js';
 import { FieldQueryNode } from '../query-tree/queries.js';
+import { BasicType, TypeCheckQueryNode } from '../query-tree/type-check.js';
 import { simplifyBooleans } from '../query-tree/utils/simplify-booleans.js';
+import { VariableQueryNode } from '../query-tree/variables.js';
 import { createFieldPathNode } from '../schema-generation/field-path-node.js';
 import { ACCESS_GROUP_FIELD } from '../schema/constants.js';
 import { isReadonlyArray } from '../utils/utils.js';
@@ -47,6 +60,36 @@ export abstract class PermissionDescriptor {
             return condition.value ? PermissionResult.GRANTED : PermissionResult.DENIED;
         }
         return PermissionResult.CONDITIONAL;
+    }
+
+    /**
+     * Gets a condition that checks that all items that are added to or removed from list fields used in
+     * restrictions would be permitted on their own
+     *
+     * This prevents users from granting or revoking access to objects for values they don't have access to
+     * themselves. The regular access condition only requires one list item to match.
+     *
+     * Each changed item is checked by evaluating the access condition on the new instance with the list replaced
+     * by just that item. Thus, if a permission grants access to the new instance without restricting the list
+     * field, all changes to the list are allowed. Otherwise, each changed item needs to match the restriction on
+     * the list field of a permission whose other restrictions match the new instance.
+     *
+     * @param authContext
+     * @param operation
+     * @param oldInstanceNode a QueryNode that evaluates to the instance before the change, or undefined if the
+     * instance is created
+     * @param newInstanceNode a QueryNode that evaluates to the instance after the change
+     * @param isFieldPathAffected can be used to skip list fields that are known not to be changed
+     * @returns a QueryNode that evaluates to TRUE if the change is allowed or FALSE if it isn't
+     */
+    getListChangeCondition(
+        authContext: AuthContext,
+        operation: AccessOperation,
+        oldInstanceNode: QueryNode | undefined,
+        newInstanceNode: QueryNode,
+        isFieldPathAffected?: (fields: ReadonlyArray<Field>) => boolean,
+    ): QueryNode {
+        return ConstBoolQueryNode.TRUE;
     }
 
     /**
@@ -168,8 +211,18 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
         operation: AccessOperation,
         instanceNode: QueryNode,
     ): QueryNode {
-        const applicablePermissions = this.getApplicablePermissions(authContext, operation);
+        return this.getAccessConditionForPermissions(
+            this.getApplicablePermissions(authContext, operation),
+            authContext,
+            instanceNode,
+        );
+    }
 
+    private getAccessConditionForPermissions(
+        applicablePermissions: ReadonlyArray<Permission>,
+        authContext: AuthContext,
+        instanceNode: QueryNode,
+    ): QueryNode {
         if (!applicablePermissions.length) {
             return ConstBoolQueryNode.FALSE;
         }
@@ -215,24 +268,16 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
         }
 
         const restrictionNodes = permission.restrictions.map((restriction) => {
-            if (!this.rootEntityType) {
-                throw new Error(
-                    `accessGroup-restricted permission profiles can only be used on root entities`,
-                );
-            }
-            const fieldPath = new FieldPath({
-                path: restriction.field,
-                baseType: this.rootEntityType,
-                canTraverseRootEntities: false,
-                canUseCollectFields: false,
-            });
+            const fieldPath = this.getRestrictionFieldPath(restriction.field);
             const fieldNode = createFieldPathNode(fieldPath, instanceNode);
+            // for list fields, it's enough if one of the list items matches
+            const isList = !!fieldPath.lastField?.isList;
 
             if (restriction.value !== undefined) {
                 return new BinaryOperationQueryNode(
                     fieldNode,
-                    BinaryOperator.EQUAL,
-                    new LiteralQueryNode(restriction.value),
+                    isList ? BinaryOperator.ANY_IN : BinaryOperator.EQUAL,
+                    new LiteralQueryNode(isList ? [restriction.value] : restriction.value),
                 );
             }
 
@@ -240,7 +285,7 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
                 const values = permission.evaluateTemplate(restriction.valueTemplate, authContext);
                 return new BinaryOperationQueryNode(
                     fieldNode,
-                    BinaryOperator.IN,
+                    isList ? BinaryOperator.ANY_IN : BinaryOperator.IN,
                     new LiteralQueryNode(values),
                 );
             }
@@ -256,7 +301,7 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
                 }
                 return new BinaryOperationQueryNode(
                     fieldNode,
-                    BinaryOperator.IN,
+                    isList ? BinaryOperator.ANY_IN : BinaryOperator.IN,
                     new LiteralQueryNode(sanitizedClaimValues),
                 );
             }
@@ -268,6 +313,118 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
             (acc: QueryNode, node) => new BinaryOperationQueryNode(acc, BinaryOperator.AND, node),
             accessGroupConditionNode,
         );
+    }
+
+    getListChangeCondition(
+        authContext: AuthContext,
+        operation: AccessOperation,
+        oldInstanceNode: QueryNode | undefined,
+        newInstanceNode: QueryNode,
+        isFieldPathAffected?: (fields: ReadonlyArray<Field>) => boolean,
+    ): QueryNode {
+        const applicablePermissions = this.getApplicablePermissions(authContext, operation);
+        const fieldPathsByPath = new Map<string, FieldPath>();
+        for (const permission of applicablePermissions) {
+            for (const restriction of permission.restrictions) {
+                const fieldPath = this.getRestrictionFieldPath(restriction.field);
+                if (
+                    fieldPath.lastField?.isList &&
+                    fieldPath.fields &&
+                    (!isFieldPathAffected || isFieldPathAffected(fieldPath.fields))
+                ) {
+                    fieldPathsByPath.set(fieldPath.path, fieldPath);
+                }
+            }
+        }
+
+        const conditions: QueryNode[] = [];
+        for (const fieldPath of fieldPathsByPath.values()) {
+            const fields = fieldPath.fields!;
+            const newListNode = createFieldPathNode(fieldPath, newInstanceNode);
+            const oldListNode = oldInstanceNode
+                ? createFieldPathNode(fieldPath, oldInstanceNode)
+                : ListQueryNode.EMPTY;
+            const addedItemsNode = new BinaryOperationQueryNode(
+                newListNode,
+                BinaryOperator.SUBTRACT_LISTS,
+                oldListNode,
+            );
+            const removedItemsNode = new BinaryOperationQueryNode(
+                oldListNode,
+                BinaryOperator.SUBTRACT_LISTS,
+                newListNode,
+            );
+            const itemConditions = [addedItemsNode, removedItemsNode].map((changedItemsNode) => {
+                // check whether the user could access the new instance if the list only consisted of this item
+                // (also checking removed items against the new instance so the other fields are up-to-date)
+                const itemVariable = new VariableQueryNode('item');
+                return new QuantifierFilterNode({
+                    listNode: changedItemsNode,
+                    itemVariable,
+                    quantifier: 'every',
+                    conditionNode: this.getAccessCondition(
+                        authContext,
+                        operation,
+                        replaceFieldPathValue(
+                            newInstanceNode,
+                            fields,
+                            new ListQueryNode([itemVariable]),
+                        ),
+                    ),
+                });
+            });
+
+            // permissions that don't restrict this field allow all changes to it. Checking them first is cheaper
+            // than checking each item, and the item checks are skipped if they already grant access.
+            const permissionsWithoutRestrictionOnField = applicablePermissions.filter(
+                (permission) =>
+                    !permission.restrictions.some(
+                        (restriction) => restriction.field === fieldPath.path,
+                    ),
+            );
+            const unrestrictedCondition = this.getAccessConditionForPermissions(
+                permissionsWithoutRestrictionOnField,
+                authContext,
+                newInstanceNode,
+            );
+            conditions.push(
+                new BinaryOperationQueryNode(
+                    unrestrictedCondition,
+                    BinaryOperator.OR,
+                    new BinaryOperationQueryNode(
+                        itemConditions[0],
+                        BinaryOperator.AND,
+                        itemConditions[1],
+                    ),
+                ),
+            );
+        }
+
+        return simplifyBooleans(
+            conditions.reduce(
+                (acc: QueryNode, node) =>
+                    new BinaryOperationQueryNode(acc, BinaryOperator.AND, node),
+                ConstBoolQueryNode.TRUE,
+            ),
+        );
+    }
+
+    private isListRestrictionField(path: string): boolean {
+        return !!this.rootEntityType && !!this.getRestrictionFieldPath(path).lastField?.isList;
+    }
+
+    private getRestrictionFieldPath(path: string): FieldPath {
+        if (!this.rootEntityType) {
+            throw new Error(
+                `accessGroup-restricted permission profiles can only be used on root entities`,
+            );
+        }
+        return new FieldPath({
+            path,
+            baseType: this.rootEntityType,
+            canTraverseRootEntities: false,
+            canUseCollectFields: false,
+        });
     }
 
     private getPureAccessGroupCondition(
@@ -392,6 +549,9 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
             case ConditionExplanationContext.BEFORE_WRITE:
                 return `this ${typeName} object`;
             case ConditionExplanationContext.SET:
+                if (this.isListRestrictionField(fieldName)) {
+                    return `set ${typeName}.${fieldName} to these values (each added or removed value needs to be allowed on its own, and the resulting object needs to be accessible)`;
+                }
                 return `set ${typeName}.${fieldName} to this value`;
         }
     }
@@ -415,4 +575,33 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
                 return `set these values in ${typeName} objects`;
         }
     }
+}
+
+/**
+ * Creates a copy of objectNode where the value at the given field path is replaced by valueNode
+ */
+function replaceFieldPathValue(
+    objectNode: QueryNode,
+    fields: ReadonlyArray<Field>,
+    valueNode: QueryNode,
+): QueryNode {
+    const [field, ...remainingFields] = fields;
+    let fieldValueNode = valueNode;
+    if (remainingFields.length) {
+        // nested objects (value objects or entity extensions) might be null
+        const nestedObjectNode = new FieldQueryNode(objectNode, field);
+        fieldValueNode = replaceFieldPathValue(
+            new ConditionalQueryNode(
+                new TypeCheckQueryNode(nestedObjectNode, BasicType.OBJECT),
+                nestedObjectNode,
+                ObjectQueryNode.EMPTY,
+            ),
+            remainingFields,
+            valueNode,
+        );
+    }
+    return new MergeObjectsQueryNode([
+        objectNode,
+        new ObjectQueryNode([new PropertySpecification(field.name, fieldValueNode)]),
+    ]);
 }

@@ -1,0 +1,32 @@
+query list {
+    allShipments(orderBy: name_ASC) {
+        name
+        tags
+        details {
+            groups
+        }
+    }
+}
+
+# should pass: the permission on details.groups grants access without restricting tags
+mutation addTagWithMatchingDetails {
+    updateShipment(input: { id: "@{ids/Shipment/16}", tags: ["m", "z"] }) {
+        tags
+    }
+}
+
+# should fail: the permission on details.groups does not apply, and z is not permitted
+mutation addTagWithoutMatchingDetails {
+    updateShipment(input: { id: "@{ids/Shipment/17}", tags: ["m", "z"] }) {
+        name
+    }
+}
+
+# should pass: the permission on tags grants access without restricting details.groups
+mutation addGroupWithMatchingTags {
+    updateShipment(input: { id: "@{ids/Shipment/17}", details: { groups: ["x", "y"] } }) {
+        details {
+            groups
+        }
+    }
+}

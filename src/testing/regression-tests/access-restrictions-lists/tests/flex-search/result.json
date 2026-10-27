@@ -1,0 +1,42 @@
+{
+  "list": {
+    "data": {
+      "flexSearchShipments": [
+        {
+          "name": "01 a b",
+          "tags": ["a", "b"]
+        },
+        {
+          "name": "05 public",
+          "tags": ["public"]
+        },
+        {
+          "name": "06 a",
+          "tags": ["a"]
+        },
+        {
+          "name": "07 a c",
+          "tags": ["a", "c"]
+        },
+        {
+          "name": "09 a category x",
+          "tags": ["a"]
+        }
+      ]
+    }
+  },
+  "filtered": {
+    "data": {
+      "flexSearchShipments": [
+        {
+          "name": "01 a b",
+          "tags": ["a", "b"]
+        },
+        {
+          "name": "07 a c",
+          "tags": ["a", "c"]
+        }
+      ]
+    }
+  }
+}

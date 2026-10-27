@@ -1,0 +1,106 @@
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_shipment1
+    IN (
+      FOR v_shipment2
+      IN (
+        FOR v_item2
+        IN @@shipments
+        FILTER (v_item2.`extension`.`groups` ANY IN @var1)
+        RETURN v_item2
+      )
+      FILTER (v_shipment2._key == @var2)
+      LIMIT @var3
+      RETURN v_shipment2
+    )
+    FILTER !((v_shipment1.`extension`.`groups` ANY IN @var4))
+    RETURN v_shipment1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) == 0)
+
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
+
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_currentEntity1
+    IN (
+      FOR v_shipment1
+      IN (
+        FOR v_item2
+        IN @@shipments
+        FILTER (v_item2.`extension`.`groups` ANY IN @var1)
+        RETURN v_item2
+      )
+      FILTER (v_shipment1._key == @var2)
+      LIMIT @var3
+      RETURN v_shipment1
+    )
+    FILTER !((v_currentEntity1.`extension`.`groups` ANY IN @var4))
+    RETURN v_currentEntity1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) == 0)
+
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
+
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_shipment1
+    IN (
+      FOR v_item1
+      IN @@shipments
+      FILTER (v_item1.`extension`.`groups` ANY IN @var1)
+      RETURN v_item1
+    )
+    FILTER (v_shipment1._key == @var2)
+    LIMIT @var3
+    RETURN v_shipment1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "extension": MERGE((IS_OBJECT(v_currentEntity1.`extension`) ? v_currentEntity1.`extension` : {}), {
+      "note": @var4
+    }),
+    "updatedAt": @var5
+  }
+  IN @@shipments
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@shipments
+LET v_shipment1 = FIRST(
+  LET v_entity1 = DOCUMENT(@@shipments, @var1)
+  RETURN ((v_entity1.`extension`.`groups` ANY IN @var2) ? v_entity1 : null)
+)
+RETURN (IS_NULL(v_shipment1) ? null : {
+  "extension": {
+    "groups": v_shipment1.`extension`.`groups`[*],
+    "note": v_shipment1.`extension`.`note`
+  }
+})
+
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@shipments
+RETURN {
+  "updateShipment": @v_updateShipment1
+}
+
+// Peak memory usage: 0 bytes

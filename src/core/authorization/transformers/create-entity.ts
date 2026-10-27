@@ -1,7 +1,9 @@
 import type { QueryNode } from '../../query-tree/base.js';
 import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
 import type { CreateEntityQueryNode } from '../../query-tree/mutations.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../../query-tree/operators.js';
 import { PreExecQueryParms, WithPreExecutionQueryNode } from '../../query-tree/pre-exec.js';
+import { simplifyBooleans } from '../../query-tree/utils/simplify-booleans.js';
 import { ErrorIfNotTruthyResultValidator } from '../../query-tree/validation.js';
 import type { AuthContext } from '../auth-basics.js';
 import { AccessOperation } from '../auth-basics.js';
@@ -26,10 +28,21 @@ export function transformCreateEntityQueryNode(
                 },
             );
         default:
-            const condition = permissionDescriptor.getAccessCondition(
-                authContext,
-                AccessOperation.CREATE,
-                node.objectNode,
+            const condition = simplifyBooleans(
+                new BinaryOperationQueryNode(
+                    permissionDescriptor.getAccessCondition(
+                        authContext,
+                        AccessOperation.CREATE,
+                        node.objectNode,
+                    ),
+                    BinaryOperator.AND,
+                    permissionDescriptor.getListChangeCondition(
+                        authContext,
+                        AccessOperation.CREATE,
+                        undefined,
+                        node.objectNode,
+                    ),
+                ),
             );
             const explanation = permissionDescriptor.getExplanationForCondition(
                 authContext,

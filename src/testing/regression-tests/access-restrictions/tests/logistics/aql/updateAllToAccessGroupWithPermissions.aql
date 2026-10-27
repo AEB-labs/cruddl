@@ -39,20 +39,14 @@ RETURN (FIRST(
       FILTER (v_file1._key == @var3)
       RETURN v_file1
     )
-    FILTER !(((MERGE(v_currentEntity1, {
-      "accessGroup": @var4,
-      "updatedAt": @var5
-    }).`accessGroup` == @var6) || (MERGE(v_currentEntity1, {
-      "accessGroup": @var7,
-      "updatedAt": @var8
-    }).`accessGroup` == @var9)))
+    FILTER !(((@var4 == @var5) || (@var6 == @var7)))
     RETURN v_currentEntity1
   )
   COLLECT WITH COUNT INTO v_count1
   RETURN v_count1
 ) == 0)
 
-// Peak memory usage: 32768 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 

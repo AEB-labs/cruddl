@@ -1,0 +1,13 @@
+query list {
+    flexSearchShipments(orderBy: name_ASC) {
+        name
+        tags
+    }
+}
+
+query filtered {
+    flexSearchShipments(flexSearchFilter: { tags_aggregation_in: ["b", "c"] }, orderBy: name_ASC) {
+        name
+        tags
+    }
+}

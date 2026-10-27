@@ -1,0 +1,99 @@
+{
+  "list": {
+    "data": {
+      "allShipments": [
+        {
+          "name": "11 e region EU",
+          "tags": ["e"],
+          "region": "EU"
+        },
+        {
+          "name": "12 e region US",
+          "tags": ["e"],
+          "region": "US"
+        },
+        {
+          "name": "13 e logistics",
+          "tags": ["e"],
+          "region": null
+        },
+        {
+          "name": "14 e other group",
+          "tags": ["e"],
+          "region": null
+        },
+        {
+          "name": "15 no tags region EU",
+          "tags": [],
+          "region": "EU"
+        }
+      ]
+    }
+  },
+  "addValueWithUnrestrictedPermission": {
+    "data": {
+      "updateShipment": {
+        "name": "11 e region EU",
+        "tags": ["e", "z"]
+      }
+    }
+  },
+  "addValueWithoutUnrestrictedPermission": {
+    "errors": [
+      {
+        "message": "Not authorized to set these values in Shipment objects",
+        "locations": [
+          {
+            "line": 19,
+            "column": 5
+          }
+        ],
+        "path": ["updateShipment"]
+      }
+    ],
+    "data": {
+      "updateShipment": null
+    }
+  },
+  "removeAllValuesWithUnrestrictedPermission": {
+    "data": {
+      "updateShipment": {
+        "name": "11 e region EU",
+        "tags": []
+      }
+    }
+  },
+  "addValueAndChangeRegion": {
+    "errors": [
+      {
+        "message": "Not authorized to set these values in Shipment objects",
+        "locations": [
+          {
+            "line": 34,
+            "column": 5
+          }
+        ],
+        "path": ["updateShipment"]
+      }
+    ],
+    "data": {
+      "updateShipment": null
+    }
+  },
+  "createWithUnrestrictedPermission": {
+    "data": {
+      "createShipment": {
+        "name": "new z region EU",
+        "tags": ["z"]
+      }
+    }
+  },
+  "addValueToObjectWithoutValues": {
+    "data": {
+      "updateShipment": {
+        "name": "15 no tags region EU",
+        "tags": ["z"]
+      }
+    }
+  }
+}

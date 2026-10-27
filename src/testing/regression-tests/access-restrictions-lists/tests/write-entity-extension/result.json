@@ -1,0 +1,67 @@
+{
+  "list": {
+    "data": {
+      "allShipments": [
+        {
+          "name": "10 nested a x",
+          "extension": {
+            "groups": ["a", "x"]
+          }
+        }
+      ]
+    }
+  },
+  "updateWithoutGroups": {
+    "data": {
+      "updateShipment": {
+        "extension": {
+          "groups": ["a", "x"],
+          "note": "changed"
+        }
+      }
+    }
+  },
+  "updateAddUnpermittedValue": {
+    "errors": [
+      {
+        "message": "Not authorized to set Shipment.extension.groups to these values (each added or removed value needs to be allowed on its own, and the resulting object needs to be accessible)",
+        "locations": [
+          {
+            "line": 22,
+            "column": 5
+          }
+        ],
+        "path": ["updateShipment"]
+      }
+    ],
+    "data": {
+      "updateShipment": null
+    }
+  },
+  "updateRemoveUnpermittedValue": {
+    "errors": [
+      {
+        "message": "Not authorized to set Shipment.extension.groups to these values (each added or removed value needs to be allowed on its own, and the resulting object needs to be accessible)",
+        "locations": [
+          {
+            "line": 29,
+            "column": 5
+          }
+        ],
+        "path": ["updateShipment"]
+      }
+    ],
+    "data": {
+      "updateShipment": null
+    }
+  },
+  "updateAddPermittedValue": {
+    "data": {
+      "updateShipment": {
+        "extension": {
+          "groups": ["a", "a2", "x"]
+        }
+      }
+    }
+  }
+}

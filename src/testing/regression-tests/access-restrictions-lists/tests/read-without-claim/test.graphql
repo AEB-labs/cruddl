@@ -1,0 +1,7 @@
+# only the read permission for "public" applies because there is no tags claim
+query list {
+    allShipments(orderBy: name_ASC) {
+        name
+        tags
+    }
+}

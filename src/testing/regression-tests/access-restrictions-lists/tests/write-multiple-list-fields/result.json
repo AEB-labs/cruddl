@@ -1,0 +1,55 @@
+{
+  "list": {
+    "data": {
+      "allShipments": [
+        {
+          "name": "16 m details m",
+          "tags": ["m"],
+          "details": {
+            "groups": ["m"]
+          }
+        },
+        {
+          "name": "17 m details x",
+          "tags": ["m"],
+          "details": {
+            "groups": ["x"]
+          }
+        }
+      ]
+    }
+  },
+  "addTagWithMatchingDetails": {
+    "data": {
+      "updateShipment": {
+        "tags": ["m", "z"]
+      }
+    }
+  },
+  "addTagWithoutMatchingDetails": {
+    "errors": [
+      {
+        "message": "Not authorized to set these values in Shipment objects",
+        "locations": [
+          {
+            "line": 20,
+            "column": 5
+          }
+        ],
+        "path": ["updateShipment"]
+      }
+    ],
+    "data": {
+      "updateShipment": null
+    }
+  },
+  "addGroupWithMatchingTags": {
+    "data": {
+      "updateShipment": {
+        "details": {
+          "groups": ["x", "y"]
+        }
+      }
+    }
+  }
+}

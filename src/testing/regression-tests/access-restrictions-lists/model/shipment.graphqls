@@ -1,0 +1,19 @@
+type Shipment @rootEntity(flexSearch: true, permissionProfile: "restricted") {
+    name: String @flexSearch
+    tags: [String] @flexSearch @accessField
+    category: String @flexSearch @accessField
+    region: String @flexSearch @accessField
+    accessGroup: String @flexSearch
+    details: ShipmentDetails @flexSearch @accessField
+    extension: ShipmentExtension @flexSearch @accessField
+}
+
+type ShipmentDetails @valueObject {
+    groups: [String] @flexSearch @accessField
+    note: String
+}
+
+type ShipmentExtension @entityExtension {
+    groups: [String] @flexSearch @accessField
+    note: String
+}

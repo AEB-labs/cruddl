@@ -1,0 +1,21 @@
+RETURN {
+  "allShipments": (
+    FOR v_shipment1
+    IN (
+      FOR v_item1
+      IN @@shipments
+      FILTER ((v_item1.`tags` ANY IN @var1) || (v_item1.`details`.`groups` ANY IN @var2))
+      RETURN v_item1
+    )
+    SORT (v_shipment1.`name`)
+    RETURN {
+      "name": v_shipment1.`name`,
+      "tags": v_shipment1.`tags`[*],
+      "details": (IS_NULL(v_shipment1.`details`) ? null : {
+        "groups": v_shipment1.`details`.`groups`[*]
+      })
+    }
+  )
+}
+
+// Peak memory usage: 65536 bytes

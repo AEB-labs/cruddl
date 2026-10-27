@@ -1,10 +1,12 @@
+import type { Field } from '../../model/implementation/field.js';
 import type { QueryNode } from '../../query-tree/base.js';
 import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
 import { CountQueryNode, TransformListQueryNode } from '../../query-tree/lists.js';
-import { ConstIntQueryNode } from '../../query-tree/literals.js';
+import { ConstBoolQueryNode, ConstIntQueryNode } from '../../query-tree/literals.js';
 import {
     DeleteEntitiesQueryNode,
     EntitiesIdentifierKind,
+    SetFieldQueryNode,
     UpdateEntitiesQueryNode,
 } from '../../query-tree/mutations.js';
 import { MergeObjectsQueryNode, ObjectQueryNode } from '../../query-tree/objects.js';
@@ -17,7 +19,7 @@ import {
 import { PreExecQueryParms, WithPreExecutionQueryNode } from '../../query-tree/pre-exec.js';
 import { EntityFromIdQueryNode } from '../../query-tree/queries.js';
 import { ErrorIfNotTruthyResultValidator } from '../../query-tree/validation.js';
-import { VariableQueryNode } from '../../query-tree/variables.js';
+import { VariableAssignmentQueryNode, VariableQueryNode } from '../../query-tree/variables.js';
 import { decapitalize } from '../../utils/utils.js';
 import type { AuthContext } from '../auth-basics.js';
 import { AccessOperation } from '../auth-basics.js';
@@ -106,11 +108,35 @@ function transformUpdateOrDeleteEntitiesQueryNode(
             updateItemVar,
             new ObjectQueryNode(node.updates),
         ]); // { ...itemVar, ...{ node.updates... } }
-        const writeConditionPostUpdate = permissionDescriptor.getAccessCondition(
+        const postUpdateVar = new VariableQueryNode('postUpdate');
+        // list fields in restrictions only need one matching item, so we additionally need to check that the
+        // user is allowed to add / remove the list items that are changed
+        const listChangeCondition = permissionDescriptor.getListChangeCondition(
             authContext,
             operation,
-            postUpdateNode,
+            updateItemVar,
+            postUpdateVar,
+            (fields) => isFieldPathAffectedByUpdates(fields, node.updates),
         );
+        let writeConditionPostUpdate: QueryNode;
+        if (listChangeCondition instanceof ConstBoolQueryNode && listChangeCondition.value) {
+            writeConditionPostUpdate = permissionDescriptor.getAccessCondition(
+                authContext,
+                operation,
+                postUpdateNode,
+            );
+        } else {
+            // assign the post-update object to a variable because it's used multiple times
+            writeConditionPostUpdate = new VariableAssignmentQueryNode({
+                variableNode: postUpdateVar,
+                variableValueNode: postUpdateNode,
+                resultNode: new BinaryOperationQueryNode(
+                    permissionDescriptor.getAccessCondition(authContext, operation, postUpdateVar),
+                    BinaryOperator.AND,
+                    listChangeCondition,
+                ),
+            });
+        }
         const explanation = permissionDescriptor.getExplanationForCondition(
             authContext,
             operation,
@@ -166,4 +192,38 @@ function getFilteredListQueryNode(
         listNode: listNode,
         filterNode: condition,
     });
+}
+
+/**
+ * Determines whether the given updates might change the value at the given field path
+ */
+function isFieldPathAffectedByUpdates(
+    fields: ReadonlyArray<Field>,
+    updates: ReadonlyArray<SetFieldQueryNode>,
+): boolean {
+    const [field, ...remainingFields] = fields;
+    const update = updates.find((u) => u.field === field);
+    if (!update) {
+        return false;
+    }
+    if (!remainingFields.length) {
+        return true;
+    }
+
+    // entity extensions are updated via a merge of the current value with the updated fields
+    if (update.valueNode instanceof MergeObjectsQueryNode) {
+        const nestedUpdates = update.valueNode.objectNodes
+            .filter((n): n is ObjectQueryNode => n instanceof ObjectQueryNode)
+            .flatMap((n) => n.properties)
+            .filter((p): p is SetFieldQueryNode => p instanceof SetFieldQueryNode);
+        const hasOtherNodes = update.valueNode.objectNodes.some(
+            (n, index) => index > 0 && !(n instanceof ObjectQueryNode),
+        );
+        if (!hasOtherNodes) {
+            return isFieldPathAffectedByUpdates(remainingFields, nestedUpdates);
+        }
+    }
+
+    // value objects are replaced as a whole
+    return true;
 }

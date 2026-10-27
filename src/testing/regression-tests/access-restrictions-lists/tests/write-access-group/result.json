@@ -1,0 +1,60 @@
+{
+  "list": {
+    "data": {
+      "allShipments": [
+        {
+          "name": "11 e region EU",
+          "tags": ["e"],
+          "accessGroup": null
+        },
+        {
+          "name": "12 e region US",
+          "tags": ["e"],
+          "accessGroup": null
+        },
+        {
+          "name": "13 e logistics",
+          "tags": ["e"],
+          "accessGroup": "logistics"
+        },
+        {
+          "name": "14 e other group",
+          "tags": ["e"],
+          "accessGroup": "other"
+        }
+      ]
+    }
+  },
+  "addValueInAccessGroup": {
+    "data": {
+      "updateShipment": {
+        "name": "13 e logistics",
+        "tags": ["e", "z"]
+      }
+    }
+  },
+  "addValueInOtherAccessGroup": {
+    "errors": [
+      {
+        "message": "Not authorized to set these values in Shipment objects",
+        "locations": [
+          {
+            "line": 19,
+            "column": 5
+          }
+        ],
+        "path": ["updateShipment"]
+      }
+    ],
+    "data": {
+      "updateShipment": null
+    }
+  },
+  "addPermittedValueInOtherAccessGroup": {
+    "data": {
+      "updateShipment": {
+        "name": "14 e other group"
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+query list {
+    allShipments(orderBy: name_ASC) {
+        name
+        extension {
+            groups
+        }
+    }
+}
+
+# should pass: entity extensions are merged, so this does not change the groups
+mutation updateWithoutGroups {
+    updateShipment(input: { id: "@{ids/Shipment/10}", extension: { note: "changed" } }) {
+        extension {
+            groups
+            note
+        }
+    }
+}
+
+# should fail because z is not permitted
+mutation updateAddUnpermittedValue {
+    updateShipment(input: { id: "@{ids/Shipment/10}", extension: { groups: ["a", "x", "z"] } }) {
+        name
+    }
+}
+
+# should fail because x is not permitted
+mutation updateRemoveUnpermittedValue {
+    updateShipment(input: { id: "@{ids/Shipment/10}", extension: { groups: ["a"] } }) {
+        name
+    }
+}
+
+# should pass
+mutation updateAddPermittedValue {
+    updateShipment(input: { id: "@{ids/Shipment/10}", extension: { groups: ["a", "a2", "x"] } }) {
+        extension {
+            groups
+        }
+    }
+}

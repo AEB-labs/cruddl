@@ -1,0 +1,137 @@
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_shipment1
+    IN (
+      FOR v_shipment2
+      IN (
+        FOR v_item2
+        IN @@shipments
+        FILTER (v_item2.`extension`.`groups` ANY IN @var1)
+        RETURN v_item2
+      )
+      FILTER (v_shipment2._key == @var2)
+      LIMIT @var3
+      RETURN v_shipment2
+    )
+    FILTER !((v_shipment1.`extension`.`groups` ANY IN @var4))
+    RETURN v_shipment1
+  )
+  COLLECT WITH COUNT INTO v_count1
+  RETURN v_count1
+) == 0)
+
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
+
+RETURN (FIRST(
+  FOR v_item1
+  IN (
+    FOR v_currentEntity1
+    IN (
+      FOR v_shipment1
+      IN (
+        FOR v_item2
+        IN @@shipments
+        FILTER (v_item2.`extension`.`groups` ANY IN @var1)
+        RETURN v_item2
+      )
+      FILTER (v_shipment1._key == @var2)
+      LIMIT @var3
+      RETURN v_shipment1
+    )
+    FILTER !(FIRST(
+      LET v_postUpdate1 = MERGE(v_currentEntity1, {
+        "extension": MERGE((IS_OBJECT(v_currentEntity1.`extension`) ? v_currentEntity1.`extension` : {}), {
+          "groups": @var4
+        }),
+        "updatedAt": @var5
+      })
+      RETURN ((v_postUpdate1.`extension`.`groups` ANY IN @var6) && ((FIRST(
+        FOR v_item3
+        IN (
+          FOR v_item4
+          IN MINUS((IS_LIST(v_postUpdate1.`extension`.`groups`) ? v_postUpdate1.`extension`.`groups` : []), (IS_LIST(v_currentEntity1.`extension`.`groups`) ? v_currentEntity1.`extension`.`groups` : []))
+          FILTER !(([
+            v_item4
+          ] ANY IN @var7))
+          RETURN v_item4
+        )
+        COLLECT WITH COUNT INTO v_count1
+        RETURN v_count1
+      ) == @var8) && (FIRST(
+        FOR v_item5
+        IN (
+          FOR v_item6
+          IN MINUS((IS_LIST(v_currentEntity1.`extension`.`groups`) ? v_currentEntity1.`extension`.`groups` : []), (IS_LIST(v_postUpdate1.`extension`.`groups`) ? v_postUpdate1.`extension`.`groups` : []))
+          FILTER !(([
+            v_item6
+          ] ANY IN @var9))
+          RETURN v_item6
+        )
+        COLLECT WITH COUNT INTO v_count2
+        RETURN v_count2
+      ) == @var10)))
+    ))
+    RETURN v_currentEntity1
+  )
+  COLLECT WITH COUNT INTO v_count3
+  RETURN v_count3
+) == 0)
+
+// Peak memory usage: 131072 bytes
+
+// ----------------------------------------------------------------
+
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_shipment1
+    IN (
+      FOR v_item1
+      IN @@shipments
+      FILTER (v_item1.`extension`.`groups` ANY IN @var1)
+      RETURN v_item1
+    )
+    FILTER (v_shipment1._key == @var2)
+    LIMIT @var3
+    RETURN v_shipment1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "extension": MERGE((IS_OBJECT(v_currentEntity1.`extension`) ? v_currentEntity1.`extension` : {}), {
+      "groups": @var4
+    }),
+    "updatedAt": @var5
+  }
+  IN @@shipments
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@shipments
+LET v_shipment1 = FIRST(
+  LET v_entity1 = DOCUMENT(@@shipments, @var1)
+  RETURN ((v_entity1.`extension`.`groups` ANY IN @var2) ? v_entity1 : null)
+)
+RETURN (IS_NULL(v_shipment1) ? null : {
+  "extension": {
+    "groups": v_shipment1.`extension`.`groups`[*]
+  }
+})
+
+// Peak memory usage: 0 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@shipments
+RETURN {
+  "updateShipment": @v_updateShipment1
+}
+
+// Peak memory usage: 0 bytes

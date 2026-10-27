@@ -1,0 +1,12 @@
+{
+  "list": {
+    "data": {
+      "allShipments": [
+        {
+          "name": "05 public",
+          "tags": ["public"]
+        }
+      ]
+    }
+  }
+}

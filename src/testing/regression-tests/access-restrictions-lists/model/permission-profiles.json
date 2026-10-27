@@ -1,0 +1,131 @@
+{
+  "permissionProfiles": {
+    "restricted": {
+      "permissions": [
+        {
+          "roles": ["admin"],
+          "access": "readWrite"
+        },
+        {
+          "roles": ["tagged"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "tags",
+              "claim": "tags"
+            }
+          ]
+        },
+        {
+          "roles": ["tagged"],
+          "access": "read",
+          "restrictions": [
+            {
+              "field": "tags",
+              "value": "public"
+            }
+          ]
+        },
+        {
+          "roles": ["/^details-(.+)$/"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "details.groups",
+              "valueTemplate": "$1"
+            }
+          ]
+        },
+        {
+          "roles": ["/^extension-(.+)$/"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "extension.groups",
+              "valueTemplate": "$1"
+            }
+          ]
+        },
+        {
+          "roles": ["combined"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "tags",
+              "value": "a"
+            },
+            {
+              "field": "category",
+              "value": "x"
+            }
+          ]
+        },
+        {
+          "roles": ["combined"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "tags",
+              "value": "b"
+            }
+          ]
+        },
+        {
+          "roles": ["tagged-eu"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "tags",
+              "claim": "tags"
+            }
+          ]
+        },
+        {
+          "roles": ["tagged-eu"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "region",
+              "value": "EU"
+            }
+          ]
+        },
+        {
+          "roles": ["tagged-logistics"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "tags",
+              "claim": "tags"
+            }
+          ]
+        },
+        {
+          "roles": ["tagged-logistics"],
+          "access": "readWrite",
+          "restrictToAccessGroups": ["logistics"]
+        },
+        {
+          "roles": ["multi"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "tags",
+              "claim": "tags"
+            }
+          ]
+        },
+        {
+          "roles": ["multi"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "details.groups",
+              "claim": "tags"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

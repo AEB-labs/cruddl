@@ -1,0 +1,51 @@
+query list {
+    allShipments(orderBy: name_ASC) {
+        name
+        details {
+            groups
+        }
+    }
+}
+
+# should fail: value objects are replaced as a whole, so this removes a and x, and x is not permitted
+mutation updateWithoutGroups {
+    updateShipment(input: { id: "@{ids/Shipment/10}", details: { note: "changed" } }) {
+        name
+    }
+}
+
+# should fail because z is not permitted
+mutation updateAddUnpermittedValue {
+    updateShipment(
+        input: { id: "@{ids/Shipment/10}", details: { groups: ["a", "x", "z"], note: "note" } }
+    ) {
+        name
+    }
+}
+
+# should pass
+mutation updateAddPermittedValue {
+    updateShipment(
+        input: { id: "@{ids/Shipment/10}", details: { groups: ["a", "a2", "x"], note: "note" } }
+    ) {
+        details {
+            groups
+        }
+    }
+}
+
+# should fail because x is not permitted
+mutation createWithUnpermittedValue {
+    createShipment(input: { name: "new", details: { groups: ["a", "x"] } }) {
+        name
+    }
+}
+
+# should pass
+mutation createWithPermittedValues {
+    createShipment(input: { name: "new", details: { groups: ["a", "a2"] } }) {
+        details {
+            groups
+        }
+    }
+}

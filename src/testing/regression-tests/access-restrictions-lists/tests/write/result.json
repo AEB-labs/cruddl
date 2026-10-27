@@ -1,0 +1,278 @@
+{
+  "createWithPermittedValues": {
+    "data": {
+      "createShipment": {
+        "name": "new a b",
+        "tags": ["a", "b"]
+      }
+    }
+  },
+  "createManyWithPermittedValues": {
+    "data": {
+      "createShipments": [
+        {
+          "tags": ["a"]
+        },
+        {
+          "tags": ["b"]
+        }
+      ]
+    }
+  },
+  "updateManyWithPermittedValues": {
+    "data": {
+      "updateShipments": [
+        {
+          "name": "09 a category x",
+          "tags": ["a", "b"]
+        },
+        {
+          "name": "06 a",
+          "tags": ["b", "a"]
+        }
+      ]
+    }
+  },
+  "updateObjectWithoutMatchingValue": {
+    "errors": [
+      {
+        "message": "Shipment with id '@{ids/Shipment/2}' could not be found.",
+        "locations": [
+          {
+            "line": 31,
+            "column": 5
+          }
+        ],
+        "path": ["updateShipment"]
+      }
+    ],
+    "data": {
+      "updateShipment": null
+    }
+  },
+  "deleteObjectWithoutMatchingValue": {
+    "data": {
+      "deleteShipment": null
+    }
+  },
+  "createWithUnpermittedValue": {
+    "errors": [
+      {
+        "message": "Not authorized to set Shipment.tags to these values (each added or removed value needs to be allowed on its own, and the resulting object needs to be accessible)",
+        "locations": [
+          {
+            "line": 45,
+            "column": 5
+          }
+        ],
+        "path": ["createShipment"]
+      }
+    ],
+    "data": null
+  },
+  "createWithReadOnlyValue": {
+    "errors": [
+      {
+        "message": "Not authorized to set Shipment.tags to these values (each added or removed value needs to be allowed on its own, and the resulting object needs to be accessible)",
+        "locations": [
+          {
+            "line": 52,
+            "column": 5
+          }
+        ],
+        "path": ["createShipment"]
+      }
+    ],
+    "data": null
+  },
+  "createManyWithUnpermittedValue": {
+    "errors": [
+      {
+        "message": "Not authorized to set Shipment.tags to these values (each added or removed value needs to be allowed on its own, and the resulting object needs to be accessible)",
+        "locations": [
+          {
+            "line": 59,
+            "column": 5
+          }
+        ],
+        "path": ["createShipments"]
+      }
+    ],
+    "data": {
+      "createShipments": null
+    }
+  },
+  "updateAddPermittedValue": {
+    "data": {
+      "updateShipment": {
+        "name": "06 a",
+        "tags": ["a", "b"]
+      }
+    }
+  },
+  "updateAddUnpermittedValue": {
+    "errors": [
+      {
+        "message": "Not authorized to set Shipment.tags to these values (each added or removed value needs to be allowed on its own, and the resulting object needs to be accessible)",
+        "locations": [
+          {
+            "line": 76,
+            "column": 5
+          }
+        ],
+        "path": ["updateShipment"]
+      }
+    ],
+    "data": {
+      "updateShipment": null
+    }
+  },
+  "updateRemoveUnpermittedValue": {
+    "errors": [
+      {
+        "message": "Not authorized to set Shipment.tags to these values (each added or removed value needs to be allowed on its own, and the resulting object needs to be accessible)",
+        "locations": [
+          {
+            "line": 83,
+            "column": 5
+          }
+        ],
+        "path": ["updateShipment"]
+      }
+    ],
+    "data": {
+      "updateShipment": null
+    }
+  },
+  "updateRemoveAllValues": {
+    "errors": [
+      {
+        "message": "Not authorized to set Shipment.tags to these values (each added or removed value needs to be allowed on its own, and the resulting object needs to be accessible)",
+        "locations": [
+          {
+            "line": 90,
+            "column": 5
+          }
+        ],
+        "path": ["updateShipment"]
+      }
+    ],
+    "data": {
+      "updateShipment": null
+    }
+  },
+  "updateRemovePermittedValue": {
+    "data": {
+      "updateShipment": {
+        "name": "01 a b",
+        "tags": ["a"]
+      }
+    }
+  },
+  "updateOtherField": {
+    "data": {
+      "updateShipment": {
+        "name": "07 a c renamed",
+        "tags": ["a", "c"]
+      }
+    }
+  },
+  "updateManyRemovingUnpermittedValue": {
+    "errors": [
+      {
+        "message": "Not authorized to set Shipment.tags to these values (each added or removed value needs to be allowed on its own, and the resulting object needs to be accessible)",
+        "locations": [
+          {
+            "line": 114,
+            "column": 5
+          }
+        ],
+        "path": ["updateShipments"]
+      }
+    ],
+    "data": {
+      "updateShipments": null
+    }
+  },
+  "updateAllRemovingUnpermittedValue": {
+    "errors": [
+      {
+        "message": "Not authorized to set Shipment.tags to these values (each added or removed value needs to be allowed on its own, and the resulting object needs to be accessible)",
+        "locations": [
+          {
+            "line": 126,
+            "column": 5
+          }
+        ],
+        "path": ["updateAllShipments"]
+      }
+    ],
+    "data": null
+  },
+  "updateAllWithPermittedValues": {
+    "data": {
+      "updateAllShipments": [
+        {
+          "tags": ["a", "b"]
+        },
+        {
+          "tags": ["a", "b"]
+        },
+        {
+          "tags": ["a", "b"]
+        },
+        {
+          "tags": ["a", "b"]
+        },
+        {
+          "tags": ["a", "b"]
+        }
+      ]
+    }
+  },
+  "deleteWithUnpermittedValue": {
+    "data": {
+      "deleteShipment": {
+        "name": "07 a c renamed"
+      }
+    }
+  },
+  "listAfterwards": {
+    "data": {
+      "allShipments": [
+        {
+          "name": "01 a b",
+          "tags": ["a"]
+        },
+        {
+          "name": "05 public",
+          "tags": ["public"]
+        },
+        {
+          "name": "06 a",
+          "tags": ["a", "b"]
+        },
+        {
+          "name": "08 b category y",
+          "tags": ["a", "b"]
+        },
+        {
+          "name": "09 a category x",
+          "tags": ["a", "b"]
+        },
+        {
+          "name": "new a",
+          "tags": ["a"]
+        },
+        {
+          "name": "new a b",
+          "tags": ["a", "b"]
+        },
+        {
+          "name": "new b",
+          "tags": ["a", "b"]
+        }
+      ]
+    }
+  }
+}
