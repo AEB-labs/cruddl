@@ -4,6 +4,8 @@ import { ParsedProjectSourceBaseKind } from '../../parsing/parsed-project.js';
 import type { ParsedSourceValidator } from '../ast-validator.js';
 import validate from './schema/validate-schema.js';
 
+const RESTRICTION_VALUE_PROPERTIES = ['value', 'valueTemplate', 'claim'];
+
 const RESTRICTION_PATH_PATTERN =
     /^\/permissionProfiles\/[^/]+\/permissions\/\d+\/restrictions\/\d+$/;
 
@@ -21,8 +23,24 @@ export class SidecarSchemaValidator implements ParsedSourceValidator {
             return [];
         }
 
-        return validate.errors.map((err): ValidationMessage => {
+        const errors = validate.errors.filter(
+            (err) =>
+                // the oneOf error below covers these
+                !(
+                    RESTRICTION_PATH_PATTERN.test(err.instancePath) &&
+                    err.keyword === 'required' &&
+                    RESTRICTION_VALUE_PROPERTIES.includes(err.params.missingProperty)
+                ),
+        );
+        return errors.map((err): ValidationMessage => {
             const path = reformatPath(err.instancePath);
+
+            if (RESTRICTION_PATH_PATTERN.test(err.instancePath) && err.keyword === 'oneOf') {
+                return ValidationMessage.error(
+                    `Exactly one of "value", "valueTemplate" and "claim" must be specified in a permission restriction.`,
+                    source.pathLocationMap[path],
+                );
+            }
 
             // unknown properties in restrictions were not reported previously
             if (

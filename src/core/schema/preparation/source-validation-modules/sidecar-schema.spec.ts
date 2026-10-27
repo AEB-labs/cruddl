@@ -129,6 +129,36 @@ describe('sidecar-schema validator', () => {
         expect(messages[0].severity).to.equal(Severity.WARNING);
     });
 
+    for (const [description, restriction] of [
+        ['multiple values', { field: 'owner', value: 'a', valueTemplate: 'b' }],
+        ['no value', { field: 'owner' }],
+    ] as const) {
+        it(`reports restrictions with ${description}`, () => {
+            const messages = getValidatorMessages(
+                new ProjectSource(
+                    'file.json',
+                    JSON.stringify({
+                        permissionProfiles: {
+                            restricted: {
+                                permissions: [
+                                    {
+                                        roles: ['user'],
+                                        access: 'readWrite',
+                                        restrictions: [restriction],
+                                    },
+                                ],
+                            },
+                        },
+                    }),
+                ),
+            );
+            expect(messages.map((m) => m.message)).to.deep.equal([
+                'Exactly one of "value", "valueTemplate" and "claim" must be specified in a permission restriction.',
+            ]);
+            expect(messages[0].severity).to.equal(Severity.ERROR);
+        });
+    }
+
     it('reports errors in files with comments', () => {
         const messages = getValidatorMessages(
             new ProjectSource('test.json', invalidValueWithComments),
