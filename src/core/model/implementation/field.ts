@@ -1238,15 +1238,19 @@ export class Field implements ModelComponent {
         const permissionProfile = this.permissionProfile;
         if (permissionProfile) {
             if (permissionProfile.permissions.some((p) => p.restrictToAccessGroups)) {
-                ValidationMessage.error(
-                    `Permission profile "${permissions.permissionProfileName}" uses restrictToAccessGroup and therefore cannot be used on fields.`,
-                    permissions.permissionProfileNameAstNode || this.input.astNode,
+                context.addMessage(
+                    ValidationMessage.error(
+                        `Permission profile "${permissions.permissionProfileName}" uses restrictToAccessGroups and therefore cannot be used on fields.`,
+                        permissions.permissionProfileNameAstNode || this.input.astNode,
+                    ),
                 );
             }
-            if (permissionProfile.permissions.some((p) => p.restrictToAccessGroups)) {
-                ValidationMessage.error(
-                    `Permission profile "${permissions.permissionProfileName}" uses restrictions and therefore cannot be used on fields.`,
-                    permissions.permissionProfileNameAstNode || this.input.astNode,
+            if (permissionProfile.permissions.some((p) => p.restrictions.length)) {
+                context.addMessage(
+                    ValidationMessage.error(
+                        `Permission profile "${permissions.permissionProfileName}" uses restrictions and therefore cannot be used on fields.`,
+                        permissions.permissionProfileNameAstNode || this.input.astNode,
+                    ),
                 );
             }
         }

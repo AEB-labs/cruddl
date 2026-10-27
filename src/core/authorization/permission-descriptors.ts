@@ -416,7 +416,7 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
     private getRestrictionFieldPath(path: string): FieldPath {
         if (!this.rootEntityType) {
             throw new Error(
-                `accessGroup-restricted permission profiles can only be used on root entities`,
+                `Permission profiles with restrictions can only be used on root entities`,
             );
         }
         return new FieldPath({

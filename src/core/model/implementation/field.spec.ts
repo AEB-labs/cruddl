@@ -134,6 +134,24 @@ describe('Field', () => {
                             },
                         ],
                     },
+                    accessGroupRestricted: {
+                        permissions: [
+                            {
+                                roles: ['accounting'],
+                                access: 'readWrite',
+                                restrictToAccessGroups: ['accounting'],
+                            },
+                        ],
+                    },
+                    fieldRestricted: {
+                        permissions: [
+                            {
+                                roles: ['accounting'],
+                                access: 'readWrite',
+                                restrictions: [{ field: 'totalAmount', value: 0 }],
+                            },
+                        ],
+                    },
                 },
             },
         ],
@@ -783,6 +801,40 @@ describe('Field', () => {
                     model.rootNamespace.getPermissionProfileOrThrow('accounting'),
                 );
             });
+        });
+
+        it('rejects permission profiles with restrictToAccessGroups', () => {
+            const field = new Field(
+                {
+                    name: 'totalAmount',
+                    typeName: 'Int',
+                    permissions: {
+                        permissionProfileName: 'accessGroupRestricted',
+                    },
+                },
+                deliveryType,
+            );
+            expectSingleError(
+                field,
+                'Permission profile "accessGroupRestricted" uses restrictToAccessGroups and therefore cannot be used on fields.',
+            );
+        });
+
+        it('rejects permission profiles with restrictions', () => {
+            const field = new Field(
+                {
+                    name: 'totalAmount',
+                    typeName: 'Int',
+                    permissions: {
+                        permissionProfileName: 'fieldRestricted',
+                    },
+                },
+                deliveryType,
+            );
+            expectSingleError(
+                field,
+                'Permission profile "fieldRestricted" uses restrictions and therefore cannot be used on fields.',
+            );
         });
 
         it('accepts direct role specifier', () => {
