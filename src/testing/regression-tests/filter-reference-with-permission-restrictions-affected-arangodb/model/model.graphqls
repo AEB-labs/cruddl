@@ -1,0 +1,15 @@
+type Parcel @rootEntity(permissionProfile: "siteAware") {
+    parcelNumber: String @key
+
+    # used in the permission restriction, so users only see parcels of their sites
+    site: String @accessField
+
+    # the key field of the reference. It has the same name as the key of Ramp
+    rampNumber: String
+    ramp: Ramp @reference(keyField: "rampNumber")
+}
+
+# has no restriction, so reading it is not limited to certain sites
+type Ramp @rootEntity(permissionProfile: "everyone") {
+    rampNumber: String @key
+}

@@ -1,0 +1,19 @@
+{
+  // Documents the wrong results of ArangoDB 3.12.0 to 3.12.12 for filters over a reference when
+  // the entity that holds the reference has a permission restriction. The optimizer rule
+  // propagate-constant-attributes mistook `FIRST(<subquery>).attr == 'const'` (the reference
+  // filter) for a comparison on a variable and replaced the key of the reference in the lookup
+  // by the constant, so every parcel resolved the same ramp (also in the selection). In an AQL
+  // reproduction this only happened if the key field has the same name in the source and the
+  // target type (here rampNumber). The expected results in this suite are what these versions
+  // actually return, not what is correct.
+  // Not affected: 3.11.14 and earlier. Fixed by ArangoDB PR #23469 (BTS-2483) for 3.12.13.
+  //
+  // The correct results are tested by filter-reference-with-permission-restrictions, which runs
+  // for 3.12.13 and later. Delete this suite once none of the ArangoDB versions in the CI matrix
+  // is in the range below.
+  "databases": {
+    "in-memory": { "ignore": true },
+    "arangodb": { "minVersion": "3.12.0", "maxVersion": "3.12.12" }
+  }
+}

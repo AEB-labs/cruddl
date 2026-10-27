@@ -1,0 +1,21 @@
+query byRamp2 {
+    allParcels(filter: { ramp: { rampNumber: "Ramp 2" } }, orderBy: parcelNumber_ASC) {
+        parcelNumber
+        site
+        rampNumber
+        ramp {
+            rampNumber
+        }
+    }
+}
+
+query byRamp1 {
+    allParcels(filter: { ramp: { rampNumber: "Ramp 1" } }, orderBy: parcelNumber_ASC) {
+        parcelNumber
+        site
+        rampNumber
+        ramp {
+            rampNumber
+        }
+    }
+}

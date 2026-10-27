@@ -1,0 +1,12 @@
+{
+  "roles": ["init"],
+  "rootEntities": {
+    "Ramp": [{ "rampNumber": "Ramp 1" }, { "rampNumber": "Ramp 2" }, { "rampNumber": "Ramp 3" }],
+    "Parcel": [
+      { "parcelNumber": "P1", "site": "Site A", "rampNumber": "Ramp 1" },
+      { "parcelNumber": "P2", "site": "Site A", "rampNumber": "Ramp 2" },
+      { "parcelNumber": "P3", "site": "Site A", "rampNumber": "Ramp 3" },
+      { "parcelNumber": "P4", "site": "Site B", "rampNumber": "Ramp 2" }
+    ]
+  }
+}
