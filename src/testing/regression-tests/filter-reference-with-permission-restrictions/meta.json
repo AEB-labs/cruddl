@@ -1,0 +1,14 @@
+{
+  // Filters over a reference returned wrong results on ArangoDB 3.12.0 to 3.12.12 if the entity
+  // that holds the reference has a permission restriction (e.g. by claim). The optimizer rule
+  // propagate-constant-attributes replaced the key of the reference in the lookup by the constant
+  // of the filter, so every entity resolved the same referenced entity (also in the selection).
+  // Fixed by ArangoDB PR #23469 (BTS-2483) in 3.12.13.
+  //
+  // These tests expect the correct results. They are only run for ArangoDB versions that contain
+  // the fix. Versions 3.12.0 to 3.12.12 are covered by
+  // filter-reference-with-permission-restrictions-affected-arangodb.
+  "databases": {
+    "arangodb": { "minVersion": "3.12.13" }
+  }
+}

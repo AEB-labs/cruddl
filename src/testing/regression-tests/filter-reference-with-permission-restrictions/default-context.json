@@ -1,0 +1,6 @@
+{
+  "authRoles": ["user"],
+  "claims": {
+    "site": ["Site A"]
+  }
+}
