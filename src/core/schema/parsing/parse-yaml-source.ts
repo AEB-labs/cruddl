@@ -196,7 +196,14 @@ function convertScalar(node: Scalar, source: ProjectSource, messages: Validation
         !node.tag &&
         node.source
     ) {
-        // yaml-ast-parser returned unquoted true/false/null as strings, keep that for compatibility
+        // yaml-ast-parser returned unquoted true/false/null as strings. Keep that for now, but
+        // warn because YAML 1.2 defines them as booleans and null.
+        messages.push(
+            ValidationMessage.nonSuppressableWarning(
+                `"${node.source}" is currently read as a string, but will be read as ${value === null ? 'null' : 'a boolean'} in a future version. Put it in quotes to keep it a string.`,
+                getNodeLocation(node, source),
+            ),
+        );
         return node.source;
     }
     if (

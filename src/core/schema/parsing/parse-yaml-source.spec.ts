@@ -169,6 +169,24 @@ i18n:
         });
     });
 
+    it('warns about unquoted true, false and null', () => {
+        const { messages } = parseWithMessages('a: true\nb: "false"\nc: ~\n');
+        expect(messages).toMatchObject([
+            {
+                severity: Severity.WARNING,
+                message:
+                    '"true" is currently read as a string, but will be read as a boolean in a future version. Put it in quotes to keep it a string.',
+                location: { start: { line: 1, column: 4 } },
+            },
+            {
+                severity: Severity.WARNING,
+                message:
+                    '"~" is currently read as a string, but will be read as null in a future version. Put it in quotes to keep it a string.',
+                location: { start: { line: 3, column: 4 } },
+            },
+        ]);
+    });
+
     it('reads numbers', () => {
         const result = parse('a: 1\nb: -2.5\nc: 1e3\nd: 0x10\ne: "1"\nf: 1_000\ng: .inf\n');
         expect(result?.object).toEqual({
