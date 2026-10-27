@@ -115,7 +115,8 @@ const schema11 = {
         PermissionRestriction: {
             type: 'object',
             required: ['field'],
-            properties: { field: { type: 'string' } },
+            additionalProperties: false,
+            properties: { field: { type: 'string' }, value: {}, valueTemplate: {}, claim: {} },
             oneOf: [
                 { $ref: '#/definitions/PermissionRestrictionWithValue' },
                 { $ref: '#/definitions/PermissionRestrictionWithValueTemplate' },
@@ -242,7 +243,8 @@ const pattern2 = new RegExp('.+', 'u');
 const schema14 = {
     type: 'object',
     required: ['field'],
-    properties: { field: { type: 'string' } },
+    additionalProperties: false,
+    properties: { field: { type: 'string' }, value: {}, valueTemplate: {}, claim: {} },
     oneOf: [
         { $ref: '#/definitions/PermissionRestrictionWithValue' },
         { $ref: '#/definitions/PermissionRestrictionWithValueTemplate' },
@@ -485,14 +487,21 @@ function validate13(
             }
             errors++;
         }
-        if (data.field !== undefined) {
-            if (typeof data.field !== 'string') {
+        for (const key0 in data) {
+            if (
+                !(
+                    key0 === 'field' ||
+                    key0 === 'value' ||
+                    key0 === 'valueTemplate' ||
+                    key0 === 'claim'
+                )
+            ) {
                 const err11 = {
-                    instancePath: instancePath + '/field',
-                    schemaPath: '#/properties/field/type',
-                    keyword: 'type',
-                    params: { type: 'string' },
-                    message: 'must be string',
+                    instancePath,
+                    schemaPath: '#/additionalProperties',
+                    keyword: 'additionalProperties',
+                    params: { additionalProperty: key0 },
+                    message: 'must NOT have additional properties',
                 };
                 if (vErrors === null) {
                     vErrors = [err11];
@@ -502,8 +511,25 @@ function validate13(
                 errors++;
             }
         }
+        if (data.field !== undefined) {
+            if (typeof data.field !== 'string') {
+                const err12 = {
+                    instancePath: instancePath + '/field',
+                    schemaPath: '#/properties/field/type',
+                    keyword: 'type',
+                    params: { type: 'string' },
+                    message: 'must be string',
+                };
+                if (vErrors === null) {
+                    vErrors = [err12];
+                } else {
+                    vErrors.push(err12);
+                }
+                errors++;
+            }
+        }
     } else {
-        const err12 = {
+        const err13 = {
             instancePath,
             schemaPath: '#/type',
             keyword: 'type',
@@ -511,9 +537,9 @@ function validate13(
             message: 'must be object',
         };
         if (vErrors === null) {
-            vErrors = [err12];
+            vErrors = [err13];
         } else {
-            vErrors.push(err12);
+            vErrors.push(err13);
         }
         errors++;
     }

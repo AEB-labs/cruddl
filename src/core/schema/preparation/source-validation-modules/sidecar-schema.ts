@@ -4,6 +4,9 @@ import { ParsedProjectSourceBaseKind } from '../../parsing/parsed-project.js';
 import type { ParsedSourceValidator } from '../ast-validator.js';
 import validate from './schema/validate-schema.js';
 
+const RESTRICTION_PATH_PATTERN =
+    /^\/permissionProfiles\/[^/]+\/permissions\/\d+\/restrictions\/\d+$/;
+
 export class SidecarSchemaValidator implements ParsedSourceValidator {
     validate(source: ParsedProjectSource): ReadonlyArray<ValidationMessage> {
         if (source.kind != ParsedProjectSourceBaseKind.OBJECT) {
@@ -20,6 +23,17 @@ export class SidecarSchemaValidator implements ParsedSourceValidator {
 
         return validate.errors.map((err): ValidationMessage => {
             const path = reformatPath(err.instancePath);
+
+            // unknown properties in restrictions were not reported previously
+            if (
+                RESTRICTION_PATH_PATTERN.test(err.instancePath) &&
+                err.keyword === 'additionalProperties'
+            ) {
+                return ValidationMessage.nonSuppressableWarning(
+                    `Unknown property "${err.params.additionalProperty}" in permission restriction. This will be an error in a future release.`,
+                    source.pathLocationMap[path],
+                );
+            }
 
             // we allow top-level additional properties because they indicate new features, so it might be ok to omit them
             const isWarning =

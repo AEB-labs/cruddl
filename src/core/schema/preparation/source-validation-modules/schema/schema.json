@@ -169,10 +169,14 @@
     "PermissionRestriction": {
       "type": "object",
       "required": ["field"],
+      "additionalProperties": false,
       "properties": {
         "field": {
           "type": "string"
-        }
+        },
+        "value": {},
+        "valueTemplate": {},
+        "claim": {}
       },
       "oneOf": [
         {
