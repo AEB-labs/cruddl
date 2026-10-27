@@ -1,8 +1,13 @@
+import { ChangeSet } from '../../../model/change-set/change-set.js';
+import { createValueReplacementChange } from '../../../model/change-set/replace-value.js';
 import {
     createRoleSpecifierEntry,
     InvalidRoleSpecifierError,
+    RegexRoleSpecifierEntry,
 } from '../../../model/implementation/permission-profile.js';
+import type { MessageLocation } from '../../../model/validation/location.js';
 import { ValidationMessage } from '../../../model/validation/message.js';
+import { QuickFix } from '../../../model/validation/quick-fix.js';
 import { isReadonlyArray } from '../../../utils/utils.js';
 import type { ParsedProjectSource, PathLocationMap } from '../../parsing/parsed-project.js';
 import { ParsedProjectSourceBaseKind } from '../../parsing/parsed-project.js';
@@ -74,21 +79,40 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
             if (typeof role !== 'string') {
                 continue;
             }
+            const roleLocation =
+                pathLocationMap[
+                    `/permissionProfiles/${name}/permissions/${index}/roles/${roleIndex}`
+                ];
             try {
                 const entry = createRoleSpecifierEntry(role);
                 if (!entry.mayHaveCapturingGroups) {
                     hasRoleExpressionWithoutCaptureGroup = true;
                 }
-            } catch (e) {
-                if (e instanceof InvalidRoleSpecifierError) {
+                if (entry instanceof RegexRoleSpecifierEntry && entry.ignoredFlags) {
                     messages.push(
-                        ValidationMessage.error(
-                            e.message,
-                            pathLocationMap[
-                                `/permissionProfiles/${name}/permissions/${index}/roles/${roleIndex}`
-                            ],
+                        ValidationMessage.nonSuppressableWarning(
+                            `Regular expression flags "g" and "y" have no effect in role specifiers. Remove them. This will be an error in a future release.`,
+                            roleLocation,
+                            {
+                                quickFixes: roleLocation
+                                    ? [
+                                          getRoleReplacementQuickFix(
+                                              roleLocation,
+                                              role.replace(/[^/]*$/, (flags) =>
+                                                  flags.replace(/[gy]/g, ''),
+                                              ),
+                                              'Remove flags "g" and "y"',
+                                              true,
+                                          ),
+                                      ]
+                                    : [],
+                            },
                         ),
                     );
+                }
+            } catch (e) {
+                if (e instanceof InvalidRoleSpecifierError) {
+                    messages.push(ValidationMessage.error(e.message, roleLocation));
                 } else {
                     throw e;
                 }
@@ -122,4 +146,17 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
 
         return messages;
     }
+}
+
+function getRoleReplacementQuickFix(
+    roleLocation: MessageLocation,
+    newRole: string,
+    description: string,
+    isPreferred: boolean,
+) {
+    return new QuickFix({
+        description,
+        isPreferred,
+        changeSet: new ChangeSet([createValueReplacementChange(roleLocation, undefined, newRole)]),
+    });
 }

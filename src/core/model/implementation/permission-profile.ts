@@ -160,8 +160,19 @@ export interface RoleSpecifierEntry {
     readonly mayHaveCapturingGroups: boolean;
 }
 
+/**
+ * Regular expression flags that do not have an effect on role specifiers (and would make matching stateful)
+ */
+const IGNORED_REGEX_FLAGS = /[gy]/g;
+
 export class RegexRoleSpecifierEntry implements RoleSpecifierEntry {
     readonly mayHaveCapturingGroups: boolean;
+
+    /**
+     * The flags of the expression that are ignored (g and y)
+     */
+    readonly ignoredFlags: string;
+
     private readonly regexp: RegExp;
 
     constructor(expression: string) {
@@ -171,8 +182,10 @@ export class RegexRoleSpecifierEntry implements RoleSpecifierEntry {
                 `Role specifier starts with a slash (/), but is not a valid regular expression: ${expression}`,
             );
         }
+        const flags = parts[2] || '';
+        this.ignoredFlags = (flags.match(IGNORED_REGEX_FLAGS) ?? []).join('');
         try {
-            this.regexp = new RegExp(parts[1] || '', parts[2] || '');
+            this.regexp = new RegExp(parts[1] || '', flags.replace(IGNORED_REGEX_FLAGS, ''));
         } catch (e) {
             if (e instanceof SyntaxError) {
                 throw new InvalidRoleSpecifierError(e.message);
