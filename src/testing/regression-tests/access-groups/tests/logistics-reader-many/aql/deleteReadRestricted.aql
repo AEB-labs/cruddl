@@ -22,6 +22,7 @@ RETURN (FIRST(
     FOR v_file1
     IN @v_ids1
     FILTER !((DOCUMENT(@@files, v_file1).`accessGroup` IN @var1))
+    LIMIT @var2
     RETURN v_file1
   )
   COLLECT WITH COUNT INTO v_count1

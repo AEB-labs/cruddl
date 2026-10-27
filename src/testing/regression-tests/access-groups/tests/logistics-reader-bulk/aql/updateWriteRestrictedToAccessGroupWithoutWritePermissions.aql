@@ -14,6 +14,7 @@ RETURN (FIRST(
       RETURN v_file2
     )
     FILTER !((v_file1.`accessGroup` IN @var3))
+    LIMIT @var4
     RETURN v_file1
   )
   COLLECT WITH COUNT INTO v_count1
@@ -43,6 +44,7 @@ RETURN (FIRST(
       "accessGroup": @var3,
       "updatedAt": @var4
     }).`accessGroup` IN @var5))
+    LIMIT @var6
     RETURN v_currentEntity1
   )
   COLLECT WITH COUNT INTO v_count1

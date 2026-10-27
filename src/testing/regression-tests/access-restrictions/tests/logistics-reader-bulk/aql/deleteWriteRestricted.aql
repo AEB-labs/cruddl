@@ -14,6 +14,7 @@ RETURN (FIRST(
       RETURN v_file2
     )
     FILTER !((v_file1.`accessGroup` == @var4))
+    LIMIT @var5
     RETURN v_file1
   )
   COLLECT WITH COUNT INTO v_count1

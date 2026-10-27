@@ -15,6 +15,7 @@ RETURN (FIRST(
       RETURN v_shipment2
     )
     FILTER !((v_shipment1.`details`.`groups` ANY IN @var4))
+    LIMIT @var5
     RETURN v_shipment1
   )
   COLLECT WITH COUNT INTO v_count1
@@ -52,6 +53,7 @@ RETURN (FIRST(
         CURRENT
       ] ANY IN @var8))]) == 0)))
     ))
+    LIMIT @var9
     RETURN v_currentEntity1
   )
   COLLECT WITH COUNT INTO v_count1
