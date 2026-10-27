@@ -192,6 +192,40 @@ describe('Billing validation', () => {
         );
     });
 
+    it('names the declaring type in errors about the quantity field', () => {
+        const wrongDef = {
+            billing: {
+                billingEntities: [
+                    {
+                        typeName: 'Mission',
+                        keyFieldName: 'title',
+                        quantityFieldName: 'title',
+                    },
+                ],
+            },
+        };
+        const validationContext = new ValidationContext();
+        const parsedProject = parseProject(
+            new Project([
+                new Source(graphql, 'graphql.graphql'),
+                new Source(JSON.stringify(wrongDef), 'billing.json'),
+            ]),
+            new ValidationContext(),
+        );
+        const model = createModel(parsedProject);
+
+        model.billingEntityTypes.forEach((value) => value.validate(validationContext));
+
+        expect(
+            validationContext
+                .asResult()
+                .getErrors()
+                .map((e) => e.message),
+        ).to.deep.equal([
+            'The quantity field must be of a number or a list type, but "Mission.title" is of type "String".',
+        ]);
+    });
+
     it('rejects duplicate type', () => {
         const wrongDef = {
             billing: {

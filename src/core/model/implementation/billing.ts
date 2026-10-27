@@ -119,7 +119,7 @@ export class BillingEntityType implements ModelComponent {
         if (!lastField.type.isScalarType || !lastField.type.isNumberType) {
             context.addMessage(
                 ValidationMessage.error(
-                    `The quantity field must be of a number or a list type, but "${lastField.type.name}.${lastField.name}" is of type "${lastField.type.name}".`,
+                    `The quantity field must be of a number or a list type, but "${lastField.declaringType.name}.${lastField.name}" is of type "${lastField.type.name}".`,
                     this.input.quantityFieldNameLoc,
                 ),
             );
@@ -163,7 +163,7 @@ export class BillingEntityType implements ModelComponent {
         if (lastField.isList) {
             context.addMessage(
                 ValidationMessage.error(
-                    `Field "${lastField.type.name}.${lastField.name}" is a list and cannot be used as mapping source.`,
+                    `Field "${lastField.declaringType.name}.${lastField.name}" is a list and cannot be used as mapping source.`,
                     this.input.categoryMapping.fieldNameLoc,
                 ),
             );
