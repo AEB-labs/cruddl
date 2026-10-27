@@ -24,6 +24,7 @@ export class BillingEntityType implements ModelComponent {
                     path: input.quantityFieldName,
                     location: input.quantityFieldNameLoc,
                     baseType: this.rootEntityType,
+                    reportInvalidNavigationAsDeprecation: true,
                 });
             }
             if (input.categoryMapping && input.categoryMapping.fieldName) {
@@ -31,6 +32,7 @@ export class BillingEntityType implements ModelComponent {
                     path: input.categoryMapping.fieldName,
                     location: input.categoryMapping.fieldNameLoc,
                     baseType: this.rootEntityType,
+                    reportInvalidNavigationAsDeprecation: true,
                 });
             }
         }

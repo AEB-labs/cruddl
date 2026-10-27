@@ -37,6 +37,7 @@ export class TimeToLiveType implements ModelComponent {
                         canUseCollectFields: false,
                         canFollowReferences: false,
                         canNavigateIntoLists: true,
+                        reportInvalidNavigationAsDeprecation: true,
                     }),
             );
         }
