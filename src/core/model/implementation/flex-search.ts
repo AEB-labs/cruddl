@@ -23,6 +23,7 @@ export class FlexSearchPrimarySortClause implements ModelComponent {
             location: config.fieldASTNode,
             canUseCollectFields: false,
             canTraverseRootEntities: false,
+            reportInvalidNavigationAsDeprecation: true,
         });
         this.direction = config.direction;
     }

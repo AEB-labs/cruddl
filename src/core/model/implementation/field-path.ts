@@ -14,6 +14,14 @@ export interface FieldPathConfig extends Partial<FieldPathOptions> {
     readonly canFollowReferences?: boolean;
     readonly canUseCollectFields?: boolean;
     readonly canNavigateIntoLists?: boolean;
+
+    /**
+     * If true, navigating into lists or references (if not allowed) is reported as a deprecation warning
+     * instead of an error, and the path is still resolved.
+     *
+     * These checks were not effective previously, so some users need to treat them as deprecations.
+     */
+    readonly reportInvalidNavigationAsDeprecation?: boolean;
 }
 
 export interface FieldPathOptions {
@@ -127,22 +135,40 @@ export class FieldPath implements ModelComponent {
                 return [];
             }
             if (lastField && lastField.isList && !this.options.canNavigateIntoLists) {
-                addMessage(
-                    ValidationMessage.error(
-                        `Field "${lastField.declaringType.name}.${lastField.name}" is a list and cannot be navigated into.`,
-                        segmentLocation,
-                    ),
-                );
-                return [];
+                if (this.config.reportInvalidNavigationAsDeprecation) {
+                    addMessage(
+                        ValidationMessage.nonSuppressableWarning(
+                            `Field "${lastField.declaringType.name}.${lastField.name}" is a list and cannot be navigated into. This will be an error in a future release.`,
+                            segmentLocation,
+                        ),
+                    );
+                } else {
+                    addMessage(
+                        ValidationMessage.error(
+                            `Field "${lastField.declaringType.name}.${lastField.name}" is a list and cannot be navigated into.`,
+                            segmentLocation,
+                        ),
+                    );
+                    return [];
+                }
             }
             if (lastField && lastField.isReference && !this.options.canFollowReferences) {
-                addMessage(
-                    ValidationMessage.error(
-                        `Field "${lastField.declaringType.name}.${lastField.name}" is a reference and cannot be navigated into.`,
-                        segmentLocation,
-                    ),
-                );
-                return [];
+                if (this.config.reportInvalidNavigationAsDeprecation) {
+                    addMessage(
+                        ValidationMessage.nonSuppressableWarning(
+                            `Field "${lastField.declaringType.name}.${lastField.name}" is a reference and cannot be navigated into. This will be an error in a future release.`,
+                            segmentLocation,
+                        ),
+                    );
+                } else {
+                    addMessage(
+                        ValidationMessage.error(
+                            `Field "${lastField.declaringType.name}.${lastField.name}" is a reference and cannot be navigated into.`,
+                            segmentLocation,
+                        ),
+                    );
+                    return [];
+                }
             }
 
             if (!segmentSpecifier) {
@@ -211,6 +237,7 @@ export class FieldPath implements ModelComponent {
             }
 
             segments.push(field);
+            lastField = field;
             currentType = field.type;
             currentOffset += segmentSpecifier.length + 1; // account for dot
         }

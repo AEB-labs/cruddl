@@ -624,6 +624,8 @@ export class RootEntityType extends ObjectTypeBase {
                     location: restriction.fieldValueLoc,
                     canUseCollectFields: false,
                     canTraverseRootEntities: false,
+                    // reported separately as a deprecation
+                    canNavigateIntoLists: true,
                 });
                 fieldPath.validate(nestedContext);
 

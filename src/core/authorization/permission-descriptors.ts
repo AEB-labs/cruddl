@@ -424,6 +424,8 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
             baseType: this.rootEntityType,
             canTraverseRootEntities: false,
             canUseCollectFields: false,
+            // navigating into lists is deprecated, but still accepted
+            canNavigateIntoLists: true,
         });
     }
 
