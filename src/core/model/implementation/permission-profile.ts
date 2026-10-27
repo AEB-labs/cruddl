@@ -274,7 +274,7 @@ export class WildcardRoleSpecifierEntry implements RoleSpecifierEntry {
 
     constructor(pattern: string) {
         // it's hard to reliably check this, but this at least offers some santiy check
-        this.regexp = new RegExp('^' + escapeRegExp(pattern).replace('\\*', '.*') + '$');
+        this.regexp = new RegExp('^' + escapeRegExp(pattern).replaceAll('\\*', '.*') + '$');
     }
 
     matchesRole(role: string): boolean {

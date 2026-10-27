@@ -105,6 +105,12 @@ describe('RoleSpecifier', () => {
         expect(roleSpecifier.includesRole('theroleA')).to.be.false;
     });
 
+    it('it supports roles with multiple wildcards', () => {
+        const roleSpecifier = new RoleSpecifier(['tenant-*-admin-*']);
+        expect(roleSpecifier.includesRole('tenant-a-admin-b')).to.be.true;
+        expect(roleSpecifier.includesRole('tenant-a-user-b')).to.be.false;
+    });
+
     it('it supports roles with regular expressions', () => {
         const roleSpecifier = new RoleSpecifier(['/role-[a-z]+/']);
         expect(roleSpecifier.includesRole('role-abc')).to.be.true;
