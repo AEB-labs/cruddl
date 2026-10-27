@@ -103,6 +103,32 @@ describe('sidecar-schema validator', () => {
         expect(messages[0].severity).to.equal(Severity.WARNING);
     });
 
+    it('warns about unknown properties in restrictions', () => {
+        const messages = getValidatorMessages(
+            new ProjectSource(
+                'file.json',
+                JSON.stringify({
+                    permissionProfiles: {
+                        restricted: {
+                            permissions: [
+                                {
+                                    roles: ['user'],
+                                    access: 'readWrite',
+                                    restrictions: [{ field: 'owner', value: 'a', optional: true }],
+                                },
+                            ],
+                        },
+                    },
+                }),
+            ),
+        );
+        expect(messages.length).to.equal(1);
+        expect(messages[0].message).to.equal(
+            'Unknown property "optional" in permission restriction. This will be an error in a future release.',
+        );
+        expect(messages[0].severity).to.equal(Severity.WARNING);
+    });
+
     it('reports errors in files with comments', () => {
         const messages = getValidatorMessages(
             new ProjectSource('test.json', invalidValueWithComments),
