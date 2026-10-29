@@ -1215,6 +1215,11 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `The type of the keyField "${this.declaringType.name}.${this.input.referenceKeyField}" ("${keyField.type.name}") must be the same as the type of the @key-annotated field "${this.type.name}.${targetKeyField.name}" ("${targetKeyField.type.name}")`,
                     this.input.referenceKeyFieldASTNode,
+                    {
+                        quickFixes: keyField.getChangeTypeQuickFixes(targetKeyField.type.name, {
+                            description: `Change type of "${this.declaringType.name}.${keyField.name}" to "${targetKeyField.type.name}"`,
+                        }),
+                    },
                 ),
             );
             return;
