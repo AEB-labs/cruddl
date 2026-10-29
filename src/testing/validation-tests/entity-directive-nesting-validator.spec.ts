@@ -58,6 +58,16 @@ describe('entity directive nesting validator', () => {
         );
     });
 
+    it('suggests @parent and @root for fields of @rootEntity type in child entities', () => {
+        assertValidatorRejects(
+            `
+            type Foo @rootEntity { items: [Item] }
+            type Item @childEntity { foo: Foo }
+        `,
+            'Type "Foo" is a root entity type and cannot be embedded. Consider adding @reference, @parent or @root.',
+        );
+    });
+
     it('accepts nesting @valueObjects', () => {
         assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @valueObject { fooo: String }
