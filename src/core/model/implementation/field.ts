@@ -23,7 +23,7 @@ import { GraphQLLocalTime } from '../../schema/scalars/local-time.js';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js';
 import { GraphQLI18nString } from '../../schema/scalars/string-map.js';
 import { isDefined } from '../../utils/utils.js';
-import { ChangeSet } from '../change-set/change-set.js';
+import { ChangeSet, TextChange } from '../change-set/change-set.js';
 import { createRemoveInlineNodeChange } from '../change-set/graphql-changes.js';
 import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
 import type { CalcMutationsOperator, FieldConfig, FlexSearchLanguage } from '../config/field.js';
@@ -799,6 +799,7 @@ export class Field implements ModelComponent {
                                     this.aggregationOperator + '_TRUE'
                                 }".`,
                                 this.input.collect.aggregationOperatorASTNode,
+                                { quickFixes: this.getUseBooleanAggregationOperatorQuickFixes() },
                             ),
                         );
                     } else if (lastSegment.isNullableSegment) {
@@ -840,7 +841,10 @@ export class Field implements ModelComponent {
                                 this.aggregationOperator + '_TRUE'
                             }" instead which specifically checks for boolean "true".`,
                             this.input.astNode,
-                            { location: this.input.collect.aggregationOperatorASTNode },
+                            {
+                                location: this.input.collect.aggregationOperatorASTNode,
+                                quickFixes: this.getUseBooleanAggregationOperatorQuickFixes(),
+                            },
                         ),
                     );
                 }
@@ -1977,6 +1981,24 @@ export class Field implements ModelComponent {
                 ),
             );
         }
+    }
+
+    /**
+     * Quick fixes to replace the aggregation operator with its variant that checks for boolean "true"
+     */
+    private getUseBooleanAggregationOperatorQuickFixes(): ReadonlyArray<QuickFix> {
+        const loc = this.input.collect?.aggregationOperatorASTNode?.loc;
+        const booleanOperator = this.aggregationOperator + '_TRUE';
+        if (!loc || !Object.values<string>(AggregationOperator).includes(booleanOperator)) {
+            return [];
+        }
+        return [
+            new QuickFix({
+                description: `Use ${booleanOperator}`,
+                isPreferred: true,
+                changeSet: new ChangeSet([new TextChange(loc, booleanOperator)]),
+            }),
+        ];
     }
 
     private getRemoveAccessFieldQuickFixes(): ReadonlyArray<QuickFix> {

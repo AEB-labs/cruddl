@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     validate,
@@ -564,6 +565,39 @@ describe('collect validation', () => {
             `,
                 `The aggregation results in type "Int", but this field is declared with type "Float".`,
             );
+        });
+
+        it('offers to use the boolean variant when aggregating a boolean field', () => {
+            const result = validate(`
+                type Delivery @rootEntity {
+                    items: [DeliveryItem]
+                    containsDangerousGoods: Boolean @collect(path: "items.isDangerousGoods", aggregate: SOME)
+                }
+                type DeliveryItem @childEntity {
+                    isDangerousGoods: Boolean
+                }
+            `);
+            const newSource = applyQuickFix(result.messages, 'Use SOME_TRUE');
+            expect(newSource).to.contain('aggregate: SOME_TRUE');
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        });
+
+        it('offers to use the boolean variant when aggregating a boolean list field', () => {
+            const result = validate(`
+                type Delivery @rootEntity {
+                    items: [DeliveryItem]
+                    numberOfConfirmations: Int @collect(path: "items.confirmations", aggregate: COUNT)
+                }
+                type DeliveryItem @childEntity {
+                    confirmations: [Boolean]
+                }
+            `);
+            expect(result.getWarnings().map((m) => m.message)).to.deep.equal([
+                'Aggregation operator "COUNT" only checks the number of items. "confirmations" is of type "Boolean", so you may want to use the operator "COUNT_TRUE" instead which specifically checks for boolean "true".',
+            ]);
+            const newSource = applyQuickFix(result.messages, 'Use COUNT_TRUE');
+            expect(newSource).to.contain('aggregate: COUNT_TRUE');
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
         });
 
         it('rejects wrongly declared list', () => {
