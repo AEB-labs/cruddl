@@ -1,6 +1,6 @@
 import type { DirectiveNode } from 'graphql';
 import { groupArray, isDefined } from '../../utils/utils.js';
-import { ChangeSet } from '../change-set/change-set.js';
+import { ChangeSet, TextChange } from '../change-set/change-set.js';
 import { createRemoveLinesChange } from '../change-set/graphql-changes.js';
 import type { FieldConfig } from '../config/field.js';
 import type { ObjectTypeConfig } from '../config/type.js';
@@ -103,6 +103,25 @@ export abstract class ObjectTypeBase extends TypeBase {
                     ValidationMessage.error(
                         `System field "${systemField.name}" must be of type "${systemField.type.name}"`,
                         systemField.astNode,
+                        {
+                            quickFixes: systemFieldOverride.astNode?.type.loc
+                                ? [
+                                      new QuickFix({
+                                          description: `Change type to "${systemField.type.name}"`,
+                                          // without directives, removing the field is preferred
+                                          // (see below)
+                                          isPreferred:
+                                              !!systemFieldOverride.astNode.directives?.length,
+                                          changeSet: new ChangeSet([
+                                              new TextChange(
+                                                  systemFieldOverride.astNode.type.loc,
+                                                  systemField.type.name,
+                                              ),
+                                          ]),
+                                      }),
+                                  ]
+                                : [],
+                        },
                     ),
                 );
             }
