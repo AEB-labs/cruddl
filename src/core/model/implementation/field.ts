@@ -500,7 +500,7 @@ export class Field implements ModelComponent {
                     suggestions.push(PARENT_DIRECTIVE);
                 }
                 if (!this.declaringType.fields.some((f) => f.isRootField)) {
-                    suggestions.push(PARENT_DIRECTIVE);
+                    suggestions.push(ROOT_DIRECTIVE);
                 }
             }
 
