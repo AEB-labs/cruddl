@@ -1388,6 +1388,10 @@ export class Field implements ModelComponent {
                     'DEPRECATED',
                     `Calc mutations do not work within value objects because value objects cannot be updated. This will be an error in a future release.`,
                     this.astNode,
+                    {
+                        location: this.calcMutationsAstNode ?? this.astNode,
+                        quickFixes: getRemoveDirectiveQuickFixes(this.calcMutationsAstNode),
+                    },
                 ),
             );
         }
