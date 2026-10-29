@@ -1204,6 +1204,12 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `Type "${this.type.name}" is an entity extension type and cannot be used in a list. Change the field type to "${this.type.name}" (without brackets), or use a child entity or value object type instead.`,
                     this.astNode,
+                    // the type kind might be the wrong one instead
+                    {
+                        quickFixes: this.getChangeTypeQuickFixes(this.type.name, {
+                            isPreferred: false,
+                        }),
+                    },
                 ),
             );
         }
@@ -1229,6 +1235,12 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `Type "${this.type.name}" is a child entity type and can only be used in a list. Change the field type to "[${this.type.name}]", or use an entity extension or value object type instead.`,
                     this.astNode,
+                    // the type kind might be the wrong one instead
+                    {
+                        quickFixes: this.getChangeTypeQuickFixes(`[${this.type.name}]`, {
+                            isPreferred: false,
+                        }),
+                    },
                 ),
             );
         }
