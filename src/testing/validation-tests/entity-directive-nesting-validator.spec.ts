@@ -1,7 +1,9 @@
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
+    validate,
 } from '../utils/source-validation-utils.js';
 
 describe('entity directive nesting validator', () => {
@@ -118,5 +120,25 @@ describe('entity directive nesting validator', () => {
         `,
             'Type "Foo" is a child entity type and can only be used in a list. Change the field type to "[Foo]", or use an entity extension or value object type instead.',
         );
+    });
+
+    it('offers to use a list for @childEntity fields', () => {
+        const source = `
+            type Item @childEntity { name: String }
+            type Delivery @rootEntity { item: Item }
+        `;
+        expect(applyQuickFix(validate(source).messages, 'Change type to "[Item]"')).to.equal(
+            source.replace('item: Item', 'item: [Item]'),
+        );
+    });
+
+    it('offers to remove the list type of @entityExtension fields', () => {
+        const source = `
+            type DangerousGoodsInfo @entityExtension { notes: String }
+            type Delivery @rootEntity { dangerousGoodsInfo: [DangerousGoodsInfo] }
+        `;
+        expect(
+            applyQuickFix(validate(source).messages, 'Change type to "DangerousGoodsInfo"'),
+        ).to.equal(source.replace('[DangerousGoodsInfo]', 'DangerousGoodsInfo'));
     });
 });
