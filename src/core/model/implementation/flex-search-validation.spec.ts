@@ -272,6 +272,63 @@ describe('FlexSearch', () => {
         assertValidatorAcceptsAndDoesNotWarn(newSource);
     });
 
+    describe('flexSearch fields on types without flexSearch', () => {
+        const message =
+            'The type contains fields that are annotated with flexSearch or flexSearchFulltext, but the type itself is not marked with flexSearch = true.';
+
+        it('warns about flexSearch fields on types without flexSearch', () => {
+            assertValidatorWarns(
+                `
+                type HandlingUnit @rootEntity {
+                    someString: String @flexSearch
+                }
+            `,
+                message,
+            );
+        });
+
+        for (const [description, rootEntityDirective, expectedDirective] of [
+            ['without arguments', '@rootEntity', '@rootEntity(flexSearch: true)'],
+            [
+                'with other arguments',
+                '@rootEntity(permissionProfile: "default")',
+                '@rootEntity(flexSearch: true, permissionProfile: "default")',
+            ],
+            [
+                'with flexSearch: false',
+                '@rootEntity(flexSearch: false)',
+                '@rootEntity(flexSearch: true)',
+            ],
+        ]) {
+            it(`offers to enable flexSearch on a type ${description}`, () => {
+                const result = validate(`
+                    type HandlingUnit ${rootEntityDirective} {
+                        someString: String @flexSearch
+                    }
+                `);
+                const newSource = applyQuickFix(result.messages, 'Enable flexSearch for this type');
+                expect(newSource).to.contain(`type HandlingUnit ${expectedDirective} {`);
+                assertValidatorAcceptsAndDoesNotWarn(newSource);
+            });
+        }
+
+        it('offers to remove flexSearch from the fields', () => {
+            const result = validate(`
+                type HandlingUnit @rootEntity {
+                    someString: String @flexSearch @flexSearchFulltext
+                    otherString: String @flexSearch
+                }
+            `);
+            const newSource = applyQuickFix(
+                result.messages,
+                'Remove @flexSearch and @flexSearchFulltext from all fields',
+            );
+            expect(newSource).to.contain('someString: String\n');
+            expect(newSource).to.contain('otherString: String\n');
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        });
+    });
+
     it('rejects flexSearch without accessField', () => {
         const model = new Model({
             types: [
