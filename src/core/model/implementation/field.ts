@@ -633,6 +633,7 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `"CASCADE" cannot be used on recursive fields. Use "RESTRICT" instead.`,
                             this.input.relationDeleteActionASTNode,
+                            { quickFixes: this.getUseRestrictQuickFixes() },
                         ),
                     );
                     return;
@@ -647,6 +648,13 @@ export class Field implements ModelComponent {
                                         '.',
                                     )}" is a loop with "onDelete: CASCADE" on each relation, which is not supported. Break the loop by replacing "CASCADE" with "RESTRICT" on any of these relations.`,
                                 this.input.relationDeleteActionASTNode,
+                                // only one of the relations needs to be changed, so this should not be
+                                // applied automatically on all of them
+                                {
+                                    quickFixes: this.getUseRestrictQuickFixes({
+                                        isPreferred: false,
+                                    }),
+                                },
                             ),
                         );
                         return;
@@ -672,6 +680,7 @@ export class Field implements ModelComponent {
                                 this.name
                             }") directive to the target type "${this.type.name}".`,
                             this.input.relationDeleteActionASTNode,
+                            { quickFixes: this.getUseRestrictQuickFixes() },
                         ),
                     );
                     return;
@@ -684,6 +693,18 @@ export class Field implements ModelComponent {
                                 inverseField.name
                             }" to "${inverseField.type.name}".`,
                             this.input.relationDeleteActionASTNode,
+                            {
+                                quickFixes: [
+                                    ...this.getUseRestrictQuickFixes(),
+                                    ...inverseField.getChangeTypeQuickFixes(
+                                        inverseField.type.name,
+                                        {
+                                            description: `Change type of "${this.type.name}.${inverseField.name}" to "${inverseField.type.name}"`,
+                                            isPreferred: false,
+                                        },
+                                    ),
+                                ],
+                            },
                         ),
                     );
                 }
@@ -2112,6 +2133,22 @@ export class Field implements ModelComponent {
                 description: `Remove "${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true"`,
                 isPreferred: true,
                 changeSet: new ChangeSet(changes),
+            }),
+        ];
+    }
+
+    private getUseRestrictQuickFixes({
+        isPreferred = true,
+    }: { readonly isPreferred?: boolean } = {}): ReadonlyArray<QuickFix> {
+        const loc = this.input.relationDeleteActionASTNode?.value.loc;
+        if (!loc) {
+            return [];
+        }
+        return [
+            new QuickFix({
+                description: `Use ${RelationDeleteAction.RESTRICT}`,
+                isPreferred,
+                changeSet: new ChangeSet([new TextChange(loc, RelationDeleteAction.RESTRICT)]),
             }),
         ];
     }
