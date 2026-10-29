@@ -92,6 +92,8 @@ import {
     hasDirectiveWithName,
 } from '../schema/schema-utils.js';
 import { isDefined, mapValues } from '../utils/utils.js';
+import { ChangeSet } from './change-set/change-set.js';
+import { createInsertionChange } from './change-set/graphql-changes.js';
 import type { BillingConfig } from './config/billing.js';
 import type {
     AggregationOperator,
@@ -138,6 +140,7 @@ import { extractTTLConfigs } from './extract-ttl.js';
 import { Model } from './implementation/model.js';
 import { OrderDirection } from './implementation/order.js';
 import { ValidationMessage } from './validation/message.js';
+import { QuickFix } from './validation/quick-fix.js';
 import { ValidationContext } from './validation/validation-context.js';
 
 export function createModel(parsedProject: ParsedProject, options: ModelOptions = {}): Model {
@@ -455,6 +458,21 @@ function createFlexSearchPrimarySortClause(
                 objectTypeNode,
                 {
                     location: valueNode,
+                    quickFixes: fieldNode.loc
+                        ? [
+                              new QuickFix({
+                                  description: 'Add direction: ASC',
+                                  isPreferred: true,
+                                  changeSet: new ChangeSet([
+                                      createInsertionChange(
+                                          fieldNode.loc.end,
+                                          fieldNode.loc,
+                                          ', direction: ASC',
+                                      ),
+                                  ]),
+                              }),
+                          ]
+                        : [],
                 },
             ),
         );
