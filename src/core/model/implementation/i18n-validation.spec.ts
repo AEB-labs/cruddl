@@ -1,6 +1,8 @@
 import { Source } from 'graphql';
 import { describe, expect, it } from 'vitest';
+import { applyQuickFix } from '../../../testing/utils/source-validation-utils.js';
 import { Project } from '../../project/project.js';
+import { ProjectSource } from '../../project/source.js';
 import { parseProject } from '../../schema/parsing/parse-project.js';
 import { validateParsedProjectSource } from '../../schema/preparation/ast-validator.js';
 import { createModel } from '../create-model.js';
@@ -273,5 +275,162 @@ i18n:
         expect(validationContext.asResult().hasMessages()).is.true;
         expect(validationContext.asResult().getErrors().length).to.eq(1);
         expect(validationContext.asResult().messages[0].location).to.not.be.undefined;
+    });
+
+    describe('quick fixes', () => {
+        function getMessages(i18n: string) {
+            return new Project([
+                new ProjectSource('perm.json', permissionProfiles),
+                new ProjectSource('graphql.graphql', graphql),
+                new ProjectSource('i18n.yaml', i18n),
+            ])
+                .validate()
+                .messages.filter((m) => m.location?.sourceName === 'i18n.yaml');
+        }
+
+        function getQuickFixes(i18n: string) {
+            return getMessages(i18n).flatMap((m) => m.quickFixes);
+        }
+
+        it('offers to remove the localization of a type that does not exist', () => {
+            const i18n = `i18n:
+  en:
+    types:
+      Skill:
+        label: Skill
+        labelPlural: Skills
+
+      Equipment:
+        label: Equipment
+        labelPlural: Equipment
+        fields:
+          weight: Weight
+
+      Mission:
+        label: Mission
+`;
+            expect(applyQuickFix(getMessages(i18n), 'Remove localization')).to.equal(`i18n:
+  en:
+    types:
+      Skill:
+        label: Skill
+        labelPlural: Skills
+
+      Mission:
+        label: Mission
+`);
+            expect(getQuickFixes(i18n).map((q) => q.isPreferred)).to.deep.equal([true]);
+        });
+
+        it('offers to remove the localization of a field that does not exist', () => {
+            const i18n = `i18n:
+  en:
+    types:
+      Skill:
+        label: Skill
+        fields:
+          name: Name
+          level: Level
+          description: Description
+`;
+            expect(applyQuickFix(getMessages(i18n), 'Remove localization')).to.equal(`i18n:
+  en:
+    types:
+      Skill:
+        label: Skill
+        fields:
+          name: Name
+          description: Description
+`);
+        });
+
+        it('offers to remove the localization of an enum value that does not exist', () => {
+            const i18n = `i18n:
+  en:
+    types:
+      Importance:
+        values:
+          LOW: Low
+          CRITICAL: Critical
+          HIGH: High
+`;
+            expect(applyQuickFix(getMessages(i18n), 'Remove localization')).to.equal(`i18n:
+  en:
+    types:
+      Importance:
+        values:
+          LOW: Low
+          HIGH: High
+`);
+        });
+
+        it('removes the parent key when removing its only entry', () => {
+            const i18n = `i18n:
+  en:
+    types:
+      Skill:
+        label: Skill
+        fields:
+          level: Level
+
+      Importance:
+        label: Importance
+`;
+            expect(applyQuickFix(getMessages(i18n), 'Remove localization')).to.equal(`i18n:
+  en:
+    types:
+      Skill:
+        label: Skill
+
+      Importance:
+        label: Importance
+`);
+        });
+
+        it('offers removal for each language', () => {
+            const i18n = `i18n:
+  de:
+    types:
+      Equipment:
+        label: Ausrüstung
+  en:
+    types:
+      Equipment:
+        label: Equipment
+`;
+            expect(getQuickFixes(i18n).map((q) => q.description)).to.deep.equal([
+                'Remove localization',
+                'Remove localization',
+            ]);
+        });
+
+        it('does not prefer removal if a similar name exists', () => {
+            const i18n = `i18n:
+  en:
+    types:
+      Skil:
+        label: Skill
+      Mision:
+        label: Mission
+      skill:
+        label: Skill
+`;
+            expect(getQuickFixes(i18n).map((q) => q.isPreferred)).to.deep.equal([
+                false,
+                false,
+                false,
+            ]);
+        });
+
+        it('does not offer removal in flow style', () => {
+            const i18n = `i18n:
+  en:
+    types: { Equipment: { label: Equipment }, Skill: { label: Skill } }
+`;
+            expect(getMessages(i18n).map((m) => m.message)).to.deep.equal([
+                'There is no type "Equipment" in the model specification. This might be a spelling error.',
+            ]);
+            expect(getQuickFixes(i18n)).to.deep.equal([]);
+        });
     });
 });
