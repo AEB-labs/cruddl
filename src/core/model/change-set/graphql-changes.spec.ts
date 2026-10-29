@@ -91,6 +91,18 @@ describe('graphql changes', () => {
             ).to.equal('type T {\n    g: Int\n}\n');
         });
 
+        it('removes one of the blank lines around the node', () => {
+            const body =
+                'type A {\n    a: String\n}\n\ntype B {\n    b: String\n}\n\ntype C {\n    c: String\n}\n';
+            const source = new ProjectSource('schema.graphqls', body);
+            const typeB = parse(source.toGraphQLSource()).definitions[1];
+            const newBody = applyChangeSet(
+                new Project([source]),
+                new ChangeSet([createRemoveLinesChange(typeB.loc!)]),
+            ).sources[0].body;
+            expect(newBody).to.equal('type A {\n    a: String\n}\n\ntype C {\n    c: String\n}\n');
+        });
+
         it('only removes the node if the line contains other content', () => {
             expect(
                 apply('type T { f: String g: Int }', (type) =>
