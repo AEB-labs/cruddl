@@ -1,4 +1,4 @@
-import type { DocumentNode, GraphQLError, Location, ValidationRule } from 'graphql';
+import type { ASTNode, DocumentNode, GraphQLError, Location, ValidationRule } from 'graphql';
 import {
     buildASTSchema,
     Kind,
@@ -12,7 +12,10 @@ import {
     VariablesInAllowedPositionRule,
 } from 'graphql';
 import { gql } from 'graphql-tag';
+import { ChangeSet, TextChange } from '../../../model/change-set/change-set.js';
 import { ValidationMessage } from '../../../model/validation/message.js';
+import { QuickFix } from '../../../model/validation/quick-fix.js';
+import { getSimilarNames } from '../../../utils/similar-names.js';
 import { CORE_SCALARS, DIRECTIVES } from '../../graphql-base.js';
 import type { ParsedProjectSource } from '../../parsing/parsed-project.js';
 import { ParsedProjectSourceBaseKind } from '../../parsing/parsed-project.js';
@@ -43,7 +46,9 @@ export class GraphQLRulesValidator implements ParsedSourceValidator {
         const results = [...validate(coreSchema, ast, rules)];
 
         return results.map((error) =>
-            ValidationMessage.error(error.message, getMessageLocation(error)),
+            ValidationMessage.error(error.message, getMessageLocation(error), {
+                quickFixes: getQuickFixes(error),
+            }),
         );
     }
 }
@@ -53,6 +58,43 @@ function getMessageLocation(error: GraphQLError): Location | undefined {
         return undefined;
     }
     return error.nodes[0].loc;
+}
+
+function getQuickFixes(error: GraphQLError): ReadonlyArray<QuickFix> {
+    const node = error.nodes?.[0];
+    if (!node) {
+        return [];
+    }
+    const suggestions = getSuggestions(error.message, node);
+    // replace the name for unknown arguments, input fields and directives, and the value otherwise
+    const loc = 'name' in node && node.name ? node.name.loc : node.loc;
+    if (!loc) {
+        return [];
+    }
+    return suggestions.map(
+        (suggestion) =>
+            new QuickFix({
+                description: `Change to "${node.kind === Kind.DIRECTIVE ? '@' : ''}${suggestion}"`,
+                isPreferred: suggestions.length === 1,
+                changeSet: new ChangeSet([new TextChange(loc, suggestion)]),
+            }),
+    );
+}
+
+function getSuggestions(message: string, node: ASTNode): ReadonlyArray<string> {
+    // graphql-js does not suggest directive names, so we do it ourselves
+    if (node.kind === Kind.DIRECTIVE && message.startsWith('Unknown directive')) {
+        return getSimilarNames(
+            node.name.value,
+            coreSchema.getDirectives().map((directive) => directive.name),
+        );
+    }
+    // e.g. 'Unknown argument "foo" on directive "@bar". Did you mean "a", "b", or "c"?'
+    const index = message.indexOf(' Did you mean ');
+    if (index < 0) {
+        return [];
+    }
+    return [...message.slice(index).matchAll(/"([^"]*)"/g)].map((match) => match[1]);
 }
 
 const schemaBase: DocumentNode = gql`
