@@ -51,7 +51,11 @@ export function createRemoveLinesChange(loc: Location): TextChange {
     if (!isAloneOnLines) {
         return createRemoveInlineNodeChange(loc);
     }
-    return new TextChange(new MessageLocation(location.source, lineStart, lineEnd), '');
+    // don't leave two blank lines where the node was (e.g. between two types)
+    const isPreviousLineBlank = lineStart === 0 || /\n[ \t]*\n$/.test(body.slice(0, lineStart));
+    const nextBlankLine = /^[ \t]*\n/.exec(body.slice(lineEnd));
+    const end = isPreviousLineBlank && nextBlankLine ? lineEnd + nextBlankLine[0].length : lineEnd;
+    return new TextChange(new MessageLocation(location.source, lineStart, end), '');
 }
 
 /**
