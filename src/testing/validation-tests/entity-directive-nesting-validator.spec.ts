@@ -58,6 +58,18 @@ describe('entity directive nesting validator', () => {
         );
     });
 
+    it('offers to add @relation to fields of @rootEntity type in root entities', () => {
+        const newSource = applyQuickFix(
+            validate(`
+                type Foo @rootEntity { fooo: String }
+                type Bar @rootEntity { foo: [Foo] }
+            `).messages,
+            'Add @relation',
+        );
+        expect(newSource).to.contain('foo: [Foo] @relation }');
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
+    });
+
     it('suggests @parent and @root for fields of @rootEntity type in child entities', () => {
         assertValidatorRejects(
             `

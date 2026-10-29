@@ -514,6 +514,12 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `Type "${this.type.name}" is a root entity type and cannot be embedded. Consider adding ${list}.`,
                     this.astNode,
+                    {
+                        quickFixes:
+                            this.declaringType.kind === TypeKind.ROOT_ENTITY
+                                ? this.getAddRelationDirectiveQuickFixes()
+                                : [],
+                    },
                 ),
             );
         }
@@ -2155,6 +2161,22 @@ export class Field implements ModelComponent {
                 description: `Remove "${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true"`,
                 isPreferred: true,
                 changeSet: new ChangeSet(changes),
+            }),
+        ];
+    }
+
+    private getAddRelationDirectiveQuickFixes(): ReadonlyArray<QuickFix> {
+        const loc = this.astNode?.type.loc;
+        if (!loc) {
+            return [];
+        }
+        return [
+            new QuickFix({
+                description: `Add @${RELATION_DIRECTIVE}`,
+                isPreferred: true,
+                changeSet: new ChangeSet([
+                    createInsertionChange(loc.end, loc, ` @${RELATION_DIRECTIVE}`),
+                ]),
             }),
         ];
     }
