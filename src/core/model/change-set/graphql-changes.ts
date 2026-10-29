@@ -31,3 +31,25 @@ export function createInsertionChange(offset: number, loc: Location, text: strin
     const location = MessageLocation.fromGraphQLLocation(loc);
     return new TextChange(new MessageLocation(location.source, offset, offset), text);
 }
+
+/**
+ * Creates a change that removes a node that is on its own lines (e.g. a field or a type), including
+ * the line break after it
+ *
+ * If there is other content on the first or last line, only the node and the spaces before it are
+ * removed.
+ */
+export function createRemoveLinesChange(loc: Location): TextChange {
+    const location = MessageLocation.fromGraphQLLocation(loc);
+    const body = location.source.body;
+    const lineStart = body.lastIndexOf('\n', loc.start - 1) + 1;
+    const nextLineBreak = body.indexOf('\n', loc.end);
+    const lineEnd = nextLineBreak < 0 ? body.length : nextLineBreak + 1;
+    const isAloneOnLines =
+        body.slice(lineStart, loc.start).trim() === '' &&
+        body.slice(loc.end, lineEnd).trim() === '';
+    if (!isAloneOnLines) {
+        return createRemoveInlineNodeChange(loc);
+    }
+    return new TextChange(new MessageLocation(location.source, lineStart, lineEnd), '');
+}

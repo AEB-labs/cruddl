@@ -1,10 +1,12 @@
 import { gql } from 'graphql-tag';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { prettyPrint } from '../../core/graphql/pretty-print.js';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
+    validate,
 } from '../utils/source-validation-utils.js';
 
 describe('system field override validation', () => {
@@ -36,6 +38,27 @@ describe('system field override validation', () => {
             `),
             'Manually declaring system field "id" is redundant. Either add a suitable directive or consider removing the field',
         );
+    });
+
+    it('offers to remove a redundant system field', () => {
+        const result = validate(
+            prettyPrint(gql`
+                type Root @rootEntity {
+                    "The id"
+                    id: ID
+                    dummy: String
+                }
+            `),
+        );
+        const newSource = applyQuickFix(result.messages, 'Remove field');
+        expect(newSource).to.equal(
+            prettyPrint(gql`
+                type Root @rootEntity {
+                    dummy: String
+                }
+            `),
+        );
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
     });
 
     it('warns on redundant system field "createdAt"', () => {

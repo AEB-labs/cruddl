@@ -1,8 +1,11 @@
 import type { DirectiveNode } from 'graphql';
 import { groupArray, isDefined } from '../../utils/utils.js';
+import { ChangeSet } from '../change-set/change-set.js';
+import { createRemoveLinesChange } from '../change-set/graphql-changes.js';
 import type { FieldConfig } from '../config/field.js';
 import type { ObjectTypeConfig } from '../config/type.js';
 import { ValidationMessage } from '../validation/message.js';
+import { QuickFix } from '../validation/quick-fix.js';
 import type { ValidationContext } from '../validation/validation-context.js';
 import type { SystemFieldConfig } from './field.js';
 import { Field } from './field.js';
@@ -110,6 +113,21 @@ export abstract class ObjectTypeBase extends TypeBase {
                         'REDUNDANT_FIELD',
                         `Manually declaring system field "${systemField.name}" is redundant. Either add a suitable directive or consider removing the field`,
                         systemField.astNode,
+                        {
+                            quickFixes: systemFieldOverride.astNode?.loc
+                                ? [
+                                      new QuickFix({
+                                          description: 'Remove field',
+                                          isPreferred: true,
+                                          changeSet: new ChangeSet([
+                                              createRemoveLinesChange(
+                                                  systemFieldOverride.astNode.loc,
+                                              ),
+                                          ]),
+                                      }),
+                                  ]
+                                : [],
+                        },
                     ),
                 );
             }
