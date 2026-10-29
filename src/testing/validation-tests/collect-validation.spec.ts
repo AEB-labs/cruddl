@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
+    assertValidatorWarns,
     validate,
 } from '../utils/source-validation-utils.js';
 
@@ -564,6 +566,46 @@ describe('collect validation', () => {
             `,
                 `The aggregation results in type "Int", but this field is declared with type "Float".`,
             );
+        });
+
+        it('offers to use the boolean variant when aggregating a boolean field', () => {
+            const source = `
+                type Delivery @rootEntity {
+                    items: [DeliveryItem]
+                    containsDangerousGoods: Boolean @collect(path: "items.isDangerousGoods", aggregate: SOME)
+                }
+                type DeliveryItem @childEntity {
+                    isDangerousGoods: Boolean
+                }
+            `;
+            assertValidatorRejects(
+                source,
+                'Aggregation operator "SOME" is only allowed if the last path segment is a list field. "isDangerousGoods" is of type "Boolean", so you may want to use "SOME_TRUE".',
+            );
+            const newSource = applyQuickFix(validate(source).messages, 'Use SOME_TRUE');
+            expect(newSource).to.equal(source.replace('aggregate: SOME)', 'aggregate: SOME_TRUE)'));
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        });
+
+        it('offers to use the boolean variant when aggregating a boolean list field', () => {
+            const source = `
+                type Delivery @rootEntity {
+                    items: [DeliveryItem]
+                    numberOfConfirmations: Int @collect(path: "items.confirmations", aggregate: COUNT)
+                }
+                type DeliveryItem @childEntity {
+                    confirmations: [Boolean]
+                }
+            `;
+            assertValidatorWarns(
+                source,
+                'Aggregation operator "COUNT" only checks the number of items. "confirmations" is of type "Boolean", so you may want to use the operator "COUNT_TRUE" instead which specifically checks for boolean "true".',
+            );
+            const newSource = applyQuickFix(validate(source).messages, 'Use COUNT_TRUE');
+            expect(newSource).to.equal(
+                source.replace('aggregate: COUNT)', 'aggregate: COUNT_TRUE)'),
+            );
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
         });
 
         it('rejects wrongly declared list', () => {
