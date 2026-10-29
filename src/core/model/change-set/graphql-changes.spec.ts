@@ -5,7 +5,10 @@ import { Project } from '../../project/project.js';
 import { ProjectSource } from '../../project/source.js';
 import { applyChangeSet } from './apply-change-set.js';
 import { ChangeSet, type TextChange } from './change-set.js';
-import { createRemoveInlineNodeChange } from './graphql-changes.js';
+import {
+    createRemoveArgumentChange,
+    createRemoveInlineNodeChange,
+} from './graphql-changes.js';
 
 function apply(body: string, getChange: (type: ObjectTypeDefinitionNode) => TextChange) {
     const source = new ProjectSource('schema.graphqls', body);
@@ -19,6 +22,46 @@ function getFieldDirective(type: ObjectTypeDefinitionNode): DirectiveNode {
 }
 
 describe('graphql changes', () => {
+    describe('createRemoveArgumentChange', () => {
+        function removeArgument(body: string, argumentName: string) {
+            return apply(body, (type) => {
+                const directive = getFieldDirective(type);
+                const argument = directive.arguments!.find((a) => a.name.value === argumentName)!;
+                return createRemoveArgumentChange(directive, argument)!;
+            });
+        }
+
+        it('removes the parentheses if it is the only argument', () => {
+            expect(removeArgument('type T { f: String @d(a: 1) }', 'a')).to.equal(
+                'type T { f: String @d }',
+            );
+        });
+
+        it('removes the first argument and the comma after it', () => {
+            expect(removeArgument('type T { f: String @d(a: 1, b: 2) }', 'a')).to.equal(
+                'type T { f: String @d(b: 2) }',
+            );
+        });
+
+        it('removes the last argument and the comma before it', () => {
+            expect(removeArgument('type T { f: String @d(a: 1, b: 2) }', 'b')).to.equal(
+                'type T { f: String @d(a: 1) }',
+            );
+        });
+
+        it('removes a middle argument', () => {
+            expect(removeArgument('type T { f: String @d(a: 1, b: 2, c: 3) }', 'b')).to.equal(
+                'type T { f: String @d(a: 1, c: 3) }',
+            );
+        });
+
+        it('removes an argument without commas', () => {
+            expect(removeArgument('type T { f: String @d(a: 1 b: 2) }', 'a')).to.equal(
+                'type T { f: String @d(b: 2) }',
+            );
+        });
+    });
+
     describe('createRemoveInlineNodeChange', () => {
         it('removes a directive and the space before it', () => {
             expect(

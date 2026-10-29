@@ -24,7 +24,10 @@ import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js'
 import { GraphQLI18nString } from '../../schema/scalars/string-map.js';
 import { isDefined } from '../../utils/utils.js';
 import { ChangeSet, TextChange } from '../change-set/change-set.js';
-import { createRemoveInlineNodeChange } from '../change-set/graphql-changes.js';
+import {
+    createRemoveArgumentChange,
+    createRemoveInlineNodeChange,
+} from '../change-set/graphql-changes.js';
 import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
 import type { CalcMutationsOperator, FieldConfig, FlexSearchLanguage } from '../config/field.js';
 import { AggregationOperator, RelationDeleteAction } from '../config/field.js';
@@ -1833,6 +1836,7 @@ export class Field implements ModelComponent {
                         location:
                             this.input.isFlexSearchIndexedASTNode ??
                             this.input.isFlexSearchFulltextIndexedASTNode,
+                        quickFixes: this.getRemoveIncludeInSearchQuickFixes(),
                     },
                 ),
             );
@@ -1994,6 +1998,29 @@ export class Field implements ModelComponent {
                 ),
             );
         }
+    }
+
+    private getRemoveIncludeInSearchQuickFixes(): ReadonlyArray<QuickFix> {
+        const changes = [
+            this.input.isFlexSearchIndexedASTNode,
+            this.input.isFlexSearchFulltextIndexedASTNode,
+        ].flatMap((directive) => {
+            const argument = directive?.arguments?.find(
+                (a) => a.name.value === FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
+            );
+            const change = directive && argument && createRemoveArgumentChange(directive, argument);
+            return change ? [change] : [];
+        });
+        if (!changes.length) {
+            return [];
+        }
+        return [
+            new QuickFix({
+                description: `Remove "${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true"`,
+                isPreferred: true,
+                changeSet: new ChangeSet(changes),
+            }),
+        ];
     }
 
     /**

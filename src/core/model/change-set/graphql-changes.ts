@@ -1,4 +1,4 @@
-import type { Location } from 'graphql';
+import type { ArgumentNode, DirectiveNode, Location } from 'graphql';
 import { MessageLocation } from '../validation/location.js';
 import { TextChange } from './change-set.js';
 
@@ -52,4 +52,35 @@ export function createRemoveLinesChange(loc: Location): TextChange {
         return createRemoveInlineNodeChange(loc);
     }
     return new TextChange(new MessageLocation(location.source, lineStart, lineEnd), '');
+}
+
+/**
+ * Creates a change that removes an argument from a directive, including the parentheses if it is
+ * the only argument
+ */
+export function createRemoveArgumentChange(
+    directive: DirectiveNode,
+    argument: ArgumentNode,
+): TextChange | undefined {
+    if (!directive.loc || !directive.name.loc || !argument.loc) {
+        return undefined;
+    }
+    const location = MessageLocation.fromGraphQLLocation(directive.loc);
+    if (directive.arguments?.length === 1) {
+        return new TextChange(
+            new MessageLocation(location.source, directive.name.loc.end, directive.loc.end),
+            '',
+        );
+    }
+    const body = location.source.body;
+    let start = argument.loc.start;
+    let end = argument.loc.end;
+    const separatorAfter = /^\s*,?\s*/.exec(body.slice(end))![0];
+    if (body.slice(end + separatorAfter.length).startsWith(')')) {
+        // last argument: remove the separator before it instead
+        start -= /,?\s*$/.exec(body.slice(0, start))![0].length;
+    } else {
+        end += separatorAfter.length;
+    }
+    return new TextChange(new MessageLocation(location.source, start, end), '');
 }
