@@ -25,6 +25,7 @@ import { GraphQLI18nString } from '../../schema/scalars/string-map.js';
 import { isDefined } from '../../utils/utils.js';
 import { ChangeSet, TextChange } from '../change-set/change-set.js';
 import {
+    createInsertionChange,
     createRemoveArgumentChange,
     createRemoveInlineNodeChange,
 } from '../change-set/graphql-changes.js';
@@ -817,6 +818,16 @@ export class Field implements ModelComponent {
                                     this.aggregationOperator + '_NOT_NULL'
                                 }; otherwise, remove "${lastSegment.field.name}" from the path.`,
                                 this.input.collect.aggregationOperatorASTNode,
+                                {
+                                    quickFixes: [
+                                        ...this.getUseAggregationOperatorQuickFixes(
+                                            this.aggregationOperator + '_NOT_NULL',
+                                        ),
+                                        ...this.getRemoveLastCollectPathSegmentQuickFixes({
+                                            isPreferred: false,
+                                        }),
+                                    ],
+                                },
                             ),
                         );
                     } else {
@@ -824,6 +835,7 @@ export class Field implements ModelComponent {
                             ValidationMessage.error(
                                 `Aggregation operator "${this.aggregationOperator}" is only allowed if the last path segment is a list field. Please remove "${lastSegment.field.name}" from the path.`,
                                 this.input.collect.aggregationOperatorASTNode,
+                                { quickFixes: this.getRemoveLastCollectPathSegmentQuickFixes() },
                             ),
                         );
                     }
@@ -854,18 +866,22 @@ export class Field implements ModelComponent {
             }
             if (typeInfo.shouldBeNullable && !this.collectPath.resultIsNullable) {
                 let addendum = '';
+                let quickFixes: ReadonlyArray<QuickFix> = [];
                 const operatorName = this.aggregationOperator.toString();
                 if (operatorName.endsWith('_NOT_NULL')) {
-                    addendum = ` Consider using "${operatorName.substr(
+                    const suggestedOperator = operatorName.substr(
                         0,
                         operatorName.length - '_NOT_NULL'.length,
-                    )}`;
+                    );
+                    addendum = ` Consider using "${suggestedOperator}`;
+                    quickFixes = this.getUseAggregationOperatorQuickFixes(suggestedOperator);
                 }
                 context.addMessage(
                     ValidationMessage.error(
                         `Aggregation operator "${this.aggregationOperator}" is only supported on nullable types, but the path does not result in a nullable type.` +
                             addendum,
                         this.input.collect.aggregationOperatorASTNode,
+                        { quickFixes },
                     ),
                 );
                 return;
@@ -893,6 +909,7 @@ export class Field implements ModelComponent {
             if (typeInfo.usesDistinct && resultingType) {
                 if (!isDistinctAggregationSupported(resultingType)) {
                     let typeHint;
+                    let quickFixes: ReadonlyArray<QuickFix> = [];
                     if (resultingType.isValueObjectType) {
                         const offendingFields =
                             getOffendingValueObjectFieldsForDistinctAggregation(resultingType);
@@ -904,6 +921,10 @@ export class Field implements ModelComponent {
                         } ${offendingFieldNames} has a type that does not support this operator`;
                     } else if (resultingType.isEntityExtensionType) {
                         typeHint = `entity extension types. You can instead collect the parent objects by removing the last path segment`;
+                        // this changes what is collected, so it should not be applied automatically
+                        quickFixes = this.getRemoveLastCollectPathSegmentQuickFixes({
+                            isPreferred: false,
+                        });
                     } else {
                         typeHint = `type "${
                             resultingType.name
@@ -915,6 +936,7 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `Aggregation operator "${this.aggregationOperator}" is not supported on ${typeHint}.`,
                             this.input.collect.aggregationOperatorASTNode,
+                            { quickFixes },
                         ),
                     );
                     return;
@@ -934,6 +956,7 @@ export class Field implements ModelComponent {
                             ValidationMessage.error(
                                 `Aggregation operator "${this.aggregationOperator}" is not needed because the collect result can neither contain duplicate entities nor null values. Please remove the "${COLLECT_AGGREGATE_ARG}" argument".`,
                                 this.input.collect.aggregationOperatorASTNode,
+                                { quickFixes: this.getRemoveAggregateArgumentQuickFixes() },
                             ),
                         );
                         return;
@@ -943,6 +966,10 @@ export class Field implements ModelComponent {
                             ValidationMessage.error(
                                 `Please use the operator "${suggestedOperator}" because the collect result can neither contain duplicate entities nor null values.".`,
                                 this.input.collect.aggregationOperatorASTNode,
+                                {
+                                    quickFixes:
+                                        this.getUseAggregationOperatorQuickFixes(suggestedOperator),
+                                },
                             ),
                         );
                         return;
@@ -1006,6 +1033,11 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `The collect path results in entity extension type "${resultingType.name}", but entity extensions cannot be collected. You can either collect the parent entity by removing the last path segment, or collect values within the entity extension by adding a path segment.`,
                             this.input.collect.pathASTNode,
+                            {
+                                quickFixes: this.getRemoveLastCollectPathSegmentQuickFixes({
+                                    isPreferred: false,
+                                }),
+                            },
                         ),
                     );
                     return;
@@ -1021,7 +1053,8 @@ export class Field implements ModelComponent {
                         : resultingType.isValueObjectType
                           ? 'value object'
                           : 'scalar';
-                    const suggestion = isDistinctAggregationSupported(resultingType)
+                    const isDistinctSupported = isDistinctAggregationSupported(resultingType);
+                    const suggestion = isDistinctSupported
                         ? ` You may want to use the "${AggregationOperator.DISTINCT}" aggregation.`
                         : `You can either collect the parent entity by removing the last path segment, or add the "aggregate" argument to aggregate the values.`;
                     context.addMessage(
@@ -1029,6 +1062,13 @@ export class Field implements ModelComponent {
                             `The collect path results in ${typeKind} type "${resultingType.name}", but ${typeKind}s cannot be collected without aggregating them. ` +
                                 suggestion,
                             this.input.collect.pathASTNode,
+                            {
+                                quickFixes: isDistinctSupported
+                                    ? this.getAddDistinctAggregationQuickFixes()
+                                    : this.getRemoveLastCollectPathSegmentQuickFixes({
+                                          isPreferred: false,
+                                      }),
+                            },
                         ),
                     );
                     return;
@@ -1066,6 +1106,7 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `The ${path} can produce duplicate ${entityType}${reason}. Please set argument "${COLLECT_AGGREGATE_ARG}" to "${AggregationOperator.DISTINCT}" to filter out duplicates and null items if you don't want any other aggregation.`,
                             this.input.collect.pathASTNode,
+                            { quickFixes: this.getAddDistinctAggregationQuickFixes() },
                         ),
                     );
                     return;
@@ -1082,6 +1123,7 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `The collect path can produce items that are null${fieldHint}. Please set argument "${COLLECT_AGGREGATE_ARG}" to "${AggregationOperator.DISTINCT}" to filter out null items if you don't want any other aggregation.`,
                             this.input.collect.pathASTNode,
+                            { quickFixes: this.getAddDistinctAggregationQuickFixes() },
                         ),
                     );
                     return;
@@ -2063,16 +2105,75 @@ export class Field implements ModelComponent {
      * Quick fixes to replace the aggregation operator with its variant that checks for boolean "true"
      */
     private getUseBooleanAggregationOperatorQuickFixes(): ReadonlyArray<QuickFix> {
+        return this.getUseAggregationOperatorQuickFixes(this.aggregationOperator + '_TRUE');
+    }
+
+    private getUseAggregationOperatorQuickFixes(operator: string): ReadonlyArray<QuickFix> {
         const loc = this.input.collect?.aggregationOperatorASTNode?.loc;
-        const booleanOperator = this.aggregationOperator + '_TRUE';
-        if (!loc || !Object.values<string>(AggregationOperator).includes(booleanOperator)) {
+        if (!loc || !Object.values<string>(AggregationOperator).includes(operator)) {
             return [];
         }
         return [
             new QuickFix({
-                description: `Use ${booleanOperator}`,
+                description: `Use ${operator}`,
                 isPreferred: true,
-                changeSet: new ChangeSet([new TextChange(loc, booleanOperator)]),
+                changeSet: new ChangeSet([new TextChange(loc, operator)]),
+            }),
+        ];
+    }
+
+    private getRemoveAggregateArgumentQuickFixes(): ReadonlyArray<QuickFix> {
+        const directive = this.input.collect?.astNode;
+        const argument = directive?.arguments?.find(
+            (arg) => arg.name.value === COLLECT_AGGREGATE_ARG,
+        );
+        const change = directive && argument && createRemoveArgumentChange(directive, argument);
+        if (!change) {
+            return [];
+        }
+        return [
+            new QuickFix({
+                description: `Remove "${COLLECT_AGGREGATE_ARG}" argument`,
+                isPreferred: true,
+                changeSet: new ChangeSet([change]),
+            }),
+        ];
+    }
+
+    private getAddDistinctAggregationQuickFixes(): ReadonlyArray<QuickFix> {
+        const loc = this.input.collect?.pathASTNode?.loc;
+        if (!loc || this.input.collect?.aggregationOperatorASTNode) {
+            return [];
+        }
+        return [
+            new QuickFix({
+                description: `Add ${COLLECT_AGGREGATE_ARG}: ${AggregationOperator.DISTINCT}`,
+                isPreferred: true,
+                changeSet: new ChangeSet([
+                    createInsertionChange(
+                        loc.end,
+                        loc,
+                        `, ${COLLECT_AGGREGATE_ARG}: ${AggregationOperator.DISTINCT}`,
+                    ),
+                ]),
+            }),
+        ];
+    }
+
+    private getRemoveLastCollectPathSegmentQuickFixes({
+        isPreferred = true,
+    }: { readonly isPreferred?: boolean } = {}): ReadonlyArray<QuickFix> {
+        const loc = this.input.collect?.pathASTNode?.loc;
+        const segments = this.input.collect?.path.split('.') ?? [];
+        if (!loc || segments.length < 2) {
+            return [];
+        }
+        const newPath = segments.slice(0, -1).join('.');
+        return [
+            new QuickFix({
+                description: `Change path to "${newPath}"`,
+                isPreferred,
+                changeSet: new ChangeSet([new TextChange(loc, JSON.stringify(newPath))]),
             }),
         ];
     }

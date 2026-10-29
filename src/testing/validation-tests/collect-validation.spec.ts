@@ -937,4 +937,124 @@ describe('collect validation', () => {
             });
         });
     });
+
+    describe('quick fixes for path and aggregation errors', () => {
+        function getSource(field: string) {
+            return `
+                type Shipment @rootEntity {
+                    deliveries: [Delivery] @relation
+                    ${field}
+                }
+                type Delivery @rootEntity {
+                    handlingUnits: [HandlingUnit] @relation
+                    items: [DeliveryItem]
+                }
+                type HandlingUnit @rootEntity {
+                    handlingUnitNumber: String
+                }
+                type DeliveryItem @childEntity {
+                    itemNumber: String
+                    quantity: Int
+                    dimensions: Dimensions
+                }
+                type Dimensions @entityExtension {
+                    weightInKg: Float
+                }
+            `;
+        }
+
+        function expectQuickFix(field: string, description: string, expectedField: string) {
+            const newSource = applyQuickFix(validate(getSource(field)).messages, description);
+            expect(newSource).to.equal(getSource(expectedField));
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        }
+
+        it('offers to add DISTINCT if the path can produce duplicates', () => {
+            expectQuickFix(
+                'allHandlingUnits: [HandlingUnit] @collect(path: "deliveries.handlingUnits")',
+                'Add aggregate: DISTINCT',
+                'allHandlingUnits: [HandlingUnit] @collect(path: "deliveries.handlingUnits", aggregate: DISTINCT)',
+            );
+        });
+
+        it('offers to add DISTINCT when collecting scalars', () => {
+            expectQuickFix(
+                'itemNumbers: [String] @collect(path: "deliveries.items.itemNumber")',
+                'Add aggregate: DISTINCT',
+                'itemNumbers: [String] @collect(path: "deliveries.items.itemNumber", aggregate: DISTINCT)',
+            );
+        });
+
+        it('offers to remove an unnecessary DISTINCT', () => {
+            expectQuickFix(
+                'allItems: [DeliveryItem] @collect(path: "deliveries.items", aggregate: DISTINCT)',
+                'Remove "aggregate" argument',
+                'allItems: [DeliveryItem] @collect(path: "deliveries.items")',
+            );
+        });
+
+        it('offers to use the operator without DISTINCT if there cannot be duplicates', () => {
+            expectQuickFix(
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT_DISTINCT)',
+                'Use COUNT',
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT)',
+            );
+        });
+
+        it('offers to use the NOT_NULL operator if the last segment is a nullable non-list field', () => {
+            expectQuickFix(
+                'numberOfQuantities: Int @collect(path: "deliveries.items.quantity", aggregate: COUNT)',
+                'Use COUNT_NOT_NULL',
+                'numberOfQuantities: Int @collect(path: "deliveries.items.quantity", aggregate: COUNT_NOT_NULL)',
+            );
+        });
+
+        it('offers to remove a nullable non-list field from the path', () => {
+            expectQuickFix(
+                'numberOfItems: Int @collect(path: "deliveries.items.quantity", aggregate: COUNT)',
+                'Change path to "deliveries.items"',
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT)',
+            );
+        });
+
+        it('offers to remove a non-list field from the path', () => {
+            expectQuickFix(
+                'numberOfItems: Int @collect(path: "deliveries.items.dimensions", aggregate: COUNT)',
+                'Change path to "deliveries.items"',
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT)',
+            );
+        });
+
+        it('offers to use the operator without NOT_NULL if the result is not nullable', () => {
+            expectQuickFix(
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT_NOT_NULL)',
+                'Use COUNT',
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT)',
+            );
+        });
+
+        it('offers to remove an entity extension from the path of a DISTINCT aggregation', () => {
+            const newSource = applyQuickFix(
+                validate(
+                    getSource(
+                        'allDimensions: [Dimensions] @collect(path: "deliveries.items.dimensions", aggregate: DISTINCT)',
+                    ),
+                ).messages,
+                'Change path to "deliveries.items"',
+            );
+            expect(newSource).to.contain('@collect(path: "deliveries.items", aggregate: DISTINCT)');
+        });
+
+        it('offers to remove an entity extension from the path', () => {
+            const newSource = applyQuickFix(
+                validate(
+                    getSource(
+                        'allDimensions: [Dimensions] @collect(path: "deliveries.items.dimensions")',
+                    ),
+                ).messages,
+                'Change path to "deliveries.items"',
+            );
+            expect(newSource).to.contain('@collect(path: "deliveries.items")');
+        });
+    });
 });
