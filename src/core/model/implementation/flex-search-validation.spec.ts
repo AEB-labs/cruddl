@@ -127,6 +127,25 @@ describe('FlexSearch', () => {
         );
     });
 
+    it('offers to remove an ineffective includeInSearch', () => {
+        const source = `
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                someExtension: HandlingUnitInfo @flexSearch(includeInSearch: true)
+            }
+            type HandlingUnitInfo @entityExtension{
+                someString: String @flexSearch
+            }
+        `;
+        const newSource = applyQuickFix(
+            validate(source).messages,
+            'Remove "includeInSearch: true"',
+        );
+        expect(newSource).to.equal(
+            source.replace('@flexSearch(includeInSearch: true)', '@flexSearch'),
+        );
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
+    });
+
     it('does not warn for includeInSearch on child with fulltext includeInSearch field', () => {
         assertValidatorAcceptsAndDoesNotWarn(
             `
