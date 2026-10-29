@@ -928,4 +928,149 @@ describe('collect validation', () => {
             });
         });
     });
+
+    describe('quick fixes for path and aggregation errors', () => {
+        function getSource(field: string) {
+            return `
+                type Shipment @rootEntity {
+                    deliveries: [Delivery] @relation
+                    ${field}
+                }
+                type Delivery @rootEntity {
+                    handlingUnits: [HandlingUnit] @relation
+                    items: [DeliveryItem]
+                }
+                type HandlingUnit @rootEntity {
+                    handlingUnitNumber: String
+                }
+                type DeliveryItem @childEntity {
+                    itemNumber: String
+                    quantity: Int
+                    dimensions: Dimensions
+                }
+                type Dimensions @entityExtension {
+                    weightInKg: Float
+                }
+            `;
+        }
+
+        /**
+         * Asserts that the field results in the given error, and that the quick fix with the given
+         * description changes it to the expected field
+         *
+         * @param remainingErrors the errors after applying the quick fix (if it does not fix everything)
+         */
+        function expectQuickFix(
+            field: string,
+            error: string,
+            description: string,
+            expectedField: string,
+            remainingErrors: ReadonlyArray<string> = [],
+        ) {
+            assertValidatorRejects(getSource(field), error);
+            const newSource = applyQuickFix(validate(getSource(field)).messages, description);
+            expect(newSource).to.equal(getSource(expectedField));
+            if (remainingErrors.length) {
+                assertValidatorRejects(newSource, remainingErrors);
+            } else {
+                assertValidatorAcceptsAndDoesNotWarn(newSource);
+            }
+        }
+
+        it('offers to add DISTINCT if the path can produce duplicates', () => {
+            expectQuickFix(
+                'allHandlingUnits: [HandlingUnit] @collect(path: "deliveries.handlingUnits")',
+                'The path can produce duplicate HandlingUnit entities (because the relation target type "HandlingUnit" does not declare an inverse relation field to "Delivery.handlingUnits"). Please set argument "aggregate" to "DISTINCT" to filter out duplicates and null items if you don\'t want any other aggregation.',
+                'Add aggregate: DISTINCT',
+                'allHandlingUnits: [HandlingUnit] @collect(path: "deliveries.handlingUnits", aggregate: DISTINCT)',
+            );
+        });
+
+        it('offers to add DISTINCT when collecting scalars', () => {
+            expectQuickFix(
+                'itemNumbers: [String] @collect(path: "deliveries.items.itemNumber")',
+                'The collect path results in scalar type "String", but scalars cannot be collected without aggregating them.  You may want to use the "DISTINCT" aggregation.',
+                'Add aggregate: DISTINCT',
+                'itemNumbers: [String] @collect(path: "deliveries.items.itemNumber", aggregate: DISTINCT)',
+            );
+        });
+
+        it('offers to remove an unnecessary DISTINCT', () => {
+            expectQuickFix(
+                'allItems: [DeliveryItem] @collect(path: "deliveries.items", aggregate: DISTINCT)',
+                'Aggregation operator "DISTINCT" is not needed because the collect result can neither contain duplicate entities nor null values. Please remove the "aggregate" argument".',
+                'Remove "aggregate" argument',
+                'allItems: [DeliveryItem] @collect(path: "deliveries.items")',
+            );
+        });
+
+        it('offers to use the operator without DISTINCT if there cannot be duplicates', () => {
+            expectQuickFix(
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT_DISTINCT)',
+                'Please use the operator "COUNT" because the collect result can neither contain duplicate entities nor null values.".',
+                'Use COUNT',
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT)',
+            );
+        });
+
+        it('offers to use the NOT_NULL operator if the last segment is a nullable non-list field', () => {
+            expectQuickFix(
+                'numberOfQuantities: Int @collect(path: "deliveries.items.quantity", aggregate: COUNT)',
+                'Aggregation operator "COUNT" is only allowed if the last path segment is a list field. If you want to exclude objects where "quantity" is null, use "COUNT_NOT_NULL; otherwise, remove "quantity" from the path.',
+                'Use COUNT_NOT_NULL',
+                'numberOfQuantities: Int @collect(path: "deliveries.items.quantity", aggregate: COUNT_NOT_NULL)',
+            );
+        });
+
+        it('offers to remove a nullable non-list field from the path', () => {
+            expectQuickFix(
+                'numberOfItems: Int @collect(path: "deliveries.items.quantity", aggregate: COUNT)',
+                'Aggregation operator "COUNT" is only allowed if the last path segment is a list field. If you want to exclude objects where "quantity" is null, use "COUNT_NOT_NULL; otherwise, remove "quantity" from the path.',
+                'Change path to "deliveries.items"',
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT)',
+            );
+        });
+
+        it('offers to remove a non-list field from the path', () => {
+            expectQuickFix(
+                'numberOfItems: Int @collect(path: "deliveries.items.dimensions", aggregate: COUNT)',
+                'Aggregation operator "COUNT" is only allowed if the last path segment is a list field. Please remove "dimensions" from the path.',
+                'Change path to "deliveries.items"',
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT)',
+            );
+        });
+
+        it('offers to use the operator without NOT_NULL if the result is not nullable', () => {
+            expectQuickFix(
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT_NOT_NULL)',
+                'Aggregation operator "COUNT_NOT_NULL" is only supported on nullable types, but the path does not result in a nullable type. Consider using "COUNT',
+                'Use COUNT',
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT)',
+            );
+        });
+
+        it('offers to remove an entity extension from the path of a DISTINCT aggregation', () => {
+            expectQuickFix(
+                'allDimensions: [Dimensions] @collect(path: "deliveries.items.dimensions", aggregate: DISTINCT)',
+                'Aggregation operator "DISTINCT" is not supported on entity extension types. You can instead collect the parent objects by removing the last path segment.',
+                'Change path to "deliveries.items"',
+                'allDimensions: [Dimensions] @collect(path: "deliveries.items", aggregate: DISTINCT)',
+                [
+                    'Aggregation operator "DISTINCT" is not needed because the collect result can neither contain duplicate entities nor null values. Please remove the "aggregate" argument".',
+                ],
+            );
+        });
+
+        it('offers to remove an entity extension from the path', () => {
+            expectQuickFix(
+                'allDimensions: [Dimensions] @collect(path: "deliveries.items.dimensions")',
+                'The collect path results in entity extension type "Dimensions", but entity extensions cannot be collected. You can either collect the parent entity by removing the last path segment, or collect values within the entity extension by adding a path segment.',
+                'Change path to "deliveries.items"',
+                'allDimensions: [Dimensions] @collect(path: "deliveries.items")',
+                [
+                    'The collect path results in type "DeliveryItem", but this field is declared with type "Dimensions".',
+                ],
+            );
+        });
+    });
 });
