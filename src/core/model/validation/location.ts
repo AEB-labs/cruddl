@@ -74,7 +74,10 @@ export class MessageLocation {
 
     static fromGraphQLLocation(loc: Location) {
         return new MessageLocation(
-            ProjectSource.fromGraphQLSource(loc.source) || loc.source.name,
+            // keep the text even if the GraphQL source is not linked to a project source, so the
+            // location can be used for quick fixes
+            ProjectSource.fromGraphQLSource(loc.source) ??
+                new ProjectSource(loc.source.name, loc.source.body),
             new SourcePosition(loc.start, loc.startToken.line, loc.startToken.column),
             new SourcePosition(
                 loc.end,

@@ -1,7 +1,6 @@
 import type { ArgumentNode } from 'graphql';
 import { GraphQLID, GraphQLString } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import { ProjectSource } from '../../project/source.js';
 import {
     ACCESS_FIELD_DIRECTIVE,
     ACCESS_GROUP_FIELD,
@@ -28,7 +27,7 @@ import type {
 import type { PermissionsConfig } from '../config/permissions.js';
 import type { RootEntityTypeConfig } from '../config/type.js';
 import { TypeKind } from '../config/type.js';
-import { MessageLocation } from '../validation/location.js';
+import type { MessageLocation } from '../validation/location.js';
 import { ValidationMessage } from '../validation/message.js';
 import { QuickFix } from '../validation/quick-fix.js';
 import { ValidationContext } from '../validation/validation-context.js';
@@ -589,14 +588,7 @@ export class RootEntityType extends ObjectTypeBase {
                                       isPreferred: true,
                                       changeSet: new ChangeSet([
                                           new TextChange(
-                                              new MessageLocation(
-                                                  new ProjectSource(
-                                                      modulesDirectiveLocation.source.name,
-                                                      modulesDirectiveLocation.source.body,
-                                                  ),
-                                                  modulesDirectiveLocation.start,
-                                                  modulesDirectiveLocation.end,
-                                              ),
+                                              modulesDirectiveLocation,
                                               `@${MODULES_DIRECTIVE}(${MODULES_ALL_ARG}: true)`,
                                           ),
                                       ]),

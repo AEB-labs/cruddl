@@ -1,7 +1,6 @@
 import type { ASTNode, DirectiveNode, FieldDefinitionNode } from 'graphql';
 import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import { ProjectSource } from '../../project/source.js';
 import {
     ACCESS_FIELD_DIRECTIVE,
     ACCESS_GROUP_FIELD,
@@ -24,7 +23,8 @@ import { GraphQLLocalTime } from '../../schema/scalars/local-time.js';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js';
 import { GraphQLI18nString } from '../../schema/scalars/string-map.js';
 import { isDefined } from '../../utils/utils.js';
-import { ChangeSet, TextChange } from '../change-set/change-set.js';
+import { ChangeSet } from '../change-set/change-set.js';
+import { createRemoveInlineNodeChange } from '../change-set/graphql-changes.js';
 import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
 import type { CalcMutationsOperator, FieldConfig, FlexSearchLanguage } from '../config/field.js';
 import { AggregationOperator, RelationDeleteAction } from '../config/field.js';
@@ -34,7 +34,6 @@ import {
     collectEmbeddingRootEntityTypes,
 } from '../utils/emedding-entity-types.js';
 import { findRecursiveCascadePath } from '../utils/recursive-cascade.js';
-import { MessageLocation } from '../validation/location.js';
 import { ValidationMessage } from '../validation/message.js';
 import { QuickFix } from '../validation/quick-fix.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
@@ -1985,21 +1984,12 @@ export class Field implements ModelComponent {
         if (!loc) {
             return [];
         }
-        // also remove the whitespace before the directive
-        const source = new ProjectSource(loc.source.name, loc.source.body);
-        const textBefore = source.body.slice(0, loc.start);
-        const whitespaceLength = textBefore.length - textBefore.trimEnd().length;
         return [
             new QuickFix({
                 description: `Remove @${ACCESS_FIELD_DIRECTIVE}`,
                 // the field might be prepared for a restriction that will be added later
                 isPreferred: false,
-                changeSet: new ChangeSet([
-                    new TextChange(
-                        new MessageLocation(source, loc.start - whitespaceLength, loc.end),
-                        '',
-                    ),
-                ]),
+                changeSet: new ChangeSet([createRemoveInlineNodeChange(loc)]),
             }),
         ];
     }
