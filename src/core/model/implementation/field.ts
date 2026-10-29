@@ -1766,7 +1766,12 @@ export class Field implements ModelComponent {
                     'DEPRECATED',
                     `@flexSearch is not supported on type "${this.type.name}". Remove this directive. This will be an error in a future release.`,
                     this.input.astNode,
-                    { location: this.input.isFlexSearchIndexedASTNode },
+                    {
+                        location: this.input.isFlexSearchIndexedASTNode,
+                        quickFixes: getRemoveDirectiveQuickFixes(
+                            this.input.isFlexSearchIndexedASTNode,
+                        ),
+                    },
                 ),
             );
         }
@@ -1976,7 +1981,11 @@ export class Field implements ModelComponent {
                     this.astNode,
                     {
                         location: this.input.accessFieldDirectiveASTNode,
-                        quickFixes: this.getRemoveAccessFieldQuickFixes(),
+                        // the field might be prepared for a restriction that will be added later
+                        quickFixes: getRemoveDirectiveQuickFixes(
+                            this.input.accessFieldDirectiveASTNode,
+                            { isPreferred: false },
+                        ),
                     },
                 ),
             );
@@ -1997,21 +2006,6 @@ export class Field implements ModelComponent {
                 description: `Use ${booleanOperator}`,
                 isPreferred: true,
                 changeSet: new ChangeSet([new TextChange(loc, booleanOperator)]),
-            }),
-        ];
-    }
-
-    private getRemoveAccessFieldQuickFixes(): ReadonlyArray<QuickFix> {
-        const loc = this.input.accessFieldDirectiveASTNode?.loc;
-        if (!loc) {
-            return [];
-        }
-        return [
-            new QuickFix({
-                description: `Remove @${ACCESS_FIELD_DIRECTIVE}`,
-                // the field might be prepared for a restriction that will be added later
-                isPreferred: false,
-                changeSet: new ChangeSet([createRemoveInlineNodeChange(loc)]),
             }),
         ];
     }
@@ -2412,4 +2406,20 @@ function getOffendingValueObjectFieldsForDistinctAggregation(type: ValueObjectTy
             !field.type.isRootEntityType &&
             !scalarTypesThatSupportDistinctAggregation.includes(field.type.name),
     );
+}
+
+function getRemoveDirectiveQuickFixes(
+    directive: DirectiveNode | undefined,
+    { isPreferred = true }: { readonly isPreferred?: boolean } = {},
+): ReadonlyArray<QuickFix> {
+    if (!directive?.loc) {
+        return [];
+    }
+    return [
+        new QuickFix({
+            description: `Remove @${directive.name.value}`,
+            isPreferred,
+            changeSet: new ChangeSet([createRemoveInlineNodeChange(directive.loc)]),
+        }),
+    ];
 }

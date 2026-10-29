@@ -246,6 +246,18 @@ describe('FlexSearch', () => {
         );
     });
 
+    it('offers to remove flexSearch on fields of type JSON', () => {
+        const result = validate(`
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                someString: String @flexSearch
+                data: JSON @flexSearch
+            }
+        `);
+        const newSource = applyQuickFix(result.messages, 'Remove @flexSearch');
+        expect(newSource).to.contain('                data: JSON\n');
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
+    });
+
     it('rejects flexSearch without accessField', () => {
         const model = new Model({
             types: [
