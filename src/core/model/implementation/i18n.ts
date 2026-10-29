@@ -1,4 +1,5 @@
 import { I18N_GENERIC, I18N_LOCALE } from '../../meta-schema/constants.js';
+import { didYouMean, getSimilarNames } from '../../utils/similar-names.js';
 import {
     arrayStartsWith,
     capitalize,
@@ -8,14 +9,17 @@ import {
     mapFirstDefined,
     mapValues,
 } from '../../utils/utils.js';
+import { ChangeSet } from '../change-set/change-set.js';
+import { createRemoveWholeLinesChange } from '../change-set/remove-lines.js';
 import type {
     LocalizationBaseConfig,
     LocalizationConfig,
     NamespaceLocalizationConfig,
     TypeLocalizationConfig,
 } from '../config/i18n.js';
-import type { MessageLocation } from '../validation/location.js';
+import { MessageLocation } from '../validation/location.js';
 import { ValidationMessage } from '../validation/message.js';
+import { QuickFix } from '../validation/quick-fix.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
 import type { EnumValue } from './enum-type.js';
 import type { Field } from './field.js';
@@ -381,8 +385,22 @@ function checkForTypeConstraints(
                         ValidationMessage.nonSuppressableWarning(
                             'There is no type "' +
                                 typeKey +
-                                '" in the model specification. This might be a spelling error.',
+                                '" in the model specification. This might be a spelling error.' +
+                                didYouMean(
+                                    getSimilarNames(
+                                        typeKey,
+                                        model.types.map((t) => t.name),
+                                    ),
+                                ),
                             type.loc,
+                            {
+                                quickFixes: getRemoveLocalizationQuickFixes(
+                                    type.loc,
+                                    typeKey,
+                                    model.types.map((t) => t.name),
+                                    Object.keys(ns.types).length === 1,
+                                ),
+                            },
                         ),
                     );
                     continue;
@@ -399,8 +417,22 @@ function checkForTypeConstraints(
                                             typeKey +
                                             '" has no field "' +
                                             field +
-                                            '". This might be a spelling error.',
+                                            '". This might be a spelling error.' +
+                                            didYouMean(
+                                                getSimilarNames(
+                                                    field,
+                                                    objectType.fields.map((f) => f.name),
+                                                ),
+                                            ),
                                         type.fields[field].loc,
+                                        {
+                                            quickFixes: getRemoveLocalizationQuickFixes(
+                                                type.fields[field].loc,
+                                                field,
+                                                objectType.fields.map((f) => f.name),
+                                                Object.keys(type.fields).length === 1,
+                                            ),
+                                        },
                                     ),
                                 );
                             }
@@ -436,8 +468,22 @@ function checkForTypeConstraints(
                                                 typeKey +
                                                 '" has no value "' +
                                                 value +
-                                                '". This might be a spelling error.',
+                                                '". This might be a spelling error.' +
+                                                didYouMean(
+                                                    getSimilarNames(
+                                                        value,
+                                                        enumType.values.map((v) => v.value),
+                                                    ),
+                                                ),
                                             type.values[value].loc,
+                                            {
+                                                quickFixes: getRemoveLocalizationQuickFixes(
+                                                    type.values[value].loc,
+                                                    value,
+                                                    enumType.values.map((v) => v.value),
+                                                    Object.keys(type.values).length === 1,
+                                                ),
+                                            },
                                         ),
                                     );
                                 }
@@ -606,5 +652,53 @@ function generateGenericName(name: string | undefined): string | undefined {
     }
     return capitalize(
         name.replace(/([a-z])([A-Z])/g, (str, arg1, arg2) => `${arg1} ${decapitalize(arg2)}`),
+    );
+}
+
+/**
+ * Offers to remove a localization of a type, field or enum value that does not exist
+ */
+function getRemoveLocalizationQuickFixes(
+    location: MessageLocation | undefined,
+    name: string,
+    existingNames: ReadonlyArray<string>,
+    isOnlyEntry: boolean,
+): ReadonlyArray<QuickFix> {
+    // only supported if the localization is on its own lines (e.g. in block-style YAML)
+    const change =
+        location &&
+        ((isOnlyEntry && createRemoveWithParentKeyChange(location)) ||
+            createRemoveWholeLinesChange(location));
+    if (!change) {
+        return [];
+    }
+    return [
+        new QuickFix({
+            description: 'Remove localization',
+            // if there is a similar name, this might just be a typo
+            isPreferred: !getSimilarNames(name, existingNames).length,
+            changeSet: new ChangeSet([change]),
+        }),
+    ];
+}
+
+/**
+ * Removes a YAML map entry together with the key of the map containing it (e.g. "fields:"), so
+ * removing the only entry does not leave an empty key behind
+ */
+function createRemoveWithParentKeyChange(location: MessageLocation) {
+    const body = location.source.body;
+    const lineStart = body.lastIndexOf('\n', location.start.offset - 1) + 1;
+    const indent = body.slice(lineStart, location.start.offset);
+    // the previous line that is not blank
+    const match = /(^|\n)([ \t]*)[^\s#][^\n]*:[ \t]*\r?\n(?:[ \t]*\r?\n)*$/.exec(
+        body.slice(0, lineStart),
+    );
+    if (!match || indent.trim() !== '' || match[2].length >= indent.length) {
+        return undefined;
+    }
+    const parentKeyStart = match.index + match[1].length + match[2].length;
+    return createRemoveWholeLinesChange(
+        new MessageLocation(location.source, parentKeyStart, location.end.offset),
     );
 }

@@ -1,6 +1,7 @@
 import type { ArgumentNode, DirectiveNode, Location } from 'graphql';
 import { MessageLocation } from '../validation/location.js';
 import { TextChange } from './change-set.js';
+import { createRemoveWholeLinesChange } from './remove-lines.js';
 
 /**
  * Creates a change that removes a node that shares its line with other content (e.g. a directive),
@@ -40,22 +41,10 @@ export function createInsertionChange(offset: number, loc: Location, text: strin
  * removed.
  */
 export function createRemoveLinesChange(loc: Location): TextChange {
-    const location = MessageLocation.fromGraphQLLocation(loc);
-    const body = location.source.body;
-    const lineStart = body.lastIndexOf('\n', loc.start - 1) + 1;
-    const nextLineBreak = body.indexOf('\n', loc.end);
-    const lineEnd = nextLineBreak < 0 ? body.length : nextLineBreak + 1;
-    const isAloneOnLines =
-        body.slice(lineStart, loc.start).trim() === '' &&
-        body.slice(loc.end, lineEnd).trim() === '';
-    if (!isAloneOnLines) {
-        return createRemoveInlineNodeChange(loc);
-    }
-    // don't leave two blank lines where the node was (e.g. between two types)
-    const isPreviousLineBlank = lineStart === 0 || /\n[ \t]*\n$/.test(body.slice(0, lineStart));
-    const nextBlankLine = /^[ \t]*\n/.exec(body.slice(lineEnd));
-    const end = isPreviousLineBlank && nextBlankLine ? lineEnd + nextBlankLine[0].length : lineEnd;
-    return new TextChange(new MessageLocation(location.source, lineStart, end), '');
+    return (
+        createRemoveWholeLinesChange(MessageLocation.fromGraphQLLocation(loc)) ??
+        createRemoveInlineNodeChange(loc)
+    );
 }
 
 /**
