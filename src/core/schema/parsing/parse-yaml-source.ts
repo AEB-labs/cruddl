@@ -9,8 +9,10 @@ import {
     type Node as YamlNode,
 } from 'yaml';
 import type { ProjectOptions } from '../../config/interfaces.js';
+import { ChangeSet, TextChange } from '../../model/change-set/change-set.js';
 import { MessageLocation } from '../../model/validation/location.js';
 import { Severity, ValidationMessage } from '../../model/validation/message.js';
+import { QuickFix } from '../../model/validation/quick-fix.js';
 import { ValidationContext } from '../../model/validation/validation-context.js';
 import { ProjectSource } from '../../project/source.js';
 import type { Mutable } from '../../utils/util-types.js';
@@ -198,10 +200,22 @@ function convertScalar(node: Scalar, source: ProjectSource, messages: Validation
     ) {
         // yaml-ast-parser returned unquoted true/false/null as strings. Keep that for now, but
         // warn because YAML 1.2 defines them as booleans and null.
+        const location = getNodeLocation(node, source);
         messages.push(
             ValidationMessage.nonSuppressableWarning(
                 `"${node.source}" is currently read as a string, but will be read as ${value === null ? 'null' : 'a boolean'} in a future version. Put it in quotes to keep it a string.`,
-                getNodeLocation(node, source),
+                location,
+                {
+                    quickFixes: [
+                        new QuickFix({
+                            description: 'Put in quotes',
+                            isPreferred: true,
+                            changeSet: new ChangeSet([
+                                new TextChange(location, JSON.stringify(node.source)),
+                            ]),
+                        }),
+                    ],
+                },
             ),
         );
         return node.source;

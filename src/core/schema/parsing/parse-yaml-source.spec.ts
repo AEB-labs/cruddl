@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { applyChangeSet } from '../../model/change-set/apply-change-set.js';
+import { ChangeSet } from '../../model/change-set/change-set.js';
 import { Severity, type ValidationMessage } from '../../model/validation/message.js';
 import { ValidationContext } from '../../model/validation/validation-context.js';
+import { Project } from '../../project/project.js';
 import { ProjectSource } from '../../project/source.js';
 import { parseYAMLSource } from './parse-yaml-source.js';
 
@@ -185,6 +188,25 @@ i18n:
                 location: { start: { line: 3, column: 4 } },
             },
         ]);
+    });
+
+    it('offers to put unquoted true, false and null in quotes', () => {
+        const body = 'a: true\nb:\n  - False\n  - ~\n';
+        const source = new ProjectSource('test.yaml', body);
+        const { messages } = parseWithMessages(body);
+        const quickFixes = messages.flatMap((m) => m.quickFixes);
+        expect(quickFixes.map((q) => q.description)).toEqual([
+            'Put in quotes',
+            'Put in quotes',
+            'Put in quotes',
+        ]);
+        const changeSet = new ChangeSet(quickFixes.flatMap((q) => q.getChangeSet().changes));
+        const newBody = applyChangeSet(new Project([source]), changeSet).sources[0].body;
+        expect(newBody).toEqual('a: "true"\nb:\n  - "False"\n  - "~"\n');
+        expect(parseWithMessages(newBody)).toMatchObject({
+            messages: [],
+            result: { object: { a: 'true', b: ['False', '~'] } },
+        });
     });
 
     it('reads numbers', () => {
