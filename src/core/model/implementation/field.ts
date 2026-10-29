@@ -967,6 +967,15 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `The aggregation results in type "${expectedResultingTypeName}", but this field is declared with type "${this.type.name}".`,
                         this.astNode && this.astNode.type,
+                        {
+                            // the operator or the path might be wrong instead
+                            quickFixes: this.getChangeTypeQuickFixes(
+                                typeInfo.resultIsList
+                                    ? `[${expectedResultingTypeName}]`
+                                    : expectedResultingTypeName,
+                                { isPreferred: false },
+                            ),
+                        },
                     ),
                 );
                 return;
@@ -977,6 +986,7 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `This aggregation field should not be declared as a list.`,
                         this.astNode && this.astNode.type,
+                        { quickFixes: this.getChangeTypeQuickFixes(this.type.name) },
                     ),
                 );
                 return;
@@ -987,6 +997,7 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `This aggregation field should be declared as a list because "${this.aggregationOperator}" results in a list.`,
                         this.astNode && this.astNode.type,
+                        { quickFixes: this.getChangeTypeQuickFixes(`[${this.type.name}]`) },
                     ),
                 );
                 return;
@@ -1087,6 +1098,16 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `The collect path results in type "${resultingType.name}", but this field is declared with type "${this.type.name}".`,
                             this.astNode && this.astNode.type,
+                            {
+                                // collect fields without aggregation are always lists. The path might
+                                // be wrong instead, so don't prefer this.
+                                quickFixes: this.getChangeTypeQuickFixes(
+                                    `[${resultingType.name}]`,
+                                    {
+                                        isPreferred: false,
+                                    },
+                                ),
+                            },
                         ),
                     );
                     return;
@@ -1097,6 +1118,7 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `This collect field should be a declared as a list.`,
                         this.astNode && this.astNode.type,
+                        { quickFixes: this.getChangeTypeQuickFixes(`[${this.type.name}]`) },
                     ),
                 );
                 return;
@@ -2004,6 +2026,16 @@ export class Field implements ModelComponent {
         }
     }
 
+    /**
+     * Quick fixes to replace the declared type of this field (e.g. "[String]")
+     */
+    private getChangeTypeQuickFixes(
+        newTypeText: string,
+        options?: ChangeFieldTypeQuickFixOptions,
+    ): ReadonlyArray<QuickFix> {
+        return getChangeFieldTypeQuickFixes(this.astNode, newTypeText, options);
+    }
+
     private getRemoveIncludeInSearchQuickFixes(): ReadonlyArray<QuickFix> {
         const changes = [
             this.input.isFlexSearchIndexedASTNode,
@@ -2477,6 +2509,35 @@ function getOffendingValueObjectFieldsForDistinctAggregation(type: ValueObjectTy
             !field.type.isRootEntityType &&
             !scalarTypesThatSupportDistinctAggregation.includes(field.type.name),
     );
+}
+
+export interface ChangeFieldTypeQuickFixOptions {
+    readonly description?: string;
+    readonly isPreferred?: boolean;
+}
+
+/**
+ * Quick fixes to replace the declared type of a field (e.g. "[String]")
+ */
+export function getChangeFieldTypeQuickFixes(
+    fieldNode: FieldDefinitionNode | undefined,
+    newTypeText: string,
+    {
+        description = `Change type to "${newTypeText}"`,
+        isPreferred = true,
+    }: ChangeFieldTypeQuickFixOptions = {},
+): ReadonlyArray<QuickFix> {
+    const loc = fieldNode?.type.loc;
+    if (!loc) {
+        return [];
+    }
+    return [
+        new QuickFix({
+            description,
+            isPreferred,
+            changeSet: new ChangeSet([new TextChange(loc, newTypeText)]),
+        }),
+    ];
 }
 
 function getRemoveDirectiveQuickFixes(

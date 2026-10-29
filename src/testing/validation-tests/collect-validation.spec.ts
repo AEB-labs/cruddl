@@ -608,6 +608,115 @@ describe('collect validation', () => {
             assertValidatorAcceptsAndDoesNotWarn(newSource);
         });
 
+        describe('quick fixes for the declared type', () => {
+            function getSource(field: string) {
+                return `
+                    type HandlingUnit @rootEntity {
+                        handlingUnitNumber: String
+                        delivery: Delivery @relation(inverseOf: "handlingUnits")
+                    }
+                    type Package @rootEntity {
+                        packageNumber: String
+                    }
+                    type Delivery @rootEntity {
+                        handlingUnits: [HandlingUnit] @relation
+                        ${field}
+                    }
+                `;
+            }
+
+            function expectTypeFix(
+                field: string,
+                error: string,
+                description: string,
+                expectedField: string,
+            ) {
+                const source = getSource(field);
+                assertValidatorRejects(source, error);
+                const newSource = applyQuickFix(validate(source).messages, description);
+                expect(newSource).to.equal(getSource(expectedField));
+                assertValidatorAcceptsAndDoesNotWarn(newSource);
+            }
+
+            it('offers to change the type to the aggregation result type', () => {
+                expectTypeFix(
+                    'numberOfHandlingUnits: Float @collect(path: "handlingUnits", aggregate: COUNT)',
+                    'The aggregation results in type "Int", but this field is declared with type "Float".',
+                    'Change type to "Int"',
+                    'numberOfHandlingUnits: Int @collect(path: "handlingUnits", aggregate: COUNT)',
+                );
+            });
+
+            it('offers the list type of the aggregation result even if the field is declared differently', () => {
+                expectTypeFix(
+                    'numberOfHandlingUnits: [Float] @collect(path: "handlingUnits", aggregate: COUNT)',
+                    'The aggregation results in type "Int", but this field is declared with type "Float".',
+                    'Change type to "Int"',
+                    'numberOfHandlingUnits: Int @collect(path: "handlingUnits", aggregate: COUNT)',
+                );
+            });
+
+            it('offers to remove the list type of an aggregation that does not result in a list', () => {
+                expectTypeFix(
+                    'numberOfHandlingUnits: [Int] @collect(path: "handlingUnits", aggregate: COUNT)',
+                    'This aggregation field should not be declared as a list.',
+                    'Change type to "Int"',
+                    'numberOfHandlingUnits: Int @collect(path: "handlingUnits", aggregate: COUNT)',
+                );
+            });
+
+            it('offers to add the list type for an aggregation that results in a list', () => {
+                expectTypeFix(
+                    'handlingUnitNumbers: String @collect(path: "handlingUnits.handlingUnitNumber", aggregate: DISTINCT)',
+                    'This aggregation field should be declared as a list because "DISTINCT" results in a list.',
+                    'Change type to "[String]"',
+                    'handlingUnitNumbers: [String] @collect(path: "handlingUnits.handlingUnitNumber", aggregate: DISTINCT)',
+                );
+            });
+
+            it('offers to change the type to the collect result type', () => {
+                expectTypeFix(
+                    'allHandlingUnits: [Package] @collect(path: "handlingUnits")',
+                    'The collect path results in type "HandlingUnit", but this field is declared with type "Package".',
+                    'Change type to "[HandlingUnit]"',
+                    'allHandlingUnits: [HandlingUnit] @collect(path: "handlingUnits")',
+                );
+            });
+
+            it('offers a list type for a collect field without aggregation that is declared as a non-list', () => {
+                expectTypeFix(
+                    'allHandlingUnits: Package @collect(path: "handlingUnits")',
+                    'The collect path results in type "HandlingUnit", but this field is declared with type "Package".',
+                    'Change type to "[HandlingUnit]"',
+                    'allHandlingUnits: [HandlingUnit] @collect(path: "handlingUnits")',
+                );
+            });
+
+            it('offers to add the list type for a collect field without aggregation', () => {
+                expectTypeFix(
+                    'allHandlingUnits: HandlingUnit @collect(path: "handlingUnits")',
+                    'This collect field should be a declared as a list.',
+                    'Change type to "[HandlingUnit]"',
+                    'allHandlingUnits: [HandlingUnit] @collect(path: "handlingUnits")',
+                );
+            });
+
+            it('only prefers type changes that keep the type name', () => {
+                const quickFixes = validate(
+                    getSource(`
+                        numberOfHandlingUnits: Float @collect(path: "handlingUnits", aggregate: COUNT)
+                        allHandlingUnits: [Package] @collect(path: "handlingUnits")
+                        handlingUnitNumbers: String @collect(path: "handlingUnits.handlingUnitNumber", aggregate: DISTINCT)
+                    `),
+                ).messages.flatMap((m) => m.quickFixes);
+                expect(quickFixes.map((q) => [q.description, q.isPreferred])).to.deep.equal([
+                    ['Change type to "Int"', false],
+                    ['Change type to "[HandlingUnit]"', false],
+                    ['Change type to "[String]"', true],
+                ]);
+            });
+        });
+
         it('rejects wrongly declared list', () => {
             assertValidatorRejects(
                 `
