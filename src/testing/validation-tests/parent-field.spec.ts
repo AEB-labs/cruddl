@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
@@ -472,6 +473,29 @@ describe('@parent directive', () => {
             }
         `,
             'Type "Grandchild" is used in entity type "Child", so the type of this parent field should be "Child".',
+        );
+    });
+
+    it('offers to change the type of a parent field', () => {
+        const source = `
+            type Root @rootEntity {
+                children: [Child]
+            }
+
+            type Child @childEntity {
+                children: [Grandchild]
+            }
+
+            type Grandchild @childEntity {
+                name: String
+                parent: Root @parent
+            }
+        `;
+        const newSource = applyQuickFix(validate(source).messages, 'Change type to "Child"');
+        expect(newSource).to.equal(source.replace('parent: Root @parent', 'parent: Child @parent'));
+        assertValidatorWarns(
+            newSource,
+            'Parent fields currently can\'t be selected within collect fields, so this field will probably be useless. You could add a @root field (of type "Root") instead.',
         );
     });
 

@@ -1577,6 +1577,7 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `Type "${this.declaringType.name}" is used in type "${this.type.name}", but the closest entity type in the hierarchy is "${embeddingEntityType.name}", so the type of this parent field should be "${embeddingEntityType.name}".`,
                         this.input.parentDirectiveNode,
+                        { quickFixes: this.getChangeTypeQuickFixes(embeddingEntityType.name) },
                     ),
                 );
             } else {
@@ -1584,6 +1585,7 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `Type "${this.declaringType.name}" is used in entity type "${embeddingEntityType.name}", so the type of this parent field should be "${embeddingEntityType.name}".`,
                         this.input.parentDirectiveNode,
+                        { quickFixes: this.getChangeTypeQuickFixes(embeddingEntityType.name) },
                     ),
                 );
             }
@@ -1732,6 +1734,7 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `Type "${this.declaringType.name}" is used in root entity type "${embeddingRootEntityType.name}", so the type of this root field should be "${embeddingRootEntityType.name}".`,
                     this.input.rootDirectiveNode,
+                    { quickFixes: this.getChangeTypeQuickFixes(embeddingRootEntityType.name) },
                 ),
             );
             return;

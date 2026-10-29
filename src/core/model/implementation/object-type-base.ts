@@ -8,7 +8,7 @@ import { ValidationMessage } from '../validation/message.js';
 import { QuickFix } from '../validation/quick-fix.js';
 import type { ValidationContext } from '../validation/validation-context.js';
 import type { SystemFieldConfig } from './field.js';
-import { Field } from './field.js';
+import { Field, getChangeFieldTypeQuickFixes } from './field.js';
 import type { Model } from './model.js';
 import { TypeBase } from './type-base.js';
 import type { ObjectType } from './type.js';
@@ -103,6 +103,14 @@ export abstract class ObjectTypeBase extends TypeBase {
                     ValidationMessage.error(
                         `System field "${systemField.name}" must be of type "${systemField.type.name}"`,
                         systemField.astNode,
+                        {
+                            // without directives, removing the field is preferred (see below)
+                            quickFixes: getChangeFieldTypeQuickFixes(
+                                systemFieldOverride.astNode,
+                                systemField.type.name,
+                                { isPreferred: !!systemFieldOverride.astNode?.directives?.length },
+                            ),
+                        },
                     ),
                 );
             }

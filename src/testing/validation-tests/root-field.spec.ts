@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     validate,
@@ -345,6 +346,26 @@ describe('@root directive', () => {
         `,
             `Type "Child" is used in root entity type "Root1", so the type of this root field should be "Root1".`,
         );
+    });
+
+    it('offers to change the type of a root field', () => {
+        const source = `
+            type Root1 @rootEntity {
+                children: [Child]
+            }
+
+            type Root2 @rootEntity {
+                otherField: String
+            }
+
+            type Child @childEntity {
+                name: String
+                root: Root2 @root
+            }
+        `;
+        const newSource = applyQuickFix(validate(source).messages, 'Change type to "Root1"');
+        expect(newSource).to.equal(source.replace('root: Root2 @root', 'root: Root1 @root'));
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
     });
 
     it('rejects with another possible types', () => {
