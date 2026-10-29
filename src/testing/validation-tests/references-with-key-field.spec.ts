@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
@@ -45,6 +46,28 @@ describe('references with key field', () => {
         `,
             `"RefStuff.id" is a system field and cannot be used as keyField of a @reference.`,
         );
+    });
+
+    it('offers to change the type of an ill-typed key field', () => {
+        const source = `
+            type Stuff @rootEntity {
+                key: String @key
+            }
+            type RefStuff @rootEntity {
+                stuffKey: Int
+                stuff: Stuff @reference(keyField: "stuffKey")
+            }
+        `;
+        const quickFixes = validate(source).messages.flatMap((m) => m.quickFixes);
+        expect(quickFixes.map((q) => [q.description, q.isPreferred])).to.deep.equal([
+            ['Change type of "RefStuff.stuffKey" to "String"', false],
+        ]);
+        const newSource = applyQuickFix(
+            validate(source).messages,
+            'Change type of "RefStuff.stuffKey" to "String"',
+        );
+        expect(newSource).to.equal(source.replace('stuffKey: Int', 'stuffKey: String'));
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
     });
 
     it('rejects ill-typed key field', () => {
