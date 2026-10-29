@@ -97,6 +97,32 @@ describe('system field override validation', () => {
         );
     });
 
+    it('offers to change the type of a system field', () => {
+        const source = prettyPrint(gql`
+            type Root @rootEntity {
+                id: String @key
+                dummy: String
+            }
+        `);
+        const newSource = applyQuickFix(validate(source).messages, 'Change type to "ID"');
+        expect(newSource).to.equal(source.replace('id: String @key', 'id: ID @key'));
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
+    });
+
+    it('prefers removing a mistyped system field without directives', () => {
+        const quickFixes = validate(`
+            type Root @rootEntity {
+                createdAt: String
+                dummy: String
+            }
+        `).messages.flatMap((m) => m.quickFixes);
+        expect(quickFixes.map((q) => [q.description, q.isPreferred])).to.deep.equal([
+            ['Change type to "DateTime"', false],
+            ['Remove field', true],
+            ['Suppress this warning', false],
+        ]);
+    });
+
     it('errors on system field "createdAt" type mismatch', () => {
         assertValidatorRejects(
             prettyPrint(gql`
