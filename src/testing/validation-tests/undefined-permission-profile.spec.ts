@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { PermissionProfileConfig } from '../../core/model/config/permissions.js';
-import { assertValidatorRejects, validate } from '../utils/source-validation-utils.js';
+import {
+    applyQuickFix,
+    assertValidatorRejects,
+    validate,
+} from '../utils/source-validation-utils.js';
 
 const modelWithRootEntityWithPermissionProfile = `
             type Stuff @rootEntity(permissionProfile: "test") {
@@ -100,5 +104,20 @@ describe('undefined-permission-profile validator', () => {
         expect(validationResult.messages[0].message).to.equal(
             'This field must be of String or enum type to be used as "accessGroup" with the permission profile "test".',
         );
+    });
+
+    it('offers to use a permission profile with a similar name', () => {
+        const newSource = applyQuickFix(
+            validate(
+                `
+                    type Stuff @rootEntity(permissionProfile: "tset") {
+                        foo: String
+                    }
+                `,
+                { permissionProfiles: { test: testProfile } },
+            ).messages,
+            'Change to "test"',
+        );
+        expect(newSource).to.contain('@rootEntity(permissionProfile: "test")');
     });
 });

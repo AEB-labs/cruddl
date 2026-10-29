@@ -29,6 +29,7 @@ import {
     createRemoveArgumentChange,
     createRemoveInlineNodeChange,
 } from '../change-set/graphql-changes.js';
+import { getUseSimilarNameQuickFixes } from '../change-set/similar-name-quick-fixes.js';
 import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
 import type { CalcMutationsOperator, FieldConfig, FlexSearchLanguage } from '../config/field.js';
 import { AggregationOperator, RelationDeleteAction } from '../config/field.js';
@@ -453,6 +454,13 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `Type "${this.input.typeName}" not found.`,
                     this.input.typeNameAST || this.astNode,
+                    {
+                        quickFixes: getUseSimilarNameQuickFixes(
+                            this.input.typeNameAST,
+                            this.input.typeName,
+                            this.model.types.map((type) => type.name),
+                        ),
+                    },
                 ),
             );
         }
@@ -548,6 +556,15 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `Field "${this.input.inverseOfFieldName}" does not exist on type "${this.type.name}".`,
                         this.input.inverseOfASTNode || this.astNode,
+                        {
+                            quickFixes: getUseSimilarNameQuickFixes(
+                                this.input.inverseOfASTNode,
+                                this.input.inverseOfFieldName,
+                                this.type.fields
+                                    .filter((field) => field.type === this.declaringType)
+                                    .map((field) => field.name),
+                            ),
+                        },
                     ),
                 );
             } else if (inverseOf.type && inverseOf.type !== this.declaringType) {
@@ -1188,6 +1205,15 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `Field "${this.declaringType.name}.${this.input.referenceKeyField}" not found.`,
                     this.input.referenceKeyFieldASTNode,
+                    {
+                        quickFixes: getUseSimilarNameQuickFixes(
+                            this.input.referenceKeyFieldASTNode,
+                            this.input.referenceKeyField,
+                            this.declaringType.fields
+                                .filter((field) => !field.isSystemField)
+                                .map((field) => field.name),
+                        ),
+                    },
                 ),
             );
             return;

@@ -113,4 +113,21 @@ describe('references with key field', () => {
             `Usage of @reference without the keyField argument is deprecated. Add a field of type "String" and specify it in @reference(keyField: "...")`,
         );
     });
+
+    it('offers to use a key field with a similar name', () => {
+        const newSource = applyQuickFix(
+            validate(`
+                type Stuff @rootEntity {
+                    key: String @key
+                }
+                type RefStuff @rootEntity {
+                    stuffKey: String
+                    stuff: Stuff @reference(keyField: "stufKey")
+                }
+            `).messages,
+            'Change to "stuffKey"',
+        );
+        expect(newSource).to.contain('@reference(keyField: "stuffKey")');
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
+    });
 });

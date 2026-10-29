@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     validate,
 } from '../utils/source-validation-utils.js';
@@ -38,5 +39,21 @@ describe('undefined-types validator', () => {
 
     it('accepts valid sources', () => {
         assertValidatorAcceptsAndDoesNotWarn(validSource);
+    });
+
+    it('offers to use a type with a similar name', () => {
+        const newSource = applyQuickFix(
+            validate(`
+                type Delivery @rootEntity {
+                    items: [DeliveryIten]
+                }
+                type DeliveryItem @childEntity {
+                    itemNumber: String
+                }
+            `).messages,
+            'Change to "DeliveryItem"',
+        );
+        expect(newSource).to.contain('items: [DeliveryItem]');
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
     });
 });

@@ -23,6 +23,7 @@ import {
     createRemoveInlineNodeChange,
 } from '../change-set/graphql-changes.js';
 import { createValueReplacementChange } from '../change-set/replace-value.js';
+import { getUseSimilarNameQuickFixes } from '../change-set/similar-name-quick-fixes.js';
 import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
 import type {
     FlexSearchPerformanceParams,
@@ -400,6 +401,15 @@ export class RootEntityType extends ObjectTypeBase {
                 ValidationMessage.error(
                     `Permission profile "${permissions.permissionProfileName}" not found.`,
                     permissions.permissionProfileNameAstNode || this.nameASTNode,
+                    {
+                        quickFixes: getUseSimilarNameQuickFixes(
+                            permissions.permissionProfileNameAstNode,
+                            permissions.permissionProfileName,
+                            this.namespace
+                                .getAvailablePermissionProfiles()
+                                .map((profile) => profile.name),
+                        ),
+                    },
                 ),
             );
         }

@@ -244,4 +244,20 @@ describe('@relation', () => {
             assertValidatorAcceptsAndDoesNotWarn(newSource);
         });
     });
+
+    it('offers to use an inverse field with a similar name', () => {
+        const newSource = applyQuickFix(
+            validate(`
+                type Delivery @rootEntity {
+                    handlingUnits: [HandlingUnit] @relation
+                }
+                type HandlingUnit @rootEntity {
+                    delivery: Delivery @relation(inverseOf: "handlingUnit")
+                }
+            `).messages,
+            'Change to "handlingUnits"',
+        );
+        expect(newSource).to.contain('@relation(inverseOf: "handlingUnits")');
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
+    });
 });
