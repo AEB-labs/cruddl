@@ -600,6 +600,132 @@ describe('collect validation', () => {
             assertValidatorAcceptsAndDoesNotWarn(newSource);
         });
 
+        describe('quick fixes for the declared type', () => {
+            function expectTypeFix(field: string, description: string, expectedField: string) {
+                const source = `
+                    type HandlingUnit @rootEntity {
+                        handlingUnitNumber: String
+                        delivery: Delivery @relation(inverseOf: "handlingUnits")
+                    }
+                    type Delivery @rootEntity {
+                        handlingUnits: [HandlingUnit] @relation
+                        ${field}
+                    }
+                `;
+                const newSource = applyQuickFix(validate(source).messages, description);
+                expect(newSource).to.equal(source.replace(field, expectedField));
+                assertValidatorAcceptsAndDoesNotWarn(newSource);
+            }
+
+            it('offers to change the type to the aggregation result type', () => {
+                expectTypeFix(
+                    'numberOfHandlingUnits: Float @collect(path: "handlingUnits", aggregate: COUNT)',
+                    'Change type to "Int"',
+                    'numberOfHandlingUnits: Int @collect(path: "handlingUnits", aggregate: COUNT)',
+                );
+            });
+
+            it('offers to remove the list type of an aggregation that does not result in a list', () => {
+                expectTypeFix(
+                    'numberOfHandlingUnits: [Int] @collect(path: "handlingUnits", aggregate: COUNT)',
+                    'Change type to "Int"',
+                    'numberOfHandlingUnits: Int @collect(path: "handlingUnits", aggregate: COUNT)',
+                );
+            });
+
+            it('offers to add the list type for an aggregation that results in a list', () => {
+                expectTypeFix(
+                    'handlingUnitNumbers: String @collect(path: "handlingUnits.handlingUnitNumber", aggregate: DISTINCT)',
+                    'Change type to "[String]"',
+                    'handlingUnitNumbers: [String] @collect(path: "handlingUnits.handlingUnitNumber", aggregate: DISTINCT)',
+                );
+            });
+
+            it('offers to change the type to the collect result type', () => {
+                const source = `
+                    type HandlingUnit @rootEntity {
+                        handlingUnitNumber: String
+                        delivery: Delivery @relation(inverseOf: "handlingUnits")
+                    }
+                    type Package @rootEntity {
+                        packageNumber: String
+                    }
+                    type Delivery @rootEntity {
+                        handlingUnits: [HandlingUnit] @relation
+                    }
+                    type Shipment @rootEntity {
+                        deliveries: [Delivery] @relation
+                        allHandlingUnits: [Package] @collect(path: "deliveries.handlingUnits")
+                    }
+                `;
+                const newSource = applyQuickFix(
+                    validate(source).messages,
+                    'Change type to "[HandlingUnit]"',
+                );
+                expect(newSource).to.contain('allHandlingUnits: [HandlingUnit] @collect');
+            });
+
+            it('offers the list type of the aggregation result even if the field is declared differently', () => {
+                const newSource = applyQuickFix(
+                    validate(`
+                        type HandlingUnit @rootEntity {
+                            handlingUnitNumber: String
+                        }
+                        type Delivery @rootEntity {
+                            handlingUnits: [HandlingUnit] @relation
+                            numberOfHandlingUnits: [Float] @collect(path: "handlingUnits", aggregate: COUNT)
+                        }
+                    `).messages,
+                    'Change type to "Int"',
+                );
+                expect(newSource).to.contain('numberOfHandlingUnits: Int @collect');
+                assertValidatorAcceptsAndDoesNotWarn(newSource);
+            });
+
+            it('offers a list type for a collect field without aggregation that is declared as a non-list', () => {
+                const newSource = applyQuickFix(
+                    validate(`
+                        type HandlingUnit @rootEntity {
+                            handlingUnitNumber: String
+                            delivery: Delivery @relation(inverseOf: "handlingUnits")
+                        }
+                        type Package @rootEntity {
+                            packageNumber: String
+                        }
+                        type Delivery @rootEntity {
+                            handlingUnits: [HandlingUnit] @relation
+                            allHandlingUnits: Package @collect(path: "handlingUnits")
+                        }
+                    `).messages,
+                    'Change type to "[HandlingUnit]"',
+                );
+                expect(newSource).to.contain('allHandlingUnits: [HandlingUnit] @collect');
+                assertValidatorAcceptsAndDoesNotWarn(newSource);
+            });
+
+            it('offers to add the list type for a collect field without aggregation', () => {
+                const source = `
+                    type HandlingUnit @rootEntity {
+                        handlingUnitNumber: String
+                        delivery: Delivery @relation(inverseOf: "handlingUnits")
+                    }
+                    type Delivery @rootEntity {
+                        handlingUnits: [HandlingUnit] @relation
+                    }
+                    type Shipment @rootEntity {
+                        deliveries: [Delivery] @relation
+                        allHandlingUnits: HandlingUnit @collect(path: "deliveries.handlingUnits")
+                    }
+                `;
+                const newSource = applyQuickFix(
+                    validate(source).messages,
+                    'Change type to "[HandlingUnit]"',
+                );
+                expect(newSource).to.contain('allHandlingUnits: [HandlingUnit] @collect');
+                assertValidatorAcceptsAndDoesNotWarn(newSource);
+            });
+        });
+
         it('rejects wrongly declared list', () => {
             assertValidatorRejects(
                 `

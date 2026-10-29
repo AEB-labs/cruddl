@@ -963,6 +963,13 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `The aggregation results in type "${expectedResultingTypeName}", but this field is declared with type "${this.type.name}".`,
                         this.astNode && this.astNode.type,
+                        {
+                            quickFixes: this.getChangeTypeQuickFixes(
+                                typeInfo.resultIsList
+                                    ? `[${expectedResultingTypeName}]`
+                                    : expectedResultingTypeName,
+                            ),
+                        },
                     ),
                 );
                 return;
@@ -973,6 +980,7 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `This aggregation field should not be declared as a list.`,
                         this.astNode && this.astNode.type,
+                        { quickFixes: this.getChangeTypeQuickFixes(this.type.name) },
                     ),
                 );
                 return;
@@ -983,6 +991,7 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `This aggregation field should be declared as a list because "${this.aggregationOperator}" results in a list.`,
                         this.astNode && this.astNode.type,
+                        { quickFixes: this.getChangeTypeQuickFixes(`[${this.type.name}]`) },
                     ),
                 );
                 return;
@@ -1083,6 +1092,10 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `The collect path results in type "${resultingType.name}", but this field is declared with type "${this.type.name}".`,
                             this.astNode && this.astNode.type,
+                            {
+                                // collect fields without aggregation are always lists
+                                quickFixes: this.getChangeTypeQuickFixes(`[${resultingType.name}]`),
+                            },
                         ),
                     );
                     return;
@@ -1093,6 +1106,7 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `This collect field should be a declared as a list.`,
                         this.astNode && this.astNode.type,
+                        { quickFixes: this.getChangeTypeQuickFixes(`[${this.type.name}]`) },
                     ),
                 );
                 return;
@@ -1998,6 +2012,23 @@ export class Field implements ModelComponent {
                 ),
             );
         }
+    }
+
+    /**
+     * Quick fixes to replace the declared type of this field (e.g. "[String]")
+     */
+    private getChangeTypeQuickFixes(newTypeText: string): ReadonlyArray<QuickFix> {
+        const loc = this.astNode?.type.loc;
+        if (!loc) {
+            return [];
+        }
+        return [
+            new QuickFix({
+                description: `Change type to "${newTypeText}"`,
+                isPreferred: true,
+                changeSet: new ChangeSet([new TextChange(loc, newTypeText)]),
+            }),
+        ];
     }
 
     private getRemoveIncludeInSearchQuickFixes(): ReadonlyArray<QuickFix> {
