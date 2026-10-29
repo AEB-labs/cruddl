@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     validate,
@@ -178,5 +179,69 @@ describe('@relation', () => {
                 parentRed: Red @relation(inverseOf: "blues")
             }
         `);
+    });
+
+    describe('quick fixes for CASCADE', () => {
+        it('offers to use RESTRICT in implicit n-to-m relations', () => {
+            const newSource = applyQuickFix(
+                validate(`
+                    type Parent @rootEntity {
+                        children: [Child] @relation(onDelete: CASCADE)
+                    }
+                    type Child @rootEntity {
+                        name: String
+                    }
+                `).messages,
+                'Use RESTRICT',
+            );
+            expect(newSource).to.contain('@relation(onDelete: RESTRICT)');
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        });
+
+        it('offers to use RESTRICT on self-recursive fields', () => {
+            const newSource = applyQuickFix(
+                validate(`
+                    type Object @rootEntity {
+                        objects: [Object] @relation(onDelete: CASCADE)
+                    }
+                `).messages,
+                'Use RESTRICT',
+            );
+            expect(newSource).to.contain('@relation(onDelete: RESTRICT)');
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        });
+
+        it('does not prefer RESTRICT on recursive cascade loops', () => {
+            const quickFixes = validate(`
+                type Red @rootEntity {
+                    blues: [Blue] @relation(onDelete: CASCADE)
+                    parentBlue: Blue @relation(inverseOf: "reds")
+                }
+                type Blue @rootEntity {
+                    reds: [Red] @relation(onDelete: CASCADE)
+                    parentRed: Red @relation(inverseOf: "blues")
+                }
+            `).messages.flatMap((m) => m.quickFixes);
+            expect(quickFixes.map((q) => [q.description, q.isPreferred])).to.deep.equal([
+                ['Use RESTRICT', false],
+                ['Use RESTRICT', false],
+            ]);
+        });
+
+        it('offers to change the inverse field to a non-list in explicit n-to-m relations', () => {
+            const newSource = applyQuickFix(
+                validate(`
+                    type Parent @rootEntity {
+                        children: [Child] @relation(onDelete: CASCADE)
+                    }
+                    type Child @rootEntity {
+                        parents: [Parent] @relation(inverseOf: "children")
+                    }
+                `).messages,
+                'Change type of "Child.parents" to "Parent"',
+            );
+            expect(newSource).to.contain('parents: Parent @relation(inverseOf: "children")');
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        });
     });
 });
