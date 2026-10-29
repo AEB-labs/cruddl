@@ -16,6 +16,7 @@ import {
 } from '../../schema/constants.js';
 import { GraphQLInt53 } from '../../schema/scalars/int53.js';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
+import { didYouMean, getSimilarNames } from '../../utils/similar-names.js';
 import { isDefined } from '../../utils/utils.js';
 import { ChangeSet, TextChange } from '../change-set/change-set.js';
 import {
@@ -23,6 +24,7 @@ import {
     createRemoveInlineNodeChange,
 } from '../change-set/graphql-changes.js';
 import { createValueReplacementChange } from '../change-set/replace-value.js';
+import { getUseSimilarNameQuickFixes } from '../change-set/similar-name-quick-fixes.js';
 import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
 import type {
     FlexSearchPerformanceParams,
@@ -402,10 +404,23 @@ export class RootEntityType extends ObjectTypeBase {
             isDefined(permissions.permissionProfileName) &&
             !this.namespace.getPermissionProfile(permissions.permissionProfileName)
         ) {
+            const profileNames = this.namespace
+                .getAvailablePermissionProfiles()
+                .map((profile) => profile.name);
             context.addMessage(
                 ValidationMessage.error(
-                    `Permission profile "${permissions.permissionProfileName}" not found.`,
+                    `Permission profile "${permissions.permissionProfileName}" not found.` +
+                        didYouMean(
+                            getSimilarNames(permissions.permissionProfileName, profileNames),
+                        ),
                     permissions.permissionProfileNameAstNode || this.nameASTNode,
+                    {
+                        quickFixes: getUseSimilarNameQuickFixes(
+                            permissions.permissionProfileNameAstNode,
+                            permissions.permissionProfileName,
+                            profileNames,
+                        ),
+                    },
                 ),
             );
         }

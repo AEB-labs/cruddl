@@ -250,4 +250,22 @@ describe('@relation', () => {
             );
         });
     });
+
+    it('offers to use an inverse field with a similar name', () => {
+        const source = `
+            type Delivery @rootEntity {
+                handlingUnits: [HandlingUnit] @relation
+            }
+            type HandlingUnit @rootEntity {
+                delivery: Delivery @relation(inverseOf: "handlingUnit")
+            }
+        `;
+        assertValidatorRejects(
+            source,
+            'Field "handlingUnit" does not exist on type "Delivery". Did you mean "handlingUnits"?',
+        );
+        const newSource = applyQuickFix(validate(source).messages, 'Change to "handlingUnits"');
+        expect(newSource).to.equal(source.replace('"handlingUnit"', '"handlingUnits"'));
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
+    });
 });

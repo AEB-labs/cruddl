@@ -22,6 +22,7 @@ import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
 import { GraphQLLocalTime } from '../../schema/scalars/local-time.js';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js';
 import { GraphQLI18nString } from '../../schema/scalars/string-map.js';
+import { didYouMean, getSimilarNames } from '../../utils/similar-names.js';
 import { isDefined } from '../../utils/utils.js';
 import { ChangeSet, TextChange } from '../change-set/change-set.js';
 import {
@@ -29,6 +30,7 @@ import {
     createRemoveArgumentChange,
     createRemoveInlineNodeChange,
 } from '../change-set/graphql-changes.js';
+import { getUseSimilarNameQuickFixes } from '../change-set/similar-name-quick-fixes.js';
 import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
 import type { CalcMutationsOperator, FieldConfig, FlexSearchLanguage } from '../config/field.js';
 import { AggregationOperator, RelationDeleteAction } from '../config/field.js';
@@ -453,10 +455,19 @@ export class Field implements ModelComponent {
 
     private validateType(context: ValidationContext) {
         if (!this.model.getType(this.input.typeName)) {
+            const typeNames = this.model.types.map((type) => type.name);
             context.addMessage(
                 ValidationMessage.error(
-                    `Type "${this.input.typeName}" not found.`,
+                    `Type "${this.input.typeName}" not found.` +
+                        didYouMean(getSimilarNames(this.input.typeName, typeNames)),
                     this.input.typeNameAST || this.astNode,
+                    {
+                        quickFixes: getUseSimilarNameQuickFixes(
+                            this.input.typeNameAST,
+                            this.input.typeName,
+                            typeNames,
+                        ),
+                    },
                 ),
             );
         }
@@ -548,10 +559,23 @@ export class Field implements ModelComponent {
             const inverseOf = this.type.getField(this.input.inverseOfFieldName);
             const inverseFieldDesc = `Field "${this.type.name}.${this.input.inverseOfFieldName}" used as inverse field of "${this.declaringType.name}.${this.name}"`;
             if (!inverseOf) {
+                const candidateNames = this.type.fields
+                    .filter((field) => field.type === this.declaringType)
+                    .map((field) => field.name);
                 context.addMessage(
                     ValidationMessage.error(
-                        `Field "${this.input.inverseOfFieldName}" does not exist on type "${this.type.name}".`,
+                        `Field "${this.input.inverseOfFieldName}" does not exist on type "${this.type.name}".` +
+                            didYouMean(
+                                getSimilarNames(this.input.inverseOfFieldName, candidateNames),
+                            ),
                         this.input.inverseOfASTNode || this.astNode,
+                        {
+                            quickFixes: getUseSimilarNameQuickFixes(
+                                this.input.inverseOfASTNode,
+                                this.input.inverseOfFieldName,
+                                candidateNames,
+                            ),
+                        },
                     ),
                 );
             } else if (inverseOf.type && inverseOf.type !== this.declaringType) {
@@ -1196,10 +1220,21 @@ export class Field implements ModelComponent {
 
         const keyField = this.declaringType.getField(this.input.referenceKeyField);
         if (!keyField) {
+            const fieldNames = this.declaringType.fields
+                .filter((field) => !field.isSystemField)
+                .map((field) => field.name);
             context.addMessage(
                 ValidationMessage.error(
-                    `Field "${this.declaringType.name}.${this.input.referenceKeyField}" not found.`,
+                    `Field "${this.declaringType.name}.${this.input.referenceKeyField}" not found.` +
+                        didYouMean(getSimilarNames(this.input.referenceKeyField, fieldNames)),
                     this.input.referenceKeyFieldASTNode,
+                    {
+                        quickFixes: getUseSimilarNameQuickFixes(
+                            this.input.referenceKeyFieldASTNode,
+                            this.input.referenceKeyField,
+                            fieldNames,
+                        ),
+                    },
                 ),
             );
             return;
