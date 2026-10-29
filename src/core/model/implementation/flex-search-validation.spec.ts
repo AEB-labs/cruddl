@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { createSimpleModel } from '../../../testing/utils/create-simple-model.js';
 import { expectSingleError } from '../../../testing/utils/model-validation-utils.js';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
@@ -357,6 +358,17 @@ describe('FlexSearch', () => {
         `,
             'Field "FlexSearchOrderArgument.direction" of required type "OrderDirection!" was not provided. "ASC" will be assumed. This will be an error in a future release.',
         );
+    });
+
+    it('offers to add the missing direction to primarySort', () => {
+        const result = validate(`
+            type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someString"}]) {
+                someString: String @flexSearch
+            }
+        `);
+        const newSource = applyQuickFix(result.messages, 'Add direction: ASC');
+        expect(newSource).to.contain('flexSearchOrder: [{field: "someString", direction: ASC}]');
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
     });
 
     // this is ok because it makes it easier to disable flexSearch while still keeping the configs

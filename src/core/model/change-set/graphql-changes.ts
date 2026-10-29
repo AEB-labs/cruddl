@@ -23,3 +23,11 @@ export function createRemoveInlineNodeChange(loc: Location): TextChange {
     }
     return new TextChange(new MessageLocation(location.source, start, loc.end), '');
 }
+
+/**
+ * Creates a change that inserts text at the given offset of the source of a GraphQL location
+ */
+export function createInsertionChange(offset: number, loc: Location, text: string): TextChange {
+    const location = MessageLocation.fromGraphQLLocation(loc);
+    return new TextChange(new MessageLocation(location.source, offset, offset), text);
+}
