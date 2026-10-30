@@ -1,14 +1,16 @@
 import type { DirectiveNode, ObjectValueNode, StringValueNode } from 'graphql';
+import { Kind } from 'graphql';
 import { memorize } from 'memorize-decorator';
 import { SCALAR_JSON } from '../../schema/constants.js';
 import { isDefined } from '../../utils/utils.js';
 import type { IndexDefinitionConfig } from '../config/indices.js';
 import { TypeKind } from '../config/type.js';
 import { ValidationMessage } from '../validation/message.js';
-import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import type { ModelComponent } from '../validation/validation-context.js';
+import { ValidationContext } from '../validation/validation-context.js';
+import { FieldPath } from './field-path.js';
 import type { Field } from './field.js';
 import type { RootEntityType } from './root-entity-type.js';
-import type { Type } from './type.js';
 
 export class IndexField implements ModelComponent {
     readonly path: ReadonlyArray<string>;
@@ -40,6 +42,23 @@ export class IndexField implements ModelComponent {
         this.traversePath(context.addMessage.bind(context));
     }
 
+    @memorize()
+    private get fieldPath(): FieldPath {
+        return new FieldPath({
+            path: this.dotSeparatedPath,
+            baseType: this.declaringType,
+            // the path of a field-level index (@index or @unique) is the field itself, so there is
+            // no string to point into
+            location: this.astNode?.kind === Kind.STRING ? this.astNode : undefined,
+            canNavigateIntoLists: true,
+            canTraverseRootEntities: false,
+            canFollowReferences: false,
+            // collect fields are not stored, so the index would not have an effect
+            canUseCollectFields: false,
+            reportCollectFieldsAsDeprecation: true,
+        });
+    }
+
     private traversePath(
         addMessage: (mess: ValidationMessage) => void,
     ): { fieldsInPath: ReadonlyArray<Field>; field: Field } | undefined {
@@ -53,77 +72,22 @@ export class IndexField implements ModelComponent {
             return undefined;
         }
 
-        let type: Type = this.declaringType;
-        let field: Field | undefined = undefined;
-        let fieldsInPath = [];
-        for (const fieldName of this.path) {
-            if (!type.isObjectType) {
-                if (field) {
-                    addMessage(
-                        ValidationMessage.error(
-                            `Field "${field.name}" is not an object`,
-                            this.astNode,
-                        ),
-                    );
-                } else {
-                    // this should not occur - would mean that the root is not an object type
-                    addMessage(
-                        ValidationMessage.error(
-                            `Index defined on non-object type (this is probably an internal error).`,
-                            this.astNode,
-                        ),
-                    );
-                }
-                return undefined;
-            }
-
-            const nextField = type.getField(fieldName);
-            if (!nextField) {
-                addMessage(
-                    ValidationMessage.error(
-                        `Type "${type.name}" does not have a field "${fieldName}"`,
-                        this.astNode,
-                    ),
-                );
-                return undefined;
-            }
-
-            if (nextField.isParentField) {
-                addMessage(
-                    ValidationMessage.error(
-                        `Field "${type.name}.${nextField.name}" is a parent field and cannot be used in an index.`,
-                        this.astNode,
-                    ),
-                );
-                return undefined;
-            }
-
-            if (nextField.isRootField) {
-                addMessage(
-                    ValidationMessage.error(
-                        `Field "${type.name}.${nextField.name}" is a root field and cannot be used in an index.`,
-                        this.astNode,
-                    ),
-                );
-                return undefined;
-            }
-
-            if (nextField.type.kind === TypeKind.ROOT_ENTITY) {
-                addMessage(
-                    ValidationMessage.error(
-                        `Field "${type.name}.${nextField.name}" resolves to a root entity, but indices cannot cross root entity boundaries.`,
-                        this.astNode,
-                    ),
-                );
-                return undefined;
-            }
-
-            field = nextField;
-            type = nextField.type;
-            fieldsInPath.push(nextField);
+        const pathContext = new ValidationContext();
+        this.fieldPath.validate(pathContext);
+        for (const message of pathContext.validationMessages) {
+            addMessage(
+                message.location
+                    ? message
+                    : new ValidationMessage({ ...message, location: this.astNode }),
+            );
+        }
+        if (pathContext.asResult().hasErrors()) {
+            return undefined;
         }
 
-        if (!field) {
+        const fieldsInPath = this.fieldPath.fields;
+        const field = fieldsInPath?.[fieldsInPath.length - 1];
+        if (!fieldsInPath || !field) {
             return undefined;
         }
 

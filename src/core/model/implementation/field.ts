@@ -1,7 +1,6 @@
 import type { ASTNode, DirectiveNode, FieldDefinitionNode } from 'graphql';
 import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import { ProjectSource } from '../../project/source.js';
 import {
     ACCESS_FIELD_DIRECTIVE,
     ACCESS_GROUP_FIELD,
@@ -25,6 +24,12 @@ import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js'
 import { GraphQLI18nString } from '../../schema/scalars/string-map.js';
 import { isDefined } from '../../utils/utils.js';
 import { ChangeSet, TextChange } from '../change-set/change-set.js';
+import {
+    createInsertionChange,
+    createRemoveArgumentChange,
+    createRemoveInlineNodeChange,
+} from '../change-set/graphql-changes.js';
+import { getUseSimilarNameQuickFixes } from '../change-set/similar-name-quick-fixes.js';
 import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
 import type { CalcMutationsOperator, FieldConfig, FlexSearchLanguage } from '../config/field.js';
 import { AggregationOperator, RelationDeleteAction } from '../config/field.js';
@@ -34,7 +39,6 @@ import {
     collectEmbeddingRootEntityTypes,
 } from '../utils/emedding-entity-types.js';
 import { findRecursiveCascadePath } from '../utils/recursive-cascade.js';
-import { MessageLocation } from '../validation/location.js';
 import { ValidationMessage } from '../validation/message.js';
 import { QuickFix } from '../validation/quick-fix.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
@@ -450,6 +454,13 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `Type "${this.input.typeName}" not found.`,
                     this.input.typeNameAST || this.astNode,
+                    {
+                        quickFixes: getUseSimilarNameQuickFixes(
+                            this.input.typeNameAST,
+                            this.input.typeName,
+                            this.model.types.map((type) => type.name),
+                        ),
+                    },
                 ),
             );
         }
@@ -489,7 +500,7 @@ export class Field implements ModelComponent {
                     suggestions.push(PARENT_DIRECTIVE);
                 }
                 if (!this.declaringType.fields.some((f) => f.isRootField)) {
-                    suggestions.push(PARENT_DIRECTIVE);
+                    suggestions.push(ROOT_DIRECTIVE);
                 }
             }
 
@@ -503,6 +514,12 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `Type "${this.type.name}" is a root entity type and cannot be embedded. Consider adding ${list}.`,
                     this.astNode,
+                    {
+                        quickFixes:
+                            this.declaringType.kind === TypeKind.ROOT_ENTITY
+                                ? this.getAddRelationDirectiveQuickFixes()
+                                : [],
+                    },
                 ),
             );
         }
@@ -545,6 +562,15 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `Field "${this.input.inverseOfFieldName}" does not exist on type "${this.type.name}".`,
                         this.input.inverseOfASTNode || this.astNode,
+                        {
+                            quickFixes: getUseSimilarNameQuickFixes(
+                                this.input.inverseOfASTNode,
+                                this.input.inverseOfFieldName,
+                                this.type.fields
+                                    .filter((field) => field.type === this.declaringType)
+                                    .map((field) => field.name),
+                            ),
+                        },
                     ),
                 );
             } else if (inverseOf.type && inverseOf.type !== this.declaringType) {
@@ -626,6 +652,7 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `"CASCADE" cannot be used on recursive fields. Use "RESTRICT" instead.`,
                             this.input.relationDeleteActionASTNode,
+                            { quickFixes: this.getUseRestrictQuickFixes() },
                         ),
                     );
                     return;
@@ -640,6 +667,13 @@ export class Field implements ModelComponent {
                                         '.',
                                     )}" is a loop with "onDelete: CASCADE" on each relation, which is not supported. Break the loop by replacing "CASCADE" with "RESTRICT" on any of these relations.`,
                                 this.input.relationDeleteActionASTNode,
+                                // only one of the relations needs to be changed, so this should not be
+                                // applied automatically on all of them
+                                {
+                                    quickFixes: this.getUseRestrictQuickFixes({
+                                        isPreferred: false,
+                                    }),
+                                },
                             ),
                         );
                         return;
@@ -665,6 +699,7 @@ export class Field implements ModelComponent {
                                 this.name
                             }") directive to the target type "${this.type.name}".`,
                             this.input.relationDeleteActionASTNode,
+                            { quickFixes: this.getUseRestrictQuickFixes() },
                         ),
                     );
                     return;
@@ -677,6 +712,18 @@ export class Field implements ModelComponent {
                                 inverseField.name
                             }" to "${inverseField.type.name}".`,
                             this.input.relationDeleteActionASTNode,
+                            {
+                                quickFixes: [
+                                    ...this.getUseRestrictQuickFixes(),
+                                    ...inverseField.getChangeTypeQuickFixes(
+                                        inverseField.type.name,
+                                        {
+                                            description: `Change type of "${this.type.name}.${inverseField.name}" to "${inverseField.type.name}"`,
+                                            isPreferred: false,
+                                        },
+                                    ),
+                                ],
+                            },
                         ),
                     );
                 }
@@ -800,6 +847,7 @@ export class Field implements ModelComponent {
                                     this.aggregationOperator + '_TRUE'
                                 }".`,
                                 this.input.collect.aggregationOperatorASTNode,
+                                { quickFixes: this.getUseBooleanAggregationOperatorQuickFixes() },
                             ),
                         );
                     } else if (lastSegment.isNullableSegment) {
@@ -814,6 +862,16 @@ export class Field implements ModelComponent {
                                     this.aggregationOperator + '_NOT_NULL'
                                 }; otherwise, remove "${lastSegment.field.name}" from the path.`,
                                 this.input.collect.aggregationOperatorASTNode,
+                                {
+                                    quickFixes: [
+                                        ...this.getUseAggregationOperatorQuickFixes(
+                                            this.aggregationOperator + '_NOT_NULL',
+                                        ),
+                                        ...this.getRemoveLastCollectPathSegmentQuickFixes({
+                                            isPreferred: false,
+                                        }),
+                                    ],
+                                },
                             ),
                         );
                     } else {
@@ -821,6 +879,7 @@ export class Field implements ModelComponent {
                             ValidationMessage.error(
                                 `Aggregation operator "${this.aggregationOperator}" is only allowed if the last path segment is a list field. Please remove "${lastSegment.field.name}" from the path.`,
                                 this.input.collect.aggregationOperatorASTNode,
+                                { quickFixes: this.getRemoveLastCollectPathSegmentQuickFixes() },
                             ),
                         );
                     }
@@ -841,25 +900,32 @@ export class Field implements ModelComponent {
                                 this.aggregationOperator + '_TRUE'
                             }" instead which specifically checks for boolean "true".`,
                             this.input.astNode,
-                            { location: this.input.collect.aggregationOperatorASTNode },
+                            {
+                                location: this.input.collect.aggregationOperatorASTNode,
+                                quickFixes: this.getUseBooleanAggregationOperatorQuickFixes(),
+                            },
                         ),
                     );
                 }
             }
             if (typeInfo.shouldBeNullable && !this.collectPath.resultIsNullable) {
                 let addendum = '';
+                let quickFixes: ReadonlyArray<QuickFix> = [];
                 const operatorName = this.aggregationOperator.toString();
                 if (operatorName.endsWith('_NOT_NULL')) {
-                    addendum = ` Consider using "${operatorName.substr(
+                    const suggestedOperator = operatorName.substr(
                         0,
                         operatorName.length - '_NOT_NULL'.length,
-                    )}`;
+                    );
+                    addendum = ` Consider using "${suggestedOperator}`;
+                    quickFixes = this.getUseAggregationOperatorQuickFixes(suggestedOperator);
                 }
                 context.addMessage(
                     ValidationMessage.error(
                         `Aggregation operator "${this.aggregationOperator}" is only supported on nullable types, but the path does not result in a nullable type.` +
                             addendum,
                         this.input.collect.aggregationOperatorASTNode,
+                        { quickFixes },
                     ),
                 );
                 return;
@@ -887,6 +953,7 @@ export class Field implements ModelComponent {
             if (typeInfo.usesDistinct && resultingType) {
                 if (!isDistinctAggregationSupported(resultingType)) {
                     let typeHint;
+                    let quickFixes: ReadonlyArray<QuickFix> = [];
                     if (resultingType.isValueObjectType) {
                         const offendingFields =
                             getOffendingValueObjectFieldsForDistinctAggregation(resultingType);
@@ -898,6 +965,10 @@ export class Field implements ModelComponent {
                         } ${offendingFieldNames} has a type that does not support this operator`;
                     } else if (resultingType.isEntityExtensionType) {
                         typeHint = `entity extension types. You can instead collect the parent objects by removing the last path segment`;
+                        // this changes what is collected, so it should not be applied automatically
+                        quickFixes = this.getRemoveLastCollectPathSegmentQuickFixes({
+                            isPreferred: false,
+                        });
                     } else {
                         typeHint = `type "${
                             resultingType.name
@@ -909,6 +980,7 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `Aggregation operator "${this.aggregationOperator}" is not supported on ${typeHint}.`,
                             this.input.collect.aggregationOperatorASTNode,
+                            { quickFixes },
                         ),
                     );
                     return;
@@ -928,6 +1000,7 @@ export class Field implements ModelComponent {
                             ValidationMessage.error(
                                 `Aggregation operator "${this.aggregationOperator}" is not needed because the collect result can neither contain duplicate entities nor null values. Please remove the "${COLLECT_AGGREGATE_ARG}" argument".`,
                                 this.input.collect.aggregationOperatorASTNode,
+                                { quickFixes: this.getRemoveAggregateArgumentQuickFixes() },
                             ),
                         );
                         return;
@@ -937,6 +1010,10 @@ export class Field implements ModelComponent {
                             ValidationMessage.error(
                                 `Please use the operator "${suggestedOperator}" because the collect result can neither contain duplicate entities nor null values.".`,
                                 this.input.collect.aggregationOperatorASTNode,
+                                {
+                                    quickFixes:
+                                        this.getUseAggregationOperatorQuickFixes(suggestedOperator),
+                                },
                             ),
                         );
                         return;
@@ -957,6 +1034,13 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `The aggregation results in type "${expectedResultingTypeName}", but this field is declared with type "${this.type.name}".`,
                         this.astNode && this.astNode.type,
+                        {
+                            quickFixes: this.getChangeTypeQuickFixes(
+                                typeInfo.resultIsList
+                                    ? `[${expectedResultingTypeName}]`
+                                    : expectedResultingTypeName,
+                            ),
+                        },
                     ),
                 );
                 return;
@@ -967,6 +1051,7 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `This aggregation field should not be declared as a list.`,
                         this.astNode && this.astNode.type,
+                        { quickFixes: this.getChangeTypeQuickFixes(this.type.name) },
                     ),
                 );
                 return;
@@ -977,6 +1062,7 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `This aggregation field should be declared as a list because "${this.aggregationOperator}" results in a list.`,
                         this.astNode && this.astNode.type,
+                        { quickFixes: this.getChangeTypeQuickFixes(`[${this.type.name}]`) },
                     ),
                 );
                 return;
@@ -991,6 +1077,11 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `The collect path results in entity extension type "${resultingType.name}", but entity extensions cannot be collected. You can either collect the parent entity by removing the last path segment, or collect values within the entity extension by adding a path segment.`,
                             this.input.collect.pathASTNode,
+                            {
+                                quickFixes: this.getRemoveLastCollectPathSegmentQuickFixes({
+                                    isPreferred: false,
+                                }),
+                            },
                         ),
                     );
                     return;
@@ -1006,7 +1097,8 @@ export class Field implements ModelComponent {
                         : resultingType.isValueObjectType
                           ? 'value object'
                           : 'scalar';
-                    const suggestion = isDistinctAggregationSupported(resultingType)
+                    const isDistinctSupported = isDistinctAggregationSupported(resultingType);
+                    const suggestion = isDistinctSupported
                         ? ` You may want to use the "${AggregationOperator.DISTINCT}" aggregation.`
                         : `You can either collect the parent entity by removing the last path segment, or add the "aggregate" argument to aggregate the values.`;
                     context.addMessage(
@@ -1014,6 +1106,13 @@ export class Field implements ModelComponent {
                             `The collect path results in ${typeKind} type "${resultingType.name}", but ${typeKind}s cannot be collected without aggregating them. ` +
                                 suggestion,
                             this.input.collect.pathASTNode,
+                            {
+                                quickFixes: isDistinctSupported
+                                    ? this.getAddDistinctAggregationQuickFixes()
+                                    : this.getRemoveLastCollectPathSegmentQuickFixes({
+                                          isPreferred: false,
+                                      }),
+                            },
                         ),
                     );
                     return;
@@ -1051,6 +1150,7 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `The ${path} can produce duplicate ${entityType}${reason}. Please set argument "${COLLECT_AGGREGATE_ARG}" to "${AggregationOperator.DISTINCT}" to filter out duplicates and null items if you don't want any other aggregation.`,
                             this.input.collect.pathASTNode,
+                            { quickFixes: this.getAddDistinctAggregationQuickFixes() },
                         ),
                     );
                     return;
@@ -1067,6 +1167,7 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `The collect path can produce items that are null${fieldHint}. Please set argument "${COLLECT_AGGREGATE_ARG}" to "${AggregationOperator.DISTINCT}" to filter out null items if you don't want any other aggregation.`,
                             this.input.collect.pathASTNode,
+                            { quickFixes: this.getAddDistinctAggregationQuickFixes() },
                         ),
                     );
                     return;
@@ -1077,6 +1178,10 @@ export class Field implements ModelComponent {
                         ValidationMessage.error(
                             `The collect path results in type "${resultingType.name}", but this field is declared with type "${this.type.name}".`,
                             this.astNode && this.astNode.type,
+                            {
+                                // collect fields without aggregation are always lists
+                                quickFixes: this.getChangeTypeQuickFixes(`[${resultingType.name}]`),
+                            },
                         ),
                     );
                     return;
@@ -1087,6 +1192,7 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `This collect field should be a declared as a list.`,
                         this.astNode && this.astNode.type,
+                        { quickFixes: this.getChangeTypeQuickFixes(`[${this.type.name}]`) },
                     ),
                 );
                 return;
@@ -1105,6 +1211,15 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `Field "${this.declaringType.name}.${this.input.referenceKeyField}" not found.`,
                     this.input.referenceKeyFieldASTNode,
+                    {
+                        quickFixes: getUseSimilarNameQuickFixes(
+                            this.input.referenceKeyFieldASTNode,
+                            this.input.referenceKeyField,
+                            this.declaringType.fields
+                                .filter((field) => !field.isSystemField)
+                                .map((field) => field.name),
+                        ),
+                    },
                 ),
             );
             return;
@@ -1132,6 +1247,11 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `The type of the keyField "${this.declaringType.name}.${this.input.referenceKeyField}" ("${keyField.type.name}") must be the same as the type of the @key-annotated field "${this.type.name}.${targetKeyField.name}" ("${targetKeyField.type.name}")`,
                     this.input.referenceKeyFieldASTNode,
+                    {
+                        quickFixes: keyField.getChangeTypeQuickFixes(targetKeyField.type.name, {
+                            description: `Change type of "${this.declaringType.name}.${keyField.name}" to "${targetKeyField.type.name}"`,
+                        }),
+                    },
                 ),
             );
             return;
@@ -1172,6 +1292,7 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `Type "${this.type.name}" is an entity extension type and cannot be used in a list. Change the field type to "${this.type.name}" (without brackets), or use a child entity or value object type instead.`,
                     this.astNode,
+                    { quickFixes: this.getChangeTypeQuickFixes(this.type.name) },
                 ),
             );
         }
@@ -1197,6 +1318,7 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `Type "${this.type.name}" is a child entity type and can only be used in a list. Change the field type to "[${this.type.name}]", or use an entity extension or value object type instead.`,
                     this.astNode,
+                    { quickFixes: this.getChangeTypeQuickFixes(`[${this.type.name}]`) },
                 ),
             );
         }
@@ -1385,6 +1507,10 @@ export class Field implements ModelComponent {
                     'DEPRECATED',
                     `Calc mutations do not work within value objects because value objects cannot be updated. This will be an error in a future release.`,
                     this.astNode,
+                    {
+                        location: this.calcMutationsAstNode ?? this.astNode,
+                        quickFixes: getRemoveDirectiveQuickFixes(this.calcMutationsAstNode),
+                    },
                 ),
             );
         }
@@ -1529,6 +1655,7 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `Type "${this.declaringType.name}" is used in type "${this.type.name}", but the closest entity type in the hierarchy is "${embeddingEntityType.name}", so the type of this parent field should be "${embeddingEntityType.name}".`,
                         this.input.parentDirectiveNode,
+                        { quickFixes: this.getChangeTypeQuickFixes(embeddingEntityType.name) },
                     ),
                 );
             } else {
@@ -1536,6 +1663,7 @@ export class Field implements ModelComponent {
                     ValidationMessage.error(
                         `Type "${this.declaringType.name}" is used in entity type "${embeddingEntityType.name}", so the type of this parent field should be "${embeddingEntityType.name}".`,
                         this.input.parentDirectiveNode,
+                        { quickFixes: this.getChangeTypeQuickFixes(embeddingEntityType.name) },
                     ),
                 );
             }
@@ -1684,6 +1812,7 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     `Type "${this.declaringType.name}" is used in root entity type "${embeddingRootEntityType.name}", so the type of this root field should be "${embeddingRootEntityType.name}".`,
                     this.input.rootDirectiveNode,
+                    { quickFixes: this.getChangeTypeQuickFixes(embeddingRootEntityType.name) },
                 ),
             );
             return;
@@ -1763,7 +1892,12 @@ export class Field implements ModelComponent {
                     'DEPRECATED',
                     `@flexSearch is not supported on type "${this.type.name}". Remove this directive. This will be an error in a future release.`,
                     this.input.astNode,
-                    { location: this.input.isFlexSearchIndexedASTNode },
+                    {
+                        location: this.input.isFlexSearchIndexedASTNode,
+                        quickFixes: getRemoveDirectiveQuickFixes(
+                            this.input.isFlexSearchIndexedASTNode,
+                        ),
+                    },
                 ),
             );
         }
@@ -1821,6 +1955,7 @@ export class Field implements ModelComponent {
                         location:
                             this.input.isFlexSearchIndexedASTNode ??
                             this.input.isFlexSearchFulltextIndexedASTNode,
+                        quickFixes: this.getRemoveIncludeInSearchQuickFixes(),
                     },
                 ),
             );
@@ -1973,33 +2108,168 @@ export class Field implements ModelComponent {
                     this.astNode,
                     {
                         location: this.input.accessFieldDirectiveASTNode,
-                        quickFixes: this.getRemoveAccessFieldQuickFixes(),
+                        // the field might be prepared for a restriction that will be added later
+                        quickFixes: getRemoveDirectiveQuickFixes(
+                            this.input.accessFieldDirectiveASTNode,
+                            { isPreferred: false },
+                        ),
                     },
                 ),
             );
         }
     }
 
-    private getRemoveAccessFieldQuickFixes(): ReadonlyArray<QuickFix> {
-        const loc = this.input.accessFieldDirectiveASTNode?.loc;
+    /**
+     * Quick fixes to replace the declared type of this field (e.g. "[String]")
+     */
+    private getChangeTypeQuickFixes(
+        newTypeText: string,
+        {
+            description = `Change type to "${newTypeText}"`,
+            isPreferred = true,
+        }: { readonly description?: string; readonly isPreferred?: boolean } = {},
+    ): ReadonlyArray<QuickFix> {
+        const loc = this.astNode?.type.loc;
         if (!loc) {
             return [];
         }
-        // also remove the whitespace before the directive
-        const source = new ProjectSource(loc.source.name, loc.source.body);
-        const textBefore = source.body.slice(0, loc.start);
-        const whitespaceLength = textBefore.length - textBefore.trimEnd().length;
         return [
             new QuickFix({
-                description: `Remove @${ACCESS_FIELD_DIRECTIVE}`,
-                // the field might be prepared for a restriction that will be added later
-                isPreferred: false,
+                description,
+                isPreferred,
+                changeSet: new ChangeSet([new TextChange(loc, newTypeText)]),
+            }),
+        ];
+    }
+
+    private getRemoveIncludeInSearchQuickFixes(): ReadonlyArray<QuickFix> {
+        const changes = [
+            this.input.isFlexSearchIndexedASTNode,
+            this.input.isFlexSearchFulltextIndexedASTNode,
+        ].flatMap((directive) => {
+            const argument = directive?.arguments?.find(
+                (a) => a.name.value === FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT,
+            );
+            const change = directive && argument && createRemoveArgumentChange(directive, argument);
+            return change ? [change] : [];
+        });
+        if (!changes.length) {
+            return [];
+        }
+        return [
+            new QuickFix({
+                description: `Remove "${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true"`,
+                isPreferred: true,
+                changeSet: new ChangeSet(changes),
+            }),
+        ];
+    }
+
+    private getAddRelationDirectiveQuickFixes(): ReadonlyArray<QuickFix> {
+        const loc = this.astNode?.type.loc;
+        if (!loc) {
+            return [];
+        }
+        return [
+            new QuickFix({
+                description: `Add @${RELATION_DIRECTIVE}`,
+                isPreferred: true,
                 changeSet: new ChangeSet([
-                    new TextChange(
-                        new MessageLocation(source, loc.start - whitespaceLength, loc.end),
-                        '',
+                    createInsertionChange(loc.end, loc, ` @${RELATION_DIRECTIVE}`),
+                ]),
+            }),
+        ];
+    }
+
+    private getUseRestrictQuickFixes({
+        isPreferred = true,
+    }: { readonly isPreferred?: boolean } = {}): ReadonlyArray<QuickFix> {
+        const loc = this.input.relationDeleteActionASTNode?.value.loc;
+        if (!loc) {
+            return [];
+        }
+        return [
+            new QuickFix({
+                description: `Use ${RelationDeleteAction.RESTRICT}`,
+                isPreferred,
+                changeSet: new ChangeSet([new TextChange(loc, RelationDeleteAction.RESTRICT)]),
+            }),
+        ];
+    }
+
+    /**
+     * Quick fixes to replace the aggregation operator with its variant that checks for boolean "true"
+     */
+    private getUseBooleanAggregationOperatorQuickFixes(): ReadonlyArray<QuickFix> {
+        return this.getUseAggregationOperatorQuickFixes(this.aggregationOperator + '_TRUE');
+    }
+
+    private getUseAggregationOperatorQuickFixes(operator: string): ReadonlyArray<QuickFix> {
+        const loc = this.input.collect?.aggregationOperatorASTNode?.loc;
+        if (!loc || !Object.values<string>(AggregationOperator).includes(operator)) {
+            return [];
+        }
+        return [
+            new QuickFix({
+                description: `Use ${operator}`,
+                isPreferred: true,
+                changeSet: new ChangeSet([new TextChange(loc, operator)]),
+            }),
+        ];
+    }
+
+    private getRemoveAggregateArgumentQuickFixes(): ReadonlyArray<QuickFix> {
+        const directive = this.input.collect?.astNode;
+        const argument = directive?.arguments?.find(
+            (arg) => arg.name.value === COLLECT_AGGREGATE_ARG,
+        );
+        const change = directive && argument && createRemoveArgumentChange(directive, argument);
+        if (!change) {
+            return [];
+        }
+        return [
+            new QuickFix({
+                description: `Remove "${COLLECT_AGGREGATE_ARG}" argument`,
+                isPreferred: true,
+                changeSet: new ChangeSet([change]),
+            }),
+        ];
+    }
+
+    private getAddDistinctAggregationQuickFixes(): ReadonlyArray<QuickFix> {
+        const loc = this.input.collect?.pathASTNode?.loc;
+        if (!loc || this.input.collect?.aggregationOperatorASTNode) {
+            return [];
+        }
+        return [
+            new QuickFix({
+                description: `Add ${COLLECT_AGGREGATE_ARG}: ${AggregationOperator.DISTINCT}`,
+                isPreferred: true,
+                changeSet: new ChangeSet([
+                    createInsertionChange(
+                        loc.end,
+                        loc,
+                        `, ${COLLECT_AGGREGATE_ARG}: ${AggregationOperator.DISTINCT}`,
                     ),
                 ]),
+            }),
+        ];
+    }
+
+    private getRemoveLastCollectPathSegmentQuickFixes({
+        isPreferred = true,
+    }: { readonly isPreferred?: boolean } = {}): ReadonlyArray<QuickFix> {
+        const loc = this.input.collect?.pathASTNode?.loc;
+        const segments = this.input.collect?.path.split('.') ?? [];
+        if (!loc || segments.length < 2) {
+            return [];
+        }
+        const newPath = segments.slice(0, -1).join('.');
+        return [
+            new QuickFix({
+                description: `Change path to "${newPath}"`,
+                isPreferred,
+                changeSet: new ChangeSet([new TextChange(loc, JSON.stringify(newPath))]),
             }),
         ];
     }
@@ -2400,4 +2670,20 @@ function getOffendingValueObjectFieldsForDistinctAggregation(type: ValueObjectTy
             !field.type.isRootEntityType &&
             !scalarTypesThatSupportDistinctAggregation.includes(field.type.name),
     );
+}
+
+function getRemoveDirectiveQuickFixes(
+    directive: DirectiveNode | undefined,
+    { isPreferred = true }: { readonly isPreferred?: boolean } = {},
+): ReadonlyArray<QuickFix> {
+    if (!directive?.loc) {
+        return [];
+    }
+    return [
+        new QuickFix({
+            description: `Remove @${directive.name.value}`,
+            isPreferred,
+            changeSet: new ChangeSet([createRemoveInlineNodeChange(directive.loc)]),
+        }),
+    ];
 }

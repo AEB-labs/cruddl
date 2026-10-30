@@ -2,17 +2,17 @@ import { memorize } from 'memorize-decorator';
 import { GraphQLDateTime } from '../../schema/scalars/date-time.js';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js';
+import { getReplaceValueWithSimilarNameQuickFixes } from '../change-set/similar-name-quick-fixes.js';
 import { RelationDeleteAction } from '../config/field.js';
 import type { TimeToLiveConfig } from '../config/time-to-live.js';
-import { TypeKind } from '../config/type.js';
 import { ValidationMessage } from '../validation/message.js';
-import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
+import type { ModelComponent } from '../validation/validation-context.js';
+import { ValidationContext } from '../validation/validation-context.js';
 import { FieldPath } from './field-path.js';
 import type { Field } from './field.js';
 import type { Model } from './model.js';
 import type { RootEntityType } from './root-entity-type.js';
 import type { ScalarType } from './scalar-type.js';
-import type { Type } from './type.js';
 
 export class TimeToLiveType implements ModelComponent {
     readonly cascadeFields: ReadonlyArray<FieldPath> = [];
@@ -51,6 +51,14 @@ export class TimeToLiveType implements ModelComponent {
                 ValidationMessage.error(
                     `No rootEntity with the name "${this.input.typeName}" is defined.`,
                     this.input.typeNameLoc,
+                    {
+                        quickFixes: getReplaceValueWithSimilarNameQuickFixes(
+                            this.input.typeNameLoc,
+                            'typeName',
+                            this.input.typeName,
+                            this.model.rootEntityTypes.map((type) => type.name),
+                        ),
+                    },
                 ),
             );
         }
@@ -202,7 +210,27 @@ export class TimeToLiveType implements ModelComponent {
         return this.input.expireAfterDays;
     }
 
-    // TODO refactor this to use FieldPath
+    @memorize()
+    private get dateFieldPath(): FieldPath | undefined {
+        if (!this.rootEntityType) {
+            return undefined;
+        }
+        return new FieldPath({
+            path: this.input.dateField,
+            baseType: this.rootEntityType,
+            location: this.input.dateFieldLoc,
+            // a list in the path results in a list of dates, which never matches the filter
+            canNavigateIntoLists: false,
+            canTraverseRootEntities: false,
+            canFollowReferences: false,
+            reportInvalidNavigationAsDeprecation: true,
+            // collect and parent fields are not stored, so they would never match the filter
+            canUseCollectFields: false,
+            reportCollectFieldsAsDeprecation: true,
+            reportParentFieldsAsDeprecation: true,
+        });
+    }
+
     private traversePath(
         addMessage: (mess: ValidationMessage) => void,
     ): { fieldsInPath: ReadonlyArray<Field>; field: Field } | undefined {
@@ -216,66 +244,22 @@ export class TimeToLiveType implements ModelComponent {
             return undefined;
         }
 
-        if (!this.rootEntityType) {
-            ValidationMessage.error(
-                `"${this.input.typeName}" does not specify a rootEntity.`,
-                this.input.typeNameLoc,
-            );
+        const dateFieldPath = this.dateFieldPath;
+        if (!dateFieldPath) {
+            // reported in validate()
             return undefined;
         }
 
-        let type: Type = this.rootEntityType;
-
-        let field: Field | undefined = undefined;
-        let fieldsInPath = [];
-        for (const fieldName of this.input.dateField.split('.')) {
-            if (!type.isObjectType) {
-                if (field) {
-                    addMessage(
-                        ValidationMessage.error(
-                            `Field "${field.name}" is not an object`,
-                            this.input.dateFieldLoc,
-                        ),
-                    );
-                } else {
-                    // this should not occur - would mean that the root is not an object type
-                    addMessage(
-                        ValidationMessage.error(
-                            `Index defined on non-object type (this is probably an internal error).`,
-                            this.input.dateFieldLoc,
-                        ),
-                    );
-                }
-                return undefined;
-            }
-
-            const nextField = type.getField(fieldName);
-            if (!nextField) {
-                addMessage(
-                    ValidationMessage.error(
-                        `Type "${type.name}" does not have a field "${fieldName}"`,
-                        this.input.dateFieldLoc,
-                    ),
-                );
-                return undefined;
-            }
-
-            if (nextField.type.kind === TypeKind.ROOT_ENTITY) {
-                addMessage(
-                    ValidationMessage.error(
-                        `Field "${type.name}.${nextField.name}" resolves to a root entity, but time-to-live-definitions can not cross root entity boundaries.`,
-                        this.input.dateFieldLoc,
-                    ),
-                );
-                return undefined;
-            }
-
-            field = nextField;
-            type = nextField.type;
-            fieldsInPath.push(nextField);
+        const pathContext = new ValidationContext();
+        dateFieldPath.validate(pathContext);
+        pathContext.validationMessages.forEach(addMessage);
+        if (pathContext.asResult().hasErrors()) {
+            return undefined;
         }
 
-        if (!field) {
+        const fieldsInPath = dateFieldPath.fields;
+        const field = fieldsInPath?.[fieldsInPath.length - 1];
+        if (!fieldsInPath || !field) {
             return undefined;
         }
 

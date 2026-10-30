@@ -1,10 +1,12 @@
 import { gql } from 'graphql-tag';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { prettyPrint } from '../../core/graphql/pretty-print.js';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
+    validate,
 } from '../utils/source-validation-utils.js';
 
 describe('system field override validation', () => {
@@ -36,6 +38,27 @@ describe('system field override validation', () => {
             `),
             'Manually declaring system field "id" is redundant. Either add a suitable directive or consider removing the field',
         );
+    });
+
+    it('offers to remove a redundant system field', () => {
+        const result = validate(
+            prettyPrint(gql`
+                type Root @rootEntity {
+                    "The id"
+                    id: ID
+                    dummy: String
+                }
+            `),
+        );
+        const newSource = applyQuickFix(result.messages, 'Remove field');
+        expect(newSource).to.equal(
+            prettyPrint(gql`
+                type Root @rootEntity {
+                    dummy: String
+                }
+            `),
+        );
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
     });
 
     it('warns on redundant system field "createdAt"', () => {
@@ -72,6 +95,30 @@ describe('system field override validation', () => {
             `),
             'System field "id" must be of type "ID"',
         );
+    });
+
+    it('offers to change the type of a system field', () => {
+        const source = prettyPrint(gql`
+            type Root @rootEntity {
+                id: String @key
+                dummy: String
+            }
+        `);
+        expect(applyQuickFix(validate(source).messages, 'Change type to "ID"')).to.equal(
+            source.replace('id: String @key', 'id: ID @key'),
+        );
+    });
+
+    it('prefers removing a mistyped system field without directives', () => {
+        const quickFixes = validate(`
+            type Root @rootEntity {
+                createdAt: String
+                dummy: String
+            }
+        `).messages.flatMap((m) => m.quickFixes);
+        expect(quickFixes.filter((q) => q.isPreferred).map((q) => q.description)).to.deep.equal([
+            'Remove field',
+        ]);
     });
 
     it('errors on system field "createdAt" type mismatch', () => {

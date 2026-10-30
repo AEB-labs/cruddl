@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     validate,
@@ -566,6 +567,165 @@ describe('collect validation', () => {
             );
         });
 
+        it('offers to use the boolean variant when aggregating a boolean field', () => {
+            const result = validate(`
+                type Delivery @rootEntity {
+                    items: [DeliveryItem]
+                    containsDangerousGoods: Boolean @collect(path: "items.isDangerousGoods", aggregate: SOME)
+                }
+                type DeliveryItem @childEntity {
+                    isDangerousGoods: Boolean
+                }
+            `);
+            const newSource = applyQuickFix(result.messages, 'Use SOME_TRUE');
+            expect(newSource).to.contain('aggregate: SOME_TRUE');
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        });
+
+        it('offers to use the boolean variant when aggregating a boolean list field', () => {
+            const result = validate(`
+                type Delivery @rootEntity {
+                    items: [DeliveryItem]
+                    numberOfConfirmations: Int @collect(path: "items.confirmations", aggregate: COUNT)
+                }
+                type DeliveryItem @childEntity {
+                    confirmations: [Boolean]
+                }
+            `);
+            expect(result.getWarnings().map((m) => m.message)).to.deep.equal([
+                'Aggregation operator "COUNT" only checks the number of items. "confirmations" is of type "Boolean", so you may want to use the operator "COUNT_TRUE" instead which specifically checks for boolean "true".',
+            ]);
+            const newSource = applyQuickFix(result.messages, 'Use COUNT_TRUE');
+            expect(newSource).to.contain('aggregate: COUNT_TRUE');
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        });
+
+        describe('quick fixes for the declared type', () => {
+            function expectTypeFix(field: string, description: string, expectedField: string) {
+                const source = `
+                    type HandlingUnit @rootEntity {
+                        handlingUnitNumber: String
+                        delivery: Delivery @relation(inverseOf: "handlingUnits")
+                    }
+                    type Delivery @rootEntity {
+                        handlingUnits: [HandlingUnit] @relation
+                        ${field}
+                    }
+                `;
+                const newSource = applyQuickFix(validate(source).messages, description);
+                expect(newSource).to.equal(source.replace(field, expectedField));
+                assertValidatorAcceptsAndDoesNotWarn(newSource);
+            }
+
+            it('offers to change the type to the aggregation result type', () => {
+                expectTypeFix(
+                    'numberOfHandlingUnits: Float @collect(path: "handlingUnits", aggregate: COUNT)',
+                    'Change type to "Int"',
+                    'numberOfHandlingUnits: Int @collect(path: "handlingUnits", aggregate: COUNT)',
+                );
+            });
+
+            it('offers to remove the list type of an aggregation that does not result in a list', () => {
+                expectTypeFix(
+                    'numberOfHandlingUnits: [Int] @collect(path: "handlingUnits", aggregate: COUNT)',
+                    'Change type to "Int"',
+                    'numberOfHandlingUnits: Int @collect(path: "handlingUnits", aggregate: COUNT)',
+                );
+            });
+
+            it('offers to add the list type for an aggregation that results in a list', () => {
+                expectTypeFix(
+                    'handlingUnitNumbers: String @collect(path: "handlingUnits.handlingUnitNumber", aggregate: DISTINCT)',
+                    'Change type to "[String]"',
+                    'handlingUnitNumbers: [String] @collect(path: "handlingUnits.handlingUnitNumber", aggregate: DISTINCT)',
+                );
+            });
+
+            it('offers to change the type to the collect result type', () => {
+                const source = `
+                    type HandlingUnit @rootEntity {
+                        handlingUnitNumber: String
+                        delivery: Delivery @relation(inverseOf: "handlingUnits")
+                    }
+                    type Package @rootEntity {
+                        packageNumber: String
+                    }
+                    type Delivery @rootEntity {
+                        handlingUnits: [HandlingUnit] @relation
+                    }
+                    type Shipment @rootEntity {
+                        deliveries: [Delivery] @relation
+                        allHandlingUnits: [Package] @collect(path: "deliveries.handlingUnits")
+                    }
+                `;
+                const newSource = applyQuickFix(
+                    validate(source).messages,
+                    'Change type to "[HandlingUnit]"',
+                );
+                expect(newSource).to.contain('allHandlingUnits: [HandlingUnit] @collect');
+            });
+
+            it('offers the list type of the aggregation result even if the field is declared differently', () => {
+                const newSource = applyQuickFix(
+                    validate(`
+                        type HandlingUnit @rootEntity {
+                            handlingUnitNumber: String
+                        }
+                        type Delivery @rootEntity {
+                            handlingUnits: [HandlingUnit] @relation
+                            numberOfHandlingUnits: [Float] @collect(path: "handlingUnits", aggregate: COUNT)
+                        }
+                    `).messages,
+                    'Change type to "Int"',
+                );
+                expect(newSource).to.contain('numberOfHandlingUnits: Int @collect');
+                assertValidatorAcceptsAndDoesNotWarn(newSource);
+            });
+
+            it('offers a list type for a collect field without aggregation that is declared as a non-list', () => {
+                const newSource = applyQuickFix(
+                    validate(`
+                        type HandlingUnit @rootEntity {
+                            handlingUnitNumber: String
+                            delivery: Delivery @relation(inverseOf: "handlingUnits")
+                        }
+                        type Package @rootEntity {
+                            packageNumber: String
+                        }
+                        type Delivery @rootEntity {
+                            handlingUnits: [HandlingUnit] @relation
+                            allHandlingUnits: Package @collect(path: "handlingUnits")
+                        }
+                    `).messages,
+                    'Change type to "[HandlingUnit]"',
+                );
+                expect(newSource).to.contain('allHandlingUnits: [HandlingUnit] @collect');
+                assertValidatorAcceptsAndDoesNotWarn(newSource);
+            });
+
+            it('offers to add the list type for a collect field without aggregation', () => {
+                const source = `
+                    type HandlingUnit @rootEntity {
+                        handlingUnitNumber: String
+                        delivery: Delivery @relation(inverseOf: "handlingUnits")
+                    }
+                    type Delivery @rootEntity {
+                        handlingUnits: [HandlingUnit] @relation
+                    }
+                    type Shipment @rootEntity {
+                        deliveries: [Delivery] @relation
+                        allHandlingUnits: HandlingUnit @collect(path: "deliveries.handlingUnits")
+                    }
+                `;
+                const newSource = applyQuickFix(
+                    validate(source).messages,
+                    'Change type to "[HandlingUnit]"',
+                );
+                expect(newSource).to.contain('allHandlingUnits: [HandlingUnit] @collect');
+                assertValidatorAcceptsAndDoesNotWarn(newSource);
+            });
+        });
+
         it('rejects wrongly declared list', () => {
             assertValidatorRejects(
                 `
@@ -775,6 +935,140 @@ describe('collect validation', () => {
                     'Aggregation operator "DISTINCT" is not supported on value object type "Volume" because its field "value" has a type that does not support this operator.',
                 );
             });
+        });
+    });
+
+    describe('quick fixes for path and aggregation errors', () => {
+        function getSource(field: string) {
+            return `
+                type Shipment @rootEntity {
+                    deliveries: [Delivery] @relation
+                    ${field}
+                }
+                type Delivery @rootEntity {
+                    handlingUnits: [HandlingUnit] @relation
+                    items: [DeliveryItem]
+                }
+                type HandlingUnit @rootEntity {
+                    handlingUnitNumber: String
+                }
+                type DeliveryItem @childEntity {
+                    itemNumber: String
+                    quantity: Int
+                    dimensions: Dimensions
+                }
+                type Dimensions @entityExtension {
+                    weightInKg: Float
+                }
+            `;
+        }
+
+        function expectQuickFix(field: string, description: string, expectedField: string) {
+            const newSource = applyQuickFix(validate(getSource(field)).messages, description);
+            expect(newSource).to.equal(getSource(expectedField));
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        }
+
+        it('offers to add DISTINCT if the path can produce duplicates', () => {
+            expectQuickFix(
+                'allHandlingUnits: [HandlingUnit] @collect(path: "deliveries.handlingUnits")',
+                'Add aggregate: DISTINCT',
+                'allHandlingUnits: [HandlingUnit] @collect(path: "deliveries.handlingUnits", aggregate: DISTINCT)',
+            );
+        });
+
+        it('offers to add DISTINCT when collecting scalars', () => {
+            expectQuickFix(
+                'itemNumbers: [String] @collect(path: "deliveries.items.itemNumber")',
+                'Add aggregate: DISTINCT',
+                'itemNumbers: [String] @collect(path: "deliveries.items.itemNumber", aggregate: DISTINCT)',
+            );
+        });
+
+        it('offers to remove an unnecessary DISTINCT', () => {
+            expectQuickFix(
+                'allItems: [DeliveryItem] @collect(path: "deliveries.items", aggregate: DISTINCT)',
+                'Remove "aggregate" argument',
+                'allItems: [DeliveryItem] @collect(path: "deliveries.items")',
+            );
+        });
+
+        it('offers to use the operator without DISTINCT if there cannot be duplicates', () => {
+            expectQuickFix(
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT_DISTINCT)',
+                'Use COUNT',
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT)',
+            );
+        });
+
+        it('offers to use the NOT_NULL operator if the last segment is a nullable non-list field', () => {
+            expectQuickFix(
+                'numberOfQuantities: Int @collect(path: "deliveries.items.quantity", aggregate: COUNT)',
+                'Use COUNT_NOT_NULL',
+                'numberOfQuantities: Int @collect(path: "deliveries.items.quantity", aggregate: COUNT_NOT_NULL)',
+            );
+        });
+
+        it('offers to remove a nullable non-list field from the path', () => {
+            expectQuickFix(
+                'numberOfItems: Int @collect(path: "deliveries.items.quantity", aggregate: COUNT)',
+                'Change path to "deliveries.items"',
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT)',
+            );
+        });
+
+        it('offers to remove a non-list field from the path', () => {
+            expectQuickFix(
+                'numberOfItems: Int @collect(path: "deliveries.items.dimensions", aggregate: COUNT)',
+                'Change path to "deliveries.items"',
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT)',
+            );
+        });
+
+        it('offers to use the operator without NOT_NULL if the result is not nullable', () => {
+            expectQuickFix(
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT_NOT_NULL)',
+                'Use COUNT',
+                'numberOfItems: Int @collect(path: "deliveries.items", aggregate: COUNT)',
+            );
+        });
+
+        it('offers to remove an entity extension from the path of a DISTINCT aggregation', () => {
+            const newSource = applyQuickFix(
+                validate(
+                    getSource(
+                        'allDimensions: [Dimensions] @collect(path: "deliveries.items.dimensions", aggregate: DISTINCT)',
+                    ),
+                ).messages,
+                'Change path to "deliveries.items"',
+            );
+            expect(newSource).to.contain('@collect(path: "deliveries.items", aggregate: DISTINCT)');
+        });
+
+        it('offers to remove an entity extension from the path', () => {
+            const newSource = applyQuickFix(
+                validate(
+                    getSource(
+                        'allDimensions: [Dimensions] @collect(path: "deliveries.items.dimensions")',
+                    ),
+                ).messages,
+                'Change path to "deliveries.items"',
+            );
+            expect(newSource).to.contain('@collect(path: "deliveries.items")');
+        });
+
+        it('keeps the depth specifier when fixing a misspelled field name', () => {
+            const newSource = applyQuickFix(
+                validate(`
+                    type Node @rootEntity {
+                        children: [Node] @relation
+                        descendants: [Node] @collect(path: "childrn{1,3}")
+                    }
+                `).messages,
+                'Change to "children"',
+            );
+            expect(newSource).to.contain('@collect(path: "children{1,3}")');
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
         });
     });
 });

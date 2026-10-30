@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { createSimpleModel } from '../../../testing/utils/create-simple-model.js';
 import { expectSingleError } from '../../../testing/utils/model-validation-utils.js';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     assertValidatorWarns,
@@ -126,6 +127,20 @@ describe('FlexSearch', () => {
         );
     });
 
+    it('offers to remove an ineffective includeInSearch', () => {
+        const result = validate(`
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                someExtension: HandlingUnitInfo @flexSearch(includeInSearch: true)
+            }
+            type HandlingUnitInfo @entityExtension{
+                someString: String @flexSearch
+            }
+        `);
+        const newSource = applyQuickFix(result.messages, 'Remove "includeInSearch: true"');
+        expect(newSource).to.contain('someExtension: HandlingUnitInfo @flexSearch\n');
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
+    });
+
     it('does not warn for includeInSearch on child with fulltext includeInSearch field', () => {
         assertValidatorAcceptsAndDoesNotWarn(
             `
@@ -245,6 +260,75 @@ describe('FlexSearch', () => {
         );
     });
 
+    it('offers to remove flexSearch on fields of type JSON', () => {
+        const result = validate(`
+            type HandlingUnit @rootEntity(flexSearch: true) {
+                someString: String @flexSearch
+                data: JSON @flexSearch
+            }
+        `);
+        const newSource = applyQuickFix(result.messages, 'Remove @flexSearch');
+        expect(newSource).to.contain('                data: JSON\n');
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
+    });
+
+    describe('flexSearch fields on types without flexSearch', () => {
+        const message =
+            'The type contains fields that are annotated with flexSearch or flexSearchFulltext, but the type itself is not marked with flexSearch = true.';
+
+        it('warns about flexSearch fields on types without flexSearch', () => {
+            assertValidatorWarns(
+                `
+                type HandlingUnit @rootEntity {
+                    someString: String @flexSearch
+                }
+            `,
+                message,
+            );
+        });
+
+        for (const [description, rootEntityDirective, expectedDirective] of [
+            ['without arguments', '@rootEntity', '@rootEntity(flexSearch: true)'],
+            [
+                'with other arguments',
+                '@rootEntity(permissionProfile: "default")',
+                '@rootEntity(flexSearch: true, permissionProfile: "default")',
+            ],
+            [
+                'with flexSearch: false',
+                '@rootEntity(flexSearch: false)',
+                '@rootEntity(flexSearch: true)',
+            ],
+        ]) {
+            it(`offers to enable flexSearch on a type ${description}`, () => {
+                const result = validate(`
+                    type HandlingUnit ${rootEntityDirective} {
+                        someString: String @flexSearch
+                    }
+                `);
+                const newSource = applyQuickFix(result.messages, 'Enable flexSearch for this type');
+                expect(newSource).to.contain(`type HandlingUnit ${expectedDirective} {`);
+                assertValidatorAcceptsAndDoesNotWarn(newSource);
+            });
+        }
+
+        it('offers to remove flexSearch from the fields', () => {
+            const result = validate(`
+                type HandlingUnit @rootEntity {
+                    someString: String @flexSearch @flexSearchFulltext
+                    otherString: String @flexSearch
+                }
+            `);
+            const newSource = applyQuickFix(
+                result.messages,
+                'Remove @flexSearch and @flexSearchFulltext from all fields',
+            );
+            expect(newSource).to.contain('someString: String\n');
+            expect(newSource).to.contain('otherString: String\n');
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        });
+    });
+
     it('rejects flexSearch without accessField', () => {
         const model = new Model({
             types: [
@@ -323,6 +407,19 @@ describe('FlexSearch', () => {
         );
     });
 
+    it('offers similar field names for primarySort with missing field', () => {
+        const newSource = applyQuickFix(
+            validate(`
+                type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someStrng", direction: ASC}]) {
+                    someString: String @flexSearch
+                }
+            `).messages,
+            'Change to "someString"',
+        );
+        expect(newSource).to.contain('flexSearchOrder: [{field: "someString", direction: ASC}]');
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
+    });
+
     // this is ok, the primary sort field does not need to be included in the index
     it('accepts about primarySort with field that is not flexSearch-indexed', () => {
         assertValidatorAcceptsAndDoesNotWarn(
@@ -357,6 +454,17 @@ describe('FlexSearch', () => {
         `,
             'Field "FlexSearchOrderArgument.direction" of required type "OrderDirection!" was not provided. "ASC" will be assumed. This will be an error in a future release.',
         );
+    });
+
+    it('offers to add the missing direction to primarySort', () => {
+        const result = validate(`
+            type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someString"}]) {
+                someString: String @flexSearch
+            }
+        `);
+        const newSource = applyQuickFix(result.messages, 'Add direction: ASC');
+        expect(newSource).to.contain('flexSearchOrder: [{field: "someString", direction: ASC}]');
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
     });
 
     // this is ok because it makes it easier to disable flexSearch while still keeping the configs

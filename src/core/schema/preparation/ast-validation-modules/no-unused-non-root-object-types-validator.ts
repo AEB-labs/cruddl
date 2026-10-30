@@ -1,5 +1,8 @@
 import type { DocumentNode, ObjectTypeDefinitionNode } from 'graphql';
+import { ChangeSet } from '../../../model/change-set/change-set.js';
+import { createRemoveLinesChange } from '../../../model/change-set/graphql-changes.js';
 import { ValidationMessage } from '../../../model/validation/message.js';
+import { QuickFix } from '../../../model/validation/quick-fix.js';
 import {
     getNamedTypeDefinitionAST,
     getObjectTypes,
@@ -35,7 +38,21 @@ export class NoUnusedNonRootObjectTypesValidator implements ASTValidator {
                 'UNUSED',
                 `Type "${unusedType.name.value}" is not used.`,
                 unusedType,
-                { location: unusedType.name },
+                {
+                    location: unusedType.name,
+                    quickFixes: unusedType.loc
+                        ? [
+                              new QuickFix({
+                                  description: 'Remove type',
+                                  // the type might be added for later use
+                                  isPreferred: false,
+                                  changeSet: new ChangeSet([
+                                      createRemoveLinesChange(unusedType.loc),
+                                  ]),
+                              }),
+                          ]
+                        : [],
+                },
             ),
         );
     }

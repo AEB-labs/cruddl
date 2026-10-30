@@ -74,7 +74,10 @@ export class MessageLocation {
 
     static fromGraphQLLocation(loc: Location) {
         return new MessageLocation(
-            ProjectSource.fromGraphQLSource(loc.source) || loc.source.name,
+            // keep the text even if the GraphQL source is not linked to a project source, so the
+            // location can be used for quick fixes
+            ProjectSource.fromGraphQLSource(loc.source) ??
+                new ProjectSource(loc.source.name, loc.source.body),
             new SourcePosition(loc.start, loc.startToken.line, loc.startToken.column),
             new SourcePosition(
                 loc.end,
@@ -124,20 +127,18 @@ export function locationWithinStringArgument(
 ): MessageLocation | undefined {
     if (isASTNode(node) && node.kind === Kind.STRING && node.loc) {
         const loc = node.loc;
-        // add 1 because of "
-        return new MessageLocation(
-            ProjectSource.fromGraphQLSource(loc.source) || loc.source.name,
-            new SourcePosition(
-                loc.start + 1 + offset,
-                loc.startToken.line,
-                loc.startToken.column + 1 + offset,
-            ),
-            new SourcePosition(
-                loc.start + 1 + offset + length,
-                loc.endToken.line,
-                loc.startToken.column + 1 + offset + length,
-            ),
-        );
+        const source =
+            ProjectSource.fromGraphQLSource(loc.source) ??
+            new ProjectSource(loc.source.name, loc.source.body);
+        const quoteLength = node.block ? 3 : 1;
+        const rawValue = loc.source.body.slice(loc.start + quoteLength, loc.end - quoteLength);
+        // offsets refer to the value, so they can't be mapped to the source if it contains escape
+        // sequences (or indentation in a block string)
+        if (rawValue !== node.value) {
+            return new MessageLocation(source, loc.start, loc.end);
+        }
+        const start = loc.start + quoteLength + offset;
+        return new MessageLocation(source, start, start + length);
     }
 
     let ml: MessageLocation;
@@ -161,18 +162,14 @@ function locationWithinStringArgumentML(
     offset: number,
     length: number,
 ): MessageLocation {
-    // add 1 because of "
-    return new MessageLocation(
-        loc.source,
-        new SourcePosition(
-            loc.start.offset + 1 + offset,
-            loc.start.line,
-            loc.start.column + 1 + offset,
-        ),
-        new SourcePosition(
-            loc.start.offset + 1 + offset + length,
-            loc.start.line,
-            loc.start.column + 1 + offset + length,
-        ),
-    );
+    // the location can be a quoted JSON or YAML string, a plain YAML scalar, or a YAML map entry
+    // that includes the key (like 'field: "a.b"'). In YAML, the value can also be on the next line
+    // and have a tag (like "!!str") or a block scalar indicator (like ">-").
+    const text = loc.source.body.slice(loc.start.offset, loc.end.offset);
+    const prefixLength =
+        /^(?:(["']?)[^\n"':]*\1[ \t]*:)?\s*(?:![^\s]*\s+)?(?:[|>][-+0-9]*[ \t]*\n\s*)?["']?/.exec(
+            text,
+        )![0].length;
+    const start = loc.start.offset + prefixLength + offset;
+    return new MessageLocation(loc.source, start, start + length);
 }

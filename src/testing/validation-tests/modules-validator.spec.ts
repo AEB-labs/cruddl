@@ -543,6 +543,21 @@ describe('modules validator', () => {
             );
         });
 
+        it('offers modules with a similar name', () => {
+            const newSource = applyQuickFix(
+                validate(
+                    `
+                    type Foo @rootEntity @modules(in: ["module1 & modul2"]) {
+                        foo: String @modules(all: true)
+                    }
+                `,
+                    { withModuleDefinitions: true },
+                ).messages,
+                'Change to "module2"',
+            );
+            expect(newSource).to.contain('@modules(in: ["module1 & module2"])');
+        });
+
         it('rejects an expression with a double &&', () => {
             assertValidatorRejects(
                 `

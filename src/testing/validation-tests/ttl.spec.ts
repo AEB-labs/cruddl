@@ -1,5 +1,8 @@
 import { gql } from 'graphql-tag';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { applyChangeSet } from '../../core/model/change-set/apply-change-set.js';
+import { Project } from '../../core/project/project.js';
+import { ProjectSource } from '../../core/project/source.js';
 import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
@@ -77,7 +80,7 @@ describe('timeToLive config', () => {
                     finishedAt: DateTime
                 }
             `,
-            'Type "Test" does not have a field "wrongField"',
+            'Type "Test" does not have a field "wrongField".',
             {
                 timeToLive: [
                     {
@@ -122,7 +125,7 @@ describe('timeToLive config', () => {
                     finishedAt: String
                 }
             `,
-            'Field "Test.test2" resolves to a root entity, but time-to-live-definitions can not cross root entity boundaries.',
+            'Field "Test.test2" resolves to a different root entity, but this path cannot traverse root entity boundaries.',
             {
                 timeToLive: [
                     {
@@ -495,5 +498,151 @@ describe('timeToLive config', () => {
                 ],
             },
         );
+    });
+
+    describe('dateField paths', () => {
+        const schema = `
+            type Delivery @rootEntity {
+                deliveryNumber: String @key
+                arrival: DateTime
+                items: [DeliveryItem]
+                processing: ProcessingInfo
+                dimensions: Dimensions
+                forwarder: Forwarder @reference(keyField: "forwarderKey")
+                forwarderKey: String
+                handlingUnit: HandlingUnit @relation
+                lastPackedAt: DateTime @collect(path: "items.packedAt", aggregate: MAX)
+                pallets: [Pallet] @relation
+                lastPalletPackedAt: DateTime @collect(path: "pallets.packedAt", aggregate: MAX)
+            }
+            type DeliveryItem @childEntity {
+                packedAt: DateTime
+                packages: [Package]
+                delivery: Delivery @root
+            }
+            type Package @childEntity {
+                packedAt: DateTime
+                item: DeliveryItem @parent
+            }
+            type ProcessingInfo @entityExtension {
+                finishedAt: DateTime
+            }
+            type Dimensions @valueObject {
+                measuredAt: DateTime
+            }
+            type Forwarder @rootEntity {
+                forwarderKey: String @key
+                createdAt: DateTime
+            }
+            type Pallet @rootEntity {
+                packedAt: DateTime
+            }
+            type HandlingUnit @rootEntity {
+                packedAt: DateTime
+                delivery: Delivery @relation(inverseOf: "handlingUnit")
+            }
+        `;
+
+        /**
+         * Validates a TTL config with the given dateField and returns the messages with the text they point at
+         */
+        function getMessages(dateField: string) {
+            const ttl = `timeToLive:\n  - typeName: Delivery\n    dateField: ${dateField}\n    expireAfterDays: 3\n`;
+            const project = new Project([
+                new ProjectSource('schema.graphqls', schema),
+                new ProjectSource('ttl.yaml', ttl),
+            ]);
+            return project
+                .validate()
+                .messages.filter((m) => m.location?.sourceName === 'ttl.yaml')
+                .map(
+                    (m) =>
+                        `${m.severity}: ${m.message} @ ${ttl.slice(m.location!.start.offset, m.location!.end.offset)}`,
+                );
+        }
+
+        it('accepts fields of entity extensions and value objects', () => {
+            expect(getMessages('processing.finishedAt')).to.deep.equal([]);
+            expect(getMessages('dimensions.measuredAt')).to.deep.equal([]);
+        });
+
+        it('warns about fields within lists', () => {
+            expect(getMessages('items.packedAt')).to.deep.equal([
+                'WARNING: Field "Delivery.items" is a list and cannot be navigated into. This will be an error in a future release. @ packedAt',
+            ]);
+        });
+
+        it('offers similar field names', () => {
+            const ttl = `timeToLive:\n  - typeName: Delivery\n    dateField: processing.finishedat\n    expireAfterDays: 3\n`;
+            const project = new Project([
+                new ProjectSource('schema.graphqls', schema),
+                new ProjectSource('ttl.yaml', ttl),
+            ]);
+            const quickFix = project
+                .validate()
+                .messages.flatMap((m) => m.quickFixes)
+                .find((q) => q.description === 'Change to "finishedAt"');
+            expect(quickFix).not.to.be.undefined;
+            const newProject = applyChangeSet(project, quickFix!.getChangeSet());
+            expect(newProject.sources[1].body).to.equal(ttl.replace('finishedat', 'finishedAt'));
+            expect(newProject.validate().hasErrors()).to.be.false;
+        });
+
+        it('warns about collect fields', () => {
+            expect(getMessages('lastPackedAt')).to.deep.equal([
+                'WARNING: Field "Delivery.lastPackedAt" is a collect field, but collect fields cannot be used in this path. This will be an error in a future release. @ lastPackedAt',
+            ]);
+        });
+
+        it('warns about collect fields that traverse relations', () => {
+            expect(getMessages('lastPalletPackedAt')).to.deep.equal([
+                'WARNING: Field "Delivery.lastPalletPackedAt" is a collect field, but collect fields cannot be used in this path. This will be an error in a future release. @ lastPalletPackedAt',
+            ]);
+        });
+
+        it('warns about parent fields', () => {
+            expect(getMessages('items.packages.item.packedAt')).to.deep.equal([
+                'WARNING: Field "Delivery.items" is a list and cannot be navigated into. This will be an error in a future release. @ packages',
+                'WARNING: Field "DeliveryItem.packages" is a list and cannot be navigated into. This will be an error in a future release. @ item',
+                'WARNING: Field "Package.item" is a parent field and cannot be used in a field path. This will be an error in a future release. @ item',
+            ]);
+        });
+
+        it('rejects unknown fields', () => {
+            expect(getMessages('processing.finishedat')).to.deep.equal([
+                'ERROR: Type "ProcessingInfo" does not have a field "finishedat". @ finishedat',
+            ]);
+        });
+
+        it('rejects navigating into scalars', () => {
+            expect(getMessages('arrival.date')).to.deep.equal([
+                'ERROR: Type "DateTime" is not an object type and cannot be navigated into. @ date',
+            ]);
+        });
+
+        it('rejects references', () => {
+            expect(getMessages('forwarder.createdAt')).to.deep.equal([
+                'ERROR: Field "Delivery.forwarder" resolves to a different root entity, but this path cannot traverse root entity boundaries. @ forwarder',
+            ]);
+        });
+
+        it('rejects relations', () => {
+            expect(getMessages('handlingUnit.packedAt')).to.deep.equal([
+                'ERROR: Field "Delivery.handlingUnit" resolves to a different root entity, but this path cannot traverse root entity boundaries. @ handlingUnit',
+            ]);
+        });
+
+        it('rejects root fields', () => {
+            expect(getMessages('items.delivery.arrival')).to.deep.equal([
+                'WARNING: Field "Delivery.items" is a list and cannot be navigated into. This will be an error in a future release. @ delivery',
+                'ERROR: Field "DeliveryItem.delivery" is a root field and cannot be used in a field path. @ delivery',
+            ]);
+        });
+
+        it('rejects empty segments', () => {
+            expect(getMessages('processing..finishedAt')).to.deep.equal([
+                'ERROR: The dateField should be a path, defined as field names separated by dots. @ dateField: processing..finishedAt',
+            ]);
+        });
     });
 });

@@ -1,12 +1,12 @@
 import type { ArgumentNode } from 'graphql';
 import { GraphQLID, GraphQLString } from 'graphql';
 import { memorize } from 'memorize-decorator';
-import { ProjectSource } from '../../project/source.js';
 import {
     ACCESS_FIELD_DIRECTIVE,
     ACCESS_GROUP_FIELD,
     ENTITY_CREATED_AT,
     FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE,
+    FLEX_SEARCH_INDEXED_ARGUMENT,
     FLEX_SEARCH_INDEXED_DIRECTIVE,
     ID_FIELD,
     MODULES_ALL_ARG,
@@ -18,7 +18,12 @@ import { GraphQLInt53 } from '../../schema/scalars/int53.js';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
 import { isDefined } from '../../utils/utils.js';
 import { ChangeSet, TextChange } from '../change-set/change-set.js';
+import {
+    createInsertionChange,
+    createRemoveInlineNodeChange,
+} from '../change-set/graphql-changes.js';
 import { createValueReplacementChange } from '../change-set/replace-value.js';
+import { getUseSimilarNameQuickFixes } from '../change-set/similar-name-quick-fixes.js';
 import { describeModuleSpecification } from '../compatibility-check/describe-module-specification.js';
 import type {
     FlexSearchPerformanceParams,
@@ -28,7 +33,7 @@ import type {
 import type { PermissionsConfig } from '../config/permissions.js';
 import type { RootEntityTypeConfig } from '../config/type.js';
 import { TypeKind } from '../config/type.js';
-import { MessageLocation } from '../validation/location.js';
+import type { MessageLocation } from '../validation/location.js';
 import { ValidationMessage } from '../validation/message.js';
 import { QuickFix } from '../validation/quick-fix.js';
 import { ValidationContext } from '../validation/validation-context.js';
@@ -396,6 +401,15 @@ export class RootEntityType extends ObjectTypeBase {
                 ValidationMessage.error(
                     `Permission profile "${permissions.permissionProfileName}" not found.`,
                     permissions.permissionProfileNameAstNode || this.nameASTNode,
+                    {
+                        quickFixes: getUseSimilarNameQuickFixes(
+                            permissions.permissionProfileNameAstNode,
+                            permissions.permissionProfileName,
+                            this.namespace
+                                .getAvailablePermissionProfiles()
+                                .map((profile) => profile.name),
+                        ),
+                    },
                 ),
             );
         }
@@ -589,14 +603,7 @@ export class RootEntityType extends ObjectTypeBase {
                                       isPreferred: true,
                                       changeSet: new ChangeSet([
                                           new TextChange(
-                                              new MessageLocation(
-                                                  new ProjectSource(
-                                                      modulesDirectiveLocation.source.name,
-                                                      modulesDirectiveLocation.source.body,
-                                                  ),
-                                                  modulesDirectiveLocation.start,
-                                                  modulesDirectiveLocation.end,
-                                              ),
+                                              modulesDirectiveLocation,
                                               `@${MODULES_DIRECTIVE}(${MODULES_ALL_ARG}: true)`,
                                           ),
                                       ]),
@@ -783,6 +790,62 @@ export class RootEntityType extends ObjectTypeBase {
         }
     }
 
+    private getIneffectiveFlexSearchQuickFixes(): ReadonlyArray<QuickFix> {
+        const quickFixes: QuickFix[] = [];
+        const enableChange = this.getEnableFlexSearchChange();
+        if (enableChange) {
+            quickFixes.push(
+                new QuickFix({
+                    description: 'Enable flexSearch for this type',
+                    // this creates a flexSearch index, so it should be a conscious decision
+                    isPreferred: false,
+                    changeSet: new ChangeSet([enableChange]),
+                }),
+            );
+        }
+        const removeChanges = this.fields.flatMap((field) =>
+            [field.isFlexSearchIndexedAstNode, field.isFlexSearchFullTextIndexedAstNode]
+                .flatMap((directive) => (directive?.loc ? [directive.loc] : []))
+                .map((loc) => createRemoveInlineNodeChange(loc)),
+        );
+        if (removeChanges.length) {
+            quickFixes.push(
+                new QuickFix({
+                    description: `Remove @${FLEX_SEARCH_INDEXED_DIRECTIVE} and @${FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE} from all fields`,
+                    isPreferred: false,
+                    changeSet: new ChangeSet(removeChanges),
+                }),
+            );
+        }
+        return quickFixes;
+    }
+
+    private getEnableFlexSearchChange(): TextChange | undefined {
+        const directive = this.input.kindAstNode;
+        if (!directive?.loc) {
+            return undefined;
+        }
+        const existingArgument = directive.arguments?.find(
+            (a) => a.name.value === FLEX_SEARCH_INDEXED_ARGUMENT,
+        );
+        if (existingArgument?.value.loc) {
+            return new TextChange(existingArgument.value.loc, 'true');
+        }
+        const firstArgument = directive.arguments?.[0];
+        if (firstArgument?.loc) {
+            return createInsertionChange(
+                firstArgument.loc.start,
+                directive.loc,
+                `${FLEX_SEARCH_INDEXED_ARGUMENT}: true, `,
+            );
+        }
+        return createInsertionChange(
+            directive.loc.end,
+            directive.loc,
+            `(${FLEX_SEARCH_INDEXED_ARGUMENT}: true)`,
+        );
+    }
+
     private validateFlexSearch(context: ValidationContext) {
         if (
             !this.isFlexSearchIndexed &&
@@ -797,7 +860,10 @@ export class RootEntityType extends ObjectTypeBase {
                     'INEFFECTIVE_FLEX_SEARCH',
                     `The type contains fields that are annotated with ${FLEX_SEARCH_INDEXED_DIRECTIVE} or ${FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE}, but the type itself is not marked with flexSearch = true.`,
                     this.input.astNode,
-                    { location: this.input.astNode?.name },
+                    {
+                        location: this.input.astNode?.name,
+                        quickFixes: this.getIneffectiveFlexSearchQuickFixes(),
+                    },
                 ),
             );
         }

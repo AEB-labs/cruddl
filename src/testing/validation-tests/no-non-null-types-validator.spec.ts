@@ -1,4 +1,7 @@
 import { describe, it } from 'vitest';
+import { Project } from '../../core/project/project.js';
+import { ProjectSource } from '../../core/project/source.js';
+import { expectQuickFix } from '../utils/model-validation-utils.js';
 import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorWarns,
@@ -63,5 +66,43 @@ describe('no-non-null-types validator', () => {
                 foo: [String]
             }
         `);
+    });
+
+    describe('quick fix', () => {
+        it('removes "!" from a scalar field', () => {
+            expectQuickFix(
+                new Project([
+                    new ProjectSource('schema.graphqls', 'type Stuff @rootEntity { foo: String! }'),
+                ]),
+                'Remove "!"',
+                'type Stuff @rootEntity { foo: String }',
+            );
+        });
+
+        it('removes "!" from list items and the list itself', () => {
+            expectQuickFix(
+                new Project([
+                    new ProjectSource(
+                        'schema.graphqls',
+                        'type Stuff @rootEntity { foo: [String!]! }',
+                    ),
+                ]),
+                'Remove "!"',
+                'type Stuff @rootEntity { foo: [String] }',
+            );
+        });
+
+        it('keeps directives after the type', () => {
+            expectQuickFix(
+                new Project([
+                    new ProjectSource(
+                        'schema.graphqls',
+                        'type Stuff @rootEntity { foo: [Child!] @relation }\ntype Child @rootEntity { name: String }',
+                    ),
+                ]),
+                'Remove "!"',
+                'type Stuff @rootEntity { foo: [Child] @relation }\ntype Child @rootEntity { name: String }',
+            );
+        });
     });
 });

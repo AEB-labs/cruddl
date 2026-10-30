@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import { applyChangeSet } from '../../../model/change-set/apply-change-set.js';
 import type { ValidationMessage } from '../../../model/validation/message.js';
 import { Severity } from '../../../model/validation/message.js';
 import { ValidationContext } from '../../../model/validation/validation-context.js';
+import { Project } from '../../../project/project.js';
 import { ProjectSource } from '../../../project/source.js';
 import { parseProjectSource } from '../../parsing/parse-project-source.js';
 import { SidecarSchemaValidator } from './sidecar-schema.js';
@@ -99,7 +101,9 @@ describe('sidecar-schema validator', () => {
             new ProjectSource('file.json', JSON.stringify({ unsupportedRootField: {} })),
         );
         expect(messages.length).to.equal(1);
-        expect(messages[0].message).to.equal('must NOT have additional properties');
+        expect(messages[0].message).to.equal(
+            'Unknown property "unsupportedRootField". It will be ignored.',
+        );
         expect(messages[0].severity).to.equal(Severity.WARNING);
     });
 
@@ -203,9 +207,10 @@ i18n:
             ),
         );
         expect(messages.length).to.equal(1);
+        expect(messages[0].message).to.equal('Unknown property "typess".');
         expect(JSON.parse(JSON.stringify(messages[0].location))).to.deep.equal({
             _end: 56,
-            _start: 9,
+            _start: 17,
             sourceName: 'file.yaml',
         });
     });
@@ -227,6 +232,122 @@ i18n:
             _end: 50,
             _start: 44,
             sourceName: 'file.yaml',
+        });
+    });
+
+    describe('locales outside of i18n', () => {
+        const source = `i18n:
+  de:
+    types:
+      Delivery:
+        label: Lieferung
+
+en:
+  types:
+    Delivery:
+      label: Delivery
+`;
+
+        it('warns about them', () => {
+            const messages = getValidatorMessages(new ProjectSource('i18n.yaml', source));
+            expect(messages.map((m) => m.message)).to.deep.equal([
+                'Unknown property "en". It will be ignored.',
+            ]);
+        });
+
+        it('offers to move them into i18n', () => {
+            const projectSource = new ProjectSource('i18n.yaml', source);
+            const messages = getValidatorMessages(projectSource);
+            const project = new Project([projectSource]);
+            const quickFix = messages[0].quickFixes.find(
+                (q) => q.description === 'Move into "i18n"',
+            );
+            expect(quickFix).not.to.be.undefined;
+            const newProject = applyChangeSet(project, quickFix!.getChangeSet());
+            expect(newProject.sources[0].body).to.equal(`i18n:
+  de:
+    types:
+      Delivery:
+        label: Lieferung
+  en:
+    types:
+      Delivery:
+        label: Delivery
+`);
+            expect(getValidatorMessages(newProject.sources[0])).to.deep.equal([]);
+        });
+
+        it('offers to move them into i18n if they come first', () => {
+            const projectSource = new ProjectSource(
+                'i18n.yaml',
+                `en:
+  types:
+    Delivery:
+      label: Delivery
+
+i18n:
+  de:
+    types:
+      Delivery:
+        label: Lieferung
+`,
+            );
+            const messages = getValidatorMessages(projectSource);
+            const quickFix = messages[0].quickFixes.find(
+                (q) => q.description === 'Move into "i18n"',
+            );
+            const newProject = applyChangeSet(
+                new Project([projectSource]),
+                quickFix!.getChangeSet(),
+            );
+            expect(newProject.sources[0].body).to.equal(`i18n:
+  de:
+    types:
+      Delivery:
+        label: Lieferung
+  en:
+    types:
+      Delivery:
+        label: Delivery
+`);
+        });
+
+        it('keeps CRLF line breaks', () => {
+            const projectSource = new ProjectSource('i18n.yaml', source.replace(/\n/g, '\r\n'));
+            const messages = getValidatorMessages(projectSource);
+            const quickFix = messages[0].quickFixes.find(
+                (q) => q.description === 'Move into "i18n"',
+            );
+            const newProject = applyChangeSet(
+                new Project([projectSource]),
+                quickFix!.getChangeSet(),
+            );
+            expect(newProject.sources[0].body).to.equal(
+                `i18n:
+  de:
+    types:
+      Delivery:
+        label: Lieferung
+  en:
+    types:
+      Delivery:
+        label: Delivery
+`.replace(/\n/g, '\r\n'),
+            );
+        });
+
+        it('does not offer to move into a flow map', () => {
+            const messages = getValidatorMessages(
+                new ProjectSource('i18n.yaml', `i18n: {\n  de: {}\n}\nen:\n  types: {}\n`),
+            );
+            expect(messages[0].quickFixes).to.deep.equal([]);
+        });
+
+        it('does not offer to move other properties', () => {
+            const messages = getValidatorMessages(
+                new ProjectSource('i18n.yaml', `i18n:\n  de: {}\nlabels:\n  foo: bar\n`),
+            );
+            expect(messages[0].quickFixes).to.deep.equal([]);
         });
     });
 });
