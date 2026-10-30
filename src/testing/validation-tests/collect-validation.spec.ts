@@ -1072,5 +1072,21 @@ describe('collect validation', () => {
                 ],
             );
         });
+
+        it('keeps the depth specifier when fixing a misspelled field name', () => {
+            const source = `
+                type Node @rootEntity {
+                    children: [Node] @relation
+                    descendants: [Node] @collect(path: "childrn{1,3}")
+                }
+            `;
+            assertValidatorRejects(
+                source,
+                'Type "Node" does not have a field "childrn". Did you mean "children"?',
+            );
+            const newSource = applyQuickFix(validate(source).messages, 'Change to "children"');
+            expect(newSource).to.equal(source.replace('"childrn{1,3}"', '"children{1,3}"'));
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        });
     });
 });
