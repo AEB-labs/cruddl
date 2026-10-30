@@ -42,7 +42,7 @@ export class FlexSearchPrimarySortClause implements ModelComponent {
                             (message.message.endsWith('.') ? '' : '.') +
                             ' This will be an error in a future release.',
                         this.baseType.astNode,
-                        { location: message.location },
+                        { location: message.location, quickFixes: message.quickFixes },
                     ),
                 );
             } else {

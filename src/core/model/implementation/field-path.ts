@@ -1,4 +1,5 @@
 import { memorize } from 'memorize-decorator';
+import { getReplaceWithSimilarNameQuickFixes } from '../change-set/similar-name-quick-fixes.js';
 import type { LocationLike, MessageLocation } from '../validation/location.js';
 import { locationWithinStringArgument } from '../validation/location.js';
 import { ValidationMessage } from '../validation/message.js';
@@ -187,6 +188,13 @@ export class FieldPath implements ModelComponent {
                     ValidationMessage.error(
                         `Type "${currentType.name}" does not have a field "${fieldName}".`,
                         segmentLocation,
+                        {
+                            quickFixes: getReplaceWithSimilarNameQuickFixes(
+                                segmentLocation,
+                                fieldName,
+                                currentType.fields.map((f) => f.name),
+                            ),
+                        },
                     ),
                 );
                 return [];

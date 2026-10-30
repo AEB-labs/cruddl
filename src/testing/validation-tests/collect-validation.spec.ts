@@ -1056,5 +1056,19 @@ describe('collect validation', () => {
             );
             expect(newSource).to.contain('@collect(path: "deliveries.items")');
         });
+
+        it('keeps the depth specifier when fixing a misspelled field name', () => {
+            const newSource = applyQuickFix(
+                validate(`
+                    type Node @rootEntity {
+                        children: [Node] @relation
+                        descendants: [Node] @collect(path: "childrn{1,3}")
+                    }
+                `).messages,
+                'Change to "children"',
+            );
+            expect(newSource).to.contain('@collect(path: "children{1,3}")');
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        });
     });
 });
