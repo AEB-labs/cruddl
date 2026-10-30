@@ -176,4 +176,61 @@ describe('similar-name quick fixes', () => {
             ),
         );
     });
+
+    it('fixes type names in TTL configs', () => {
+        const ttl = `timeToLive:
+  - typeName: Delivery
+    dateField: arrival
+    expireAfterDays: 3
+`;
+        const body = applyQuickFix(
+            {
+                'schema.graphqls': schema,
+                'permission-profiles.yaml': permissionProfiles,
+                'ttl.yaml': ttl.replace('typeName: Delivery', 'typeName: Delivry'),
+            },
+            'ttl.yaml',
+            [
+                'ttl.yaml: No rootEntity with the name "Delivry" is defined. Did you mean "Delivery"?',
+            ],
+            'Change to "Delivery"',
+        );
+        expect(body).to.equal(ttl.replace('typeName: Delivery', 'typeName: "Delivery"'));
+    });
+
+    it('fixes type names and key fields in billing configs', () => {
+        const billing = JSON.stringify(
+            {
+                billing: {
+                    billingEntities: [{ typeName: 'Delivery', keyFieldName: 'deliveryNumber' }],
+                },
+            },
+            undefined,
+            4,
+        );
+        const sources = {
+            'schema.graphqls': schema,
+            'permission-profiles.yaml': permissionProfiles,
+        };
+        expect(
+            applyQuickFix(
+                { ...sources, 'billing.json': billing.replace('"Delivery"', '"delivery"') },
+                'billing.json',
+                [
+                    'billing.json: No rootEntity with the name "delivery" is defined. Did you mean "Delivery"?',
+                ],
+                'Change to "Delivery"',
+            ),
+        ).to.equal(billing);
+        expect(
+            applyQuickFix(
+                { ...sources, 'billing.json': billing.replace('deliveryNumber', 'deliveryNumbr') },
+                'billing.json',
+                [
+                    'billing.json: The field "deliveryNumbr" is not defined in the type "Delivery". Did you mean "deliveryNumber"?',
+                ],
+                'Change to "deliveryNumber"',
+            ),
+        ).to.equal(billing);
+    });
 });

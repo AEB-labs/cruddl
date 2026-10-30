@@ -4,6 +4,7 @@ import { getSimilarNames } from '../../utils/similar-names.js';
 import { MessageLocation } from '../validation/location.js';
 import { QuickFix } from '../validation/quick-fix.js';
 import { ChangeSet, TextChange } from './change-set.js';
+import { createValueReplacementChange } from './replace-value.js';
 
 /**
  * Offers to replace a name that does not exist with the existing names that are similar to it
@@ -45,13 +46,45 @@ export function getReplaceWithSimilarNameQuickFixes(
     if (text !== format(name)) {
         return [];
     }
+    return getSimilarNameQuickFixes(
+        name,
+        existingNames,
+        (suggestion) => new TextChange(location, format(suggestion)),
+    );
+}
+
+/**
+ * Offers to replace a JSON or YAML value with the existing names that are similar to it
+ *
+ * @param location the location of the value, as found in the pathLocationMap of a parsed source
+ * @param key the property name if the value is a property of an object
+ */
+export function getReplaceValueWithSimilarNameQuickFixes(
+    location: MessageLocation | undefined,
+    key: string | undefined,
+    name: string,
+    existingNames: Iterable<string>,
+): ReadonlyArray<QuickFix> {
+    if (!location) {
+        return [];
+    }
+    return getSimilarNameQuickFixes(name, existingNames, (suggestion) =>
+        createValueReplacementChange(location, key, suggestion),
+    );
+}
+
+function getSimilarNameQuickFixes(
+    name: string,
+    existingNames: Iterable<string>,
+    createChange: (suggestion: string) => TextChange,
+): ReadonlyArray<QuickFix> {
     const suggestions = getSimilarNames(name, existingNames);
     return suggestions.map(
         (suggestion) =>
             new QuickFix({
                 description: `Change to "${suggestion}"`,
                 isPreferred: suggestions.length === 1,
-                changeSet: new ChangeSet([new TextChange(location, format(suggestion))]),
+                changeSet: new ChangeSet([createChange(suggestion)]),
             }),
     );
 }
