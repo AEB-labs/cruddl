@@ -120,6 +120,18 @@ export function isASTNode(obj: LocationLike): obj is ASTNode {
     return 'kind' in obj;
 }
 
+/**
+ * Gets the location of a part of a string value, e.g. of a segment in a field path
+ *
+ * Works with GraphQL string values (including block strings), and with the locations of JSON and
+ * YAML values in a pathLocationMap (quoted or not, and including the key for YAML map entries). If
+ * the offsets can't be mapped to the source (e.g. because of escape sequences), the location of
+ * the whole string is returned.
+ *
+ * @param node the string value
+ * @param offset the offset of the part within the value
+ * @param length the length of the part
+ */
 export function locationWithinStringArgument(
     node: LocationLike,
     offset: number,
@@ -127,20 +139,18 @@ export function locationWithinStringArgument(
 ): MessageLocation | undefined {
     if (isASTNode(node) && node.kind === Kind.STRING && node.loc) {
         const loc = node.loc;
-        // add 1 because of "
-        return new MessageLocation(
-            ProjectSource.fromGraphQLSource(loc.source) || loc.source.name,
-            new SourcePosition(
-                loc.start + 1 + offset,
-                loc.startToken.line,
-                loc.startToken.column + 1 + offset,
-            ),
-            new SourcePosition(
-                loc.start + 1 + offset + length,
-                loc.endToken.line,
-                loc.startToken.column + 1 + offset + length,
-            ),
-        );
+        const source =
+            ProjectSource.fromGraphQLSource(loc.source) ??
+            new ProjectSource(loc.source.name, loc.source.body);
+        const quoteLength = node.block ? 3 : 1;
+        const rawValue = loc.source.body.slice(loc.start + quoteLength, loc.end - quoteLength);
+        // offsets refer to the value, so they can't be mapped to the source if it contains escape
+        // sequences (or indentation in a block string)
+        if (rawValue !== node.value) {
+            return new MessageLocation(source, loc.start, loc.end);
+        }
+        const start = loc.start + quoteLength + offset;
+        return new MessageLocation(source, start, start + length);
     }
 
     let ml: MessageLocation;
@@ -164,18 +174,14 @@ function locationWithinStringArgumentML(
     offset: number,
     length: number,
 ): MessageLocation {
-    // add 1 because of "
-    return new MessageLocation(
-        loc.source,
-        new SourcePosition(
-            loc.start.offset + 1 + offset,
-            loc.start.line,
-            loc.start.column + 1 + offset,
-        ),
-        new SourcePosition(
-            loc.start.offset + 1 + offset + length,
-            loc.start.line,
-            loc.start.column + 1 + offset + length,
-        ),
-    );
+    // the location can be a quoted JSON or YAML string, a plain YAML scalar, or a YAML map entry
+    // that includes the key (like 'field: "a.b"'). In YAML, the value can also be on the next line
+    // and have a tag (like "!!str") or a block scalar indicator (like ">-").
+    const text = loc.source.body.slice(loc.start.offset, loc.end.offset);
+    const prefixLength =
+        /^(?:(["']?)[^\n"':]*\1[ \t]*:)?\s*(?:![^\s]*\s+)?(?:[|>][-+0-9]*[ \t]*\n\s*)?["']?/.exec(
+            text,
+        )![0].length;
+    const start = loc.start.offset + prefixLength + offset;
+    return new MessageLocation(loc.source, start, start + length);
 }
