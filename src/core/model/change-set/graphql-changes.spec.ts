@@ -6,8 +6,10 @@ import { ProjectSource } from '../../project/source.js';
 import { applyChangeSet } from './apply-change-set.js';
 import { ChangeSet, type TextChange } from './change-set.js';
 import {
+    createInsertionChange,
     createRemoveArgumentChange,
     createRemoveInlineNodeChange,
+    createRemoveLinesChange,
 } from './graphql-changes.js';
 
 function apply(body: string, getChange: (type: ObjectTypeDefinitionNode) => TextChange) {
@@ -77,6 +79,34 @@ describe('graphql changes', () => {
                     createRemoveInlineNodeChange(getFieldDirective(type).loc!),
                 ),
             ).to.equal('type T {\n    f: String\n    g: Int\n}\n');
+        });
+    });
+
+    describe('createRemoveLinesChange', () => {
+        it('removes a field on its own line', () => {
+            expect(
+                apply('type T {\n    f: String\n    g: Int\n}\n', (type) =>
+                    createRemoveLinesChange(type.fields![0].loc!),
+                ),
+            ).to.equal('type T {\n    g: Int\n}\n');
+        });
+
+        it('only removes the node if the line contains other content', () => {
+            expect(
+                apply('type T { f: String g: Int }', (type) =>
+                    createRemoveLinesChange(type.fields![0].loc!),
+                ),
+            ).to.equal('type T { g: Int }');
+        });
+    });
+
+    describe('createInsertionChange', () => {
+        it('inserts text at the offset', () => {
+            expect(
+                apply('type T { f: String }', (type) =>
+                    createInsertionChange(type.fields![0].loc!.end, type.loc!, ' @d'),
+                ),
+            ).to.equal('type T { f: String @d }');
         });
     });
 });
