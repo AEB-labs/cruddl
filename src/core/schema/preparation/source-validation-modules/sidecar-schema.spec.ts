@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import {
+    expectSingleError,
+    expectSingleWarning,
+} from '../../../../testing/utils/model-validation-utils.js';
+import { applyChangeSet } from '../../../model/change-set/apply-change-set.js';
 import type { ValidationMessage } from '../../../model/validation/message.js';
 import { Severity } from '../../../model/validation/message.js';
+import { ValidationResult } from '../../../model/validation/result.js';
 import { ValidationContext } from '../../../model/validation/validation-context.js';
+import { Project } from '../../../project/project.js';
 import { ProjectSource } from '../../../project/source.js';
 import { parseProjectSource } from '../../parsing/parse-project-source.js';
 import { SidecarSchemaValidator } from './sidecar-schema.js';
@@ -75,6 +82,10 @@ describe('sidecar-schema validator', () => {
         throw new Error('Not reachable');
     }
 
+    function validateSource(ps: ProjectSource): ValidationResult {
+        return new ValidationResult(getValidatorMessages(ps));
+    }
+
     it('reports errors in json files', () => {
         const messages = getValidatorMessages(new ProjectSource('test.json', invalidValue));
         expect(messages.length).to.equal(4);
@@ -95,12 +106,12 @@ describe('sidecar-schema validator', () => {
     });
 
     it('warns about unsupported properties on root level', () => {
-        const messages = getValidatorMessages(
-            new ProjectSource('file.json', JSON.stringify({ unsupportedRootField: {} })),
+        expectSingleWarning(
+            validateSource(
+                new ProjectSource('file.json', JSON.stringify({ unsupportedRootField: {} })),
+            ),
+            'Unknown property "unsupportedRootField". It will be ignored.',
         );
-        expect(messages.length).to.equal(1);
-        expect(messages[0].message).to.equal('must NOT have additional properties');
-        expect(messages[0].severity).to.equal(Severity.WARNING);
     });
 
     it('warns about unknown properties in restrictions', () => {
@@ -202,10 +213,10 @@ i18n:
         label: Test`,
             ),
         );
-        expect(messages.length).to.equal(1);
+        expectSingleError(new ValidationResult(messages), 'Unknown property "typess".');
         expect(JSON.parse(JSON.stringify(messages[0].location))).to.deep.equal({
             _end: 56,
-            _start: 9,
+            _start: 17,
             sourceName: 'file.yaml',
         });
     });
@@ -227,6 +238,89 @@ i18n:
             _end: 50,
             _start: 44,
             sourceName: 'file.yaml',
+        });
+    });
+
+    describe('locales outside of i18n', () => {
+        const source = `i18n:
+  de:
+    types:
+      Delivery:
+        label: Lieferung
+
+en:
+  types:
+    Delivery:
+      label: Delivery
+`;
+
+        const expectedSource = `i18n:
+  de:
+    types:
+      Delivery:
+        label: Lieferung
+  en:
+    types:
+      Delivery:
+        label: Delivery
+`;
+
+        function moveIntoI18n(body: string) {
+            const projectSource = new ProjectSource('i18n.yaml', body);
+            const result = validateSource(projectSource);
+            expectSingleWarning(result, 'Unknown property "en". It will be ignored.');
+            const quickFix = result.messages[0].quickFixes.find(
+                (q) => q.description === 'Move into "i18n"',
+            );
+            expect(quickFix).not.to.be.undefined;
+            const newProject = applyChangeSet(
+                new Project([projectSource]),
+                quickFix!.getChangeSet(),
+            );
+            expect(getValidatorMessages(newProject.sources[0])).to.deep.equal([]);
+            return newProject.sources[0].body;
+        }
+
+        it('offers to move them into i18n', () => {
+            expect(moveIntoI18n(source)).to.equal(expectedSource);
+        });
+
+        it('offers to move them into i18n if they come first', () => {
+            expect(
+                moveIntoI18n(`en:
+  types:
+    Delivery:
+      label: Delivery
+
+i18n:
+  de:
+    types:
+      Delivery:
+        label: Lieferung
+`),
+            ).to.equal(expectedSource);
+        });
+
+        it('keeps CRLF line breaks', () => {
+            expect(moveIntoI18n(source.replace(/\n/g, '\r\n'))).to.equal(
+                expectedSource.replace(/\n/g, '\r\n'),
+            );
+        });
+
+        it('does not offer to move into a flow map', () => {
+            const result = validateSource(
+                new ProjectSource('i18n.yaml', `i18n: {\n  de: {}\n}\nen:\n  types: {}\n`),
+            );
+            expectSingleWarning(result, 'Unknown property "en". It will be ignored.');
+            expect(result.messages[0].quickFixes).to.deep.equal([]);
+        });
+
+        it('does not offer to move other properties', () => {
+            const result = validateSource(
+                new ProjectSource('i18n.yaml', `i18n:\n  de: {}\nlabels:\n  foo: bar\n`),
+            );
+            expectSingleWarning(result, 'Unknown property "labels". It will be ignored.');
+            expect(result.messages[0].quickFixes).to.deep.equal([]);
         });
     });
 });
