@@ -55,7 +55,7 @@ describe('indices validator', () => {
             `
             type Foo @rootEntity(indices:[{ fields: ["bar"]}]) { foo: String }
         `,
-            'Type "Foo" does not have a field "bar"',
+            'Type "Foo" does not have a field "bar".',
         );
     });
 
@@ -65,7 +65,7 @@ describe('indices validator', () => {
             type Foo @rootEntity(indices:[{ fields: ["bar.bla"]}]) { foo: String, bar: Bar }
             type Bar @entityExtension { baz: String }
         `,
-            'Type "Bar" does not have a field "bla"',
+            'Type "Bar" does not have a field "bla".',
         );
     });
 
@@ -84,7 +84,7 @@ describe('indices validator', () => {
             `
             type Foo @rootEntity(indices:[{ fields: ["bar.baz"]}]) { foo: String, bar: String }
         `,
-            'Field "bar" is not an object',
+            'Type "String" is not an object type and cannot be navigated into.',
         );
     });
 
@@ -94,7 +94,7 @@ describe('indices validator', () => {
             type Foo @rootEntity(indices:[{ fields: ["bar.baz"]}]) { bar: Bar @relation }
             type Bar @rootEntity { baz: String }
         `,
-            'Field "Foo.bar" resolves to a root entity, but indices cannot cross root entity boundaries.',
+            'Field "Foo.bar" resolves to a different root entity, but this path cannot traverse root entity boundaries.',
         );
     });
 
@@ -154,7 +154,7 @@ describe('indices validator', () => {
                 parent: Child @parent
             }
         `,
-            'Field "Grandchild.parent" is a parent field and cannot be used in an index.',
+            'Field "Grandchild.parent" is a parent field and cannot be used in a field path.',
         );
     });
 
@@ -171,7 +171,7 @@ describe('indices validator', () => {
                 root: Root @root
             }
         `,
-            'Field "Child.root" is a root field and cannot be used in an index.',
+            'Field "Child.root" is a root field and cannot be used in a field path.',
         );
     });
 
@@ -242,43 +242,45 @@ describe('indices validator', () => {
             expect(getMessages('numberOfItems')).to.deep.equal([]);
         });
 
-        it('accepts collect fields that traverse relations', () => {
-            expect(getMessages('numberOfHandlingUnits')).to.deep.equal([]);
+        it('rejects collect fields that traverse relations', () => {
+            expect(getMessages('numberOfHandlingUnits')).to.deep.equal([
+                'ERROR: Field "Delivery.numberOfHandlingUnits" resolves to a different root entity, but this path cannot traverse root entity boundaries. @ numberOfHandlingUnits',
+            ]);
         });
 
         it('rejects unknown fields', () => {
             expect(getMessages('items.itemNumbr')).to.deep.equal([
-                'ERROR: Type "DeliveryItem" does not have a field "itemNumbr" @ "items.itemNumbr"',
+                'ERROR: Type "DeliveryItem" does not have a field "itemNumbr". @ itemNumbr',
             ]);
         });
 
         it('rejects navigating into scalars', () => {
             expect(getMessages('deliveryNumber.length')).to.deep.equal([
-                'ERROR: Field "deliveryNumber" is not an object @ "deliveryNumber.length"',
+                'ERROR: Type "String" is not an object type and cannot be navigated into. @ length',
             ]);
         });
 
         it('rejects references', () => {
             expect(getMessages('forwarder.forwarderKey')).to.deep.equal([
-                'ERROR: Field "Delivery.forwarder" resolves to a root entity, but indices cannot cross root entity boundaries. @ "forwarder.forwarderKey"',
+                'ERROR: Field "Delivery.forwarder" resolves to a different root entity, but this path cannot traverse root entity boundaries. @ forwarder',
             ]);
         });
 
         it('rejects relations', () => {
             expect(getMessages('handlingUnits.handlingUnitNumber')).to.deep.equal([
-                'ERROR: Field "Delivery.handlingUnits" resolves to a root entity, but indices cannot cross root entity boundaries. @ "handlingUnits.handlingUnitNumber"',
+                'ERROR: Field "Delivery.handlingUnits" resolves to a different root entity, but this path cannot traverse root entity boundaries. @ handlingUnits',
             ]);
         });
 
         it('rejects parent fields', () => {
             expect(getMessages('items.packages.item.itemNumber')).to.deep.equal([
-                'ERROR: Field "Package.item" is a parent field and cannot be used in an index. @ "items.packages.item.itemNumber"',
+                'ERROR: Field "Package.item" is a parent field and cannot be used in a field path. @ item',
             ]);
         });
 
         it('rejects root fields', () => {
             expect(getMessages('items.delivery.deliveryNumber')).to.deep.equal([
-                'ERROR: Field "DeliveryItem.delivery" is a root field and cannot be used in an index. @ "items.delivery.deliveryNumber"',
+                'ERROR: Field "DeliveryItem.delivery" is a root field and cannot be used in a field path. @ delivery',
             ]);
         });
 
@@ -310,7 +312,7 @@ describe('indices validator', () => {
                         `${m.message} @ ${source.slice(m.location?.start.offset, m.location?.end.offset)}`,
                 ),
             ).to.deep.equal([
-                'Field "Delivery.forwarder" resolves to a root entity, but indices cannot cross root entity boundaries. @ @index',
+                'Field "Delivery.forwarder" resolves to a different root entity, but this path cannot traverse root entity boundaries. @ @index',
             ]);
         });
     });

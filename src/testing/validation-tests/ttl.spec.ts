@@ -79,7 +79,7 @@ describe('timeToLive config', () => {
                     finishedAt: DateTime
                 }
             `,
-            'Type "Test" does not have a field "wrongField"',
+            'Type "Test" does not have a field "wrongField".',
             {
                 timeToLive: [
                     {
@@ -124,7 +124,7 @@ describe('timeToLive config', () => {
                     finishedAt: String
                 }
             `,
-            'Field "Test.test2" resolves to a root entity, but time-to-live-definitions can not cross root entity boundaries.',
+            'Field "Test.test2" resolves to a different root entity, but this path cannot traverse root entity boundaries.',
             {
                 timeToLive: [
                     {
@@ -573,41 +573,45 @@ describe('timeToLive config', () => {
             expect(getMessages('lastPackedAt')).to.deep.equal([]);
         });
 
-        it('accepts collect fields that traverse relations', () => {
-            expect(getMessages('lastPalletPackedAt')).to.deep.equal([]);
+        it('rejects collect fields that traverse relations', () => {
+            expect(getMessages('lastPalletPackedAt')).to.deep.equal([
+                'ERROR: Field "Delivery.lastPalletPackedAt" resolves to a different root entity, but this path cannot traverse root entity boundaries. @ lastPalletPackedAt',
+            ]);
         });
 
-        it('accepts parent fields', () => {
-            expect(getMessages('items.packages.item.packedAt')).to.deep.equal([]);
+        it('rejects parent fields', () => {
+            expect(getMessages('items.packages.item.packedAt')).to.deep.equal([
+                'ERROR: Field "Package.item" is a parent field and cannot be used in a field path. @ item',
+            ]);
         });
 
         it('rejects unknown fields', () => {
             expect(getMessages('processing.finishedat')).to.deep.equal([
-                'ERROR: Type "ProcessingInfo" does not have a field "finishedat" @ dateField: processing.finishedat',
+                'ERROR: Type "ProcessingInfo" does not have a field "finishedat". @ finishedat',
             ]);
         });
 
         it('rejects navigating into scalars', () => {
             expect(getMessages('arrival.date')).to.deep.equal([
-                'ERROR: Field "arrival" is not an object @ dateField: arrival.date',
+                'ERROR: Type "DateTime" is not an object type and cannot be navigated into. @ date',
             ]);
         });
 
         it('rejects references', () => {
             expect(getMessages('forwarder.createdAt')).to.deep.equal([
-                'ERROR: Field "Delivery.forwarder" resolves to a root entity, but time-to-live-definitions can not cross root entity boundaries. @ dateField: forwarder.createdAt',
+                'ERROR: Field "Delivery.forwarder" resolves to a different root entity, but this path cannot traverse root entity boundaries. @ forwarder',
             ]);
         });
 
         it('rejects relations', () => {
             expect(getMessages('handlingUnit.packedAt')).to.deep.equal([
-                'ERROR: Field "Delivery.handlingUnit" resolves to a root entity, but time-to-live-definitions can not cross root entity boundaries. @ dateField: handlingUnit.packedAt',
+                'ERROR: Field "Delivery.handlingUnit" resolves to a different root entity, but this path cannot traverse root entity boundaries. @ handlingUnit',
             ]);
         });
 
         it('rejects root fields', () => {
             expect(getMessages('items.delivery.arrival')).to.deep.equal([
-                'ERROR: Field "DeliveryItem.delivery" resolves to a root entity, but time-to-live-definitions can not cross root entity boundaries. @ dateField: items.delivery.arrival',
+                'ERROR: Field "DeliveryItem.delivery" is a root field and cannot be used in a field path. @ delivery',
             ]);
         });
 
