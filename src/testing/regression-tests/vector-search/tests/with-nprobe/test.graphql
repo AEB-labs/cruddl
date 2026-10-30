@@ -1,0 +1,6 @@
+query withNprobe {
+    vectorSearchArticles(field: embedding, vector: [1.0, 0.0, 0.0, 0.0], first: 3, nProbe: 2) {
+        title
+        _vectorScore
+    }
+}

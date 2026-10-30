@@ -32,6 +32,7 @@ Each suite lives in `src/testing/regression-tests/<suite>/` and contains:
 | `node.versions.<v>.ignore`           | boolean | Skip for a specific Node.js major version                           | Independent (same as above)                  |
 | `waitForArangoSearch`                | boolean | Wait for ArangoSearch views to sync before queries (default: false) | Test overrides suite                         |
 | `timeoutInMs`                        | number  | Test timeout in milliseconds (default: 5000)                        | Test overrides suite                         |
+| `migrateAfterSeed`                   | boolean | Re-run `updateSchema` after test data is seeded (default: false)    | Suite-level only; test-level setting ignored |
 
 Example — skip in-memory and wait for ArangoSearch:
 
@@ -58,6 +59,18 @@ Both bounds are inclusive and compared as `major.minor.patch`. A suffix of the s
 as `-nightly.20261023` is ignored, so that nightly counts as 3.12.13. The version is read from the
 server before the tests are collected. If the server cannot be reached, nothing is ignored by
 version.
+
+Example — skip in-memory and re-run migrations after seeding (required for vector indices, which
+need at least one document in the collection before the index can be trained):
+
+```json
+{
+    "databases": {
+        "in-memory": { "ignore": true }
+    },
+    "migrateAfterSeed": true
+}
+```
 
 ## Environment Variables
 

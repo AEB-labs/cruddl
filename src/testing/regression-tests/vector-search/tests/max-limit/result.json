@@ -1,0 +1,34 @@
+{
+  "withinMaxLimit": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha"
+        },
+        {
+          "title": "Gamma"
+        }
+      ]
+    }
+  },
+  "exceedsMaxLimit": {
+    "errors": [
+      {
+        "message": "The requested number of elements via the \"first\" parameter (3) exceeds the maximum limit of 2.",
+        "locations": [
+          {
+            "line": 8,
+            "column": 5
+          }
+        ],
+        "path": ["vectorSearchArticles"],
+        "extensions": {
+          "code": "ARGUMENT_OUT_OF_RANGE"
+        }
+      }
+    ],
+    "data": {
+      "vectorSearchArticles": null
+    }
+  }
+}

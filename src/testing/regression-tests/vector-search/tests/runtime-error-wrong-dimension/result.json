@@ -1,0 +1,19 @@
+{
+  "runtimeErrorWrongDimension": {
+    "data": {
+      "vectorSearchArticles": null
+    },
+    "errors": [
+      {
+        "message": "vector must have exactly 4 elements for field \"embedding\", got 3",
+        "locations": [
+          {
+            "line": 2,
+            "column": 5
+          }
+        ],
+        "path": ["vectorSearchArticles"]
+      }
+    ]
+  }
+}

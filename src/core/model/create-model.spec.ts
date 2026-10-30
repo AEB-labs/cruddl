@@ -111,6 +111,44 @@ describe('createModel', () => {
         expect(indexC!.sparse).to.equal(false);
     });
 
+    it('translates vector indices declared on a field', () => {
+        const document: DocumentNode = gql`
+            type Test @rootEntity {
+                embedding: [Float]
+                    @vectorIndex(dimension: 768, nLists: 100, defaultNProbe: 10, maxNProbe: 50)
+            }
+        `;
+
+        const model = createSimpleModel(document);
+        expect(model.validate().getErrors(), model.validate().toString()).to.deep.equal([]);
+        const testType = model.getRootEntityTypeOrThrow('Test');
+
+        expect(testType.vectorIndices).to.have.length(1);
+        const vectorIndex = testType.vectorIndices[0];
+        expect(vectorIndex).toMatchObject({
+            field: { name: 'embedding' },
+            metric: 'COSINE',
+            dimension: 768,
+            nLists: 100,
+            sparse: true,
+        });
+    });
+
+    it('rejects vector indices on non-list fields', () => {
+        const document: DocumentNode = gql`
+            type Test @rootEntity {
+                embedding: Float
+                    @vectorIndex(dimension: 3, nLists: 10, defaultNProbe: 10, maxNProbe: 50)
+            }
+        `;
+
+        const model = createSimpleModel(document);
+        expectSingleError(
+            model.validate(),
+            'Vector indices can only be defined on list fields, but "Test.embedding" is not a list field.',
+        );
+    });
+
     // We don't disallow combining @index and @unique because it can be useful when you want a sparse unique constraint,
     // but still be able to filter for null values.
     it('supports both @index and @unique on a single field', () => {

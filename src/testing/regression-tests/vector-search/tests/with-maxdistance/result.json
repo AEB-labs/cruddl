@@ -1,0 +1,42 @@
+{
+  "withMaxDistance": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "_vectorScore": 0
+        },
+        {
+          "title": "Gamma",
+          "_vectorScore": 0.7071067690849304
+        }
+      ]
+    }
+  },
+  "withoutMaxDistance": {
+    "data": {
+      "vectorSearchArticles": [
+        {
+          "title": "Alpha",
+          "_vectorScore": 0
+        },
+        {
+          "title": "Gamma",
+          "_vectorScore": 0.7071067690849304
+        },
+        {
+          "title": "Beta",
+          "_vectorScore": 1.4142135381698608
+        },
+        {
+          "title": "Delta",
+          "_vectorScore": 1.4142135381698608
+        },
+        {
+          "title": "Epsilon",
+          "_vectorScore": 1.4142135381698608
+        }
+      ]
+    }
+  }
+}

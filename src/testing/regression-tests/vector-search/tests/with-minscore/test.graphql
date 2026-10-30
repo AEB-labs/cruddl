@@ -1,0 +1,30 @@
+query withMinScore {
+    vectorSearchArticles(field: embedding, vector: [1.0, 0.0, 0.0, 0.0], first: 5, minScore: 0.7) {
+        title
+        _vectorScore
+    }
+}
+
+# Paired unfiltered query: proves minScore actually removes Beta/Delta/Epsilon (score = 0)
+query withoutMinScore {
+    vectorSearchArticles(field: embedding, vector: [1.0, 0.0, 0.0, 0.0], first: 5) {
+        title
+        _vectorScore
+    }
+}
+
+# Combined: pre-filter AND post-filter. isPublished:true removes Gamma before scoring,
+# then minScore:0.7 removes the zero-score articles — only Alpha remains.
+query withFilterAndMinScore {
+    vectorSearchArticles(
+        field: embedding
+        vector: [1.0, 0.0, 0.0, 0.0]
+        first: 5
+        filter: { isPublished: true }
+        minScore: 0.7
+    ) {
+        title
+        isPublished
+        _vectorScore
+    }
+}

@@ -1,19 +1,21 @@
-import type {
-    DirectiveNode,
-    DocumentNode,
-    EnumTypeDefinitionNode,
-    EnumValueDefinitionNode,
-    FieldDefinitionNode,
-    InputObjectTypeDefinitionNode,
-    InputValueDefinitionNode,
-    NamedTypeNode,
-    NameNode,
-    ObjectTypeDefinitionNode,
-    ScalarTypeDefinitionNode,
-    TypeDefinitionNode,
-    TypeNode,
+import {
+    type DirectiveNode,
+    type DocumentNode,
+    type EnumTypeDefinitionNode,
+    type EnumValueDefinitionNode,
+    type FieldDefinitionNode,
+    getDirectiveValues,
+    GraphQLDirective,
+    type InputObjectTypeDefinitionNode,
+    type InputValueDefinitionNode,
+    Kind,
+    type NamedTypeNode,
+    type NameNode,
+    type ObjectTypeDefinitionNode,
+    type ScalarTypeDefinitionNode,
+    type TypeDefinitionNode,
+    type TypeNode,
 } from 'graphql';
-import { Kind } from 'graphql';
 import { SourcePosition } from '../model/validation/location.js';
 import type { ProjectSource } from '../project/source.js';
 import {
@@ -192,6 +194,27 @@ export function findDirectiveWithName(
         return undefined;
     }
     return typeOrField.directives.find((directive) => directive.name.value === directiveName);
+}
+
+export function getDirectiveValuesWithoutApplyingDefaults(
+    directive: GraphQLDirective,
+    node: {
+        readonly directives?: ReadonlyArray<DirectiveNode>;
+    },
+) {
+    const directiveWithoutArgs = new GraphQLDirective({
+        ...directive.toConfig(),
+        args: Object.fromEntries(
+            directive.args.map((arg) => [
+                arg.name,
+                {
+                    ...arg,
+                    defaultValue: undefined,
+                },
+            ]),
+        ),
+    });
+    return getDirectiveValues(directiveWithoutArgs, node);
 }
 
 export function getDeprecationReason(
