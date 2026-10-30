@@ -2,6 +2,8 @@ import { memorize } from 'memorize-decorator';
 import { GraphQLDateTime } from '../../schema/scalars/date-time.js';
 import { GraphQLLocalDate } from '../../schema/scalars/local-date.js';
 import { GraphQLOffsetDateTime } from '../../schema/scalars/offset-date-time.js';
+import { didYouMean, getSimilarNames } from '../../utils/similar-names.js';
+import { getReplaceValueWithSimilarNameQuickFixes } from '../change-set/similar-name-quick-fixes.js';
 import { RelationDeleteAction } from '../config/field.js';
 import type { TimeToLiveConfig } from '../config/time-to-live.js';
 import { TypeKind } from '../config/type.js';
@@ -47,10 +49,20 @@ export class TimeToLiveType implements ModelComponent {
         this.traversePath((mess) => context.addMessage(mess));
 
         if (!this.rootEntityType) {
+            const typeNames = this.model.rootEntityTypes.map((type) => type.name);
             context.addMessage(
                 ValidationMessage.error(
-                    `No rootEntity with the name "${this.input.typeName}" is defined.`,
+                    `No rootEntity with the name "${this.input.typeName}" is defined.` +
+                        didYouMean(getSimilarNames(this.input.typeName, typeNames)),
                     this.input.typeNameLoc,
+                    {
+                        quickFixes: getReplaceValueWithSimilarNameQuickFixes(
+                            this.input.typeNameLoc,
+                            'typeName',
+                            this.input.typeName,
+                            typeNames,
+                        ),
+                    },
                 ),
             );
         }

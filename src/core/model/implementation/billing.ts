@@ -1,7 +1,9 @@
 import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import { memorize } from 'memorize-decorator';
 import { GraphQLInt53 } from '../../schema/scalars/int53.js';
+import { didYouMean, getSimilarNames } from '../../utils/similar-names.js';
 import { isDefined } from '../../utils/utils.js';
+import { getReplaceValueWithSimilarNameQuickFixes } from '../change-set/similar-name-quick-fixes.js';
 import type { BillingEntityCategoryMappingConfig, BillingEntityConfig } from '../config/billing.js';
 import { ValidationMessage } from '../validation/message.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
@@ -40,19 +42,39 @@ export class BillingEntityType implements ModelComponent {
 
     validate(context: ValidationContext): void {
         if (!this.rootEntityType) {
+            const typeNames = this.model.rootEntityTypes.map((type) => type.name);
             context.addMessage(
                 ValidationMessage.error(
-                    `No rootEntity with the name "${this.input.typeName}" is defined.`,
+                    `No rootEntity with the name "${this.input.typeName}" is defined.` +
+                        didYouMean(getSimilarNames(this.input.typeName, typeNames)),
                     this.input.typeNameLoc,
+                    {
+                        quickFixes: getReplaceValueWithSimilarNameQuickFixes(
+                            this.input.typeNameLoc,
+                            'typeName',
+                            this.input.typeName,
+                            typeNames,
+                        ),
+                    },
                 ),
             );
             return;
         }
         if (this.input.keyFieldName && !this.rootEntityType.getField(this.input.keyFieldName)) {
+            const fieldNames = this.rootEntityType.fields.map((field) => field.name);
             context.addMessage(
                 ValidationMessage.error(
-                    `The field "${this.input.keyFieldName}" is not defined in the type "${this.input.typeName}".`,
+                    `The field "${this.input.keyFieldName}" is not defined in the type "${this.input.typeName}".` +
+                        didYouMean(getSimilarNames(this.input.keyFieldName, fieldNames)),
                     this.input.keyFieldNameLoc,
+                    {
+                        quickFixes: getReplaceValueWithSimilarNameQuickFixes(
+                            this.input.keyFieldNameLoc,
+                            'keyFieldName',
+                            this.input.keyFieldName,
+                            fieldNames,
+                        ),
+                    },
                 ),
             );
             return;
