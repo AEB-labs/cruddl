@@ -23,6 +23,18 @@ export interface FieldPathConfig extends Partial<FieldPathOptions> {
      * These checks were not effective previously, so some users need to treat them as deprecations.
      */
     readonly reportInvalidNavigationAsDeprecation?: boolean;
+
+    /**
+     * If true, collect fields (if not allowed) are reported as a deprecation warning instead of an
+     * error, and the path is still resolved.
+     */
+    readonly reportCollectFieldsAsDeprecation?: boolean;
+
+    /**
+     * If true, parent fields are reported as a deprecation warning instead of an error, and the path is
+     * still resolved.
+     */
+    readonly reportParentFieldsAsDeprecation?: boolean;
 }
 
 export interface FieldPathOptions {
@@ -202,13 +214,22 @@ export class FieldPath implements ModelComponent {
 
             // disallow them - they don't work with a simple createFieldNode call, and they don't really make sense to be used within a path.
             if (field.isParentField) {
-                addMessage(
-                    ValidationMessage.error(
-                        `Field "${currentType.name}.${field.name}" is a parent field and cannot be used in a field path.`,
-                        segmentLocation,
-                    ),
-                );
-                return [];
+                if (this.config.reportParentFieldsAsDeprecation) {
+                    addMessage(
+                        ValidationMessage.nonSuppressableWarning(
+                            `Field "${currentType.name}.${field.name}" is a parent field and cannot be used in a field path. This will be an error in a future release.`,
+                            segmentLocation,
+                        ),
+                    );
+                } else {
+                    addMessage(
+                        ValidationMessage.error(
+                            `Field "${currentType.name}.${field.name}" is a parent field and cannot be used in a field path.`,
+                            segmentLocation,
+                        ),
+                    );
+                    return [];
+                }
             }
             if (field.isRootField) {
                 addMessage(
@@ -220,19 +241,35 @@ export class FieldPath implements ModelComponent {
                 return [];
             }
 
+            const isDeprecatedCollectField =
+                !this.options.canUseCollectFields &&
+                field.isCollectField &&
+                !!this.config.reportCollectFieldsAsDeprecation;
             if (!this.options.canUseCollectFields && field.isCollectField) {
-                addMessage(
-                    ValidationMessage.error(
-                        `Field "${currentType.name}.${field.name}" is a collect field, but collect fields cannot be used in this path.`,
-                        segmentLocation,
-                    ),
-                );
+                if (isDeprecatedCollectField) {
+                    addMessage(
+                        ValidationMessage.nonSuppressableWarning(
+                            `Field "${currentType.name}.${field.name}" is a collect field, but collect fields cannot be used in this path. This will be an error in a future release.`,
+                            segmentLocation,
+                        ),
+                    );
+                } else {
+                    addMessage(
+                        ValidationMessage.error(
+                            `Field "${currentType.name}.${field.name}" is a collect field, but collect fields cannot be used in this path.`,
+                            segmentLocation,
+                        ),
+                    );
+                }
             }
 
             if (!this.options.canTraverseRootEntities) {
                 if (
                     field.type.isRootEntityType ||
-                    (field.isCollectField && field.collectPath?.traversesRootEntityTypes)
+                    // already reported as deprecated
+                    (field.isCollectField &&
+                        field.collectPath?.traversesRootEntityTypes &&
+                        !isDeprecatedCollectField)
                 ) {
                     addMessage(
                         ValidationMessage.error(

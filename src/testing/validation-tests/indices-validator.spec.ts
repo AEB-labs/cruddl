@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
     validate,
@@ -238,13 +239,15 @@ describe('indices validator', () => {
             expect(getMessages('labels')).to.deep.equal([]);
         });
 
-        it('accepts collect fields', () => {
-            expect(getMessages('numberOfItems')).to.deep.equal([]);
+        it('warns about collect fields', () => {
+            expect(getMessages('numberOfItems')).to.deep.equal([
+                'WARNING: Field "Delivery.numberOfItems" is a collect field, but collect fields cannot be used in this path. This will be an error in a future release. @ numberOfItems',
+            ]);
         });
 
-        it('rejects collect fields that traverse relations', () => {
+        it('warns about collect fields that traverse relations', () => {
             expect(getMessages('numberOfHandlingUnits')).to.deep.equal([
-                'ERROR: Field "Delivery.numberOfHandlingUnits" resolves to a different root entity, but this path cannot traverse root entity boundaries. @ numberOfHandlingUnits',
+                'WARNING: Field "Delivery.numberOfHandlingUnits" is a collect field, but collect fields cannot be used in this path. This will be an error in a future release. @ numberOfHandlingUnits',
             ]);
         });
 
@@ -252,6 +255,14 @@ describe('indices validator', () => {
             expect(getMessages('items.itemNumbr')).to.deep.equal([
                 'ERROR: Type "DeliveryItem" does not have a field "itemNumbr". @ itemNumbr',
             ]);
+        });
+
+        it('offers similar field names', () => {
+            const newSource = applyQuickFix(
+                validate(types.replace('PATH', 'items.itemNumbr')).messages,
+                'Change to "itemNumber"',
+            );
+            expect(newSource).to.contain('indices: [{ fields: ["items.itemNumber"] }]');
         });
 
         it('rejects navigating into scalars', () => {

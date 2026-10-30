@@ -53,6 +53,9 @@ export class IndexField implements ModelComponent {
             canNavigateIntoLists: true,
             canTraverseRootEntities: false,
             canFollowReferences: false,
+            // collect fields are not stored, so the index would not have an effect
+            canUseCollectFields: false,
+            reportCollectFieldsAsDeprecation: true,
         });
     }
 

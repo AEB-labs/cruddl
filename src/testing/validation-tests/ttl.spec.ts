@@ -1,5 +1,6 @@
 import { gql } from 'graphql-tag';
 import { describe, expect, it } from 'vitest';
+import { applyChangeSet } from '../../core/model/change-set/apply-change-set.js';
 import { Project } from '../../core/project/project.js';
 import { ProjectSource } from '../../core/project/source.js';
 import {
@@ -565,23 +566,45 @@ describe('timeToLive config', () => {
             expect(getMessages('dimensions.measuredAt')).to.deep.equal([]);
         });
 
-        it('accepts fields within lists', () => {
-            expect(getMessages('items.packedAt')).to.deep.equal([]);
-        });
-
-        it('accepts collect fields', () => {
-            expect(getMessages('lastPackedAt')).to.deep.equal([]);
-        });
-
-        it('rejects collect fields that traverse relations', () => {
-            expect(getMessages('lastPalletPackedAt')).to.deep.equal([
-                'ERROR: Field "Delivery.lastPalletPackedAt" resolves to a different root entity, but this path cannot traverse root entity boundaries. @ lastPalletPackedAt',
+        it('warns about fields within lists', () => {
+            expect(getMessages('items.packedAt')).to.deep.equal([
+                'WARNING: Field "Delivery.items" is a list and cannot be navigated into. This will be an error in a future release. @ packedAt',
             ]);
         });
 
-        it('rejects parent fields', () => {
+        it('offers similar field names', () => {
+            const ttl = `timeToLive:\n  - typeName: Delivery\n    dateField: processing.finishedat\n    expireAfterDays: 3\n`;
+            const project = new Project([
+                new ProjectSource('schema.graphqls', schema),
+                new ProjectSource('ttl.yaml', ttl),
+            ]);
+            const quickFix = project
+                .validate()
+                .messages.flatMap((m) => m.quickFixes)
+                .find((q) => q.description === 'Change to "finishedAt"');
+            expect(quickFix).not.to.be.undefined;
+            const newProject = applyChangeSet(project, quickFix!.getChangeSet());
+            expect(newProject.sources[1].body).to.equal(ttl.replace('finishedat', 'finishedAt'));
+            expect(newProject.validate().hasErrors()).to.be.false;
+        });
+
+        it('warns about collect fields', () => {
+            expect(getMessages('lastPackedAt')).to.deep.equal([
+                'WARNING: Field "Delivery.lastPackedAt" is a collect field, but collect fields cannot be used in this path. This will be an error in a future release. @ lastPackedAt',
+            ]);
+        });
+
+        it('warns about collect fields that traverse relations', () => {
+            expect(getMessages('lastPalletPackedAt')).to.deep.equal([
+                'WARNING: Field "Delivery.lastPalletPackedAt" is a collect field, but collect fields cannot be used in this path. This will be an error in a future release. @ lastPalletPackedAt',
+            ]);
+        });
+
+        it('warns about parent fields', () => {
             expect(getMessages('items.packages.item.packedAt')).to.deep.equal([
-                'ERROR: Field "Package.item" is a parent field and cannot be used in a field path. @ item',
+                'WARNING: Field "Delivery.items" is a list and cannot be navigated into. This will be an error in a future release. @ packages',
+                'WARNING: Field "DeliveryItem.packages" is a list and cannot be navigated into. This will be an error in a future release. @ item',
+                'WARNING: Field "Package.item" is a parent field and cannot be used in a field path. This will be an error in a future release. @ item',
             ]);
         });
 
@@ -611,6 +634,7 @@ describe('timeToLive config', () => {
 
         it('rejects root fields', () => {
             expect(getMessages('items.delivery.arrival')).to.deep.equal([
+                'WARNING: Field "Delivery.items" is a list and cannot be navigated into. This will be an error in a future release. @ delivery',
                 'ERROR: Field "DeliveryItem.delivery" is a root field and cannot be used in a field path. @ delivery',
             ]);
         });

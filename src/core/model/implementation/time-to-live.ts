@@ -219,9 +219,15 @@ export class TimeToLiveType implements ModelComponent {
             path: this.input.dateField,
             baseType: this.rootEntityType,
             location: this.input.dateFieldLoc,
-            canNavigateIntoLists: true,
+            // a list in the path results in a list of dates, which never matches the filter
+            canNavigateIntoLists: false,
             canTraverseRootEntities: false,
             canFollowReferences: false,
+            reportInvalidNavigationAsDeprecation: true,
+            // collect and parent fields are not stored, so they would never match the filter
+            canUseCollectFields: false,
+            reportCollectFieldsAsDeprecation: true,
+            reportParentFieldsAsDeprecation: true,
         });
     }
 
