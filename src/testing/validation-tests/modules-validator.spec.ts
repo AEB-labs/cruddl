@@ -543,6 +543,23 @@ describe('modules validator', () => {
             );
         });
 
+        it('offers modules with a similar name', () => {
+            const source = `
+                type Foo @rootEntity @modules(in: ["module1 & modul2"]) {
+                    foo: String @modules(all: true)
+                }
+            `;
+            const options = { withModuleDefinitions: true };
+            assertValidatorRejects(
+                source,
+                'Module "modul2" does not exist. Did you mean "module2", "module1", or "module3"?',
+                options,
+            );
+            expect(
+                applyQuickFix(validate(source, options).messages, 'Change to "module2"'),
+            ).to.equal(source.replace('modul2', 'module2'));
+        });
+
         it('rejects an expression with a double &&', () => {
             assertValidatorRejects(
                 `

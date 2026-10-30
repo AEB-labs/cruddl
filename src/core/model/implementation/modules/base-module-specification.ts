@@ -1,5 +1,7 @@
 import type { ASTNode } from 'graphql';
 import { memorize } from 'memorize-decorator';
+import { didYouMean, getSimilarNames } from '../../../utils/similar-names.js';
+import { getReplaceWithSimilarNameQuickFixes } from '../../change-set/similar-name-quick-fixes.js';
 import type {
     BaseModuleSpecificationConfig,
     ModuleSpecificationClauseConfig,
@@ -104,16 +106,25 @@ export class ModuleSpecificationClause implements ModelComponent {
         for (const identifier of result.andCombinedIdentifiers) {
             if (!declaredModules.has(identifier.name)) {
                 hasInvalidModules = true;
+                const location = this.config.astNode
+                    ? locationWithinStringArgument(
+                          this.config.astNode,
+                          identifier.offset,
+                          identifier.name.length,
+                      )
+                    : undefined;
                 context.addMessage(
                     ValidationMessage.error(
-                        `Module "${identifier.name}" does not exist.`,
-                        this.config.astNode
-                            ? locationWithinStringArgument(
-                                  this.config.astNode,
-                                  identifier.offset,
-                                  identifier.name.length,
-                              )
-                            : undefined,
+                        `Module "${identifier.name}" does not exist.` +
+                            didYouMean(getSimilarNames(identifier.name, declaredModules)),
+                        location,
+                        {
+                            quickFixes: getReplaceWithSimilarNameQuickFixes(
+                                location,
+                                identifier.name,
+                                declaredModules,
+                            ),
+                        },
                     ),
                 );
             }
