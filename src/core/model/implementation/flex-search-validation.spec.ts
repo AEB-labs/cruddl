@@ -418,6 +418,21 @@ describe('FlexSearch', () => {
         );
     });
 
+    it('offers similar field names for primarySort with missing field', () => {
+        const source = `
+            type HandlingUnit @rootEntity(flexSearch: true, flexSearchOrder: [{field: "someStrng", direction: ASC}]) {
+                someString: String @flexSearch
+            }
+        `;
+        assertValidatorWarns(
+            source,
+            'Type "HandlingUnit" does not have a field "someStrng". Did you mean "someString"? This will be an error in a future release.',
+        );
+        const newSource = applyQuickFix(validate(source).messages, 'Change to "someString"');
+        expect(newSource).to.equal(source.replace('"someStrng"', '"someString"'));
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
+    });
+
     // this is ok, the primary sort field does not need to be included in the index
     it('accepts about primarySort with field that is not flexSearch-indexed', () => {
         assertValidatorAcceptsAndDoesNotWarn(

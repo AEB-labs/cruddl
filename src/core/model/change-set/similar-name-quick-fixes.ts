@@ -1,6 +1,7 @@
-import type { ASTNode } from 'graphql';
+import type { ASTNode, Location } from 'graphql';
 import { Kind } from 'graphql';
 import { getSimilarNames } from '../../utils/similar-names.js';
+import { MessageLocation } from '../validation/location.js';
 import { QuickFix } from '../validation/quick-fix.js';
 import { ChangeSet, TextChange } from './change-set.js';
 
@@ -14,22 +15,43 @@ export function getUseSimilarNameQuickFixes(
     name: string,
     existingNames: Iterable<string>,
 ): ReadonlyArray<QuickFix> {
-    if (!node?.loc) {
+    return getReplaceWithSimilarNameQuickFixes(node?.loc, name, existingNames, (suggestion) =>
+        node?.kind === Kind.STRING ? JSON.stringify(suggestion) : suggestion,
+    );
+}
+
+/**
+ * Offers to replace the text at the given location with the existing names that are similar to the
+ * given name
+ *
+ * @param format converts a suggested name into the replacement text (e.g. to quote it)
+ */
+export function getReplaceWithSimilarNameQuickFixes(
+    location: MessageLocation | Location | undefined,
+    name: string,
+    existingNames: Iterable<string>,
+    format: (suggestion: string) => string = (suggestion) => suggestion,
+): ReadonlyArray<QuickFix> {
+    if (!location) {
         return [];
     }
-    const loc = node.loc;
+    // the location might not exactly match the name (e.g. if it is in a string with escape
+    // sequences), and we must not replace anything else
+    const messageLocation = MessageLocation.from(location)!;
+    const text = messageLocation.source.body.slice(
+        messageLocation.start.offset,
+        messageLocation.end.offset,
+    );
+    if (text !== format(name)) {
+        return [];
+    }
     const suggestions = getSimilarNames(name, existingNames);
     return suggestions.map(
         (suggestion) =>
             new QuickFix({
                 description: `Change to "${suggestion}"`,
                 isPreferred: suggestions.length === 1,
-                changeSet: new ChangeSet([
-                    new TextChange(
-                        loc,
-                        node.kind === Kind.STRING ? JSON.stringify(suggestion) : suggestion,
-                    ),
-                ]),
+                changeSet: new ChangeSet([new TextChange(location, format(suggestion))]),
             }),
     );
 }

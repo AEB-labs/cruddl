@@ -39,10 +39,10 @@ export class FlexSearchPrimarySortClause implements ModelComponent {
                     ValidationMessage.suppressableWarning(
                         'DEPRECATED',
                         message.message +
-                            (message.message.endsWith('.') ? '' : '.') +
+                            (/[.?]$/.test(message.message) ? '' : '.') +
                             ' This will be an error in a future release.',
                         this.baseType.astNode,
-                        { location: message.location },
+                        { location: message.location, quickFixes: message.quickFixes },
                     ),
                 );
             } else {

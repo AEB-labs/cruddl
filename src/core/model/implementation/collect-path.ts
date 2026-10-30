@@ -2,7 +2,9 @@ import type { StringValueNode } from 'graphql';
 import { memorize } from 'memorize-decorator';
 import type { QueryNode } from '../../query-tree/base.js';
 import type { VariableQueryNode } from '../../query-tree/variables.js';
+import { didYouMean, getSimilarNames } from '../../utils/similar-names.js';
 import { isDefined } from '../../utils/utils.js';
+import { getReplaceWithSimilarNameQuickFixes } from '../change-set/similar-name-quick-fixes.js';
 import type { CollectFieldConfig } from '../config/field.js';
 import type { MessageLocation } from '../validation/location.js';
 import { locationWithinStringArgument } from '../validation/location.js';
@@ -194,8 +196,28 @@ export class CollectPath {
             if (!field) {
                 addMessage(
                     ValidationMessage.error(
-                        `Type "${currentType.name}" does not have a field "${fieldName}".`,
+                        `Type "${currentType.name}" does not have a field "${fieldName}".` +
+                            didYouMean(
+                                getSimilarNames(
+                                    fieldName,
+                                    currentType.fields.map((f) => f.name),
+                                ),
+                            ),
                         segmentLocation,
+                        {
+                            // only replace the field name, keep the depth specifier
+                            quickFixes: getReplaceWithSimilarNameQuickFixes(
+                                this.astNode
+                                    ? locationWithinStringArgument(
+                                          this.astNode,
+                                          currentOffset,
+                                          fieldName.length,
+                                      )
+                                    : undefined,
+                                fieldName,
+                                currentType.fields.map((f) => f.name),
+                            ),
+                        },
                     ),
                 );
                 return [];
