@@ -1,5 +1,7 @@
 import { gql } from 'graphql-tag';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { Project } from '../../core/project/project.js';
+import { ProjectSource } from '../../core/project/source.js';
 import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
@@ -495,5 +497,124 @@ describe('timeToLive config', () => {
                 ],
             },
         );
+    });
+
+    describe('dateField paths', () => {
+        const schema = `
+            type Delivery @rootEntity {
+                deliveryNumber: String @key
+                arrival: DateTime
+                items: [DeliveryItem]
+                processing: ProcessingInfo
+                dimensions: Dimensions
+                forwarder: Forwarder @reference(keyField: "forwarderKey")
+                forwarderKey: String
+                handlingUnit: HandlingUnit @relation
+                lastPackedAt: DateTime @collect(path: "items.packedAt", aggregate: MAX)
+                pallets: [Pallet] @relation
+                lastPalletPackedAt: DateTime @collect(path: "pallets.packedAt", aggregate: MAX)
+            }
+            type DeliveryItem @childEntity {
+                packedAt: DateTime
+                packages: [Package]
+                delivery: Delivery @root
+            }
+            type Package @childEntity {
+                packedAt: DateTime
+                item: DeliveryItem @parent
+            }
+            type ProcessingInfo @entityExtension {
+                finishedAt: DateTime
+            }
+            type Dimensions @valueObject {
+                measuredAt: DateTime
+            }
+            type Forwarder @rootEntity {
+                forwarderKey: String @key
+                createdAt: DateTime
+            }
+            type Pallet @rootEntity {
+                packedAt: DateTime
+            }
+            type HandlingUnit @rootEntity {
+                packedAt: DateTime
+                delivery: Delivery @relation(inverseOf: "handlingUnit")
+            }
+        `;
+
+        /**
+         * Validates a TTL config with the given dateField and returns the messages with the text they point at
+         */
+        function getMessages(dateField: string) {
+            const ttl = `timeToLive:\n  - typeName: Delivery\n    dateField: ${dateField}\n    expireAfterDays: 3\n`;
+            const project = new Project([
+                new ProjectSource('schema.graphqls', schema),
+                new ProjectSource('ttl.yaml', ttl),
+            ]);
+            return project
+                .validate()
+                .messages.filter((m) => m.location?.sourceName === 'ttl.yaml')
+                .map(
+                    (m) =>
+                        `${m.severity}: ${m.message} @ ${ttl.slice(m.location!.start.offset, m.location!.end.offset)}`,
+                );
+        }
+
+        it('accepts fields of entity extensions and value objects', () => {
+            expect(getMessages('processing.finishedAt')).to.deep.equal([]);
+            expect(getMessages('dimensions.measuredAt')).to.deep.equal([]);
+        });
+
+        it('accepts fields within lists', () => {
+            expect(getMessages('items.packedAt')).to.deep.equal([]);
+        });
+
+        it('accepts collect fields', () => {
+            expect(getMessages('lastPackedAt')).to.deep.equal([]);
+        });
+
+        it('accepts collect fields that traverse relations', () => {
+            expect(getMessages('lastPalletPackedAt')).to.deep.equal([]);
+        });
+
+        it('accepts parent fields', () => {
+            expect(getMessages('items.packages.item.packedAt')).to.deep.equal([]);
+        });
+
+        it('rejects unknown fields', () => {
+            expect(getMessages('processing.finishedat')).to.deep.equal([
+                'ERROR: Type "ProcessingInfo" does not have a field "finishedat" @ dateField: processing.finishedat',
+            ]);
+        });
+
+        it('rejects navigating into scalars', () => {
+            expect(getMessages('arrival.date')).to.deep.equal([
+                'ERROR: Field "arrival" is not an object @ dateField: arrival.date',
+            ]);
+        });
+
+        it('rejects references', () => {
+            expect(getMessages('forwarder.createdAt')).to.deep.equal([
+                'ERROR: Field "Delivery.forwarder" resolves to a root entity, but time-to-live-definitions can not cross root entity boundaries. @ dateField: forwarder.createdAt',
+            ]);
+        });
+
+        it('rejects relations', () => {
+            expect(getMessages('handlingUnit.packedAt')).to.deep.equal([
+                'ERROR: Field "Delivery.handlingUnit" resolves to a root entity, but time-to-live-definitions can not cross root entity boundaries. @ dateField: handlingUnit.packedAt',
+            ]);
+        });
+
+        it('rejects root fields', () => {
+            expect(getMessages('items.delivery.arrival')).to.deep.equal([
+                'ERROR: Field "DeliveryItem.delivery" resolves to a root entity, but time-to-live-definitions can not cross root entity boundaries. @ dateField: items.delivery.arrival',
+            ]);
+        });
+
+        it('rejects empty segments', () => {
+            expect(getMessages('processing..finishedAt')).to.deep.equal([
+                'ERROR: The dateField should be a path, defined as field names separated by dots. @ dateField: processing..finishedAt',
+            ]);
+        });
     });
 });

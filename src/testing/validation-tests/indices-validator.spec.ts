@@ -1,7 +1,8 @@
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
+    validate,
 } from '../utils/source-validation-utils.js';
 
 describe('indices validator', () => {
@@ -172,5 +173,145 @@ describe('indices validator', () => {
         `,
             'Field "Child.root" is a root field and cannot be used in an index.',
         );
+    });
+
+    describe('index field paths', () => {
+        const types = `
+            type Delivery @rootEntity(indices: [{ fields: ["PATH"] }]) {
+                deliveryNumber: String @key
+                labels: [String]
+                items: [DeliveryItem]
+                processing: ProcessingInfo
+                dimensions: Dimensions
+                forwarder: Forwarder @reference(keyField: "forwarderKey")
+                forwarderKey: String
+                handlingUnits: [HandlingUnit] @relation
+                numberOfItems: Int @collect(path: "items", aggregate: COUNT)
+                numberOfHandlingUnits: Int @collect(path: "handlingUnits", aggregate: COUNT)
+            }
+            type DeliveryItem @childEntity {
+                itemNumber: String
+                tags: [String]
+                packages: [Package]
+                delivery: Delivery @root
+            }
+            type Package @childEntity {
+                packageNumber: String
+                item: DeliveryItem @parent
+            }
+            type ProcessingInfo @entityExtension {
+                comment: String
+            }
+            type Dimensions @valueObject {
+                weightInKg: Float
+            }
+            type Forwarder @rootEntity {
+                forwarderKey: String @key
+            }
+            type HandlingUnit @rootEntity {
+                handlingUnitNumber: String
+                delivery: Delivery @relation(inverseOf: "handlingUnits")
+            }
+        `;
+
+        /**
+         * Validates an index with the given path and returns the messages with the text they point at
+         */
+        function getMessages(path: string) {
+            const source = types.replace('PATH', path);
+            const indicesEnd = source.indexOf(') {');
+            return validate(source)
+                .messages.filter((m) => m.location && m.location.start.offset < indicesEnd)
+                .map(
+                    (m) =>
+                        `${m.severity}: ${m.message} @ ${source.slice(m.location!.start.offset, m.location!.end.offset)}`,
+                );
+        }
+
+        it('accepts fields of child entities, entity extensions and value objects', () => {
+            expect(getMessages('items.itemNumber')).to.deep.equal([]);
+            expect(getMessages('processing.comment')).to.deep.equal([]);
+            expect(getMessages('dimensions.weightInKg')).to.deep.equal([]);
+        });
+
+        it('accepts a list of scalars', () => {
+            expect(getMessages('labels')).to.deep.equal([]);
+        });
+
+        it('accepts collect fields', () => {
+            expect(getMessages('numberOfItems')).to.deep.equal([]);
+        });
+
+        it('accepts collect fields that traverse relations', () => {
+            expect(getMessages('numberOfHandlingUnits')).to.deep.equal([]);
+        });
+
+        it('rejects unknown fields', () => {
+            expect(getMessages('items.itemNumbr')).to.deep.equal([
+                'ERROR: Type "DeliveryItem" does not have a field "itemNumbr" @ "items.itemNumbr"',
+            ]);
+        });
+
+        it('rejects navigating into scalars', () => {
+            expect(getMessages('deliveryNumber.length')).to.deep.equal([
+                'ERROR: Field "deliveryNumber" is not an object @ "deliveryNumber.length"',
+            ]);
+        });
+
+        it('rejects references', () => {
+            expect(getMessages('forwarder.forwarderKey')).to.deep.equal([
+                'ERROR: Field "Delivery.forwarder" resolves to a root entity, but indices cannot cross root entity boundaries. @ "forwarder.forwarderKey"',
+            ]);
+        });
+
+        it('rejects relations', () => {
+            expect(getMessages('handlingUnits.handlingUnitNumber')).to.deep.equal([
+                'ERROR: Field "Delivery.handlingUnits" resolves to a root entity, but indices cannot cross root entity boundaries. @ "handlingUnits.handlingUnitNumber"',
+            ]);
+        });
+
+        it('rejects parent fields', () => {
+            expect(getMessages('items.packages.item.itemNumber')).to.deep.equal([
+                'ERROR: Field "Package.item" is a parent field and cannot be used in an index. @ "items.packages.item.itemNumber"',
+            ]);
+        });
+
+        it('rejects root fields', () => {
+            expect(getMessages('items.delivery.deliveryNumber')).to.deep.equal([
+                'ERROR: Field "DeliveryItem.delivery" is a root field and cannot be used in an index. @ "items.delivery.deliveryNumber"',
+            ]);
+        });
+
+        it('rejects paths with more than one list', () => {
+            expect(getMessages('items.packages.packageNumber')).to.deep.equal([
+                'ERROR: Index paths with more than one list field are not supported by ArangoDB (list fields: "Delivery.items", "DeliveryItem.packages"). @ "items.packages.packageNumber"',
+            ]);
+        });
+
+        it('rejects empty segments', () => {
+            expect(getMessages('items..itemNumber')).to.deep.equal([
+                'ERROR: An index field path should be field names separated by dots. @ "items..itemNumber"',
+            ]);
+        });
+
+        it('rejects references in field indices', () => {
+            const source = `
+                type Delivery @rootEntity {
+                    forwarder: Forwarder @reference(keyField: "forwarderKey") @index
+                    forwarderKey: String
+                }
+                type Forwarder @rootEntity {
+                    forwarderKey: String @key
+                }
+            `;
+            expect(
+                validate(source).messages.map(
+                    (m) =>
+                        `${m.message} @ ${source.slice(m.location?.start.offset, m.location?.end.offset)}`,
+                ),
+            ).to.deep.equal([
+                'Field "Delivery.forwarder" resolves to a root entity, but indices cannot cross root entity boundaries. @ @index',
+            ]);
+        });
     });
 });
