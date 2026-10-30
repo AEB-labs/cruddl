@@ -2,6 +2,7 @@ import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
 import { memorize } from 'memorize-decorator';
 import { GraphQLInt53 } from '../../schema/scalars/int53.js';
 import { isDefined } from '../../utils/utils.js';
+import { getReplaceValueWithSimilarNameQuickFixes } from '../change-set/similar-name-quick-fixes.js';
 import type { BillingEntityCategoryMappingConfig, BillingEntityConfig } from '../config/billing.js';
 import { ValidationMessage } from '../validation/message.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
@@ -44,6 +45,14 @@ export class BillingEntityType implements ModelComponent {
                 ValidationMessage.error(
                     `No rootEntity with the name "${this.input.typeName}" is defined.`,
                     this.input.typeNameLoc,
+                    {
+                        quickFixes: getReplaceValueWithSimilarNameQuickFixes(
+                            this.input.typeNameLoc,
+                            'typeName',
+                            this.input.typeName,
+                            this.model.rootEntityTypes.map((type) => type.name),
+                        ),
+                    },
                 ),
             );
             return;
@@ -53,6 +62,14 @@ export class BillingEntityType implements ModelComponent {
                 ValidationMessage.error(
                     `The field "${this.input.keyFieldName}" is not defined in the type "${this.input.typeName}".`,
                     this.input.keyFieldNameLoc,
+                    {
+                        quickFixes: getReplaceValueWithSimilarNameQuickFixes(
+                            this.input.keyFieldNameLoc,
+                            'keyFieldName',
+                            this.input.keyFieldName,
+                            this.rootEntityType.fields.map((field) => field.name),
+                        ),
+                    },
                 ),
             );
             return;

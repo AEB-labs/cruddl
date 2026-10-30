@@ -148,4 +148,52 @@ describe('similar-name quick fixes', () => {
             '@collect(path: "handlingUnits.handlingUnitNumber", aggregate: DISTINCT)',
         );
     });
+
+    it('fixes type names in TTL configs', () => {
+        const ttl = `timeToLive:
+  - typeName: Delivery
+    dateField: arrival
+    expireAfterDays: 3
+`;
+        const body = applyQuickFix(
+            {
+                'schema.graphqls': schema,
+                'permission-profiles.yaml': permissionProfiles,
+                'ttl.yaml': ttl.replace('typeName: Delivery', 'typeName: Delivry'),
+            },
+            'ttl.yaml',
+            'Change to "Delivery"',
+        );
+        expect(body).to.equal(ttl.replace('typeName: Delivery', 'typeName: "Delivery"'));
+    });
+
+    it('fixes type names and key fields in billing configs', () => {
+        const billing = JSON.stringify(
+            {
+                billing: {
+                    billingEntities: [{ typeName: 'Delivery', keyFieldName: 'deliveryNumber' }],
+                },
+            },
+            undefined,
+            4,
+        );
+        const sources = {
+            'schema.graphqls': schema,
+            'permission-profiles.yaml': permissionProfiles,
+        };
+        expect(
+            applyQuickFix(
+                { ...sources, 'billing.json': billing.replace('"Delivery"', '"delivery"') },
+                'billing.json',
+                'Change to "Delivery"',
+            ),
+        ).to.equal(billing);
+        expect(
+            applyQuickFix(
+                { ...sources, 'billing.json': billing.replace('deliveryNumber', 'deliveryNumbr') },
+                'billing.json',
+                'Change to "deliveryNumber"',
+            ),
+        ).to.equal(billing);
+    });
 });
