@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import type { GraphQLSchema, OperationDefinitionNode } from 'graphql';
 import { graphql, OperationTypeNode, parse } from 'graphql';
 import { unlinkSync } from 'node:fs';
-import { resolve } from 'path';
+import { basename, resolve } from 'path';
 import { ArangoDBAdapter } from '../../arangodb/arangodb-adapter.js';
 import type { ArangoDBVersion } from '../../arangodb/version-helper.js';
 import { ConsoleLoggerProvider } from '../../core/config/console-logger.js';
@@ -70,6 +70,14 @@ export interface RunTestResult {
 const QUERY_MEMORY_LIMIT_FOR_TESTS = 1_000_000;
 const QUERY_MEMORY_LIMIT_FOR_INITIALIZATION = 1_000_000_000;
 
+/**
+ * Timeout for the initial setup of a suite (database, test data, migrations), which is not part of
+ * the timeout of the first test
+ */
+export const SETUP_TIMEOUT_IN_MS = 120_000;
+
+const SLOW_SETUP_THRESHOLD_IN_MS = 5_000;
+
 let didWarnAboutVersion = false;
 
 export class RegressionSuite {
@@ -96,7 +104,26 @@ export class RegressionSuite {
         return resolve(this.path, 'tests');
     }
 
+    /**
+     * Sets up the suite (if necessary) so that the first test does not have to do it within its own
+     * timeout
+     */
+    async prepare(): Promise<void> {
+        if (!this._isSetUpClean) {
+            await this.setUp();
+        }
+    }
+
     private async setUp() {
+        const timings: string[] = [];
+        const setUpStart = performance.now();
+        let stepStart = setUpStart;
+        const recordStep = (name: string) => {
+            const now = performance.now();
+            timings.push(`${name}: ${Math.round(now - stepStart)}ms`);
+            stepStart = now;
+        };
+
         const optionsPath = resolve(this.path, 'options.json');
         const options = existsSync(optionsPath)
             ? parseJSONCOrThrow<Record<string, unknown>>(
@@ -162,7 +189,9 @@ export class RegressionSuite {
         this.schema = project.createSchema(adapter);
 
         await this.clearDatabase();
+        recordStep('create database');
         await initAdapter.updateSchema(initProject.getModel());
+        recordStep('migrate');
 
         const testDataJsonPath = resolve(this.path, 'test-data.json');
         const testDataTsPath = resolve(this.path, 'test-data.ts');
@@ -197,12 +226,15 @@ export class RegressionSuite {
             this.testDataEnvironment = { fillTemplateStrings: (s) => s };
         }
 
+        recordStep('seed');
+
         // Some index types (e.g. ArangoDB vector indices) cannot be created on an empty collection
         // because they require at least one document to be present for their training phase.
         // When migrateAfterSeed is set in meta.json, we run updateSchema a second time after the
         // test data has been seeded so that those deferred migrations are picked up and applied.
         if (this.getMeta().resolveSuiteMeta().migrateAfterSeed) {
             await initAdapter.updateSchema(initProject.getModel());
+            recordStep('migrate after seed');
         }
 
         if (this.databaseSpecifier === 'arangodb') {
@@ -222,6 +254,13 @@ export class RegressionSuite {
         }
 
         this._isSetUpClean = true;
+
+        const totalMs = Math.round(performance.now() - setUpStart);
+        if (totalMs > SLOW_SETUP_THRESHOLD_IN_MS) {
+            console.warn(
+                `Setting up regression suite ${basename(this.path)} took ${totalMs}ms (${timings.join(', ')})`,
+            );
+        }
     }
 
     private async clearDatabase() {

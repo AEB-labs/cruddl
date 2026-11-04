@@ -1,10 +1,10 @@
 import { readdirSync, statSync } from 'fs';
 import { resolve } from 'path';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { getArangoDBVersion } from './initialization.js';
 import { getRegressionOptions } from './regression-options.js';
 import type { RegressionSuiteOptions } from './regression-suite.js';
-import { RegressionSuite } from './regression-suite.js';
+import { RegressionSuite, SETUP_TIMEOUT_IN_MS } from './regression-suite.js';
 
 const regressionRootDir = __dirname;
 
@@ -44,6 +44,12 @@ describe('regression tests', async () => {
                     const testNames = suite
                         .getTestNames()
                         .filter((testName) => testNameFilter(`${suiteName}/${testName}`));
+
+                    // the setup (especially the migration with vector indices) can take much longer
+                    // than a single test is allowed to run. When it ran as part of the first test, a
+                    // timeout there left the suite unprepared, so every following test repeated the
+                    // setup and timed out as well.
+                    beforeAll(() => suite.prepare(), SETUP_TIMEOUT_IN_MS);
 
                     for (const testName of testNames) {
                         if (suite.shouldIgnoreTest(testName)) {
