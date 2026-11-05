@@ -1,5 +1,9 @@
-import { type DirectiveNode, type ObjectValueNode } from 'graphql';
-import { VECTOR_INDEX_N_LISTS_ARG } from '../../schema/constants.js';
+import { type DirectiveNode, type IntValueNode, type ObjectValueNode } from 'graphql';
+import {
+    VECTOR_INDEX_DEFAULT_N_PROBE_ARG,
+    VECTOR_INDEX_MAX_N_PROBE_ARG,
+    VECTOR_INDEX_N_LISTS_ARG,
+} from '../../schema/constants.js';
 import { ChangeSet, TextChange } from '../change-set/change-set.js';
 import {
     createInsertionChange,
@@ -111,6 +115,21 @@ export class VectorIndex implements ModelComponent {
                 ValidationMessage.error(
                     `defaultNProbe (${this.defaultNProbe}) must not exceed maxNProbe (${this.maxNProbe}).`,
                     this.input.defaultNProbeASTNode ?? this.astNode,
+                    {
+                        // it's not clear which one is wrong
+                        quickFixes: [
+                            ...this.getSetIntArgumentQuickFixes(
+                                VECTOR_INDEX_DEFAULT_N_PROBE_ARG,
+                                this.input.defaultNProbeASTNode,
+                                this.maxNProbe,
+                            ),
+                            ...this.getSetIntArgumentQuickFixes(
+                                VECTOR_INDEX_MAX_N_PROBE_ARG,
+                                this.input.maxNProbeASTNode,
+                                this.defaultNProbe,
+                            ),
+                        ],
+                    },
                 ),
             );
         }
@@ -217,5 +236,22 @@ export class VectorIndex implements ModelComponent {
                 },
             ),
         );
+    }
+
+    private getSetIntArgumentQuickFixes(
+        argumentName: string,
+        valueNode: IntValueNode | undefined,
+        value: number,
+    ): ReadonlyArray<QuickFix> {
+        if (!valueNode?.loc) {
+            return [];
+        }
+        return [
+            new QuickFix({
+                description: `Change ${argumentName} to ${value}`,
+                isPreferred: false,
+                changeSet: new ChangeSet([new TextChange(valueNode.loc, String(value))]),
+            }),
+        ];
     }
 }
