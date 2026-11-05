@@ -318,4 +318,84 @@ describe('vector indices validator', () => {
             }
         `);
     });
+
+    describe('quick fixes', () => {
+        const vectorIndex = '@vectorIndex(dimension: 128, defaultNProbe: 10, maxNProbe: 50)';
+
+        function getQuickFixes(source: string) {
+            return validate(source)
+                .messages.flatMap((m) => m.quickFixes)
+                .map((q) => [q.description, q.isPreferred]);
+        }
+
+        function expectQuickFix(source: string, description: string, expectedSource: string) {
+            const newSource = applyQuickFix(validate(source).messages, description);
+            expect(newSource).to.equal(expectedSource);
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        }
+
+        it('prefers to change a Float field to a list', () => {
+            const source = `type Foo @rootEntity { embedding: Float ${vectorIndex} }`;
+            expect(getQuickFixes(source)).to.deep.equal([['Change type to "[Float]"', true]]);
+            expectQuickFix(
+                source,
+                'Change type to "[Float]"',
+                `type Foo @rootEntity { embedding: [Float] ${vectorIndex} }`,
+            );
+        });
+
+        it('offers to change a list of another type to [Float]', () => {
+            const source = `type Foo @rootEntity { embedding: [Int] ${vectorIndex} }`;
+            expect(getQuickFixes(source)).to.deep.equal([['Change type to "[Float]"', false]]);
+            expectQuickFix(
+                source,
+                'Change type to "[Float]"',
+                `type Foo @rootEntity { embedding: [Float] ${vectorIndex} }`,
+            );
+        });
+
+        it('offers to change a non-list field of another type to [Float] only once', () => {
+            const source = `type Foo @rootEntity { embedding: Int ${vectorIndex} }`;
+            assertValidatorRejects(source, [
+                'Vector indices can only be defined on list fields, but "Foo.embedding" is not a list field.',
+                'Vector indices can only be defined on fields of type "[Float]", but the type of "Foo.embedding" is "Int".',
+            ]);
+            expect(getQuickFixes(source)).to.deep.equal([['Change type to "[Float]"', false]]);
+        });
+
+        it('offers to remove @vectorIndex from fields of child entities', () => {
+            const source = `
+                type Foo @rootEntity { items: [Item] }
+                type Item @childEntity { embedding: [Float] ${vectorIndex} }
+            `;
+            expect(getQuickFixes(source)).to.deep.equal([['Remove @vectorIndex', false]]);
+            expectQuickFix(
+                source,
+                'Remove @vectorIndex',
+                source.replace(`[Float] ${vectorIndex}`, '[Float]'),
+            );
+        });
+
+        it('offers to change defaultNProbe or maxNProbe if defaultNProbe is too large', () => {
+            const source = `
+                type Foo @rootEntity {
+                    embedding: [Float] @vectorIndex(dimension: 128, defaultNProbe: 100, maxNProbe: 50)
+                }
+            `;
+            expect(getQuickFixes(source)).to.deep.equal([
+                ['Change defaultNProbe to 50', false],
+                ['Change maxNProbe to 100', false],
+            ]);
+            expectQuickFix(
+                source,
+                'Change defaultNProbe to 50',
+                source.replace('defaultNProbe: 100', 'defaultNProbe: 50'),
+            );
+            expectQuickFix(
+                source,
+                'Change maxNProbe to 100',
+                source.replace('maxNProbe: 50', 'maxNProbe: 100'),
+            );
+        });
+    });
 });

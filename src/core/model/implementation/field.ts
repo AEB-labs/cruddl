@@ -1,5 +1,5 @@
 import type { ASTNode, DirectiveNode, FieldDefinitionNode } from 'graphql';
-import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString } from 'graphql';
+import { GraphQLBoolean, GraphQLFloat, GraphQLID, GraphQLInt, GraphQLString, Kind } from 'graphql';
 import { memorize } from 'memorize-decorator';
 import {
     ACCESS_FIELD_DIRECTIVE,
@@ -2560,25 +2560,47 @@ export class Field implements ModelComponent {
                 ValidationMessage.error(
                     '@vectorIndex is only allowed in root entity fields.',
                     this.vectorIndex.astNode,
+                    {
+                        quickFixes: getRemoveDirectiveQuickFixes(
+                            this.vectorIndex.astNode?.kind === Kind.DIRECTIVE
+                                ? this.vectorIndex.astNode
+                                : undefined,
+                            // the type might be the wrong kind instead
+                            { isPreferred: false },
+                        ),
+                    },
                 ),
             );
             return;
         }
 
+        const isFloat = this.type.kind === TypeKind.SCALAR && this.type.name === GraphQLFloat.name;
         if (!this.isList) {
             context.addMessage(
                 ValidationMessage.error(
                     `Vector indices can only be defined on list fields, but "${this.declaringType.name}.${this.name}" is not a list field.`,
                     this.vectorIndex.astNode,
+                    {
+                        // if the type is wrong as well, the fix is offered on that message
+                        quickFixes: isFloat
+                            ? this.getChangeTypeQuickFixes(`[${GraphQLFloat.name}]`)
+                            : [],
+                    },
                 ),
             );
         }
 
-        if (this.type.kind !== TypeKind.SCALAR || this.type.name !== 'Float') {
+        if (!isFloat) {
             context.addMessage(
                 ValidationMessage.error(
-                    `Vector indices can only be defined on fields of type "[Float]", but the type of "${this.declaringType.name}.${this.name}" is "[${this.type.name}]".`,
+                    `Vector indices can only be defined on fields of type "[Float]", but the type of "${this.declaringType.name}.${this.name}" is "${this.isList ? `[${this.type.name}]` : this.type.name}".`,
                     this.vectorIndex.astNode,
+                    {
+                        // this changes how the values are stored
+                        quickFixes: this.getChangeTypeQuickFixes(`[${GraphQLFloat.name}]`, {
+                            isPreferred: false,
+                        }),
+                    },
                 ),
             );
         }
