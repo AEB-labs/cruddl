@@ -1,6 +1,10 @@
 import { type DirectiveNode, type ObjectValueNode } from 'graphql';
-import { ChangeSet } from '../change-set/change-set.js';
-import { createRemoveListValueChange } from '../change-set/graphql-changes.js';
+import { VECTOR_INDEX_N_LISTS_ARG } from '../../schema/constants.js';
+import { ChangeSet, TextChange } from '../change-set/change-set.js';
+import {
+    createInsertionChange,
+    createRemoveListValueChange,
+} from '../change-set/graphql-changes.js';
 import type { VectorIndexDefinitionConfig, VectorSimilarityMetric } from '../config/indices.js';
 import { ValidationMessage } from '../validation/message.js';
 import { QuickFix } from '../validation/quick-fix.js';
@@ -120,6 +124,8 @@ export class VectorIndex implements ModelComponent {
             );
         }
 
+        this.validateFactory(context);
+
         if (this.storedValues.length > 32) {
             context.addMessage(
                 ValidationMessage.error(
@@ -158,5 +164,58 @@ export class VectorIndex implements ModelComponent {
             seenStoredValues.add(storedValueFieldPath.path);
             storedValueFieldPath.validate(context);
         }
+    }
+
+    private validateFactory(context: ValidationContext) {
+        if (this.factory == undefined) {
+            return;
+        }
+        // ArangoDB only supports IVF indices, and faiss needs an encoding after the IVF part
+        // (e.g. "IVF100,Flat" or "IVF100_HNSW32,PQ16")
+        const match = /^IVF(\d+)(?:_[^,]*)?,./.exec(this.factory);
+        if (!match) {
+            context.addMessage(
+                ValidationMessage.error(
+                    `The factory "${this.factory}" is not supported. It needs to start with an IVF index and specify an encoding, e.g. "IVF100,Flat".`,
+                    this.input.factoryASTNode ?? this.astNode,
+                ),
+            );
+            return;
+        }
+        const factoryNLists = Number(match[1]);
+        if (this.nLists === factoryNLists) {
+            return;
+        }
+        const nListsArg = `${VECTOR_INDEX_N_LISTS_ARG}: ${factoryNLists}`;
+        const change = this.input.nListsASTNode
+            ? new TextChange(this.input.nListsASTNode.loc!, String(factoryNLists))
+            : this.input.dimensionASTNode?.loc &&
+              createInsertionChange(
+                  this.input.dimensionASTNode.loc.end,
+                  this.input.dimensionASTNode.loc,
+                  `, ${nListsArg}`,
+              );
+        context.addMessage(
+            ValidationMessage.error(
+                this.nLists == undefined
+                    ? `${VECTOR_INDEX_N_LISTS_ARG} needs to be specified if a factory is specified, and it needs to match the number of lists in the factory (${factoryNLists}).`
+                    : `${VECTOR_INDEX_N_LISTS_ARG} (${this.nLists}) needs to match the number of lists in the factory "${this.factory}" (${factoryNLists}).`,
+                this.input.nListsASTNode ?? this.input.factoryASTNode ?? this.astNode,
+                {
+                    quickFixes: change
+                        ? [
+                              new QuickFix({
+                                  description:
+                                      this.nLists == undefined
+                                          ? `Add ${nListsArg}`
+                                          : `Change ${VECTOR_INDEX_N_LISTS_ARG} to ${factoryNLists}`,
+                                  isPreferred: true,
+                                  changeSet: new ChangeSet([change]),
+                              }),
+                          ]
+                        : [],
+                },
+            ),
+        );
     }
 }

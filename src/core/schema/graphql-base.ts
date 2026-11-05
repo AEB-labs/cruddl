@@ -389,7 +389,9 @@ const directivesBase: DocumentNode = gql`
         """
         Optional Faiss index factory string for advanced index layouts.
 
-        The base index must be IVF-compatible for ArangoDB vector indexes.
+        The base index must be IVF-compatible for ArangoDB vector indexes, so the string needs to start
+        with an IVF index (e.g. "IVF100,Flat"). nLists needs to be specified with the same number of
+        lists (e.g. 100).
         """
         factory: String
 

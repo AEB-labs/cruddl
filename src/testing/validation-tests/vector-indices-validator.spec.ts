@@ -241,6 +241,59 @@ describe('vector indices validator', () => {
         assertValidatorAcceptsAndDoesNotWarn(newSource);
     });
 
+    describe('factory', () => {
+        function getSource(args: string) {
+            return `
+                type Foo @rootEntity {
+                    embedding: [Float] @vectorIndex(dimension: 128, ${args}, defaultNProbe: 10, maxNProbe: 50)
+                }
+            `;
+        }
+
+        it('accepts IVF factories with a matching nLists', () => {
+            assertValidatorAcceptsAndDoesNotWarn(getSource('nLists: 100, factory: "IVF100,Flat"'));
+            assertValidatorAcceptsAndDoesNotWarn(
+                getSource('nLists: 100, factory: "IVF100_HNSW32,PQ16"'),
+            );
+        });
+
+        it('rejects factories that are not IVF', () => {
+            assertValidatorRejects(
+                getSource('nLists: 100, factory: "HNSW32"'),
+                'The factory "HNSW32" is not supported. It needs to start with an IVF index and specify an encoding, e.g. "IVF100,Flat".',
+            );
+        });
+
+        it('rejects IVF factories without an encoding', () => {
+            assertValidatorRejects(
+                getSource('nLists: 100, factory: "IVF100"'),
+                'The factory "IVF100" is not supported. It needs to start with an IVF index and specify an encoding, e.g. "IVF100,Flat".',
+            );
+        });
+
+        it('rejects an nLists that does not match the factory and offers to fix it', () => {
+            const source = getSource('nLists: 10, factory: "IVF100,Flat"');
+            assertValidatorRejects(
+                source,
+                'nLists (10) needs to match the number of lists in the factory "IVF100,Flat" (100).',
+            );
+            const newSource = applyQuickFix(validate(source).messages, 'Change nLists to 100');
+            expect(newSource).to.equal(getSource('nLists: 100, factory: "IVF100,Flat"'));
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        });
+
+        it('rejects a factory without nLists and offers to add it', () => {
+            const source = getSource('factory: "IVF100,Flat"');
+            assertValidatorRejects(
+                source,
+                'nLists needs to be specified if a factory is specified, and it needs to match the number of lists in the factory (100).',
+            );
+            const newSource = applyQuickFix(validate(source).messages, 'Add nLists: 100');
+            expect(newSource).to.equal(getSource('nLists: 100, factory: "IVF100,Flat"'));
+            assertValidatorAcceptsAndDoesNotWarn(newSource);
+        });
+    });
+
     it('accepts vector index with optional parameters', () => {
         assertValidatorAcceptsAndDoesNotWarn(`
             type Foo @rootEntity {
