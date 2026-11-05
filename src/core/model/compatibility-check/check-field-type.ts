@@ -1,7 +1,6 @@
-import { ChangeSet, TextChange } from '../change-set/change-set.js';
 import type { Field } from '../implementation/field.js';
+import { getChangeFieldTypeQuickFixes } from '../implementation/field.js';
 import { ValidationMessage } from '../validation/message.js';
-import { QuickFix } from '../validation/quick-fix.js';
 import type { ValidationContext } from '../validation/validation-context.js';
 
 /**
@@ -12,21 +11,10 @@ export function checkFieldType(
     baselineField: Field,
     context: ValidationContext,
 ) {
-    const quickFixes: QuickFix[] = [];
     const expectedType = baselineField.isList
         ? '[' + baselineField.type.name + ']'
         : baselineField.type.name;
-    if (fieldToCheck.astNode?.type.loc) {
-        quickFixes.push(
-            new QuickFix({
-                description: `Change type to "${expectedType}"`,
-                isPreferred: true,
-                changeSet: new ChangeSet([
-                    new TextChange(fieldToCheck.astNode.type.loc, expectedType),
-                ]),
-            }),
-        );
-    }
+    const quickFixes = getChangeFieldTypeQuickFixes(fieldToCheck.astNode, expectedType);
 
     if (fieldToCheck.type.name !== baselineField.type.name) {
         context.addMessage(
