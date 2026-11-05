@@ -96,6 +96,26 @@ describe('checkModel', () => {
             );
         });
 
+        it('does not include nLists in the message if it is not specified', () => {
+            const result = runCheck(
+                gql`
+                    type Test @rootEntity @modules(in: "module1", includeAllFields: true) {
+                        embedding: [Float]
+                            @vectorIndex(dimension: 3, defaultNProbe: 10, maxNProbe: 50)
+                    }
+                `,
+                gql`
+                    type Test @rootEntity {
+                        embedding: [Float]
+                    }
+                `,
+            );
+            expectSingleCompatibilityIssue(
+                result,
+                'The vector index is missing: @vectorIndex(metric: COSINE, dimension: 3, sparse: true, defaultNProbe: 10, maxNProbe: 50) on field "embedding"',
+            );
+        });
+
         it('accepts if a missing vector index is suppressed', () => {
             const result = runCheck(
                 gql`
