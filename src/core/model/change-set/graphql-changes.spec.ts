@@ -1,4 +1,4 @@
-import type { DirectiveNode, ObjectTypeDefinitionNode } from 'graphql';
+import type { DirectiveNode, ListValueNode, ObjectTypeDefinitionNode } from 'graphql';
 import { parse } from 'graphql';
 import { describe, expect, it } from 'vitest';
 import { Project } from '../../project/project.js';
@@ -10,6 +10,7 @@ import {
     createRemoveArgumentChange,
     createRemoveInlineNodeChange,
     createRemoveLinesChange,
+    createRemoveListValueChange,
 } from './graphql-changes.js';
 
 function apply(body: string, getChange: (type: ObjectTypeDefinitionNode) => TextChange) {
@@ -24,6 +25,58 @@ function getFieldDirective(type: ObjectTypeDefinitionNode): DirectiveNode {
 }
 
 describe('graphql changes', () => {
+    describe('createRemoveListValueChange', () => {
+        function removeListValue(body: string, index: number) {
+            return apply(body, (type) => {
+                const list = getFieldDirective(type).arguments![0].value as ListValueNode;
+                return createRemoveListValueChange(list.values[index])!;
+            });
+        }
+
+        it('removes the first value and the comma after it', () => {
+            expect(removeListValue('type T { f: String @d(a: ["x", "y"]) }', 0)).to.equal(
+                'type T { f: String @d(a: ["y"]) }',
+            );
+        });
+
+        it('removes the last value and the comma before it', () => {
+            expect(removeListValue('type T { f: String @d(a: ["x", "y"]) }', 1)).to.equal(
+                'type T { f: String @d(a: ["x"]) }',
+            );
+        });
+
+        it('removes a middle value', () => {
+            expect(removeListValue('type T { f: String @d(a: ["x", "y", "z"]) }', 1)).to.equal(
+                'type T { f: String @d(a: ["x", "z"]) }',
+            );
+        });
+
+        it('removes the only value', () => {
+            expect(removeListValue('type T { f: String @d(a: ["x"]) }', 0)).to.equal(
+                'type T { f: String @d(a: []) }',
+            );
+        });
+
+        it('removes a value without commas', () => {
+            expect(removeListValue('type T { f: String @d(a: ["x" "y"]) }', 0)).to.equal(
+                'type T { f: String @d(a: ["y"]) }',
+            );
+            expect(removeListValue('type T { f: String @d(a: ["x" "y"]) }', 1)).to.equal(
+                'type T { f: String @d(a: ["x"]) }',
+            );
+        });
+
+        it('removes a value in a multi-line list', () => {
+            const body = 'type T { f: String @d(a: [\n    "x",\n    "y",\n    "z"\n]) }';
+            expect(removeListValue(body, 1)).to.equal(
+                'type T { f: String @d(a: [\n    "x",\n    "z"\n]) }',
+            );
+            expect(removeListValue(body, 2)).to.equal(
+                'type T { f: String @d(a: [\n    "x",\n    "y"\n]) }',
+            );
+        });
+    });
+
     describe('createRemoveArgumentChange', () => {
         function removeArgument(body: string, argumentName: string) {
             return apply(body, (type) => {
