@@ -61,7 +61,7 @@ function describeVectorIndex(index: VectorIndex): string {
     const args = [
         `metric: ${index.metric}`,
         `dimension: ${index.dimension}`,
-        `nLists: ${index.nLists}`,
+        index.nLists != undefined ? `nLists: ${index.nLists}` : undefined,
         `sparse: ${index.sparse}`,
         index.defaultNProbe != undefined ? `defaultNProbe: ${index.defaultNProbe}` : undefined,
         index.maxNProbe != undefined ? `maxNProbe: ${index.maxNProbe}` : undefined,
