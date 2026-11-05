@@ -1,6 +1,9 @@
 import { type DirectiveNode, type ObjectValueNode } from 'graphql';
+import { ChangeSet } from '../change-set/change-set.js';
+import { createRemoveListValueChange } from '../change-set/graphql-changes.js';
 import type { VectorIndexDefinitionConfig, VectorSimilarityMetric } from '../config/indices.js';
 import { ValidationMessage } from '../validation/message.js';
+import { QuickFix } from '../validation/quick-fix.js';
 import { type ModelComponent, ValidationContext } from '../validation/validation-context.js';
 import { FieldPath } from './field-path.js';
 import type { Field } from './field.js';
@@ -127,7 +130,32 @@ export class VectorIndex implements ModelComponent {
             return;
         }
 
-        for (const storedValueFieldPath of this.storedValueFieldPaths) {
+        const seenStoredValues = new Set<string>();
+        for (const [index, storedValueFieldPath] of this.storedValueFieldPaths.entries()) {
+            if (seenStoredValues.has(storedValueFieldPath.path)) {
+                // ArangoDB rejects the index definition
+                const astNode = this.input.storedValuesASTNodes?.[index];
+                const change = astNode && createRemoveListValueChange(astNode);
+                context.addMessage(
+                    ValidationMessage.error(
+                        `"${storedValueFieldPath.path}" is included multiple times in storedValues.`,
+                        astNode ?? this.astNode,
+                        {
+                            quickFixes: change
+                                ? [
+                                      new QuickFix({
+                                          description: 'Remove duplicate',
+                                          isPreferred: true,
+                                          changeSet: new ChangeSet([change]),
+                                      }),
+                                  ]
+                                : [],
+                        },
+                    ),
+                );
+                continue;
+            }
+            seenStoredValues.add(storedValueFieldPath.path);
             storedValueFieldPath.validate(context);
         }
     }

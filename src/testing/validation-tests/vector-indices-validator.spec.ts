@@ -1,7 +1,9 @@
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
+    applyQuickFix,
     assertValidatorAcceptsAndDoesNotWarn,
     assertValidatorRejects,
+    validate,
 } from '../utils/source-validation-utils.js';
 
 describe('vector indices validator', () => {
@@ -221,6 +223,22 @@ describe('vector indices validator', () => {
         `,
             'Type "Category" does not have a field "missing".',
         );
+    });
+
+    it('rejects duplicate storedValues and offers to remove them', () => {
+        const source = `
+            type Foo @rootEntity {
+                title: String
+                category: String
+                embedding: [Float] @vectorIndex(dimension: 128, defaultNProbe: 10, maxNProbe: 50, storedValues: ["title", "category", "title"])
+            }
+        `;
+        assertValidatorRejects(source, '"title" is included multiple times in storedValues.');
+        const newSource = applyQuickFix(validate(source).messages, 'Remove duplicate');
+        expect(newSource).to.equal(
+            source.replace('["title", "category", "title"]', '["title", "category"]'),
+        );
+        assertValidatorAcceptsAndDoesNotWarn(newSource);
     });
 
     it('accepts vector index with optional parameters', () => {

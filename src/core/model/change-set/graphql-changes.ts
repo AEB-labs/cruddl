@@ -1,4 +1,4 @@
-import type { ArgumentNode, DirectiveNode, Location } from 'graphql';
+import type { ArgumentNode, DirectiveNode, Location, ValueNode } from 'graphql';
 import { MessageLocation } from '../validation/location.js';
 import { TextChange } from './change-set.js';
 import { createRemoveWholeLinesChange } from './remove-lines.js';
@@ -72,6 +72,33 @@ export function createRemoveArgumentChange(
     if (body.slice(end + separatorAfter.length).startsWith(')')) {
         // last argument: remove the separator before it instead
         start -= /,?\s*$/.exec(body.slice(0, start))![0].length;
+    } else {
+        end += separatorAfter.length;
+    }
+    return new TextChange(new MessageLocation(location.source, start, end), '');
+}
+
+/**
+ * Creates a change that removes a value from a list value (e.g. ["a", "b"]), including the comma
+ * before or after it
+ */
+export function createRemoveListValueChange(value: ValueNode): TextChange | undefined {
+    if (!value.loc) {
+        return undefined;
+    }
+    const location = MessageLocation.fromGraphQLLocation(value.loc);
+    const body = location.source.body;
+    let start = value.loc.start;
+    let end = value.loc.end;
+    const separatorAfter = /^\s*,?\s*/.exec(body.slice(end))![0];
+    if (body.slice(end + separatorAfter.length).startsWith(']')) {
+        // last value: remove the separator before it instead
+        start -= /,?\s*$/.exec(body.slice(0, start))![0].length;
+        if (body[start - 1] === '[') {
+            // only value: keep the space after the bracket
+            start = value.loc.start;
+            end += separatorAfter.length;
+        }
     } else {
         end += separatorAfter.length;
     }
