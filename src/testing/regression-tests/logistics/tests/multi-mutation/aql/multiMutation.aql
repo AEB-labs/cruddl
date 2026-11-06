@@ -84,6 +84,7 @@ RETURN (
 
 // Peak memory usage (arangodb 3.12.6): 65536 bytes
 // Peak memory usage (arangodb 3.12.11): 32768 bytes
+// Peak memory usage (arangodb 3.12.13): 65536 bytes
 
 // ----------------------------------------------------------------
 

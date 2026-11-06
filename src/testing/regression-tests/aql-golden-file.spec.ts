@@ -12,6 +12,12 @@ import {
 const [OLDEST_VERSION] = TESTED_ARANGODB_VERSIONS;
 const NEWEST_VERSION = TESTED_ARANGODB_VERSIONS[TESTED_ARANGODB_VERSIONS.length - 1];
 
+// a file in which the newest version uses 32768 bytes and all the other versions 65536 bytes
+const FILE_WITH_DIFFERENT_NEWEST_VALUE = `RETURN 1\n\n${TESTED_ARANGODB_VERSIONS.map(
+    (version) =>
+        `// Peak memory usage (arangodb ${version}): ${version === NEWEST_VERSION ? 32768 : 65536} bytes\n`,
+).join('')}`;
+
 function actualStep(query: string, peakMemoryUsage?: number): ActualTransactionStep {
     return { query, peakMemoryUsage };
 }
@@ -66,17 +72,13 @@ describe('buildUpdatedAqlGoldenFile', () => {
             goldenSteps: parseAqlGoldenFile('RETURN 1\n\n// Peak memory usage: 65536 bytes\n'),
             arangoDBVersion: NEWEST_VERSION,
         });
-        expect(content).to.equal(
-            `RETURN 1\n\n// Peak memory usage (arangodb ${OLDEST_VERSION}): 65536 bytes\n// Peak memory usage (arangodb ${NEWEST_VERSION}): 32768 bytes\n`,
-        );
+        expect(content).to.equal(FILE_WITH_DIFFERENT_NEWEST_VALUE);
     });
 
     it('collapses the values again if they no longer differ', () => {
         const content = buildUpdatedAqlGoldenFile({
             actualSteps: [actualStep('RETURN 1', 65536)],
-            goldenSteps: parseAqlGoldenFile(
-                `RETURN 1\n\n// Peak memory usage (arangodb ${OLDEST_VERSION}): 65536 bytes\n// Peak memory usage (arangodb ${NEWEST_VERSION}): 32768 bytes\n`,
-            ),
+            goldenSteps: parseAqlGoldenFile(FILE_WITH_DIFFERENT_NEWEST_VALUE),
             arangoDBVersion: NEWEST_VERSION,
         });
         expect(content).to.equal('RETURN 1\n\n// Peak memory usage: 65536 bytes\n');
