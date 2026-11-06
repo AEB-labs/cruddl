@@ -56,8 +56,8 @@ Example: only run for ArangoDB 3.12.10 up to and including 3.12.12:
 ```
 
 Both bounds are inclusive and compared as `major.minor.patch`. A suffix of the server version such
-as `-nightly.20261023` is ignored, so that nightly counts as 3.12.13. The version is read from the
-server before the tests are collected. If the server cannot be reached, nothing is ignored by
+as `-nightly.20261023` is ignored, so a 3.12.13 nightly counts as 3.12.13. The version is read from
+the server before the tests are collected. If the server cannot be reached, nothing is ignored by
 version.
 
 Example — skip in-memory and re-run migrations after seeding (required for vector indices, which

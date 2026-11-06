@@ -32,3 +32,5 @@ RETURN {
     }
   )
 }
+
+// Peak memory usage (arangodb 3.12.13): 163840 bytes

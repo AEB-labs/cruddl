@@ -4,9 +4,7 @@ import { formatWhitespaceInFile } from '../utils/format-whitespace-in-file.js';
  * The exact ArangoDB versions the regression tests are run against, in ascending order.
  *
  * Keep this in sync with the `arango-image` matrix in `.github/workflows/test.yml` (which is why
- * those images are pinned to exact patch versions). The only exception is a pinned nightly image
- * in that matrix: it is intentionally not listed here, so the peak memory usage is not checked for
- * it (and not recorded in the AQL files).
+ * those images are pinned to exact patch versions).
  *
  * The AQL we generate is the same for all these versions (unless we explicitly generate different
  * AQL for different versions), but the peak memory usage reported by ArangoDB regularly changes
@@ -15,7 +13,7 @@ import { formatWhitespaceInFile } from '../utils/format-whitespace-in-file.js';
  * versions that are not listed here are dropped when the expected files are updated, and they make
  * the tests fail until then.
  */
-export const TESTED_ARANGODB_VERSIONS: ReadonlyArray<string> = ['3.12.6', '3.12.11'];
+export const TESTED_ARANGODB_VERSIONS: ReadonlyArray<string> = ['3.12.6', '3.12.11', '3.12.13'];
 
 export const TRANSACTION_STEP_SEPARATOR =
     '\n\n// ----------------------------------------------------------------\n\n';
