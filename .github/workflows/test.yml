@@ -55,11 +55,21 @@ jobs:
 
   # tests all supported Node.js versions without ArangoDB
   test-node:
-    name: test-node (${{ matrix.node-version }})
+    name: test-node (${{ matrix.label || matrix.node-version }})
     runs-on: ubuntu-latest
+    # prerelease Node.js versions may break for reasons outside of cruddl, so they don't fail the build
+    continue-on-error: ${{ matrix.prerelease }}
     strategy:
       matrix:
         node-version: [22.x, 24.x, 26.x]
+        prerelease: [false]
+        include:
+          # Node.js 27 is only available as alpha. setup-node does not match prereleases with 27.x,
+          # so this range picks the latest 27 alpha now and the 27.x releases later. Switch to 27.x
+          # once Node.js 27.0.0 is released.
+          - node-version: '>=27.0.0-alpha <28.0.0-0'
+            label: 27 alpha
+            prerelease: true
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
