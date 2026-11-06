@@ -29,22 +29,22 @@
     },
     "./arangodb": {
       "import": {
-        "types": "./dist/esm/database/arangodb/public-api.d.ts",
-        "default": "./dist/esm/database/arangodb/public-api.js"
+        "types": "./dist/esm/arangodb/public-api.d.ts",
+        "default": "./dist/esm/arangodb/public-api.js"
       },
       "require": {
-        "types": "./dist/cjs/database/arangodb/public-api.d.ts",
-        "default": "./dist/cjs/database/arangodb/public-api.js"
+        "types": "./dist/cjs/arangodb/public-api.d.ts",
+        "default": "./dist/cjs/arangodb/public-api.js"
       }
     },
     "./inmemory": {
       "import": {
-        "types": "./dist/esm/database/inmemory/public-api.d.ts",
-        "default": "./dist/esm/database/inmemory/public-api.js"
+        "types": "./dist/esm/inmemory/public-api.d.ts",
+        "default": "./dist/esm/inmemory/public-api.js"
       },
       "require": {
-        "types": "./dist/cjs/database/inmemory/public-api.d.ts",
-        "default": "./dist/cjs/database/inmemory/public-api.js"
+        "types": "./dist/cjs/inmemory/public-api.d.ts",
+        "default": "./dist/cjs/inmemory/public-api.js"
       }
     },
     "./package.json": "./package.json"
