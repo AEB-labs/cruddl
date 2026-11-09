@@ -1,3 +1,4 @@
+WITH @@handlingUnits
 RETURN {
   "allDeliveries": (
     FOR v_delivery1
@@ -7,7 +8,18 @@ RETURN {
       FILTER (v_item1.`accessGroup` IN @var1)
       RETURN v_item1
     )
-    FILTER (LENGTH(v_delivery1.`handlingUnits`) > @var2)
+    FILTER (FIRST(
+      FOR v_item2
+      IN (
+        FOR v_item3
+        IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
+        FILTER (v_item3.`accessGroup` IN @var2)
+        FILTER v_item3._key != null
+        RETURN v_item3
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    ) > @var3)
     SORT (v_delivery1.`deliveryNumber`)
     RETURN {
       "deliveryNumber": v_delivery1.`deliveryNumber`
@@ -15,4 +27,4 @@ RETURN {
   )
 }
 
-// Peak memory usage: 32768 bytes
+// Peak memory usage: 131072 bytes

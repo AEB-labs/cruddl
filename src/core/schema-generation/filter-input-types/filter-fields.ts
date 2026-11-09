@@ -257,7 +257,11 @@ export class EmptyListFilterField implements FilterField {
             // null means do not filter
             return ConstBoolQueryNode.TRUE;
         }
-        const valueNode = new FieldQueryNode(sourceNode, this.field);
+        // relations are not stored on the object, so they need to be traversed. Other lists are
+        // stored on the object and LENGTH() can be used directly (LENGTH(null) == 0)
+        const valueNode = this.field.isRelation
+            ? createFieldNode(this.field, sourceNode)
+            : new FieldQueryNode(sourceNode, this.field);
         if (typeof filterValue !== 'boolean') {
             throw new Error(
                 `Expected value for EmptyListFilterField to be null, false or true, but is ${String(

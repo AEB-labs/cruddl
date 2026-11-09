@@ -64,12 +64,6 @@
     "data": {
       "allDeliveries": [
         {
-          "deliveryNumber": "1000173"
-        },
-        {
-          "deliveryNumber": "1000521"
-        },
-        {
           "deliveryNumber": "1000522"
         }
       ]
@@ -77,7 +71,14 @@
   },
   "relationNotEmpty": {
     "data": {
-      "allDeliveries": []
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
     }
   },
   "relationSomeCombinedWithFieldFilter": {
