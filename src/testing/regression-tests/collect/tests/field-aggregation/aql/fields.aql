@@ -38,7 +38,7 @@ RETURN {
         IN v_delivery1.`deliveryContents`[*].`items`[*][**].`itemNumber`
         FILTER v_item5 != null
         SORT v_item5
-        COLLECT v_distinct1 = v_item5
+        COLLECT v_distinct1 = v_item5 OPTIONS { method: "hash" }
         RETURN v_distinct1
       ),
       "itemCount": FIRST(
