@@ -88,8 +88,10 @@ function getQuickFixes(error: GraphQLError): ReadonlyArray<QuickFix> {
     return suggestions.map(
         (suggestion) =>
             new QuickFix({
+                kind: 'USE_SIMILAR_NAME',
                 description: `Change to "${node.kind === Kind.DIRECTIVE ? '@' : ''}${suggestion}"`,
-                isPreferred: suggestions.length === 1,
+                // even a single suggestion is only a guess, so it should be reviewed
+                isPreferred: false,
                 changeSet: new ChangeSet([new TextChange(loc, suggestion)]),
             }),
     );

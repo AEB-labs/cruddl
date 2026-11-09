@@ -82,8 +82,10 @@ function getSimilarNameQuickFixes(
     return suggestions.map(
         (suggestion) =>
             new QuickFix({
+                kind: 'USE_SIMILAR_NAME',
                 description: `Change to "${suggestion}"`,
-                isPreferred: suggestions.length === 1,
+                // even a single suggestion is only a guess, so it should be reviewed
+                isPreferred: false,
                 changeSet: new ChangeSet([createChange(suggestion)]),
             }),
     );
