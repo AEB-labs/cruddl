@@ -31,11 +31,11 @@ type Delivery
     )
     @businessObject {
     deliveryNumber: String @key @flexSearch(caseSensitive: true, includeInSearch: true)
-    status: DeliveryStatus @defaultValue(value: DRAFT) @flexSearch @suppress(infos: NO_TYPE_CHECKS)
-    isCanceled: Boolean @defaultValue(value: false) @flexSearch @suppress(infos: NO_TYPE_CHECKS)
-    isExpress: Boolean @defaultValue(value: true) @suppress(infos: NO_TYPE_CHECKS)
-    priority: Int @defaultValue(value: 2) @suppress(infos: NO_TYPE_CHECKS)
-    remarks: String @defaultValue(value: "none") @flexSearchFulltext(language: DE) @suppress(infos: NO_TYPE_CHECKS)
+    status: DeliveryStatus @defaultValue(value: DRAFT) @flexSearch
+    isCanceled: Boolean @defaultValue(value: false) @flexSearch
+    isExpress: Boolean @defaultValue(value: true)
+    priority: Int @defaultValue(value: 2)
+    remarks: String @defaultValue(value: "none") @flexSearchFulltext(language: DE)
     description: String @flexSearchFulltext(includeInSearch: true, language: EN)
     customerName: String @flexSearch(caseSensitive: false)
     internalNote: String @flexSearch(includeInSearch: false)
@@ -64,8 +64,8 @@ type Delivery
     measurements: [Float]
     quantities: [Int]
     tags: [String]
-    completion: TrackedFlag @defaultValue(value: { value: false }) @suppress(infos: NO_TYPE_CHECKS)
-    weight: AmountWithUnit @defaultValue(value: { amount: 0, unit: "kg" }) @suppress(infos: NO_TYPE_CHECKS)
+    completion: TrackedFlag @defaultValue(value: { value: false })
+    weight: AmountWithUnit @defaultValue(value: { amount: 0, unit: "kg" })
     consignee: Address @flexSearch(includeInSearch: true)
     processing: ProcessingInfo
     items: [DeliveryItem]

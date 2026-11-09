@@ -758,12 +758,26 @@ describe('Field', () => {
                 itemType,
             );
 
-            const res = validate(field);
-            expect(res.messages.length, res.toString()).to.equal(1);
-            expect(res.messages[0].severity, res.toString()).to.equal(Severity.INFO); // warning about no type checking for default values
+            expectToBeValid(field);
         });
 
-        it('accepts on value object types', () => {
+        it('warns about a value of the wrong type', () => {
+            const field = new Field(
+                {
+                    name: 'amount',
+                    typeName: 'Int',
+                    defaultValue: '123',
+                },
+                itemType,
+            );
+
+            expectSingleWarning(
+                field,
+                'Default value is not a valid Int: Int cannot represent non-integer value: "123". This will be an error in a future release.',
+            );
+        });
+
+        it('warns about a non-object value on value object types', () => {
             const field = new Field(
                 {
                     name: 'address',
@@ -773,9 +787,10 @@ describe('Field', () => {
                 deliveryType,
             );
 
-            const res = validate(field);
-            expect(res.messages.length, res.toString()).to.equal(1);
-            expect(res.messages[0].severity, res.toString()).to.equal(Severity.INFO); // warning about no type checking for default values
+            expectSingleWarning(
+                field,
+                'Default value must be an object of type "Address", but is 123. This will be an error in a future release.',
+            );
         });
     });
 
