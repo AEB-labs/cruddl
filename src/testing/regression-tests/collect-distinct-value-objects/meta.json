@@ -1,0 +1,11 @@
+{
+  // This suite documents what ArangoDB currently returns for DISTINCT and COUNT_DISTINCT over value
+  // objects that differ only in a missing vs. null field (see the comment in model.graphqls). It is
+  // not necessarily the intended behavior.
+  //
+  // The in-memory adapter returns different results (COUNT_DISTINCT counts 4 instead of 3, and the
+  // order of the DISTINCT list differs), so it is not run here.
+  "databases": {
+    "in-memory": { "ignore": true }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "createEdges": {
+    "data": {
+      "updateShipment": {
+        "shipmentNumber": "S1"
+      }
+    }
+  },
+  "handlingUnitSlots": {
+    "data": {
+      "Shipment": {
+        "handlingUnitSlots": [
+          {
+            "warehouse": "W1",
+            "level": null
+          },
+          {
+            "warehouse": "W1",
+            "level": null
+          },
+          {
+            "warehouse": "W1",
+            "level": 1
+          }
+        ],
+        "handlingUnitSlotCount": 3
+      }
+    }
+  },
+  "itemSlots": {
+    "data": {
+      "Shipment": {
+        "itemSlots": [
+          {
+            "warehouse": "W1",
+            "level": null
+          },
+          {
+            "warehouse": "W1",
+            "level": null
+          },
+          {
+            "warehouse": "W1",
+            "level": 1
+          }
+        ],
+        "itemSlotCount": 3
+      }
+    }
+  }
+}

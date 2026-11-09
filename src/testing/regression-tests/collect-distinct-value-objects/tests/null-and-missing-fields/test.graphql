@@ -1,0 +1,40 @@
+mutation createEdges {
+    updateShipment(
+        input: {
+            id: "@{ids/Shipment/S1}"
+            addHandlingUnits: [
+                "@{ids/HandlingUnit/H1}"
+                "@{ids/HandlingUnit/H2}"
+                "@{ids/HandlingUnit/H3}"
+                "@{ids/HandlingUnit/H4}"
+                "@{ids/HandlingUnit/H5}"
+            ]
+        }
+    ) {
+        shipmentNumber
+    }
+}
+
+# Documents current behavior, not necessarily intended: H1 and H3 (level missing) are one value,
+# H2 (level null) is another one, although all three look the same in GraphQL. H5 has no slot,
+# which is filtered out.
+query handlingUnitSlots {
+    Shipment(shipmentNumber: "S1") {
+        handlingUnitSlots {
+            warehouse
+            level
+        }
+        handlingUnitSlotCount
+    }
+}
+
+# same for a collect path through a list of child entities (items 1/3 vs. 2)
+query itemSlots {
+    Shipment(shipmentNumber: "S1") {
+        itemSlots {
+            warehouse
+            level
+        }
+        itemSlotCount
+    }
+}

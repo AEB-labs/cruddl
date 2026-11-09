@@ -1,0 +1,39 @@
+# This suite only documents the current behavior on ArangoDB. It is not necessarily the intended
+# behavior, just what ArangoDB does with the generated query.
+#
+# DISTINCT and COUNT_DISTINCT compare the stored value objects. GraphQL cannot tell a missing field
+# from a field that is null, but they are stored differently: a field omitted in the input is
+# missing, a field set to null is stored as null. So { warehouse: "W1" } and
+# { warehouse: "W1", level: null } are two distinct values, and both appear in the result even
+# though they look the same in GraphQL. Normalizing the values at query time would avoid this, but
+# was not done for performance reasons.
+
+type Shipment @rootEntity {
+    shipmentNumber: String @key
+    handlingUnits: [HandlingUnit] @relation
+    items: [ShipmentItem]
+
+    "relation, then a value object"
+    handlingUnitSlots: [WarehouseSlot] @collect(path: "handlingUnits.slot", aggregate: DISTINCT)
+    handlingUnitSlotCount: Int @collect(path: "handlingUnits.slot", aggregate: COUNT_DISTINCT)
+
+    "child entity list, then a value object"
+    itemSlots: [WarehouseSlot] @collect(path: "items.slot", aggregate: DISTINCT)
+    itemSlotCount: Int @collect(path: "items.slot", aggregate: COUNT_DISTINCT)
+}
+
+type HandlingUnit @rootEntity {
+    handlingUnitNumber: String @key
+    slot: WarehouseSlot
+    shipment: Shipment @relation(inverseOf: "handlingUnits")
+}
+
+type ShipmentItem @childEntity {
+    itemNumber: String
+    slot: WarehouseSlot
+}
+
+type WarehouseSlot @valueObject {
+    warehouse: String
+    level: Int
+}

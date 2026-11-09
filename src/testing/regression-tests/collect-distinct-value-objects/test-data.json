@@ -1,0 +1,25 @@
+{
+  "roles": ["users"],
+  "rootEntities": {
+    "Shipment": [
+      {
+        "@id": "S1",
+        "shipmentNumber": "S1",
+        "items": [
+          { "itemNumber": "1", "slot": { "warehouse": "W1" } },
+          { "itemNumber": "2", "slot": { "warehouse": "W1", "level": null } },
+          { "itemNumber": "3", "slot": { "warehouse": "W1" } },
+          { "itemNumber": "4", "slot": { "warehouse": "W1", "level": 1 } },
+          { "itemNumber": "5" }
+        ]
+      }
+    ],
+    "HandlingUnit": [
+      { "@id": "H1", "handlingUnitNumber": "H1", "slot": { "warehouse": "W1" } },
+      { "@id": "H2", "handlingUnitNumber": "H2", "slot": { "warehouse": "W1", "level": null } },
+      { "@id": "H3", "handlingUnitNumber": "H3", "slot": { "warehouse": "W1" } },
+      { "@id": "H4", "handlingUnitNumber": "H4", "slot": { "warehouse": "W1", "level": 1 } },
+      { "@id": "H5", "handlingUnitNumber": "H5" }
+    ]
+  }
+}
