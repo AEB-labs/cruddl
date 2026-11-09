@@ -1,0 +1,15 @@
+RETURN {
+  "allOrders": (
+    FOR v_order1
+    IN @@orders
+    SORT (v_order1.`orderNumber`)
+    RETURN {
+      "orderNumber": v_order1.`orderNumber`,
+      "items": v_order1.`items`[* FILTER (@var1 IN CURRENT.`tags`) RETURN {
+        "itemNumber": CURRENT.`itemNumber`
+      }]
+    }
+  )
+}
+
+// Peak memory usage: 32768 bytes

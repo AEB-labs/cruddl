@@ -1,0 +1,22 @@
+# Filters like `items_every: { tags_some: { equal: "a" } }` negate a quantifier on a scalar list
+# (`every` is evaluated as "no item fails the condition"). ArangoDB rewrites `!(value IN list)` to
+# `value NOT IN list`, which yields false (not true) if `list` is not an array (ArangoDB MDS-1330).
+# Child entities where the list was never set must not satisfy `tags_some`, so their parents must
+# not match `items_every`.
+
+type Order @rootEntity {
+    orderNumber: String @key
+    items: [OrderItem]
+    handlingUnits: [HandlingUnit] @relation
+}
+
+type OrderItem @childEntity {
+    itemNumber: String
+    tags: [String]
+}
+
+type HandlingUnit @rootEntity {
+    handlingUnitNumber: String @key
+    tags: [String]
+    order: Order @relation(inverseOf: "handlingUnits")
+}

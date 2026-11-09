@@ -1,0 +1,165 @@
+{
+  "createEdges": {
+    "data": {
+      "updateOrder": {
+        "orderNumber": "O1"
+      },
+      "o2": {
+        "orderNumber": "O2"
+      },
+      "o3": {
+        "orderNumber": "O3"
+      }
+    }
+  },
+  "everySome": {
+    "data": {
+      "allOrders": [
+        {
+          "orderNumber": "O1"
+        },
+        {
+          "orderNumber": "O5"
+        },
+        {
+          "orderNumber": "O6"
+        }
+      ]
+    }
+  },
+  "everySomeAndOtherField": {
+    "data": {
+      "allOrders": [
+        {
+          "orderNumber": "O1"
+        },
+        {
+          "orderNumber": "O5"
+        },
+        {
+          "orderNumber": "O6"
+        }
+      ]
+    }
+  },
+  "relationEverySome": {
+    "data": {
+      "allOrders": [
+        {
+          "orderNumber": "O1"
+        },
+        {
+          "orderNumber": "O4"
+        },
+        {
+          "orderNumber": "O5"
+        },
+        {
+          "orderNumber": "O6"
+        }
+      ]
+    }
+  },
+  "noneSome": {
+    "data": {
+      "allOrders": [
+        {
+          "orderNumber": "O4"
+        },
+        {
+          "orderNumber": "O5"
+        },
+        {
+          "orderNumber": "O6"
+        }
+      ]
+    }
+  },
+  "someNone": {
+    "data": {
+      "allOrders": [
+        {
+          "orderNumber": "O2"
+        },
+        {
+          "orderNumber": "O3"
+        },
+        {
+          "orderNumber": "O4"
+        }
+      ]
+    }
+  },
+  "everyNone": {
+    "data": {
+      "allOrders": [
+        {
+          "orderNumber": "O4"
+        },
+        {
+          "orderNumber": "O5"
+        },
+        {
+          "orderNumber": "O6"
+        }
+      ]
+    }
+  },
+  "someEqual": {
+    "data": {
+      "allOrders": [
+        {
+          "orderNumber": "O1"
+        },
+        {
+          "orderNumber": "O2"
+        },
+        {
+          "orderNumber": "O3"
+        }
+      ]
+    }
+  },
+  "listFieldFilter": {
+    "data": {
+      "allOrders": [
+        {
+          "orderNumber": "O1",
+          "items": [
+            {
+              "itemNumber": "1"
+            }
+          ]
+        },
+        {
+          "orderNumber": "O2",
+          "items": [
+            {
+              "itemNumber": "1"
+            }
+          ]
+        },
+        {
+          "orderNumber": "O3",
+          "items": [
+            {
+              "itemNumber": "1"
+            }
+          ]
+        },
+        {
+          "orderNumber": "O4",
+          "items": []
+        },
+        {
+          "orderNumber": "O5",
+          "items": []
+        },
+        {
+          "orderNumber": "O6",
+          "items": []
+        }
+      ]
+    }
+  }
+}

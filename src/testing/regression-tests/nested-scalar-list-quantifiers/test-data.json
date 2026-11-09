@@ -1,0 +1,29 @@
+{
+  "roles": ["users"],
+  "rootEntities": {
+    "Order": [
+      { "@id": "O1", "orderNumber": "O1", "items": [{ "itemNumber": "1", "tags": ["a"] }] },
+      {
+        "@id": "O2",
+        "orderNumber": "O2",
+        "items": [{ "itemNumber": "1", "tags": ["a"] }, { "itemNumber": "2" }]
+      },
+      {
+        "@id": "O3",
+        "orderNumber": "O3",
+        "items": [
+          { "itemNumber": "1", "tags": ["a"] },
+          { "itemNumber": "2", "tags": [] }
+        ]
+      },
+      { "@id": "O4", "orderNumber": "O4", "items": [{ "itemNumber": "1", "tags": ["b"] }] },
+      { "@id": "O5", "orderNumber": "O5", "items": [] },
+      { "@id": "O6", "orderNumber": "O6" }
+    ],
+    "HandlingUnit": [
+      { "@id": "H1", "handlingUnitNumber": "H1", "tags": ["a"] },
+      { "@id": "H2", "handlingUnitNumber": "H2" },
+      { "@id": "H3", "handlingUnitNumber": "H3", "tags": ["b"] }
+    ]
+  }
+}
