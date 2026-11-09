@@ -947,7 +947,9 @@ register(TraversalQueryNode, (node, context): JSFragment => {
             relationFrag = js`(${relationFrag} || [])`;
 
             if (node.fieldSegments.some((f) => f.isListSegment)) {
-                currentFrag = js`${relationFrag}.flatMap(${rootVar} => (${currentFrag}).map(obj => ({ obj: obj, root: ${rootVar} })))`;
+                // || [] because the field path can be null if it contains non-list fields (e.g. an
+                // entity extension that is not set)
+                currentFrag = js`${relationFrag}.flatMap(${rootVar} => (${currentFrag} || []).map(obj => ({ obj: obj, root: ${rootVar} })))`;
             } else {
                 currentFrag = js`${relationFrag}.map(${rootVar} => ({ obj: ${currentFrag}, root: ${rootVar} }))`;
             }
