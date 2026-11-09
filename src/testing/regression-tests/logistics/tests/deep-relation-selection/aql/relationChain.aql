@@ -1,0 +1,61 @@
+WITH @@deliveries, @@forwarders, @@handlingUnits
+RETURN {
+  "allForwarders": (
+    FOR v_forwarder1
+    IN @@forwarders
+    RETURN {
+      "name": v_forwarder1.`name`,
+      "deliveries": (
+        FOR v_delivery1
+        IN INBOUND v_forwarder1 @@deliveries_forwarder
+        FILTER v_delivery1._key != null
+        SORT (v_delivery1.`deliveryNumber`)
+        RETURN {
+          "deliveryNumber": v_delivery1.`deliveryNumber`,
+          "handlingUnits": (
+            FOR v_handlingUnit1
+            IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
+            FILTER v_handlingUnit1._key != null
+            SORT (v_handlingUnit1.`huNumber`)
+            LET v_delivery2 = FIRST((
+              FOR v_node1
+              IN INBOUND v_handlingUnit1 @@deliveries_handlingUnits
+              FILTER v_node1._key != null
+              RETURN v_node1
+            ))
+            LET v_forwarder2 = FIRST((
+              FOR v_node2
+              IN OUTBOUND v_delivery2 @@deliveries_forwarder
+              FILTER v_node2._key != null
+              RETURN v_node2
+            ))
+            RETURN {
+              "huNumber": v_handlingUnit1.`huNumber`,
+              "delivery": (IS_NULL(v_delivery2) ? null : {
+                "deliveryNumber": v_delivery2.`deliveryNumber`,
+                "forwarder": (IS_NULL(v_forwarder2) ? null : {
+                  "name": v_forwarder2.`name`,
+                  @var1: {
+                    "count": FIRST(
+                      FOR v_item1
+                      IN (
+                        FOR v_node3
+                        IN INBOUND v_forwarder2 @@deliveries_forwarder
+                        FILTER v_node3._key != null
+                        RETURN v_node3
+                      )
+                      COLLECT WITH COUNT INTO v_count1
+                      RETURN v_count1
+                    )
+                  }
+                })
+              })
+            }
+          )
+        }
+      )
+    }
+  )
+}
+
+// Peak memory usage: 262144 bytes

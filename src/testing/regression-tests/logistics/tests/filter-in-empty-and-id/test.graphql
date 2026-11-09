@@ -1,0 +1,98 @@
+# _in / _not_in with empty lists (apps pass arrays that can be empty) and ID filter operators
+# (apps filter by lists of ids a lot, but only ID equality was tested)
+
+query inEmpty {
+    allDeliveries(filter: { deliveryNumber_in: [] }) {
+        deliveryNumber
+    }
+}
+
+query notInEmpty {
+    allDeliveries(filter: { deliveryNumber_not_in: [] }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query inEmptyOnEnum {
+    allDeliveries(filter: { enumFlexSearch_in: [] }) {
+        deliveryNumber
+    }
+}
+
+query inEmptyInOr {
+    allDeliveries(
+        filter: { OR: [{ deliveryNumber_in: [] }, { deliveryNumber: "1000173" }] }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query inEmptyInChildEntityQuantifier {
+    allDeliveries(filter: { items_some: { itemNumber_in: [] } }) {
+        deliveryNumber
+    }
+}
+
+query idIn {
+    allDeliveries(
+        filter: { id_in: ["@{ids/Delivery/1}", "@{ids/Delivery/3}", "does-not-exist"] }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query idInEmpty {
+    allDeliveries(filter: { id_in: [] }) {
+        deliveryNumber
+    }
+}
+
+query idNotIn {
+    allDeliveries(filter: { id_not_in: ["@{ids/Delivery/1}"] }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query idNot {
+    allDeliveries(filter: { id_not: "@{ids/Delivery/2}" }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query idNotNull {
+    allDeliveries(filter: { id_not: null }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query idNull {
+    allDeliveries(filter: { id: null }) {
+        deliveryNumber
+    }
+}
+
+query idInWithOtherFilter {
+    allDeliveries(
+        filter: { id_in: ["@{ids/Delivery/1}", "@{ids/Delivery/2}"], processingFinished: false }
+    ) {
+        deliveryNumber
+    }
+}
+
+# reference ID filters on child entities
+query referenceIdIn {
+    allDeliveries(
+        filter: { items_some: { handlingUnit: { id_in: ["@{ids/HandlingUnit/2}"] } } }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query metaWithIdIn {
+    _allDeliveriesMeta(filter: { id_in: ["@{ids/Delivery/1}", "@{ids/Delivery/2}"] }) {
+        count
+    }
+}

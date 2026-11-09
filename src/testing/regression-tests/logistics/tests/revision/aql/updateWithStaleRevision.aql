@@ -1,0 +1,33 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (v_delivery1._key == @var1)
+    LIMIT @var2
+    RETURN v_delivery1
+  )
+  UPDATE MERGE(v_currentEntity1, { _rev: @var3 })
+  WITH MERGE({
+    "aText": @var4,
+    "updatedAt": @var5
+  }, { _revDummy: v_currentEntity1._rev })
+  IN @@deliveries
+  OPTIONS { mergeObjects: false, ignoreRevs: false }
+  RETURN NEW._key
+)
+
+// ----------------------------------------------------------------
+
+WITH @@deliveries
+LET v_delivery1 = DOCUMENT(@@deliveries, @var1)
+RETURN (IS_NULL(v_delivery1) ? null : {
+  "aText": v_delivery1.`aText`
+})
+
+// ----------------------------------------------------------------
+
+WITH @@deliveries
+RETURN {
+  "updateDelivery": @v_updateDelivery1
+}

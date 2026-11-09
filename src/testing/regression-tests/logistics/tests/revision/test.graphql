@@ -1,0 +1,56 @@
+# _revision is selected by many apps and passed back on update / delete for optimistic concurrency.
+# Its value is not deterministic, so this test only checks the conflict behavior.
+# The in-memory adapter ignores _revision.
+
+mutation updateWithStaleRevision {
+    updateDelivery(
+        input: { id: "@{ids/Delivery/1}", _revision: "stale", aText: "should not be written" }
+    ) {
+        aText
+    }
+}
+
+query afterUpdateWithStaleRevision {
+    Delivery(id: "@{ids/Delivery/1}") {
+        aText
+    }
+}
+
+mutation updateManyWithStaleRevision {
+    updateDeliveries(
+        input: [
+            { id: "@{ids/Delivery/2}", aText: "should not be written either" }
+            { id: "@{ids/Delivery/3}", _revision: "stale", aText: "should not be written" }
+        ]
+    ) {
+        aText
+    }
+}
+
+query afterUpdateManyWithStaleRevision {
+    allDeliveries(
+        filter: { id_in: ["@{ids/Delivery/2}", "@{ids/Delivery/3}"] }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+        aText
+    }
+}
+
+mutation deleteWithStaleRevision {
+    deleteDelivery(id: "@{ids/Delivery/3}", _revision: "stale") {
+        deliveryNumber
+    }
+}
+
+query afterDeleteWithStaleRevision {
+    Delivery(id: "@{ids/Delivery/3}") {
+        deliveryNumber
+    }
+}
+
+mutation updateWithNullRevision {
+    updateDelivery(input: { id: "@{ids/Delivery/1}", _revision: null, aText: "written" }) {
+        aText
+    }
+}

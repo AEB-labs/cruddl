@@ -1,0 +1,13 @@
+RETURN {
+  "allDeliveries": (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (LENGTH((IS_LIST(v_delivery1.`items`) ? v_delivery1.`items` : [])[* FILTER ((CURRENT.`quantity` >= @var1) && (CURRENT.`quantity` <= @var2))]) > 0)
+    SORT (v_delivery1.`deliveryNumber`)
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`
+    }
+  )
+}
+
+// Peak memory usage: 32768 bytes

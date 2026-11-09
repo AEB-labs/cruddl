@@ -1,0 +1,23 @@
+WITH @@handlingUnits
+RETURN {
+  @var1: {
+    "count": FIRST(
+      FOR v_item1
+      IN (
+        FOR v_delivery1
+        IN @@deliveries
+        FILTER (LENGTH((
+          FOR v_node1
+          IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
+          FILTER v_node1._key != null
+          RETURN v_node1
+        )[* FILTER (CURRENT.`huNumber` == @var2)]) > 0)
+        RETURN v_delivery1
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    )
+  }
+}
+
+// Peak memory usage: 65536 bytes

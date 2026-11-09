@@ -1,0 +1,145 @@
+# Relation quantifiers and _empty only consider related objects the user can see: a relation whose
+# related objects are all hidden by access restrictions counts as empty.
+#
+# Edges (created as "users", who can see everything):
+#   D1 -> H1, H2
+#   D2 -> H2, H3
+#   D3 -> H5
+#   D4 -> (none)
+#
+# The role s1d2d3h1h3h4o2o3 can see D2, D3 and H1, H3, H4.
+# The claims of the byAccessField operations allow D2, D3 and H1, H3, H4 (via location.identCode).
+
+mutation createEdges {
+    d1: updateDelivery(
+        input: {
+            id: "@{ids/Delivery/1}"
+            addHandlingUnits: ["@{ids/HandlingUnit/1}", "@{ids/HandlingUnit/2}"]
+        }
+    ) {
+        deliveryNumber
+    }
+    d2: updateDelivery(
+        input: {
+            id: "@{ids/Delivery/2}"
+            addHandlingUnits: ["@{ids/HandlingUnit/2}", "@{ids/HandlingUnit/3}"]
+        }
+    ) {
+        deliveryNumber
+    }
+    d3: updateDelivery(
+        input: { id: "@{ids/Delivery/3}", addHandlingUnits: ["@{ids/HandlingUnit/5}"] }
+    ) {
+        deliveryNumber
+    }
+}
+
+# everything is visible for comparison
+query unrestrictedEmpty {
+    allDeliveries(filter: { handlingUnits_empty: true }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+# D3 only has the hidden H5, so it counts as empty
+query accessGroupEmpty {
+    allDeliveries(filter: { handlingUnits_empty: true }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query accessGroupNotEmpty {
+    allDeliveries(filter: { handlingUnits_empty: false }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+# H2 is hidden, so D2 does not match although it has H2
+query accessGroupSomeHidden {
+    allDeliveries(
+        filter: { handlingUnits_some: { handlingUnitNumber: "H2" } }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query accessGroupSomeVisible {
+    allDeliveries(
+        filter: { handlingUnits_some: { handlingUnitNumber: "H3" } }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query accessGroupSomeEmptyFilter {
+    allDeliveries(filter: { handlingUnits_some: {} }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query accessGroupNone {
+    allDeliveries(
+        filter: { handlingUnits_none: { handlingUnitNumber: "H3" } }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+# the hidden H2 of D2 does not violate the condition; D3 matches because it has no visible HUs
+query accessGroupEvery {
+    allDeliveries(
+        filter: { handlingUnits_every: { handlingUnitNumber_in: ["H1", "H3"] } }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query accessGroupEmptyInMeta {
+    _allDeliveriesMeta(filter: { handlingUnits_empty: true }) {
+        count
+    }
+}
+
+# inverse direction: H2 is related to D1 and D2, but only D2 is visible
+query accessGroupInverseSome {
+    allHandlingUnits(
+        filter: { deliveries_some: { deliveryNumber: "D1" } }
+        orderBy: handlingUnitNumber_ASC
+    ) {
+        handlingUnitNumber
+    }
+}
+
+query accessGroupInverseEmpty {
+    allHandlingUnits(filter: { deliveries_empty: true }, orderBy: handlingUnitNumber_ASC) {
+        handlingUnitNumber
+    }
+}
+
+query accessFieldEmpty {
+    allDeliveries(filter: { handlingUnits_empty: true }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query accessFieldSomeHidden {
+    allDeliveries(
+        filter: { handlingUnits_some: { handlingUnitNumber: "H2" } }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query accessFieldEvery {
+    allDeliveries(
+        filter: { handlingUnits_every: { handlingUnitNumber_in: ["H1", "H3"] } }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}

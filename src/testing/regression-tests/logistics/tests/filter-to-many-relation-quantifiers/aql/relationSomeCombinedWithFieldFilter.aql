@@ -1,0 +1,18 @@
+WITH @@handlingUnits
+RETURN {
+  "allDeliveries": (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER ((LENGTH((
+      FOR v_node1
+      IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
+      FILTER v_node1._key != null
+      RETURN v_node1
+    )[* FILTER (CURRENT.`huNumber` IN @var1)]) > 0) && (v_delivery1.`processingFinished` == @var2))
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`
+    }
+  )
+}
+
+// Peak memory usage: 98304 bytes

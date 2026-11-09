@@ -1,0 +1,28 @@
+WITH @@deliveries, @@handlingUnits
+RETURN {
+  "allForwarders": (
+    FOR v_forwarder1
+    IN @@forwarders
+    SORT (v_forwarder1.`name`)
+    RETURN {
+      "name": v_forwarder1.`name`,
+      "deliveries": (
+        FOR v_delivery1
+        IN INBOUND v_forwarder1 @@deliveries_forwarder
+        FILTER (LENGTH((
+          FOR v_node1
+          IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
+          FILTER v_node1._key != null
+          RETURN v_node1
+        )[* FILTER (CURRENT.`huNumber` >= UPPER(@var1) && CURRENT.`huNumber` < LOWER(@var2)) && (LEFT(CURRENT.`huNumber`, LENGTH(@var3)) == @var4)]) > 0)
+        FILTER v_delivery1._key != null
+        SORT (v_delivery1.`deliveryNumber`)  DESC
+        RETURN {
+          "deliveryNumber": v_delivery1.`deliveryNumber`
+        }
+      )
+    }
+  )
+}
+
+// Peak memory usage: 98304 bytes

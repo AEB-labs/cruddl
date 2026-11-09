@@ -1,0 +1,62 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (v_delivery1._key == @var1)
+    LIMIT @var2
+    RETURN v_delivery1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "aText": @var3,
+    "updatedAt": @var4
+  }
+  IN @@deliveries
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
+
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER (v_delivery1._key == @var1)
+    LIMIT @var2
+    RETURN v_delivery1
+  )
+  UPDATE MERGE(v_currentEntity1, { _rev: @var3 })
+  WITH MERGE({
+    "aText": @var4,
+    "updatedAt": @var5
+  }, { _revDummy: v_currentEntity1._rev })
+  IN @@deliveries
+  OPTIONS { mergeObjects: false, ignoreRevs: false }
+  RETURN NEW._key
+)
+
+// ----------------------------------------------------------------
+
+WITH @@deliveries
+RETURN (
+  FOR v_delivery1
+  IN [
+    DOCUMENT(@@deliveries, @var1),
+    DOCUMENT(@@deliveries, @var2)
+  ]
+  RETURN {
+    "aText": v_delivery1.`aText`
+  }
+)
+
+// ----------------------------------------------------------------
+
+WITH @@deliveries
+RETURN {
+  "updateDeliveries": @v_updateDeliveries1
+}

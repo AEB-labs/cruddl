@@ -1,0 +1,17 @@
+RETURN {
+  @var1: {
+    "count": FIRST(
+      FOR v_item1
+      IN (
+        FOR v_delivery1
+        IN @@deliveries
+        FILTER ((v_delivery1.`deliveryNumber` >= UPPER(@var2) && v_delivery1.`deliveryNumber` < LOWER(@var3)) && (LEFT(v_delivery1.`deliveryNumber`, LENGTH(@var4)) == @var5) && (v_delivery1.`aNumber` > @var6))
+        RETURN v_delivery1
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    )
+  }
+}
+
+// Peak memory usage: 32768 bytes

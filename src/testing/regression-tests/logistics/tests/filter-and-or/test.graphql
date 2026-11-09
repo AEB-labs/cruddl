@@ -1,0 +1,103 @@
+# AND is used by many apps (e.g. cloud-ui merges base filters and UI filters with AND)
+
+query andTopLevel {
+    allDeliveries(
+        filter: { AND: [{ deliveryNumber_starts_with: "1000" }, { aNumber_gt: 200 }] }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query andWithSiblingFields {
+    allDeliveries(
+        filter: { deliveryNumber_not: "1000522", AND: [{ aNumber_lt: 2000 }] }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query andSingleItem {
+    allDeliveries(filter: { AND: [{ deliveryNumber: "1000173" }] }) {
+        deliveryNumber
+    }
+}
+
+# an empty AND does not restrict anything
+query andEmpty {
+    allDeliveries(filter: { AND: [] }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+# an empty OR does not match anything
+query orEmpty {
+    allDeliveries(filter: { OR: [] }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query orInAnd {
+    allDeliveries(
+        filter: {
+            AND: [
+                { OR: [{ deliveryNumber: "1000173" }, { deliveryNumber: "1000521" }] }
+                { OR: [{ aNumber: 1234 }, { aNumber: 1000521 }] }
+            ]
+        }
+    ) {
+        deliveryNumber
+    }
+}
+
+query andInOr {
+    allDeliveries(
+        filter: {
+            OR: [
+                { AND: [{ deliveryNumber: "1000173" }, { aNumber: 123 }] }
+                { AND: [{ deliveryNumber: "1000521" }, { aNumber: 1 }] }
+                { AND: [{ deliveryNumber: "1000522" }, { aNumber_gte: 1000000 }] }
+            ]
+        }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query nestedDepth3 {
+    allDeliveries(
+        filter: {
+            AND: [
+                {
+                    OR: [
+                        { AND: [{ deliveryNumber_starts_with: "1000" }, { aNumber_lt: 1000 }] }
+                        { AND: [{ deliveryNumber_ends_with: "22" }, { sometimesNull: null }] }
+                    ]
+                }
+                { deliveryNumber_not: "1000521" }
+            ]
+        }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query andInChildEntityQuantifier {
+    allDeliveries(
+        filter: { items_some: { AND: [{ quantity_gte: 8 }, { quantity_lte: 13 }] } }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query andInMeta {
+    _allDeliveriesMeta(
+        filter: { AND: [{ deliveryNumber_starts_with: "1000" }, { aNumber_gt: 200 }] }
+    ) {
+        count
+    }
+}

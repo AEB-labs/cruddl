@@ -1,0 +1,46 @@
+RETURN (
+  FOR v_currentEntity1
+  IN (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER ((v_delivery1.`deliveryNumber` >= UPPER(@var1) && v_delivery1.`deliveryNumber` < LOWER(@var2)) && (LEFT(v_delivery1.`deliveryNumber`, LENGTH(@var3)) == @var4) && (v_delivery1.`aNumber` > @var5))
+    RETURN v_delivery1
+  )
+  UPDATE v_currentEntity1
+  WITH {
+    "aText": @var6,
+    "updatedAt": @var7
+  }
+  IN @@deliveries
+  OPTIONS { mergeObjects: false }
+  RETURN NEW._key
+)
+
+// Peak memory usage: 65536 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@deliveries
+RETURN (
+  FOR v_delivery1
+  IN (
+    FOR v_id1
+    IN @v_updatedIds1
+    RETURN DOCUMENT(@@deliveries, v_id1)
+  )
+  RETURN {
+    "deliveryNumber": v_delivery1.`deliveryNumber`,
+    "aText": v_delivery1.`aText`
+  }
+)
+
+// Peak memory usage: 32768 bytes
+
+// ----------------------------------------------------------------
+
+WITH @@deliveries
+RETURN {
+  "updateAllDeliveries": @v_updateAllDeliveries1
+}
+
+// Peak memory usage: 0 bytes

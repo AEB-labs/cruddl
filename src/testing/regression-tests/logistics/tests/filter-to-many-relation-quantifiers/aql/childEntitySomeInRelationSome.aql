@@ -1,0 +1,25 @@
+WITH @@deliveries
+RETURN {
+  "allForwarders": (
+    FOR v_forwarder1
+    IN @@forwarders
+    FILTER (FIRST(
+      FOR v_item1
+      IN (
+        FOR v_deliveries1
+        IN INBOUND v_forwarder1 @@deliveries_forwarder
+        FILTER (v_deliveries1.`items`[*].`quantity` ANY > @var1)
+        FILTER v_deliveries1._key != null
+        RETURN v_deliveries1
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    ) > @var2)
+    SORT (v_forwarder1.`name`)
+    RETURN {
+      "name": v_forwarder1.`name`
+    }
+  )
+}
+
+// Peak memory usage: 131072 bytes

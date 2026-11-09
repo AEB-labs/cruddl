@@ -1,0 +1,23 @@
+LET v_delivery1 = FIRST((
+  FOR v_delivery2
+  IN @@deliveries
+  FILTER (v_delivery2._key == @var1)
+  LIMIT @var2
+  RETURN v_delivery2
+))
+RETURN {
+  "Delivery": (IS_NULL(v_delivery1) ? null : {
+    "items": (
+      FOR v_deliveryItem1
+      IN v_delivery1.`items`[*]
+      FILTER (v_deliveryItem1.`quantity` >= @var3)
+      SORT (v_deliveryItem1.`itemNumber`)  DESC
+      LIMIT @var4
+      RETURN {
+        "itemNumber": v_deliveryItem1.`itemNumber`
+      }
+    )
+  })
+}
+
+// Peak memory usage: 32768 bytes

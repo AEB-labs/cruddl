@@ -1,0 +1,133 @@
+# Quantifiers on to-n relations (apps use _some / _none / _every / _empty on relations, but only
+# quantifiers on child entities and scalar lists were tested)
+
+mutation setUp {
+    hu1: updateHandlingUnit(input: { id: "@{ids/HandlingUnit/1}", delivery: "@{ids/Delivery/1}" }) {
+        huNumber
+    }
+    hu2: updateHandlingUnit(input: { id: "@{ids/HandlingUnit/2}", delivery: "@{ids/Delivery/1}" }) {
+        huNumber
+    }
+    hu3: updateHandlingUnit(input: { id: "@{ids/HandlingUnit/3}", delivery: "@{ids/Delivery/2}" }) {
+        huNumber
+    }
+    forwarder: createForwarder(
+        input: { name: "F1", deliveries: ["@{ids/Delivery/1}", "@{ids/Delivery/2}"] }
+    ) {
+        name
+    }
+    forwarder2: createForwarder(input: { name: "F2", deliveries: ["@{ids/Delivery/3}"] }) {
+        name
+    }
+}
+
+query relationSome {
+    allDeliveries(filter: { handlingUnits_some: { huNumber: "1000014" } }) {
+        deliveryNumber
+    }
+}
+
+query relationSomeWithOr {
+    allDeliveries(
+        filter: { handlingUnits_some: { OR: [{ huNumber: "1000014" }, { huNumber: "1000021" }] } }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query relationNone {
+    allDeliveries(
+        filter: { handlingUnits_none: { huNumber: "1000007" } }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+# Delivery 3 has no handling units, so _every is vacuously true for it
+query relationEvery {
+    allDeliveries(
+        filter: { handlingUnits_every: { huNumber_starts_with: "100000" } }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query relationEmpty {
+    allDeliveries(filter: { handlingUnits_empty: true }) {
+        deliveryNumber
+    }
+}
+
+query relationNotEmpty {
+    allDeliveries(filter: { handlingUnits_empty: false }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query relationSomeCombinedWithFieldFilter {
+    allDeliveries(
+        filter: {
+            processingFinished: true
+            handlingUnits_some: { huNumber_in: ["1000007", "1000021"] }
+        }
+    ) {
+        deliveryNumber
+    }
+}
+
+# to-n relation inside to-n relation
+query relationSomeInRelationSome {
+    allForwarders(
+        filter: { deliveries_some: { handlingUnits_some: { huNumber: "1000021" } } }
+        orderBy: name_ASC
+    ) {
+        name
+    }
+}
+
+query relationNoneInRelationSome {
+    allForwarders(filter: { deliveries_some: { handlingUnits_none: {} } }, orderBy: name_ASC) {
+        name
+    }
+}
+
+# child entity quantifier inside to-n relation quantifier
+query childEntitySomeInRelationSome {
+    allForwarders(
+        filter: { deliveries_some: { items_some: { quantity_gt: 15 } } }
+        orderBy: name_ASC
+    ) {
+        name
+    }
+}
+
+# to-1 relation back inside to-n relation quantifier
+query relationSomeWithToOneRelation {
+    allDeliveries(
+        filter: { handlingUnits_some: { delivery: { forwarder: { name: "F1" } } } }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query relationSomeInMeta {
+    _allDeliveriesMeta(filter: { handlingUnits_some: { huNumber: "1000014" } }) {
+        count
+    }
+}
+
+query nestedRelationListWithFilter {
+    allForwarders(orderBy: name_ASC) {
+        name
+        deliveries(
+            filter: { handlingUnits_some: { huNumber_starts_with: "10000" } }
+            orderBy: deliveryNumber_DESC
+        ) {
+            deliveryNumber
+        }
+    }
+}
