@@ -126,6 +126,19 @@ export abstract class AQLFragment {
         return false;
     }
 
+    /**
+     * Whether this fragment contains a subquery (a fragment created with aql.subquery() or marked
+     * with aql.markAsSubquery())
+     *
+     * Subqueries must not be used within array inline expressions ([* FILTER ...], [* RETURN ...]):
+     * ArangoDB evaluates them before the enclosing statement, where CURRENT is not defined. This
+     * results in internal errors ("variable not found") or, if the optimizer moves the filter into a
+     * collection scan, in wrong results.
+     */
+    containsSubquery(): boolean {
+        return false;
+    }
+
     abstract toStringWithContext(context: AQLCodeBuildingContext): string;
     abstract toColoredStringWithContext(context: AQLCodeBuildingContext): string;
     abstract getCodeWithContext(context: AQLCodeBuildingContext): string;
@@ -239,12 +252,21 @@ export class AQLCollection extends AQLFragment {
 }
 
 export class AQLCompoundFragment extends AQLFragment {
+    private _containsSubquery: boolean | undefined;
+
     constructor(public readonly fragments: ReadonlyArray<AQLFragment>) {
         super();
     }
 
     isEmpty() {
         return this.fragments.length == 0 || this.fragments.every((fr) => fr.isEmpty());
+    }
+
+    containsSubquery(): boolean {
+        if (this._containsSubquery === undefined) {
+            this._containsSubquery = this.fragments.some((fr) => fr.containsSubquery());
+        }
+        return this._containsSubquery;
     }
 
     toStringWithContext(context: AQLCodeBuildingContext): string {
@@ -274,6 +296,10 @@ export class AQLIndentationFragment extends AQLFragment {
         return this.fragment.isEmpty();
     }
 
+    containsSubquery(): boolean {
+        return this.fragment.containsSubquery();
+    }
+
     toStringWithContext(context: AQLCodeBuildingContext): string {
         context.indentationLevel++;
         const result = INDENTATION + this.fragment.toStringWithContext(context);
@@ -297,6 +323,36 @@ export class AQLIndentationFragment extends AQLFragment {
         const code = INDENTATION + this.fragment.getCodeWithContext(context);
         context.indentationLevel--;
         return code;
+    }
+}
+
+/**
+ * Wraps a fragment that is a subquery (including its parentheses) without changing how it is
+ * rendered, so containsSubquery() can detect it
+ */
+export class AQLSubqueryFragment extends AQLFragment {
+    constructor(public readonly fragment: AQLFragment) {
+        super();
+    }
+
+    isEmpty() {
+        return this.fragment.isEmpty();
+    }
+
+    containsSubquery(): boolean {
+        return true;
+    }
+
+    toStringWithContext(context: AQLCodeBuildingContext): string {
+        return this.fragment.toStringWithContext(context);
+    }
+
+    toColoredStringWithContext(context: AQLCodeBuildingContext): string {
+        return this.fragment.toColoredStringWithContext(context);
+    }
+
+    getCodeWithContext(context: AQLCodeBuildingContext): string {
+        return this.fragment.getCodeWithContext(context);
     }
 }
 
@@ -367,6 +423,22 @@ export namespace aql {
 
     export function indent(fragment: AQLFragment) {
         return new AQLIndentationFragment(fragment);
+    }
+
+    /**
+     * Creates a subquery: the given lines, indented and wrapped in parentheses
+     */
+    export function subquery(...lines: ReadonlyArray<AQLFragment>): AQLFragment {
+        return markAsSubquery(aql.lines(aql`(`, aql.indent(aql.lines(...lines)), aql`)`));
+    }
+
+    /**
+     * Marks a fragment as a subquery (it should include the parentheses) without changing it
+     *
+     * Use aql.subquery() instead if possible. This is for subqueries that are written inline.
+     */
+    export function markAsSubquery(fragment: AQLFragment): AQLFragment {
+        return new AQLSubqueryFragment(fragment);
     }
 
     export function variable(label?: string): AQLFragment {

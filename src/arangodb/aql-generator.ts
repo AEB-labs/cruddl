@@ -435,7 +435,7 @@ namespace aqlExt {
     }
 
     export function subquery(...content: AQLFragment[]): AQLFragment {
-        return aql.lines(aql`(`, aql.indent(aql.lines(...content)), aql`)`);
+        return aql.subquery(...content);
     }
 
     export function firstOfSubquery(...content: AQLFragment[]): AQLFragment {
@@ -1257,7 +1257,10 @@ register(OperatorWithAnalyzerQueryNode, (node, context) => {
                 return aql`(${lhs} IN ${rhs})`;
             }
             const loopVar = aql.variable(`token`);
-            return aql`ANALYZER( ${lhs} IN ( FOR ${loopVar} IN TOKENS(${rhs} , ${analyzer}) RETURN ${loopVar}[0] ), ${analyzer} )`;
+            const tokensFrag = aql.markAsSubquery(
+                aql`( FOR ${loopVar} IN TOKENS(${rhs} , ${analyzer}) RETURN ${loopVar}[0] )`,
+            );
+            return aql`ANALYZER( ${lhs} IN ${tokensFrag}, ${analyzer} )`;
         case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_ANY_WORD:
             return aql`ANALYZER( ${lhs} IN TOKENS(${rhs}, ${analyzer}),${analyzer})`;
         case BinaryOperatorWithAnalyzer.FLEX_SEARCH_CONTAINS_PREFIX:
@@ -1495,12 +1498,12 @@ register(QuantifierFilterNode, (node, context) => {
 
     // an inline filter avoids a subquery, but CURRENT only refers to the innermost item, so it can only be used
     // if the condition does not contain nested list operations
-    if (isSimpleExpressionNode(conditionNode)) {
+    // (the containsSubquery() check is a safeguard in case isSimpleExpressionNode() misses a case)
+    const conditionFrag = isSimpleExpressionNode(conditionNode)
+        ? processNode(conditionNode, context.bindVariable(node.itemVariable, aql`CURRENT`))
+        : undefined;
+    if (conditionFrag && !conditionFrag.containsSubquery()) {
         const listFrag = processNode(node.listNode, context);
-        const conditionFrag = processNode(
-            conditionNode,
-            context.bindVariable(node.itemVariable, aql`CURRENT`),
-        );
         switch (quantifier) {
             case 'some':
                 return aql`(LENGTH(${listFrag}[* FILTER ${conditionFrag}]) > 0)`;
@@ -3000,6 +3003,25 @@ interface FieldTraversalFragment {
     readonly maxCount?: number;
 }
 
+/**
+ * Throws if the given fragment that will be used within an array inline expression contains a
+ * subquery
+ *
+ * ArangoDB moves subqueries in expressions before the enclosing statement, where CURRENT is not
+ * defined. This results in internal errors ("variable not found") or, if a filter is moved into a
+ * collection scan, in wrong results. Callers need to decide beforehand whether an array expansion
+ * can be used (see supportedAsArrayExpansion()). This check makes sure a wrong decision is caught
+ * here instead of in ArangoDB.
+ */
+function assertNoSubqueryInArrayExpansion(fragment: AQLFragment, clause: string): AQLFragment {
+    if (fragment.containsSubquery()) {
+        throw new Error(
+            `Internal error: the ${clause} expression of an array expansion contains a subquery, which is not supported by ArangoDB`,
+        );
+    }
+    return fragment;
+}
+
 function getFieldTraversalFragment({
     segments,
     sourceFrag,
@@ -3083,8 +3105,12 @@ function getFieldTraversalFragment({
                 // access at the end: source.items[*].field
                 const suffixFrag = itemAccessFrag && !mapFrag ? itemAccessFrag : aql``;
 
-                const returnExprFrag = mapFrag ? aql` RETURN ${mapFrag(itemFrag)}` : aql``;
-                const filterExprFrag = filterFrag ? aql` FILTER ${filterFrag(itemFrag)}` : aql``;
+                const returnExprFrag = mapFrag
+                    ? aql` RETURN ${assertNoSubqueryInArrayExpansion(mapFrag(itemFrag), 'RETURN')}`
+                    : aql``;
+                const filterExprFrag = filterFrag
+                    ? aql` FILTER ${assertNoSubqueryInArrayExpansion(filterFrag(itemFrag), 'FILTER')}`
+                    : aql``;
                 const limitExprFrag = limitFrag ? aql` ${limitFrag}` : aql``;
                 return aql`${frag}${operatorPrefixFrag}${filterExprFrag}${limitExprFrag}${returnExprFrag}${operatorSuffixFrag}${suffixFrag}`;
             } else {
@@ -3322,11 +3348,13 @@ function getFullIDFromKeysFragment(
     context: QueryContext,
 ): AQLFragment {
     const idVar = aql.variable('id');
-    return aql`(FOR ${idVar} IN ${keysFragment} RETURN ${getFullIDFromKeyFragment(
-        idVar,
-        rootEntityType,
-        context,
-    )})`;
+    return aql.markAsSubquery(
+        aql`(FOR ${idVar} IN ${keysFragment} RETURN ${getFullIDFromKeyFragment(
+            idVar,
+            rootEntityType,
+            context,
+        )})`,
+    );
 }
 
 function formatEdge(
