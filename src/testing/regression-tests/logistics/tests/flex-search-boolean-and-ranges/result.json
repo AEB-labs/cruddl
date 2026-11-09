@@ -1,0 +1,101 @@
+{
+  "setUp": {
+    "data": {
+      "d1": {
+        "deliveryNumber": "1000173"
+      },
+      "d2": {
+        "deliveryNumber": "1000521"
+      }
+    }
+  },
+  "flexOr": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "flexOrWithSiblings": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "flexAnd": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "flexOrInAnd": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "flexLocalDateRange": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "flexLocalDateEquals": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "flexOffsetDateTimeRange": {
+    "data": {
+      "flexSearchDeliveries": []
+    }
+  },
+  "flexOrWithPostFilter": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "flexPageWithCounts": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ],
+      "total": {
+        "count": 3
+      },
+      "filtered": {
+        "count": 3
+      }
+    }
+  }
+}

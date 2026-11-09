@@ -1,0 +1,13 @@
+RETURN {
+  "allDeliveries": (
+    FOR v_delivery1
+    IN @@deliveries
+    FILTER ((((v_delivery1.`deliveryNumber` >= UPPER(@var1) && v_delivery1.`deliveryNumber` < LOWER(@var2)) && (LEFT(v_delivery1.`deliveryNumber`, LENGTH(@var3)) == @var4) && (v_delivery1.`aNumber` < @var5)) || ((RIGHT(v_delivery1.`deliveryNumber`, LENGTH(@var6)) == @var7) && (v_delivery1.`sometimesNull` == @var8))) && (v_delivery1.`deliveryNumber` != @var9))
+    SORT (v_delivery1.`deliveryNumber`)
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`
+    }
+  )
+}
+
+// Peak memory usage: 65536 bytes

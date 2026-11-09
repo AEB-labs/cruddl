@@ -1,0 +1,17 @@
+RETURN {
+  @var1: {
+    "count": FIRST(
+      FOR v_item1
+      IN (
+        FOR v_delivery1
+        IN @@deliveries
+        FILTER (v_delivery1._key IN @var2)
+        RETURN v_delivery1
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    )
+  }
+}
+
+// Peak memory usage: 0 bytes

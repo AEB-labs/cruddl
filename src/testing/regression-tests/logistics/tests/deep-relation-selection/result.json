@@ -1,0 +1,198 @@
+{
+  "setUp": {
+    "data": {
+      "hu1": {
+        "huNumber": "1000007"
+      },
+      "hu2": {
+        "huNumber": "1000014"
+      },
+      "hu3": {
+        "huNumber": "1000021"
+      },
+      "forwarder": {
+        "name": "F1"
+      }
+    }
+  },
+  "relationChain": {
+    "data": {
+      "allForwarders": [
+        {
+          "name": "DHL",
+          "deliveries": []
+        },
+        {
+          "name": "F1",
+          "deliveries": [
+            {
+              "deliveryNumber": "1000173",
+              "handlingUnits": [
+                {
+                  "huNumber": "1000007",
+                  "delivery": {
+                    "deliveryNumber": "1000173",
+                    "forwarder": {
+                      "name": "F1",
+                      "_deliveriesMeta": {
+                        "count": 2
+                      }
+                    }
+                  }
+                },
+                {
+                  "huNumber": "1000014",
+                  "delivery": {
+                    "deliveryNumber": "1000173",
+                    "forwarder": {
+                      "name": "F1",
+                      "_deliveriesMeta": {
+                        "count": 2
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "deliveryNumber": "1000521",
+              "handlingUnits": [
+                {
+                  "huNumber": "1000021",
+                  "delivery": {
+                    "deliveryNumber": "1000521",
+                    "forwarder": {
+                      "name": "F1",
+                      "_deliveriesMeta": {
+                        "count": 2
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "mixedChainWithArguments": {
+    "data": {
+      "allForwarders": [
+        {
+          "name": "DHL",
+          "deliveries": []
+        },
+        {
+          "name": "F1",
+          "deliveries": [
+            {
+              "deliveryNumber": "1000521",
+              "items": []
+            },
+            {
+              "deliveryNumber": "1000173",
+              "items": [
+                {
+                  "itemNumber": "1001",
+                  "handlingUnit": {
+                    "huNumber": "1000007",
+                    "delivery": {
+                      "deliveryNumber": "1000173",
+                      "handlingUnits": [
+                        {
+                          "huNumber": "1000014"
+                        }
+                      ],
+                      "_handlingUnitsMeta": {
+                        "count": 2
+                      }
+                    }
+                  },
+                  "notes": [
+                    {
+                      "text": "123",
+                      "priority": 3
+                    },
+                    {
+                      "text": "othernote",
+                      "priority": 3
+                    }
+                  ],
+                  "_notesMeta": {
+                    "count": 2
+                  }
+                },
+                {
+                  "itemNumber": "1002",
+                  "handlingUnit": {
+                    "huNumber": "1000014",
+                    "delivery": {
+                      "deliveryNumber": "1000173",
+                      "handlingUnits": [
+                        {
+                          "huNumber": "1000014"
+                        }
+                      ],
+                      "_handlingUnitsMeta": {
+                        "count": 2
+                      }
+                    }
+                  },
+                  "notes": [
+                    {
+                      "text": "note-high",
+                      "priority": 4
+                    },
+                    {
+                      "text": "othernote-1002",
+                      "priority": 2
+                    }
+                  ],
+                  "_notesMeta": {
+                    "count": 0
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "valueObjectListWithArguments": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "contentInfo": [
+            {
+              "translation": "Kerosin 1000L"
+            }
+          ],
+          "_contentInfoMeta": {
+            "count": 1
+          }
+        },
+        {
+          "deliveryNumber": "1000521",
+          "contentInfo": [
+            {
+              "translation": "Hartplastik-Bausteine"
+            }
+          ],
+          "_contentInfoMeta": {
+            "count": 0
+          }
+        }
+      ]
+    }
+  },
+  "relationListSkipBeyondEnd": {
+    "data": {
+      "Delivery": {
+        "handlingUnits": []
+      }
+    }
+  }
+}

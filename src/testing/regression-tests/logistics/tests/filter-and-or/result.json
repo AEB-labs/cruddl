@@ -1,0 +1,110 @@
+{
+  "andTopLevel": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "andWithSiblingFields": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "andSingleItem": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "andEmpty": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "orEmpty": {
+    "data": {
+      "allDeliveries": []
+    }
+  },
+  "orInAnd": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "andInOr": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "nestedDepth3": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "andInChildEntityQuantifier": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "andInMeta": {
+    "data": {
+      "_allDeliveriesMeta": {
+        "count": 2
+      }
+    }
+  }
+}

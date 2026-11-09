@@ -1,0 +1,18 @@
+RETURN {
+  "allHandlingUnits": (
+    FOR v_handlingUnit1
+    IN (
+      FOR v_item1
+      IN @@handlingUnits
+      FILTER (v_item1.`accessGroup` IN @var1)
+      RETURN v_item1
+    )
+    FILTER (LENGTH(v_handlingUnit1.`deliveries`) == @var2)
+    SORT (v_handlingUnit1.`handlingUnitNumber`)
+    RETURN {
+      "handlingUnitNumber": v_handlingUnit1.`handlingUnitNumber`
+    }
+  )
+}
+
+// Peak memory usage: 32768 bytes

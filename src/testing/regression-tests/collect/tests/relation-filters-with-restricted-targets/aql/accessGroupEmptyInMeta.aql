@@ -1,0 +1,22 @@
+RETURN {
+  @var1: {
+    "count": FIRST(
+      FOR v_item1
+      IN (
+        FOR v_delivery1
+        IN (
+          FOR v_item2
+          IN @@deliveries
+          FILTER (v_item2.`accessGroup` IN @var2)
+          RETURN v_item2
+        )
+        FILTER (LENGTH(v_delivery1.`handlingUnits`) == @var3)
+        RETURN v_delivery1
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    )
+  }
+}
+
+// Peak memory usage: 0 bytes

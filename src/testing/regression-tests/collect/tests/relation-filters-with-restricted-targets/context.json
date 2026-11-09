@@ -1,0 +1,23 @@
+{
+  "authRoles": ["s1d2d3h1h3h4o2o3"],
+  "operations": {
+    "createEdges": {
+      "authRoles": ["users"]
+    },
+    "unrestrictedEmpty": {
+      "authRoles": ["users"]
+    },
+    "accessFieldEmpty": {
+      "authRoles": ["byAccessField"],
+      "claims": { "cus_locationIdentCode": ["licD2", "licD3", "licH1", "licH3", "licH4"] }
+    },
+    "accessFieldSomeHidden": {
+      "authRoles": ["byAccessField"],
+      "claims": { "cus_locationIdentCode": ["licD2", "licD3", "licH1", "licH3", "licH4"] }
+    },
+    "accessFieldEvery": {
+      "authRoles": ["byAccessField"],
+      "claims": { "cus_locationIdentCode": ["licD2", "licD3", "licH1", "licH3", "licH4"] }
+    }
+  }
+}

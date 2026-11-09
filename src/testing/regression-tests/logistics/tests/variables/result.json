@@ -1,0 +1,268 @@
+{
+  "wholeFilterVariable": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "nullFilterVariable": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "missingFilterVariable": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "valueVariable": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "nullValueVariable": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "missingValueVariable": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "listVariable": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "singleValueForListVariable": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "emptyListVariable": {
+    "data": {
+      "allDeliveries": []
+    }
+  },
+  "idListVariable": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "enumVariable": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "nestedFilterVariable": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "orListVariable": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "paginationVariables": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "nullPaginationVariables": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "singleEntityVariable": {
+    "data": {
+      "Delivery": {
+        "deliveryNumber": "1000521"
+      }
+    }
+  },
+  "nestedListArgumentVariables": {
+    "data": {
+      "Delivery": {
+        "items": [
+          {
+            "itemNumber": "1002"
+          }
+        ]
+      }
+    }
+  },
+  "flexSearchVariables": {
+    "data": {
+      "flexSearchDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "metaVariable": {
+    "data": {
+      "_allDeliveriesMeta": {
+        "count": 2
+      }
+    }
+  },
+  "updateWithInputVariable": {
+    "data": {
+      "updateDelivery": {
+        "deliveryNumber": "1000173",
+        "aText": "updated via variable",
+        "consignee": {
+          "city": "Stuttgart"
+        },
+        "colorData": {
+          "packageColor": "blue"
+        },
+        "items": [
+          {
+            "itemNumber": "1001",
+            "quantity": 42
+          },
+          {
+            "itemNumber": "1002",
+            "quantity": 8
+          }
+        ]
+      }
+    }
+  },
+  "updateWithValueVariables": {
+    "data": {
+      "updateDelivery": {
+        "deliveryNumber": "1000521",
+        "aText": "value variable",
+        "sometimesNull": null
+      }
+    }
+  },
+  "createWithInputVariable": {
+    "data": {
+      "createDelivery": {
+        "deliveryNumber": "2000001",
+        "serialNumbers": ["single-serial"],
+        "enumFlexSearch": "Baz"
+      }
+    }
+  },
+  "updateAllWithFilterVariable": {
+    "data": {
+      "updateAllDeliveries": [
+        {
+          "deliveryNumber": "1000521",
+          "aText": "bulk"
+        },
+        {
+          "deliveryNumber": "1000522",
+          "aText": "bulk"
+        }
+      ]
+    }
+  }
+}

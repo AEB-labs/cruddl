@@ -1,0 +1,24 @@
+WITH @@handlingUnits
+LET v_delivery1 = FIRST((
+  FOR v_delivery2
+  IN @@deliveries
+  FILTER (v_delivery2._key == @var1)
+  LIMIT @var2
+  RETURN v_delivery2
+))
+RETURN {
+  "Delivery": (IS_NULL(v_delivery1) ? null : {
+    "handlingUnits": (
+      FOR v_handlingUnit1
+      IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
+      FILTER v_handlingUnit1._key != null
+      SORT (v_handlingUnit1.`huNumber`)
+      LIMIT @var3, @var4
+      RETURN {
+        "huNumber": v_handlingUnit1.`huNumber`
+      }
+    )
+  })
+}
+
+// Peak memory usage: 65536 bytes

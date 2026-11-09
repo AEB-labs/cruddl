@@ -1,0 +1,208 @@
+# Range and null comparisons on temporal and boolean fields
+# (cloud-ui date filters emit half-open gte/lt ranges; only OffsetDateTime equality was tested)
+
+mutation setUp {
+    d1: updateDelivery(
+        input: {
+            id: "@{ids/Delivery/1}"
+            shippedAt: "2026-03-01T10:00:00Z"
+            completionDate: "2026-03-01"
+            pickupDate: "2026-02-28"
+            pickupTimeStart: "08:00:00"
+            pickupTimeEnd: "12:30:00"
+        }
+    ) {
+        deliveryNumber
+    }
+    d2: updateDelivery(
+        input: {
+            id: "@{ids/Delivery/2}"
+            shippedAt: "2026-03-01T23:59:59.999Z"
+            completionDate: "2026-03-02"
+            pickupDate: "2026-03-01"
+            pickupTimeStart: "12:30:00"
+            pickupTimeEnd: "18:00:00"
+            processingFinished: null
+        }
+    ) {
+        deliveryNumber
+    }
+    d3: updateDelivery(
+        input: {
+            id: "@{ids/Delivery/3}"
+            shippedAt: "2026-03-02T00:00:00Z"
+            dispatchDate: "2026-03-02T01:00:00+02:00"
+        }
+    ) {
+        deliveryNumber
+    }
+}
+
+# the "date equals" shape cloud-ui generates for DateTime fields
+query dateTimeHalfOpenDayRange {
+    allDeliveries(
+        filter: { shippedAt_gte: "2026-03-01T00:00:00Z", shippedAt_lt: "2026-03-02T00:00:00Z" }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+        shippedAt
+    }
+}
+
+query dateTimeLte {
+    allDeliveries(
+        filter: { shippedAt_lte: "2026-03-01T23:59:59.999Z" }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query dateTimeGt {
+    allDeliveries(filter: { shippedAt_gt: "2026-03-01T23:59:59.999Z" }) {
+        deliveryNumber
+    }
+}
+
+query dateTimeEquals {
+    allDeliveries(filter: { shippedAt: "2026-03-02T00:00:00Z" }) {
+        deliveryNumber
+    }
+}
+
+query dateTimeNull {
+    allDeliveries(filter: { shippedAt: null }) {
+        deliveryNumber
+    }
+}
+
+query dateTimeNotNull {
+    allDeliveries(filter: { shippedAt_not: null }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query dateTimeOrderBy {
+    allDeliveries(orderBy: [shippedAt_DESC, deliveryNumber_ASC]) {
+        deliveryNumber
+    }
+}
+
+query localDateEquals {
+    allDeliveries(filter: { completionDate: "2026-03-01" }) {
+        deliveryNumber
+    }
+}
+
+# the "date between" shape cloud-ui generates for LocalDate fields (inclusive end)
+query localDateBetween {
+    allDeliveries(
+        filter: { pickupDate_gte: "2026-02-28", pickupDate_lte: "2026-03-01" }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query localDateGtAndLt {
+    allDeliveries(filter: { completionDate_gt: "2026-03-01", completionDate_lt: "2026-12-31" }) {
+        deliveryNumber
+    }
+}
+
+query localDateNull {
+    allDeliveries(filter: { completionDate: null }) {
+        deliveryNumber
+    }
+}
+
+query localDateOrderBy {
+    allDeliveries(orderBy: [pickupDate_ASC, deliveryNumber_ASC]) {
+        deliveryNumber
+    }
+}
+
+query localTimeRange {
+    allDeliveries(filter: { pickupTimeStart_lte: "12:30:00", pickupTimeEnd_gt: "12:30:00" }) {
+        deliveryNumber
+    }
+}
+
+query localTimeIn {
+    allDeliveries(filter: { pickupTimeStart_in: ["08:00:00", "09:00:00"] }) {
+        deliveryNumber
+    }
+}
+
+# 2026-03-02T01:00:00+02:00 is 2026-03-01T23:00:00Z
+query offsetDateTimeRange {
+    allDeliveries(
+        filter: {
+            dispatchDate_gte: "2026-03-01T22:00:00Z"
+            dispatchDate_lt: "2026-03-02T00:00:00Z"
+        }
+    ) {
+        deliveryNumber
+        dispatchDate
+    }
+}
+
+query offsetDateTimeLteWithOffset {
+    allDeliveries(
+        filter: { dispatchDate_lte: "2001-01-02T04:30:00+01:00" }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query booleanNot {
+    allDeliveries(filter: { processingFinished_not: true }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query booleanNull {
+    allDeliveries(filter: { processingFinished: null }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query booleanNotNull {
+    allDeliveries(filter: { processingFinished_not: null }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query booleanNotFalse {
+    allDeliveries(filter: { processingFinished_not: false }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query floatComparisons {
+    allDeliveries(
+        filter: { defaultValueFloat_gt: 3.1, defaultValueFloat_lte: 3.14 }
+        orderBy: deliveryNumber_ASC
+    ) {
+        deliveryNumber
+    }
+}
+
+query floatNot {
+    allDeliveries(filter: { defaultValueFloat_not: 3.14 }) {
+        deliveryNumber
+    }
+}
+
+query intNotIn {
+    allDeliveries(filter: { aNumber_not_in: [123, 1234] }) {
+        deliveryNumber
+    }
+}
+
+query intGteLte {
+    allDeliveries(filter: { aNumber_gte: 123, aNumber_lte: 1234 }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}

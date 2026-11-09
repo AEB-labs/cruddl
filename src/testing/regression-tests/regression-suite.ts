@@ -367,9 +367,11 @@ export class RegressionSuite {
         );
         const expectedResult = this.testDataEnvironment.fillTemplateStrings(expectedResultTemplate);
         const variableValues: Record<string, unknown> = existsSync(variablesPath)
-            ? parseJSONCOrThrow<Record<string, unknown>>(
-                  readFileSync(variablesPath, 'utf-8'),
-                  variablesPath,
+            ? this.testDataEnvironment.fillTemplateStrings(
+                  parseJSONCOrThrow<Record<string, unknown>>(
+                      readFileSync(variablesPath, 'utf-8'),
+                      variablesPath,
+                  ),
               )
             : {};
         const context: any = existsSync(contextPath)

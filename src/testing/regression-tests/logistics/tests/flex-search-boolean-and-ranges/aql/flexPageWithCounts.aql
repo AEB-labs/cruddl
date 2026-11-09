@@ -1,0 +1,44 @@
+RETURN {
+  "flexSearchDeliveries": (
+    FOR v_delivery1
+    IN (
+      FOR v_delivery2
+      IN @@flex_view_deliveries
+      SEARCH (((v_delivery2.`aNumber` == @var1) || (v_delivery2.`aNumber` == @var2)) || (v_delivery2.`aNumber` == @var3))
+      RETURN v_delivery2
+    )
+    SORT (v_delivery1.`deliveryNumber`) , (v_delivery1.`createdAt`)  DESC, (v_delivery1._key)  DESC
+    LIMIT @var4, @var5
+    RETURN {
+      "deliveryNumber": v_delivery1.`deliveryNumber`
+    }
+  ),
+  "total": {
+    "count": FIRST(
+      FOR v_item1
+      IN (
+        FOR v_delivery3
+        IN @@flex_view_deliveries
+        SEARCH true
+        RETURN v_delivery3
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    )
+  },
+  "filtered": {
+    "count": FIRST(
+      FOR v_item2
+      IN (
+        FOR v_delivery4
+        IN @@flex_view_deliveries
+        SEARCH (((v_delivery4.`aNumber` == @var6) || (v_delivery4.`aNumber` == @var7)) || (v_delivery4.`aNumber` == @var8))
+        RETURN v_delivery4
+      )
+      COLLECT WITH COUNT INTO v_count2
+      RETURN v_count2
+    )
+  }
+}
+
+// Peak memory usage: 65536 bytes

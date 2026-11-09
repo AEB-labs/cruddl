@@ -1,0 +1,164 @@
+# Apps almost always pass filters, values, pagination and mutation inputs as GraphQL variables,
+# which goes through variable coercion instead of literal parsing.
+
+query wholeFilterVariable($wholeFilter: DeliveryFilter) {
+    allDeliveries(filter: $wholeFilter, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query nullFilterVariable($nullFilter: DeliveryFilter) {
+    allDeliveries(filter: $nullFilter, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query missingFilterVariable($undefinedFilter: DeliveryFilter) {
+    allDeliveries(filter: $undefinedFilter, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query valueVariable($deliveryNumber: String) {
+    allDeliveries(filter: { deliveryNumber: $deliveryNumber }) {
+        deliveryNumber
+    }
+}
+
+# a null variable value compares with null (like a literal null)
+query nullValueVariable($nullString: String) {
+    allDeliveries(filter: { sometimesNull: $nullString }) {
+        deliveryNumber
+    }
+}
+
+# an omitted variable means the filter field is not set
+query missingValueVariable($undefinedString: String) {
+    allDeliveries(filter: { sometimesNull: $undefinedString }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query listVariable($deliveryNumbers: [String!]) {
+    allDeliveries(filter: { deliveryNumber_in: $deliveryNumbers }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+# GraphQL coerces a single value into a list
+query singleValueForListVariable($singleDeliveryNumber: [String!]) {
+    allDeliveries(filter: { deliveryNumber_in: $singleDeliveryNumber }) {
+        deliveryNumber
+    }
+}
+
+query emptyListVariable($emptyList: [String!]) {
+    allDeliveries(filter: { deliveryNumber_in: $emptyList }) {
+        deliveryNumber
+    }
+}
+
+query idListVariable($ids: [ID!]) {
+    allDeliveries(filter: { id_in: $ids }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query enumVariable($enumValue: Foobarit) {
+    allDeliveries(filter: { enumFlexSearch: $enumValue }) {
+        deliveryNumber
+    }
+}
+
+query nestedFilterVariable($itemFilter: DeliveryItemFilter) {
+    allDeliveries(filter: { items_some: $itemFilter }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query orListVariable($orFilters: [DeliveryFilter!]) {
+    allDeliveries(filter: { OR: $orFilters }, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query paginationVariables($first: Int, $skip: Int, $orderBy: [DeliveryOrderBy!]) {
+    allDeliveries(first: $first, skip: $skip, orderBy: $orderBy) {
+        deliveryNumber
+    }
+}
+
+query nullPaginationVariables($nullInt: Int) {
+    allDeliveries(first: $nullInt, skip: $nullInt, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query singleEntityVariable($deliveryNumber: String) {
+    Delivery(deliveryNumber: $deliveryNumber) {
+        deliveryNumber
+    }
+}
+
+query nestedListArgumentVariables($itemFilter: DeliveryItemFilter, $first: Int) {
+    Delivery(id: "@{ids/Delivery/1}") {
+        items(filter: $itemFilter, first: $first, orderBy: itemNumber_DESC) {
+            itemNumber
+        }
+    }
+}
+
+query flexSearchVariables($flexFilter: DeliveryFlexSearchFilter) {
+    flexSearchDeliveries(flexSearchFilter: $flexFilter, orderBy: deliveryNumber_ASC) {
+        deliveryNumber
+    }
+}
+
+query metaVariable($wholeFilter: DeliveryFilter) {
+    _allDeliveriesMeta(filter: $wholeFilter) {
+        count
+    }
+}
+
+mutation updateWithInputVariable($updateInput: UpdateDeliveryInput!) {
+    updateDelivery(input: $updateInput) {
+        deliveryNumber
+        aText
+        consignee {
+            city
+        }
+        colorData {
+            packageColor
+        }
+        items(orderBy: itemNumber_ASC) {
+            itemNumber
+            quantity
+        }
+    }
+}
+
+mutation updateWithValueVariables($id: ID!, $aText: String, $nullString: String) {
+    updateDelivery(input: { id: $id, aText: $aText, sometimesNull: $nullString }) {
+        deliveryNumber
+        aText
+        sometimesNull
+    }
+}
+
+mutation createWithInputVariable($createInput: CreateDeliveryInput!) {
+    createDelivery(input: $createInput) {
+        deliveryNumber
+        serialNumbers
+        enumFlexSearch
+    }
+}
+
+mutation updateAllWithFilterVariable(
+    $wholeFilter: DeliveryFilter
+    $updateAllInput: UpdateAllDeliveriesInput!
+) {
+    updateAllDeliveries(filter: $wholeFilter, input: $updateAllInput) {
+        deliveryNumber
+        aText
+    }
+}

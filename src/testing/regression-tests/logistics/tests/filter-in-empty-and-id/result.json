@@ -1,0 +1,130 @@
+{
+  "inEmpty": {
+    "data": {
+      "allDeliveries": []
+    }
+  },
+  "notInEmpty": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "inEmptyOnEnum": {
+    "data": {
+      "allDeliveries": []
+    }
+  },
+  "inEmptyInOr": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "inEmptyInChildEntityQuantifier": {
+    "data": {
+      "allDeliveries": []
+    }
+  },
+  "idIn": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "idInEmpty": {
+    "data": {
+      "allDeliveries": []
+    }
+  },
+  "idNotIn": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "idNot": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "idNotNull": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "idNull": {
+    "data": {
+      "allDeliveries": []
+    }
+  },
+  "idInWithOtherFilter": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "referenceIdIn": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "metaWithIdIn": {
+    "data": {
+      "_allDeliveriesMeta": {
+        "count": 2
+      }
+    }
+  }
+}

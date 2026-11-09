@@ -1,0 +1,88 @@
+{
+  "updateWithStaleRevision": {
+    "errors": [
+      {
+        "message": "AQL: conflict, _rev values do not match [node #13: UpdateNode] [node #14: CalculationNode] [node #20: SubqueryEndNode] [node #17: ReturnNode] (while executing)",
+        "locations": [
+          {
+            "line": 6,
+            "column": 5
+          }
+        ],
+        "path": ["updateDelivery"]
+      }
+    ],
+    "data": {
+      "updateDelivery": null
+    }
+  },
+  "afterUpdateWithStaleRevision": {
+    "data": {
+      "Delivery": {
+        "aText": "foo bar"
+      }
+    }
+  },
+  "updateManyWithStaleRevision": {
+    "errors": [
+      {
+        "message": "AQL: conflict, _rev values do not match [node #13: UpdateNode] [node #14: CalculationNode] [node #20: SubqueryEndNode] [node #17: ReturnNode] (while executing)",
+        "locations": [
+          {
+            "line": 20,
+            "column": 5
+          }
+        ],
+        "path": ["updateDeliveries"]
+      }
+    ],
+    "data": {
+      "updateDeliveries": null
+    }
+  },
+  "afterUpdateManyWithStaleRevision": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521",
+          "aText": null
+        },
+        {
+          "deliveryNumber": "1000522",
+          "aText": null
+        }
+      ]
+    }
+  },
+  "deleteWithStaleRevision": {
+    "errors": [
+      {
+        "message": "AQL: conflict, _rev values do not match [node #6: RemoveNode] [node #13: SubqueryEndNode] [node #9: CalculationNode] [node #10: CalculationNode] [node #11: ReturnNode] (while executing)",
+        "locations": [
+          {
+            "line": 41,
+            "column": 5
+          }
+        ],
+        "path": ["deleteDelivery"]
+      }
+    ],
+    "data": {
+      "deleteDelivery": null
+    }
+  },
+  "afterDeleteWithStaleRevision": {
+    "data": {
+      "Delivery": {
+        "deliveryNumber": "1000522"
+      }
+    }
+  },
+  "updateWithNullRevision": {
+    "data": {
+      "updateDelivery": {
+        "aText": "written"
+      }
+    }
+  }
+}

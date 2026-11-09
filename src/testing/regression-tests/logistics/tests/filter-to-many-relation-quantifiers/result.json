@@ -1,0 +1,166 @@
+{
+  "setUp": {
+    "data": {
+      "hu1": {
+        "huNumber": "1000007"
+      },
+      "hu2": {
+        "huNumber": "1000014"
+      },
+      "hu3": {
+        "huNumber": "1000021"
+      },
+      "forwarder": {
+        "name": "F1"
+      },
+      "forwarder2": {
+        "name": "F2"
+      }
+    }
+  },
+  "relationSome": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "relationSomeWithOr": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "relationNone": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "relationEvery": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "relationEmpty": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "relationNotEmpty": {
+    "data": {
+      "allDeliveries": []
+    }
+  },
+  "relationSomeCombinedWithFieldFilter": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "relationSomeInRelationSome": {
+    "data": {
+      "allForwarders": [
+        {
+          "name": "F1"
+        }
+      ]
+    }
+  },
+  "relationNoneInRelationSome": {
+    "data": {
+      "allForwarders": [
+        {
+          "name": "F2"
+        }
+      ]
+    }
+  },
+  "childEntitySomeInRelationSome": {
+    "data": {
+      "allForwarders": [
+        {
+          "name": "F1"
+        },
+        {
+          "name": "F2"
+        }
+      ]
+    }
+  },
+  "relationSomeWithToOneRelation": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "relationSomeInMeta": {
+    "data": {
+      "_allDeliveriesMeta": {
+        "count": 1
+      }
+    }
+  },
+  "nestedRelationListWithFilter": {
+    "data": {
+      "allForwarders": [
+        {
+          "name": "DHL",
+          "deliveries": []
+        },
+        {
+          "name": "F1",
+          "deliveries": [
+            {
+              "deliveryNumber": "1000521"
+            },
+            {
+              "deliveryNumber": "1000173"
+            }
+          ]
+        },
+        {
+          "name": "F2",
+          "deliveries": []
+        }
+      ]
+    }
+  }
+}

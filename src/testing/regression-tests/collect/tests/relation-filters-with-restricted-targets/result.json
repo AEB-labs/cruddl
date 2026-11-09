@@ -1,0 +1,156 @@
+{
+  "createEdges": {
+    "data": {
+      "d1": {
+        "deliveryNumber": "D1"
+      },
+      "d2": {
+        "deliveryNumber": "D2"
+      },
+      "d3": {
+        "deliveryNumber": "D3"
+      }
+    }
+  },
+  "unrestrictedEmpty": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "D1"
+        },
+        {
+          "deliveryNumber": "D2"
+        },
+        {
+          "deliveryNumber": "D3"
+        },
+        {
+          "deliveryNumber": "D4"
+        },
+        {
+          "deliveryNumber": "D5"
+        },
+        {
+          "deliveryNumber": "D6"
+        }
+      ]
+    }
+  },
+  "accessGroupEmpty": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "D2"
+        },
+        {
+          "deliveryNumber": "D3"
+        }
+      ]
+    }
+  },
+  "accessGroupNotEmpty": {
+    "data": {
+      "allDeliveries": []
+    }
+  },
+  "accessGroupSomeHidden": {
+    "data": {
+      "allDeliveries": []
+    }
+  },
+  "accessGroupSomeVisible": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "D2"
+        }
+      ]
+    }
+  },
+  "accessGroupSomeEmptyFilter": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "D2"
+        }
+      ]
+    }
+  },
+  "accessGroupNone": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "D3"
+        }
+      ]
+    }
+  },
+  "accessGroupEvery": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "D2"
+        },
+        {
+          "deliveryNumber": "D3"
+        }
+      ]
+    }
+  },
+  "accessGroupEmptyInMeta": {
+    "data": {
+      "_allDeliveriesMeta": {
+        "count": 2
+      }
+    }
+  },
+  "accessGroupInverseSome": {
+    "data": {
+      "allHandlingUnits": []
+    }
+  },
+  "accessGroupInverseEmpty": {
+    "data": {
+      "allHandlingUnits": [
+        {
+          "handlingUnitNumber": "H1"
+        },
+        {
+          "handlingUnitNumber": "H3"
+        },
+        {
+          "handlingUnitNumber": "H4"
+        }
+      ]
+    }
+  },
+  "accessFieldEmpty": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "D2"
+        },
+        {
+          "deliveryNumber": "D3"
+        }
+      ]
+    }
+  },
+  "accessFieldSomeHidden": {
+    "data": {
+      "allDeliveries": []
+    }
+  },
+  "accessFieldEvery": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "D2"
+        },
+        {
+          "deliveryNumber": "D3"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,105 @@
+WITH @@deliveries, @@handlingUnits
+RETURN {
+  "allForwarders": (
+    FOR v_forwarder1
+    IN @@forwarders
+    RETURN {
+      "name": v_forwarder1.`name`,
+      "deliveries": (
+        FOR v_delivery1
+        IN INBOUND v_forwarder1 @@deliveries_forwarder
+        FILTER (v_delivery1.`items`[*].`quantity` ANY > @var1)
+        FILTER v_delivery1._key != null
+        SORT (v_delivery1.`deliveryNumber`)  DESC
+        LIMIT @var2
+        RETURN {
+          "deliveryNumber": v_delivery1.`deliveryNumber`,
+          "items": (
+            FOR v_deliveryItem1
+            IN v_delivery1.`items`[*]
+            FILTER ((IS_NULL(v_deliveryItem1.`handlingUnit`) ? null : FIRST((
+              FOR v_handlingUnit1
+              IN @@handlingUnits
+              FILTER ((v_handlingUnit1._key > NULL) && (v_handlingUnit1._key == v_deliveryItem1.`handlingUnit`))
+              LIMIT @var3
+              RETURN v_handlingUnit1
+            ))).`huNumber` > NULL)
+            SORT (v_deliveryItem1.`itemNumber`)
+            LET v_handlingUnit2 = (IS_NULL(v_deliveryItem1.`handlingUnit`) ? null : FIRST((
+              FOR v_handlingUnit3
+              IN @@handlingUnits
+              FILTER ((v_handlingUnit3._key > NULL) && (v_handlingUnit3._key == v_deliveryItem1.`handlingUnit`))
+              LIMIT @var4
+              RETURN v_handlingUnit3
+            )))
+            LET v_delivery2 = FIRST((
+              FOR v_node1
+              IN INBOUND v_handlingUnit2 @@deliveries_handlingUnits
+              FILTER v_node1._key != null
+              RETURN v_node1
+            ))
+            RETURN {
+              "itemNumber": v_deliveryItem1.`itemNumber`,
+              "handlingUnit": (IS_NULL(v_handlingUnit2) ? null : {
+                "huNumber": v_handlingUnit2.`huNumber`,
+                "delivery": (IS_NULL(v_delivery2) ? null : {
+                  "deliveryNumber": v_delivery2.`deliveryNumber`,
+                  "handlingUnits": (
+                    FOR v_handlingUnit4
+                    IN OUTBOUND v_delivery2 @@deliveries_handlingUnits
+                    FILTER v_handlingUnit4._key != null
+                    SORT (v_handlingUnit4.`huNumber`)
+                    LIMIT @var5, @var6
+                    RETURN {
+                      "huNumber": v_handlingUnit4.`huNumber`
+                    }
+                  ),
+                  @var7: {
+                    "count": FIRST(
+                      FOR v_item1
+                      IN (
+                        FOR v_handlingUnit5
+                        IN OUTBOUND v_delivery2 @@deliveries_handlingUnits
+                        FILTER (v_handlingUnit5.`huNumber` >= UPPER(@var8) && v_handlingUnit5.`huNumber` < LOWER(@var9)) && (LEFT(v_handlingUnit5.`huNumber`, LENGTH(@var10)) == @var11)
+                        FILTER v_handlingUnit5._key != null
+                        RETURN v_handlingUnit5
+                      )
+                      COLLECT WITH COUNT INTO v_count1
+                      RETURN v_count1
+                    )
+                  }
+                })
+              }),
+              "notes": (
+                FOR v_note1
+                IN v_deliveryItem1.`notes`[*]
+                FILTER (v_note1.`priority` >= @var12)
+                SORT (v_note1.`priority`)  DESC, (v_note1.`text`)
+                LIMIT @var13
+                RETURN {
+                  "text": v_note1.`text`,
+                  "priority": v_note1.`priority`
+                }
+              ),
+              @var14: {
+                "count": FIRST(
+                  FOR v_item2
+                  IN (
+                    FOR v_note2
+                    IN (IS_LIST(v_deliveryItem1.`notes`) ? v_deliveryItem1.`notes` : [])
+                    FILTER (v_note2.`priority` == @var15)
+                    RETURN v_note2
+                  )
+                  COLLECT WITH COUNT INTO v_count2
+                  RETURN v_count2
+                )
+              }
+            }
+          )
+        }
+      )
+    }
+  )
+}
+
+// Peak memory usage: 524288 bytes

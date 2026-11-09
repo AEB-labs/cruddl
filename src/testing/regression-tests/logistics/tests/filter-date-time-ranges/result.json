@@ -1,0 +1,277 @@
+{
+  "setUp": {
+    "data": {
+      "d1": {
+        "deliveryNumber": "1000173"
+      },
+      "d2": {
+        "deliveryNumber": "1000521"
+      },
+      "d3": {
+        "deliveryNumber": "1000522"
+      }
+    }
+  },
+  "dateTimeHalfOpenDayRange": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173",
+          "shippedAt": "2026-03-01T10:00:00Z"
+        },
+        {
+          "deliveryNumber": "1000521",
+          "shippedAt": "2026-03-01T23:59:59.999Z"
+        }
+      ]
+    }
+  },
+  "dateTimeLte": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "dateTimeGt": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "dateTimeEquals": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "dateTimeNull": {
+    "data": {
+      "allDeliveries": []
+    }
+  },
+  "dateTimeNotNull": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "dateTimeOrderBy": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000522"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "localDateEquals": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "localDateBetween": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "localDateGtAndLt": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "localDateNull": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "localDateOrderBy": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000522"
+        },
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "localTimeRange": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "localTimeIn": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "offsetDateTimeRange": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000522",
+          "dispatchDate": "2026-03-02T01:00:00+02:00"
+        }
+      ]
+    }
+  },
+  "offsetDateTimeLteWithOffset": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  },
+  "booleanNot": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "booleanNull": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "booleanNotNull": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        }
+      ]
+    }
+  },
+  "booleanNotFalse": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "floatComparisons": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        },
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "floatNot": {
+    "data": {
+      "allDeliveries": []
+    }
+  },
+  "intNotIn": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000522"
+        }
+      ]
+    }
+  },
+  "intGteLte": {
+    "data": {
+      "allDeliveries": [
+        {
+          "deliveryNumber": "1000173"
+        },
+        {
+          "deliveryNumber": "1000521"
+        }
+      ]
+    }
+  }
+}

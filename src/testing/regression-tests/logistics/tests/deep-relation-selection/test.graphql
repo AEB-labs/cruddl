@@ -1,0 +1,99 @@
+# Deep selections through relations, references and child entities with nested arguments
+# (depth >= 4 is common in apps, tests mostly stopped at depth 3)
+
+mutation setUp {
+    hu1: updateHandlingUnit(input: { id: "@{ids/HandlingUnit/1}", delivery: "@{ids/Delivery/1}" }) {
+        huNumber
+    }
+    hu2: updateHandlingUnit(input: { id: "@{ids/HandlingUnit/2}", delivery: "@{ids/Delivery/1}" }) {
+        huNumber
+    }
+    hu3: updateHandlingUnit(input: { id: "@{ids/HandlingUnit/3}", delivery: "@{ids/Delivery/2}" }) {
+        huNumber
+    }
+    forwarder: createForwarder(
+        input: { name: "F1", deliveries: ["@{ids/Delivery/1}", "@{ids/Delivery/2}"] }
+    ) {
+        name
+    }
+}
+
+# relation -> relation -> relation -> relation (depth 5)
+query relationChain {
+    allForwarders {
+        name
+        deliveries(orderBy: deliveryNumber_ASC) {
+            deliveryNumber
+            handlingUnits(orderBy: huNumber_ASC) {
+                huNumber
+                delivery {
+                    deliveryNumber
+                    forwarder {
+                        name
+                        _deliveriesMeta {
+                            count
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+# child entity -> reference -> relation -> relation, with filters, first and skip on every level
+query mixedChainWithArguments {
+    allForwarders {
+        name
+        deliveries(
+            filter: { items_some: { quantity_gt: 0 } }
+            first: 2
+            orderBy: deliveryNumber_DESC
+        ) {
+            deliveryNumber
+            items(filter: { handlingUnit: { huNumber_not: null } }, orderBy: itemNumber_ASC) {
+                itemNumber
+                handlingUnit {
+                    huNumber
+                    delivery {
+                        deliveryNumber
+                        handlingUnits(skip: 1, first: 1, orderBy: huNumber_ASC) {
+                            huNumber
+                        }
+                        _handlingUnitsMeta(filter: { huNumber_starts_with: "10000" }) {
+                            count
+                        }
+                    }
+                }
+                notes(filter: { priority_gte: 2 }, orderBy: [priority_DESC, text_ASC], first: 2) {
+                    text
+                    priority
+                }
+                _notesMeta(filter: { priority: 3 }) {
+                    count
+                }
+            }
+        }
+    }
+}
+
+# value object lists with filter and first (used in apps for translations / addresses)
+query valueObjectListWithArguments {
+    allDeliveries(orderBy: deliveryNumber_ASC, first: 2) {
+        deliveryNumber
+        contentInfo(filter: { languageIsoCode: "DE" }, first: 1) {
+            translation
+        }
+        _contentInfoMeta(filter: { translation_contains: "o" }) {
+            count
+        }
+    }
+}
+
+# relation list with skip beyond the end
+query relationListSkipBeyondEnd {
+    Delivery(id: "@{ids/Delivery/1}") {
+        handlingUnits(skip: 5, orderBy: huNumber_ASC) {
+            huNumber
+        }
+    }
+}

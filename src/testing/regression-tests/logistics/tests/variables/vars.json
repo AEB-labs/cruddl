@@ -1,0 +1,33 @@
+{
+  "wholeFilter": { "deliveryNumber_starts_with": "1000", "aNumber_gt": 200 },
+  "nullFilter": null,
+  "deliveryNumber": "1000521",
+  "nullString": null,
+  "deliveryNumbers": ["1000173", "1000522", "unknown"],
+  "singleDeliveryNumber": "1000173",
+  "emptyList": [],
+  "ids": ["@{ids/Delivery/2}", "@{ids/Delivery/3}"],
+  "enumValue": "Bar",
+  "itemFilter": { "quantity_gte": 8 },
+  "orFilters": [{ "deliveryNumber": "1000173" }, { "aNumber": 1234 }],
+  "first": 1,
+  "skip": 1,
+  "orderBy": ["deliveryNumber_DESC"],
+  "nullInt": null,
+  "flexFilter": { "enumFlexSearch_in": ["Foo", "Bar"] },
+  "updateInput": {
+    "id": "@{ids/Delivery/1}",
+    "aText": "updated via variable",
+    "consignee": { "city": "Stuttgart" },
+    "colorData": { "packageColor": "blue" },
+    "updateItems": [{ "id": "id_init_DeliveryItem_0000", "quantity": 42 }]
+  },
+  "id": "@{ids/Delivery/2}",
+  "aText": "value variable",
+  "createInput": {
+    "deliveryNumber": "2000001",
+    "serialNumbers": "single-serial",
+    "enumFlexSearch": "Baz"
+  },
+  "updateAllInput": { "aText": "bulk" }
+}

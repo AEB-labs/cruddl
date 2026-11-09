@@ -1,0 +1,109 @@
+# flexSearch filters with OR / AND and range filters on temporal fields
+# (cloud-ui chip filters produce OR in flexSearchFilter; date filters produce gte/lt ranges)
+
+mutation setUp {
+    d1: updateDelivery(input: { id: "@{ids/Delivery/1}", completionDate: "2026-03-01" }) {
+        deliveryNumber
+    }
+    d2: updateDelivery(input: { id: "@{ids/Delivery/2}", completionDate: "2026-03-02" }) {
+        deliveryNumber
+    }
+}
+
+query flexOr {
+    flexSearchDeliveries(
+        flexSearchFilter: {
+            OR: [
+                { deliveryNumber_starts_with: "1000173" }
+                { deliveryNumber_starts_with: "1000522" }
+            ]
+        }
+    ) {
+        deliveryNumber
+    }
+}
+
+query flexOrWithSiblings {
+    flexSearchDeliveries(
+        flexSearchFilter: {
+            enumFlexSearch_in: [Foo, Bar]
+            OR: [{ deliveryNumber: "1000173" }, { deliveryNumber: "1000522" }]
+        }
+    ) {
+        deliveryNumber
+    }
+}
+
+query flexAnd {
+    flexSearchDeliveries(
+        flexSearchFilter: { AND: [{ aNumber_gte: 123 }, { aNumber_lt: 1000000 }] }
+    ) {
+        deliveryNumber
+    }
+}
+
+query flexOrInAnd {
+    flexSearchDeliveries(
+        flexSearchFilter: {
+            AND: [
+                { OR: [{ enumFlexSearch: Foo }, { enumFlexSearch: Bar }] }
+                { OR: [{ aNumber: 123 }, { aNumber: 1000521 }] }
+            ]
+        }
+    ) {
+        deliveryNumber
+    }
+}
+
+query flexLocalDateRange {
+    flexSearchDeliveries(
+        flexSearchFilter: { completionDate_gte: "2026-03-01", completionDate_lt: "2026-03-02" }
+    ) {
+        deliveryNumber
+    }
+}
+
+query flexLocalDateEquals {
+    flexSearchDeliveries(flexSearchFilter: { completionDate: "2026-03-02" }) {
+        deliveryNumber
+    }
+}
+
+query flexOffsetDateTimeRange {
+    flexSearchDeliveries(
+        flexSearchFilter: {
+            dispatchDate_gte: "2001-01-02T03:30:00Z"
+            dispatchDate_lt: "2001-01-03T00:00:00Z"
+        }
+    ) {
+        deliveryNumber
+    }
+}
+
+query flexOrWithPostFilter {
+    flexSearchDeliveries(
+        flexSearchFilter: { OR: [{ aNumber: 123 }, { aNumber: 1234 }] }
+        postFilter: { aText_not: null }
+    ) {
+        deliveryNumber
+    }
+}
+
+# the shape cloud-ui sends per page: list with skip/first plus total and filtered counts
+query flexPageWithCounts {
+    flexSearchDeliveries(
+        flexSearchFilter: { OR: [{ aNumber: 123 }, { aNumber: 1234 }, { aNumber: 1000521 }] }
+        skip: 1
+        first: 1
+    ) {
+        deliveryNumber
+    }
+    total: _flexSearchDeliveriesMeta {
+        count
+    }
+    filtered: _flexSearchDeliveriesMeta(
+        flexSearchFilter: { OR: [{ aNumber: 123 }, { aNumber: 1234 }, { aNumber: 1000521 }] }
+    ) {
+        count
+    }
+}
