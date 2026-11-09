@@ -26,7 +26,7 @@ RETURN {
           RETURN v_node2
         )
         FILTER v_item2 != null
-        COLLECT v_distinct1 = v_item2
+        COLLECT v_distinct1 = v_item2 OPTIONS { method: "hash" }
         RETURN v_distinct1
       )
       SORT (v_handlingUnit1.`handlingUnitNumber`)
@@ -48,7 +48,7 @@ RETURN {
             RETURN v_node4
           )
           FILTER v_item4 != null
-          COLLECT v_distinct2 = v_item4
+          COLLECT v_distinct2 = v_item4 OPTIONS { method: "hash" }
           RETURN v_distinct2
         )
         COLLECT WITH COUNT INTO v_count1
@@ -58,4 +58,4 @@ RETURN {
   })
 }
 
-// Peak memory usage: 262144 bytes
+// Peak memory usage: 196608 bytes

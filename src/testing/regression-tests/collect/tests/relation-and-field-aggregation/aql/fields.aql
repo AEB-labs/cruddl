@@ -82,7 +82,7 @@ RETURN {
       )
       FILTER v_item9 != null
       SORT v_item9
-      COLLECT v_distinct1 = v_item9
+      COLLECT v_distinct1 = v_item9 OPTIONS { method: "hash" }
       RETURN v_distinct1
     ),
     "numberOfDeliveriesWithoutOrder": FIRST(
@@ -159,7 +159,7 @@ RETURN {
           RETURN v_node20
         )
         FILTER v_item15 != null
-        COLLECT v_distinct2 = v_item15
+        COLLECT v_distinct2 = v_item15 OPTIONS { method: "hash" }
         RETURN v_distinct2
       )
       SORT (v_order1.`orderNumber`)
@@ -170,4 +170,4 @@ RETURN {
   })
 }
 
-// Peak memory usage: 950272 bytes
+// Peak memory usage: 884736 bytes

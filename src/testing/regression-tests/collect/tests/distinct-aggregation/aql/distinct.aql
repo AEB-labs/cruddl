@@ -18,7 +18,7 @@ RETURN {
           RETURN v_root1.`warehouseSlot`
         )
         FILTER v_item1 != null
-        COLLECT v_distinct1 = v_item1
+        COLLECT v_distinct1 = v_item1 OPTIONS { method: "hash" }
         RETURN v_distinct1
       )
       SORT (v_warehouseSlot1.`warehouse`) , (v_warehouseSlot1.`level`)
@@ -38,7 +38,7 @@ RETURN {
             RETURN v_root2.`warehouseSlot`
           )
           FILTER v_item3 != null
-          COLLECT v_distinct2 = v_item3
+          COLLECT v_distinct2 = v_item3 OPTIONS { method: "hash" }
           RETURN v_distinct2
         )
         COLLECT WITH COUNT INTO v_count1

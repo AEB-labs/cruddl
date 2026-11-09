@@ -19,7 +19,7 @@ RETURN {
           RETURN v_node2
         )
         FILTER v_item1 != null
-        COLLECT v_distinct1 = v_item1
+        COLLECT v_distinct1 = v_item1 OPTIONS { method: "hash" }
         RETURN v_distinct1
       )
       RETURN {}

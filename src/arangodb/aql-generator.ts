@@ -1062,7 +1062,11 @@ register(AggregationQueryNode, (node, context) => {
         aggregationFunction
             ? aql`COLLECT AGGREGATE ${aggregationVar} = ${aggregationFunction}(${itemFrag})`
             : distinct
-              ? aql`COLLECT ${aggregationVar} = ${itemFrag}`
+              ? // without an explicit method, ArangoDB keeps a plan for both methods (hash and
+                // sorted) for each COLLECT in an inlined subquery. With several DISTINCT fields
+                // in one query, that doubles the plans per field (up to 128), which makes the
+                // optimizer slow and can exceed the query memory limit.
+                aql`COLLECT ${aggregationVar} = ${itemFrag} OPTIONS { method: "hash" }`
               : aql``,
         aql`RETURN ${resultFragment}`,
     );
