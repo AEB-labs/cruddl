@@ -50,12 +50,18 @@ export class ValidationMessage {
     readonly quickFixes: ReadonlyArray<QuickFix>;
     readonly isSuppressed: boolean;
 
+    /**
+     * The code that can be used to suppress this message (only set for suppressable messages)
+     */
+    readonly code: MessageCode | undefined;
+
     constructor(params: ValidationMessageParams) {
         this.severity = params.severity;
         this.message = params.message;
         this.location = params.location ? MessageLocation.from(params.location) : undefined;
         this.quickFixes = params.quickFixes ?? [];
         this.isSuppressed = params.isSuppressed ?? false;
+        this.code = params.code;
     }
 
     public static suppressableMessage(
