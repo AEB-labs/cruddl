@@ -1,0 +1,51 @@
+WITH @@deliveries
+LET v_order1 = FIRST((
+  FOR v_order2
+  IN @@orders
+  FILTER (v_order2.`orderNumber` == @var1)
+  LIMIT @var2
+  RETURN v_order2
+))
+RETURN {
+  "Order": (IS_NULL(v_order1) ? null : {
+    "allItems": (
+      FOR v_root1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_order1 @@orders_delivery
+      FOR v_item1 IN v_root1.`items`[* FILTER (FIRST(
+        FOR v_item2
+        IN (
+          FOR v_subItems1
+          IN (IS_LIST(CURRENT.`subItems`) ? CURRENT.`subItems` : [])
+          FILTER (LENGTH(v_subItems1.`subItems`) == @var5)
+          RETURN v_subItems1
+        )
+        COLLECT WITH COUNT INTO v_count1
+        RETURN v_count1
+      ) > @var6)]
+      RETURN {
+        "itemNumber": v_item1.`itemNumber`
+      }
+    ),
+    @var7: {
+      "count": FIRST(
+        FOR v_item3
+        IN (
+          FOR v_root2, v_edge2, v_path2 IN @var8..@var9 OUTBOUND v_order1 @@orders_delivery
+          FOR v_item4 IN v_root2.`items`[* FILTER (FIRST(
+            FOR v_item5
+            IN (
+              FOR v_subItems2
+              IN (IS_LIST(CURRENT.`subItems`) ? CURRENT.`subItems` : [])
+              FILTER (LENGTH(v_subItems2.`subItems`) == @var10)
+              RETURN v_subItems2
+            )
+            COLLECT WITH COUNT INTO v_count2
+            RETURN v_count2
+          ) > @var11)]
+          RETURN v_item4
+        )
+        COLLECT WITH COUNT INTO v_count3
+        RETURN v_count3
+      )
+    }
+  })
+}

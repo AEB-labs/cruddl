@@ -1,0 +1,129 @@
+{
+  "createEdges": {
+    "data": {
+      "updateShipment": {
+        "shipmentNumber": "S1"
+      },
+      "s2": {
+        "shipmentNumber": "S2"
+      },
+      "updateOrder": {
+        "orderNumber": "O1"
+      },
+      "updateHandlingUnit": {
+        "handlingUnitNumber": "H1"
+      },
+      "h2": {
+        "handlingUnitNumber": "H2"
+      },
+      "updateArticle": {
+        "articleNumber": "A1"
+      }
+    }
+  },
+  "reference": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "itemNumber": "2"
+          }
+        ],
+        "_allItemsMeta": {
+          "count": 1
+        }
+      }
+    }
+  },
+  "referenceInValueObject": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "itemNumber": "1"
+          }
+        ]
+      }
+    }
+  },
+  "referenceInQuantifier": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "itemNumber": "4"
+          },
+          {
+            "itemNumber": "1"
+          }
+        ]
+      }
+    }
+  },
+  "listInReference": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "itemNumber": "2"
+          }
+        ]
+      }
+    }
+  },
+  "relationInReference": {
+    "data": {
+      "Shipment": {
+        "allItems": [
+          {
+            "itemNumber": "1"
+          }
+        ]
+      }
+    }
+  },
+  "referenceWithOrderAndPagination": {
+    "data": {
+      "Shipment": {
+        "sorted": [
+          {
+            "itemNumber": "4"
+          },
+          {
+            "itemNumber": "1"
+          }
+        ],
+        "paginated": [
+          {
+            "itemNumber": "4"
+          }
+        ]
+      }
+    }
+  },
+  "twoListSegments": {
+    "data": {
+      "Shipment": {
+        "allSubItems": [
+          {
+            "itemNumber": "1.2"
+          },
+          {
+            "itemNumber": "2.1"
+          }
+        ]
+      }
+    }
+  },
+  "toOneRelation": {
+    "data": {
+      "Order": {
+        "allItems": [
+          {
+            "itemNumber": "1"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "roles": ["users"],
+  "rootEntities": {
+    "Article": [
+      {
+        "@id": "A1",
+        "articleNumber": "A1",
+        "description": "Pump",
+        "isDangerousGoods": false,
+        "tags": ["spare-part"]
+      },
+      {
+        "@id": "A2",
+        "articleNumber": "A2",
+        "description": "Battery",
+        "isDangerousGoods": true,
+        "tags": ["hazmat"]
+      },
+      { "@id": "A3", "articleNumber": "A3", "description": "Box", "isDangerousGoods": false }
+    ],
+    "Delivery": [
+      {
+        "@id": "D1",
+        "deliveryNumber": "D1",
+        "items": [
+          {
+            "itemNumber": "1",
+            "openQuantity": 2,
+            "articleNumber": "A1",
+            "tags": ["urgent"],
+            "packaging": { "packagingCode": "P1", "materialArticleNumber": "A3" },
+            "subItems": [
+              { "itemNumber": "1.1", "openQuantity": 0, "articleNumber": "A2" },
+              { "itemNumber": "1.2", "openQuantity": 1, "articleNumber": "A1", "tags": ["urgent"] }
+            ]
+          },
+          {
+            "itemNumber": "2",
+            "openQuantity": 0,
+            "articleNumber": "A2",
+            "subItems": [{ "itemNumber": "2.1", "openQuantity": 0, "articleNumber": "A1" }]
+          },
+          { "itemNumber": "3", "articleNumber": "A9" }
+        ],
+        "additions": {
+          "items": [
+            {
+              "itemNumber": "X1",
+              "articleNumber": "A2",
+              "subItems": [{ "itemNumber": "X1.1", "openQuantity": 3 }]
+            }
+          ]
+        }
+      },
+      {
+        "@id": "D2",
+        "deliveryNumber": "D2",
+        "items": [
+          {
+            "itemNumber": "4",
+            "openQuantity": 5,
+            "articleNumber": "A3",
+            "subItems": [
+              {
+                "itemNumber": "4.1",
+                "articleNumber": "A2",
+                "subItems": [{ "itemNumber": "4.1.1" }]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "@id": "D3",
+        "deliveryNumber": "D3",
+        "items": [
+          {
+            "itemNumber": "5",
+            "articleNumber": "A2",
+            "subItems": [
+              { "itemNumber": "5.1", "openQuantity": 1, "subItems": [{ "itemNumber": "5.1.1" }] }
+            ]
+          }
+        ]
+      }
+    ],
+    "Shipment": [
+      { "@id": "S1", "shipmentNumber": "S1" },
+      { "@id": "S2", "shipmentNumber": "S2" }
+    ],
+    "Order": [{ "@id": "O1", "orderNumber": "O1" }],
+    "HandlingUnit": [
+      {
+        "@id": "H1",
+        "handlingUnitNumber": "H1",
+        "packedItems": [{ "itemNumber": "1", "articleNumber": "A1" }]
+      },
+      {
+        "@id": "H2",
+        "handlingUnitNumber": "H2",
+        "packedItems": [{ "itemNumber": "4", "articleNumber": "A2" }]
+      },
+      {
+        "@id": "H3",
+        "handlingUnitNumber": "H3",
+        "packedItems": [{ "itemNumber": "2", "articleNumber": "A9" }]
+      },
+      {
+        "@id": "H4",
+        "handlingUnitNumber": "H4",
+        "packedItems": [{ "itemNumber": "5", "articleNumber": "A2" }]
+      }
+    ]
+  }
+}

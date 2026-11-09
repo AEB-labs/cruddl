@@ -1,0 +1,83 @@
+# Filters on @collect fields whose path starts with a relation and ends in a list of child
+# entities. Filters on these fields can contain subqueries (nested quantifiers, references), which
+# must not end up within array inline expressions (ArangoDB evaluates them before the enclosing
+# statement, where CURRENT is not defined).
+
+type Shipment @rootEntity {
+    shipmentNumber: String @key
+    deliveries: [Delivery] @relation
+    handlingUnits: [HandlingUnit] @relation
+
+    "relation, then one list"
+    allItems: [DeliveryItem] @collect(path: "deliveries.items")
+    "relation, then two lists"
+    allSubItems: [DeliveryItem] @collect(path: "deliveries.items.subItems")
+    "relation, then an entity extension and a list"
+    allAdditionalItems: [DeliveryItem] @collect(path: "deliveries.additions.items")
+    "relation, then a collect field with a relation depth range, then a list"
+    allPackedItems: [PackedItem] @collect(path: "handlingUnits.allInnerPackedItems")
+}
+
+type Order @rootEntity {
+    orderNumber: String @key
+    delivery: Delivery @relation
+
+    "to-1 relation, then one list"
+    allItems: [DeliveryItem] @collect(path: "delivery.items")
+}
+
+type Delivery @rootEntity {
+    deliveryNumber: String @key
+    items: [DeliveryItem]
+    additions: DeliveryAdditions
+
+    shipment: Shipment @relation(inverseOf: "deliveries")
+    order: Order @relation(inverseOf: "delivery")
+}
+
+type DeliveryAdditions @entityExtension {
+    items: [DeliveryItem]
+}
+
+type DeliveryItem @childEntity {
+    itemNumber: String
+    openQuantity: Int
+    tags: [String]
+    articleNumber: String
+    article: Article @reference(keyField: "articleNumber")
+    packaging: Packaging
+    subItems: [DeliveryItem]
+}
+
+type Packaging @valueObject {
+    packagingCode: String
+    materialArticleNumber: String
+    materialArticle: Article @reference(keyField: "materialArticleNumber")
+}
+
+type HandlingUnit @rootEntity {
+    handlingUnitNumber: String @key
+    packedItems: [PackedItem]
+
+    shipment: Shipment @relation(inverseOf: "handlingUnits")
+    childHandlingUnits: [HandlingUnit] @relation
+    parentHandlingUnit: HandlingUnit @relation(inverseOf: "childHandlingUnits")
+
+    allInnerHandlingUnits: [HandlingUnit] @collect(path: "childHandlingUnits{0,2}")
+    "a collect field with a relation depth range, then a list"
+    allInnerPackedItems: [PackedItem] @collect(path: "allInnerHandlingUnits.packedItems")
+}
+
+type PackedItem @childEntity {
+    itemNumber: String
+    articleNumber: String
+    article: Article @reference(keyField: "articleNumber")
+}
+
+type Article @rootEntity {
+    articleNumber: String @key
+    description: String
+    isDangerousGoods: Boolean
+    tags: [String]
+    replacements: [Article] @relation
+}
