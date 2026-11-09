@@ -11,7 +11,8 @@ RETURN {
     "allItems": (
       FOR v_root1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_shipment1 @@shipments_deliveries
       FILTER v_root1._key != null
-      FOR v_item1 IN v_root1.`items`[* FILTER (LENGTH((IS_LIST(CURRENT.`subItems`) ? CURRENT.`subItems` : [])[* FILTER ((CURRENT.`openQuantity` > @var5) || (CURRENT.`openQuantity` == @var6))]) > 0)]
+      FOR v_item1 IN v_root1.`items`[*]
+      FILTER (LENGTH((IS_LIST(v_item1.`subItems`) ? v_item1.`subItems` : [])[* FILTER ((CURRENT.`openQuantity` > @var5) || (CURRENT.`openQuantity` == @var6))]) > 0)
       RETURN {
         "itemNumber": v_item1.`itemNumber`
       }
@@ -19,4 +20,4 @@ RETURN {
   })
 }
 
-// Peak memory usage (arangodb 3.12.13): 65536 bytes
+// Peak memory usage: 65536 bytes

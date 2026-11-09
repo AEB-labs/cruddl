@@ -11,17 +11,18 @@ RETURN {
     "sorted": (
       FOR v_root1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_shipment1 @@shipments_deliveries
       FILTER v_root1._key != null
-      FOR v_item1 IN v_root1.`items`[* FILTER (FIRST(
+      FOR v_item1 IN v_root1.`items`[*]
+      FILTER (FIRST(
         FOR v_item2
         IN (
           FOR v_subItems1
-          IN (IS_LIST(CURRENT.`subItems`) ? CURRENT.`subItems` : [])
+          IN (IS_LIST(v_item1.`subItems`) ? v_item1.`subItems` : [])
           FILTER !((LENGTH((IS_LIST(v_subItems1.`subItems`) ? v_subItems1.`subItems` : [])[* FILTER (CURRENT.`itemNumber` >= UPPER(@var5) && CURRENT.`itemNumber` < LOWER(@var6)) && (LEFT(CURRENT.`itemNumber`, LENGTH(@var7)) == @var8)]) == 0))
           RETURN v_subItems1
         )
         COLLECT WITH COUNT INTO v_count1
         RETURN v_count1
-      ) == @var9)]
+      ) == @var9)
       SORT (v_item1.`itemNumber`)  DESC
       RETURN {
         "itemNumber": v_item1.`itemNumber`
@@ -30,17 +31,18 @@ RETURN {
     "paginated": (
       FOR v_root2, v_edge2, v_path2 IN @var10..@var11 OUTBOUND v_shipment1 @@shipments_deliveries
       FILTER v_root2._key != null
-      FOR v_item3 IN v_root2.`items`[* FILTER (FIRST(
+      FOR v_item3 IN v_root2.`items`[*]
+      FILTER (FIRST(
         FOR v_item4
         IN (
           FOR v_subItems2
-          IN (IS_LIST(CURRENT.`subItems`) ? CURRENT.`subItems` : [])
+          IN (IS_LIST(v_item3.`subItems`) ? v_item3.`subItems` : [])
           FILTER !((LENGTH((IS_LIST(v_subItems2.`subItems`) ? v_subItems2.`subItems` : [])[* FILTER (CURRENT.`itemNumber` >= UPPER(@var12) && CURRENT.`itemNumber` < LOWER(@var13)) && (LEFT(CURRENT.`itemNumber`, LENGTH(@var14)) == @var15)]) == 0))
           RETURN v_subItems2
         )
         COLLECT WITH COUNT INTO v_count2
         RETURN v_count2
-      ) == @var16)]
+      ) == @var16)
       SORT (v_item3.`itemNumber`)
       LIMIT @var17, @var18
       RETURN {
@@ -50,17 +52,18 @@ RETURN {
     "firstOnly": (
       FOR v_root3, v_edge3, v_path3 IN @var19..@var20 OUTBOUND v_shipment1 @@shipments_deliveries
       FILTER v_root3._key != null
-      FOR v_item5 IN v_root3.`items`[* FILTER (FIRST(
+      FOR v_item5 IN v_root3.`items`[*]
+      FILTER (FIRST(
         FOR v_item6
         IN (
           FOR v_subItems3
-          IN (IS_LIST(CURRENT.`subItems`) ? CURRENT.`subItems` : [])
+          IN (IS_LIST(v_item5.`subItems`) ? v_item5.`subItems` : [])
           FILTER !((LENGTH((IS_LIST(v_subItems3.`subItems`) ? v_subItems3.`subItems` : [])[* FILTER (CURRENT.`itemNumber` >= UPPER(@var21) && CURRENT.`itemNumber` < LOWER(@var22)) && (LEFT(CURRENT.`itemNumber`, LENGTH(@var23)) == @var24)]) == 0))
           RETURN v_subItems3
         )
         COLLECT WITH COUNT INTO v_count3
         RETURN v_count3
-      ) == @var25)]
+      ) == @var25)
       LIMIT @var26
       RETURN {
         "itemNumber": v_item5.`itemNumber`
@@ -68,3 +71,5 @@ RETURN {
     )
   })
 }
+
+// Peak memory usage: 294912 bytes
