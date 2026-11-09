@@ -67,6 +67,7 @@ export function checkModel(modelToCheck: Model, baselineModel: Model): Validatio
                 if (i18nChanges.length) {
                     quickFixes.push(
                         new QuickFix({
+                            kind: 'ADD_MISSING_TYPE',
                             description: `Add type "${baselineType.name}" with i18n`,
                             isPreferred: true,
                             changeSet: new ChangeSet([...typeChanges, ...i18nChanges]),
@@ -76,6 +77,7 @@ export function checkModel(modelToCheck: Model, baselineModel: Model): Validatio
 
                 quickFixes.push(
                     new QuickFix({
+                        kind: 'ADD_MISSING_TYPE',
                         description: `Add type "${baselineType.name}"`,
                         isPreferred: !i18nChanges.length,
                         changeSet: new ChangeSet([...typeChanges]),

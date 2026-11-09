@@ -125,6 +125,7 @@ export abstract class ObjectTypeBase extends TypeBase {
                             quickFixes: systemFieldOverride.astNode?.loc
                                 ? [
                                       new QuickFix({
+                                          kind: 'REMOVE_REDUNDANT_FIELD',
                                           description: 'Remove field',
                                           isPreferred: true,
                                           changeSet: new ChangeSet([

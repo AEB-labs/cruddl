@@ -8,6 +8,7 @@ import {
 } from '../../../model/implementation/permission-profile.js';
 import type { MessageLocation } from '../../../model/validation/location.js';
 import { ValidationMessage } from '../../../model/validation/message.js';
+import type { QuickFixKind } from '../../../model/validation/quick-fix-kinds.js';
 import { QuickFix } from '../../../model/validation/quick-fix.js';
 import { isReadonlyArray } from '../../../utils/utils.js';
 import type { ParsedProjectSource, PathLocationMap } from '../../parsing/parsed-project.js';
@@ -108,6 +109,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
                                               roleLocation,
                                               wholeRoleSuggestion,
                                               'Match the whole role',
+                                              'MATCH_WHOLE_ROLE',
                                               true,
                                           ),
                                           ...(trailingCharactersSuggestion
@@ -116,6 +118,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
                                                         roleLocation,
                                                         trailingCharactersSuggestion,
                                                         'Allow additional characters at the end of the role',
+                                                        'ALLOW_ROLE_SUFFIX',
                                                         false,
                                                     ),
                                                 ]
@@ -140,6 +143,7 @@ export class PermissionProfileValidator implements ParsedSourceValidator {
                                                   flags.replace(/[gy]/g, ''),
                                               ),
                                               'Remove flags "g" and "y"',
+                                              'REMOVE_REGEX_FLAGS',
                                               true,
                                           ),
                                       ]
@@ -235,9 +239,11 @@ function getRoleReplacementQuickFix(
     roleLocation: MessageLocation,
     newRole: string,
     description: string,
+    kind: QuickFixKind,
     isPreferred: boolean,
 ) {
     return new QuickFix({
+        kind,
         description,
         isPreferred,
         changeSet: new ChangeSet([createValueReplacementChange(roleLocation, undefined, newRole)]),

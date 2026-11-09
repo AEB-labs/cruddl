@@ -40,5 +40,7 @@ export type { ObjectType, Type } from './implementation/type.js';
 export { ValueObjectType } from './implementation/value-object-type.js';
 export { MessageLocation, SourcePosition } from './validation/location.js';
 export { Severity, ValidationMessage } from './validation/message.js';
+export { QUICK_FIX_KINDS } from './validation/quick-fix-kinds.js';
+export type { QuickFixKind } from './validation/quick-fix-kinds.js';
 export { QuickFix } from './validation/quick-fix.js';
 export { ValidationResult } from './validation/result.js';

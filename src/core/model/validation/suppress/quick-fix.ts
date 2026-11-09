@@ -34,6 +34,7 @@ export function createSuppressQuickFix(
     }
 
     return new QuickFix({
+        kind: 'SUPPRESS',
         description: `Suppress this ${messageKind}`,
         isPreferred: false,
 

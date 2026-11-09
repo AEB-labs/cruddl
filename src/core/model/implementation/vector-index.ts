@@ -169,6 +169,7 @@ export class VectorIndex implements ModelComponent {
                             quickFixes: change
                                 ? [
                                       new QuickFix({
+                                          kind: 'REMOVE_DUPLICATE_STORED_VALUE',
                                           description: 'Remove duplicate',
                                           isPreferred: true,
                                           changeSet: new ChangeSet([change]),
@@ -224,6 +225,7 @@ export class VectorIndex implements ModelComponent {
                     quickFixes: change
                         ? [
                               new QuickFix({
+                                  kind: 'SET_N_LISTS',
                                   description:
                                       this.nLists == undefined
                                           ? `Add ${nListsArg}`
@@ -248,6 +250,7 @@ export class VectorIndex implements ModelComponent {
         }
         return [
             new QuickFix({
+                kind: 'CHANGE_N_PROBE',
                 description: `Change ${argumentName} to ${value}`,
                 isPreferred: false,
                 changeSet: new ChangeSet([new TextChange(valueNode.loc, String(value))]),

@@ -674,6 +674,7 @@ function getRemoveLocalizationQuickFixes(
     }
     return [
         new QuickFix({
+            kind: 'REMOVE_LOCALIZATION',
             description: 'Remove localization',
             // if there is a similar name, this might just be a typo
             isPreferred: !getSimilarNames(name, existingNames).length,
