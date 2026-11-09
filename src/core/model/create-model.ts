@@ -461,6 +461,7 @@ function createFlexSearchPrimarySortClause(
                     quickFixes: fieldNode.loc
                         ? [
                               new QuickFix({
+                                  kind: 'ADD_ORDER_DIRECTION',
                                   description: 'Add direction: ASC',
                                   isPreferred: true,
                                   changeSet: new ChangeSet([

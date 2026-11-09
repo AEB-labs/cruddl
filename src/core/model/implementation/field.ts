@@ -2188,6 +2188,7 @@ export class Field implements ModelComponent {
         }
         return [
             new QuickFix({
+                kind: 'REMOVE_INCLUDE_IN_SEARCH',
                 description: `Remove "${FLEX_SEARCH_INCLUDED_IN_SEARCH_ARGUMENT}: true"`,
                 isPreferred: true,
                 changeSet: new ChangeSet(changes),
@@ -2202,6 +2203,7 @@ export class Field implements ModelComponent {
         }
         return [
             new QuickFix({
+                kind: 'ADD_RELATION_DIRECTIVE',
                 description: `Add @${RELATION_DIRECTIVE}`,
                 isPreferred: true,
                 changeSet: new ChangeSet([
@@ -2220,6 +2222,7 @@ export class Field implements ModelComponent {
         }
         return [
             new QuickFix({
+                kind: 'USE_RESTRICT_DELETE_ACTION',
                 description: `Use ${RelationDeleteAction.RESTRICT}`,
                 isPreferred,
                 changeSet: new ChangeSet([new TextChange(loc, RelationDeleteAction.RESTRICT)]),
@@ -2241,6 +2244,7 @@ export class Field implements ModelComponent {
         }
         return [
             new QuickFix({
+                kind: 'USE_AGGREGATION_OPERATOR',
                 description: `Use ${operator}`,
                 isPreferred: true,
                 changeSet: new ChangeSet([new TextChange(loc, operator)]),
@@ -2259,6 +2263,7 @@ export class Field implements ModelComponent {
         }
         return [
             new QuickFix({
+                kind: 'REMOVE_AGGREGATE_ARGUMENT',
                 description: `Remove "${COLLECT_AGGREGATE_ARG}" argument`,
                 isPreferred: true,
                 changeSet: new ChangeSet([change]),
@@ -2273,6 +2278,7 @@ export class Field implements ModelComponent {
         }
         return [
             new QuickFix({
+                kind: 'ADD_DISTINCT_AGGREGATION',
                 description: `Add ${COLLECT_AGGREGATE_ARG}: ${AggregationOperator.DISTINCT}`,
                 isPreferred: true,
                 changeSet: new ChangeSet([
@@ -2297,6 +2303,7 @@ export class Field implements ModelComponent {
         const newPath = segments.slice(0, -1).join('.');
         return [
             new QuickFix({
+                kind: 'SHORTEN_COLLECT_PATH',
                 description: `Change path to "${newPath}"`,
                 isPreferred,
                 changeSet: new ChangeSet([new TextChange(loc, JSON.stringify(newPath))]),
@@ -2782,6 +2789,7 @@ export function getChangeFieldTypeQuickFixes(
     }
     return [
         new QuickFix({
+            kind: 'CHANGE_FIELD_TYPE',
             description,
             isPreferred,
             changeSet: new ChangeSet([new TextChange(loc, newTypeText)]),
@@ -2798,6 +2806,7 @@ function getRemoveDirectiveQuickFixes(
     }
     return [
         new QuickFix({
+            kind: 'REMOVE_DIRECTIVE',
             description: `Remove @${directive.name.value}`,
             isPreferred,
             changeSet: new ChangeSet([createRemoveInlineNodeChange(directive.loc)]),

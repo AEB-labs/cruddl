@@ -55,6 +55,7 @@ export function checkEnumType(
                 if (i18nChanges.length) {
                     quickFixes.push(
                         new QuickFix({
+                            kind: 'ADD_MISSING_ENUM_VALUE',
                             description: 'Add missing enum value with i18n',
                             isPreferred: true,
                             changeSet: new ChangeSet([...fieldChanges, ...i18nChanges]),
@@ -64,6 +65,7 @@ export function checkEnumType(
 
                 quickFixes.push(
                     new QuickFix({
+                        kind: 'ADD_MISSING_ENUM_VALUE',
                         description: 'Add missing enum value',
                         isPreferred: !i18nChanges.length,
                         changeSet: new ChangeSet([...fieldChanges]),

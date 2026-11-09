@@ -1,4 +1,5 @@
 import { ChangeSet } from '../change-set/change-set.js';
+import type { QuickFixKind } from './quick-fix-kinds.js';
 
 export interface QuickFixParams {
     /**
@@ -7,11 +8,14 @@ export interface QuickFixParams {
     readonly description: string;
 
     /**
-     * Whether this is likely a fix of the underlying problem
+     * What this fix does, independent of the concrete names and values it changes
+     */
+    readonly kind: QuickFixKind;
+
+    /**
+     * Whether this fix can be applied without reviewing it, e.g. as part of a "fix all" action
      *
-     * For example, a code fix to add a missing field would be preferred, while a code fix to add a @suppress directive would not be preferred.
-     *
-     * Can be used by UIs to apply a quick fix via a hotkey, or to offer a "fix all issues" feature.
+     * See QuickFix.isPreferred
      */
     readonly isPreferred: boolean;
 
@@ -34,11 +38,23 @@ export class QuickFix {
     readonly description: string;
 
     /**
-     * Whether this is likely a fix of the underlying problem
+     * What this fix does, independent of the concrete names and values it changes
      *
-     * For example, a code fix to add a missing field would be preferred, while a code fix to add a @suppress directive would not be preferred.
+     * Can be used by UIs to group quick fixes, or to offer applying all quick fixes of one kind at
+     * once. See QUICK_FIX_KINDS for the possible values.
+     */
+    readonly kind: QuickFixKind;
+
+    /**
+     * Whether this fix can be applied without reviewing it, e.g. as part of a "fix all" action
      *
-     * Can be used by UIs to apply a quick fix via a hotkey, or to offer a "fix all issues" feature.
+     * A fix is preferred if it is very likely to be what the user wants in every case. For
+     * example, a fix that adds a missing field is preferred. A fix that is only a guess (like
+     * replacing an unknown name with a similar one) or that makes a decision the user should make
+     * consciously (like adding a @suppress directive or removing a type) is not preferred, even if
+     * it is the only fix offered for a message.
+     *
+     * At most one quick fix of a message is preferred.
      *
      * This is similar to the isPreferred property on a code action of the language server protocol:
      * https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_codeAction
@@ -47,6 +63,7 @@ export class QuickFix {
 
     constructor(params: QuickFixParams) {
         this.description = params.description;
+        this.kind = params.kind;
         this.isPreferred = params.isPreferred;
         this.changeSetOrFn = params.changeSet;
     }

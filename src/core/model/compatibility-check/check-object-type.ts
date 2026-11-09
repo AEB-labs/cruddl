@@ -61,6 +61,7 @@ export function checkObjectType(
                 if (i18nChanges.length) {
                     quickFixes.push(
                         new QuickFix({
+                            kind: 'ADD_MISSING_FIELD',
                             description: `Add field "${baselineField.name} with i18n"`,
                             isPreferred: true,
                             changeSet: new ChangeSet([...fieldChanges, ...i18nChanges]),
@@ -69,6 +70,7 @@ export function checkObjectType(
                 }
                 quickFixes.push(
                     new QuickFix({
+                        kind: 'ADD_MISSING_FIELD',
                         description: `Add field "${baselineField.name}"`,
                         isPreferred: !i18nChanges.length,
                         changeSet: new ChangeSet(fieldChanges),

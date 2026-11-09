@@ -208,6 +208,7 @@ function convertScalar(node: Scalar, source: ProjectSource, messages: Validation
                 {
                     quickFixes: [
                         new QuickFix({
+                            kind: 'QUOTE_VALUE',
                             description: 'Put in quotes',
                             isPreferred: true,
                             changeSet: new ChangeSet([

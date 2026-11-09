@@ -176,6 +176,7 @@ function getMoveLocaleIntoI18nQuickFixes(
               ];
     return [
         new QuickFix({
+            kind: 'MOVE_INTO_I18N',
             description: `Move into "i18n"`,
             isPreferred: true,
             changeSet: new ChangeSet(changes),

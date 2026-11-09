@@ -36,6 +36,7 @@ import type { RootEntityTypeConfig } from '../config/type.js';
 import { TypeKind } from '../config/type.js';
 import type { MessageLocation } from '../validation/location.js';
 import { ValidationMessage } from '../validation/message.js';
+import type { QuickFixKind } from '../validation/quick-fix-kinds.js';
 import { QuickFix } from '../validation/quick-fix.js';
 import { ValidationContext } from '../validation/validation-context.js';
 import { FieldPath } from './field-path.js';
@@ -118,8 +119,10 @@ function getChangeValueQuickFix(
     location: MessageLocation,
     key: string | undefined,
     value: unknown,
+    kind: QuickFixKind,
 ) {
     return new QuickFix({
+        kind,
         description: `Change value to ${JSON.stringify(value)}`,
         isPreferred: true,
         changeSet: new ChangeSet([createValueReplacementChange(location, key, value)]),
@@ -506,6 +509,7 @@ export class RootEntityType extends ObjectTypeBase {
                                               accessGroupLocation,
                                               undefined,
                                               suggestedValue,
+                                              'FIX_VALUE_CASING',
                                           ),
                                       ]
                                     : [],
@@ -524,7 +528,13 @@ export class RootEntityType extends ObjectTypeBase {
     private getRestrictionValueProblem(
         restriction: PermissionRestriction,
         lastField: Field,
-    ): { readonly message: string; readonly suggestedValue?: unknown } | undefined {
+    ):
+        | {
+              readonly message: string;
+              readonly suggestedValue?: unknown;
+              readonly suggestionKind?: QuickFixKind;
+          }
+        | undefined {
         const fieldDesc = `field "${lastField.declaringType.name}.${lastField.name}"`;
         if (UNSUPPORTED_RESTRICTION_SCALAR_TYPES.includes(lastField.type.name)) {
             return {
@@ -550,6 +560,7 @@ export class RootEntityType extends ObjectTypeBase {
                             typeof restriction.value === 'string'
                                 ? getEnumValueWithDifferentCase(validValues, restriction.value)
                                 : undefined,
+                        suggestionKind: 'FIX_VALUE_CASING',
                     };
                 }
                 return undefined;
@@ -563,6 +574,7 @@ export class RootEntityType extends ObjectTypeBase {
                         expectedType,
                         lastField.type.name,
                     ),
+                    suggestionKind: 'CONVERT_VALUE_TYPE',
                 };
             }
             return undefined;
@@ -610,6 +622,7 @@ export class RootEntityType extends ObjectTypeBase {
                         quickFixes: modulesDirectiveLocation
                             ? [
                                   new QuickFix({
+                                      kind: 'INCLUDE_IN_ALL_MODULES',
                                       description: 'Include in all modules',
                                       isPreferred: true,
                                       changeSet: new ChangeSet([
@@ -697,12 +710,14 @@ export class RootEntityType extends ObjectTypeBase {
                                         location: restriction.loc ?? restriction.fieldValueLoc,
                                         quickFixes:
                                             restriction.valueLoc &&
-                                            valueProblem.suggestedValue !== undefined
+                                            valueProblem.suggestedValue !== undefined &&
+                                            valueProblem.suggestionKind
                                                 ? [
                                                       getChangeValueQuickFix(
                                                           restriction.valueLoc,
                                                           'value',
                                                           valueProblem.suggestedValue,
+                                                          valueProblem.suggestionKind,
                                                       ),
                                                   ]
                                                 : [],
@@ -807,6 +822,7 @@ export class RootEntityType extends ObjectTypeBase {
         if (enableChange) {
             quickFixes.push(
                 new QuickFix({
+                    kind: 'ENABLE_FLEX_SEARCH',
                     description: 'Enable flexSearch for this type',
                     // this creates a flexSearch index, so it should be a conscious decision
                     isPreferred: false,
@@ -822,6 +838,7 @@ export class RootEntityType extends ObjectTypeBase {
         if (removeChanges.length) {
             quickFixes.push(
                 new QuickFix({
+                    kind: 'REMOVE_FLEX_SEARCH_DIRECTIVES',
                     description: `Remove @${FLEX_SEARCH_INDEXED_DIRECTIVE} and @${FLEX_SEARCH_FULLTEXT_INDEXED_DIRECTIVE} from all fields`,
                     isPreferred: false,
                     changeSet: new ChangeSet(removeChanges),

@@ -46,6 +46,7 @@ function getRemoveNonNullQuickFixes(type: TypeNode): ReadonlyArray<QuickFix> {
     const typeText = type.loc.source.body.slice(type.loc.start, type.loc.end);
     return [
         new QuickFix({
+            kind: 'REMOVE_NON_NULL',
             description: 'Remove "!"',
             isPreferred: true,
             changeSet: new ChangeSet([new TextChange(type.loc, typeText.replaceAll('!', ''))]),

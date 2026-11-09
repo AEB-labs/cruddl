@@ -257,6 +257,7 @@ function removeListItem(itemNode: ValueNode | undefined): ReadonlyArray<QuickFix
     }
     return [
         new QuickFix({
+            kind: 'REMOVE_NULL_DEFAULT_VALUE',
             description: `Remove the null value`,
             isPreferred: true,
             changeSet: new ChangeSet([change]),

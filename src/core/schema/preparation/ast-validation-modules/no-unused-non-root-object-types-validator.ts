@@ -43,6 +43,7 @@ export class NoUnusedNonRootObjectTypesValidator implements ASTValidator {
                     quickFixes: unusedType.loc
                         ? [
                               new QuickFix({
+                                  kind: 'REMOVE_UNUSED_TYPE',
                                   description: 'Remove type',
                                   // the type might be added for later use
                                   isPreferred: false,
