@@ -17,7 +17,7 @@ RETURN {
         IN (
           FOR v_subItems1
           IN (IS_LIST(v_item1.`subItems`) ? v_item1.`subItems` : [])
-          FILTER (@var5 IN v_subItems1.`tags`)
+          FILTER (@var5 IN v_subItems1.`tags`[*])
           RETURN v_subItems1
         )
         COLLECT WITH COUNT INTO v_count1

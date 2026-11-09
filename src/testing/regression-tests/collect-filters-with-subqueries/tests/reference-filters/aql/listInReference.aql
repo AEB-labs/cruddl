@@ -18,7 +18,7 @@ RETURN {
         FILTER ((v_article1.`articleNumber` > NULL) && (v_article1.`articleNumber` == v_item1.`articleNumber`))
         LIMIT @var6
         RETURN v_article1
-      ))).`tags`)
+      ))).`tags`[*])
       RETURN {
         "itemNumber": v_item1.`itemNumber`
       }

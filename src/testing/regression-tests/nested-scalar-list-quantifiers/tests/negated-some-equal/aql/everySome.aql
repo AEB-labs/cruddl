@@ -7,7 +7,7 @@ RETURN {
       IN (
         FOR v_items1
         IN (IS_LIST(v_order1.`items`) ? v_order1.`items` : [])
-        FILTER !((@var1 IN v_items1.`tags`))
+        FILTER !((@var1 IN v_items1.`tags`[*]))
         RETURN v_items1
       )
       COLLECT WITH COUNT INTO v_count1

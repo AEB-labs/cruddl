@@ -5,11 +5,11 @@ RETURN {
     SORT (v_order1.`orderNumber`)
     RETURN {
       "orderNumber": v_order1.`orderNumber`,
-      "items": v_order1.`items`[* FILTER (@var1 IN CURRENT.`tags`) RETURN {
+      "items": v_order1.`items`[* FILTER (@var1 IN CURRENT.`tags`[*]) RETURN {
         "itemNumber": CURRENT.`itemNumber`
       }]
     }
   )
 }
 
-// Peak memory usage: 32768 bytes
+// Peak memory usage: 65536 bytes
