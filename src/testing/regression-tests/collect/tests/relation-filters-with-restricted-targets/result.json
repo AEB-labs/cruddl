@@ -16,15 +16,6 @@
     "data": {
       "allDeliveries": [
         {
-          "deliveryNumber": "D1"
-        },
-        {
-          "deliveryNumber": "D2"
-        },
-        {
-          "deliveryNumber": "D3"
-        },
-        {
           "deliveryNumber": "D4"
         },
         {
@@ -40,9 +31,6 @@
     "data": {
       "allDeliveries": [
         {
-          "deliveryNumber": "D2"
-        },
-        {
           "deliveryNumber": "D3"
         }
       ]
@@ -50,7 +38,11 @@
   },
   "accessGroupNotEmpty": {
     "data": {
-      "allDeliveries": []
+      "allDeliveries": [
+        {
+          "deliveryNumber": "D2"
+        }
+      ]
     }
   },
   "accessGroupSomeHidden": {
@@ -100,7 +92,7 @@
   "accessGroupEmptyInMeta": {
     "data": {
       "_allDeliveriesMeta": {
-        "count": 2
+        "count": 1
       }
     }
   },
@@ -116,9 +108,6 @@
           "handlingUnitNumber": "H1"
         },
         {
-          "handlingUnitNumber": "H3"
-        },
-        {
           "handlingUnitNumber": "H4"
         }
       ]
@@ -127,9 +116,6 @@
   "accessFieldEmpty": {
     "data": {
       "allDeliveries": [
-        {
-          "deliveryNumber": "D2"
-        },
         {
           "deliveryNumber": "D3"
         }
