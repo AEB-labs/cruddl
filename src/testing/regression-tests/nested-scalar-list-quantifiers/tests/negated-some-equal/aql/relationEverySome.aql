@@ -1,0 +1,25 @@
+WITH @@handlingUnits
+RETURN {
+  "allOrders": (
+    FOR v_order1
+    IN @@orders
+    FILTER (FIRST(
+      FOR v_item1
+      IN (
+        FOR v_handlingUnits1
+        IN OUTBOUND v_order1 @@orders_handlingUnits
+        FILTER !((@var1 IN v_handlingUnits1.`tags`))
+        FILTER v_handlingUnits1._key != null
+        RETURN v_handlingUnits1
+      )
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
+    ) == @var2)
+    SORT (v_order1.`orderNumber`)
+    RETURN {
+      "orderNumber": v_order1.`orderNumber`
+    }
+  )
+}
+
+// Peak memory usage: 131072 bytes

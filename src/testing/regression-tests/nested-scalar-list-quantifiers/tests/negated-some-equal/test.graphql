@@ -1,0 +1,78 @@
+mutation createEdges {
+    updateOrder(input: { id: "@{ids/Order/O1}", addHandlingUnits: ["@{ids/HandlingUnit/H1}"] }) {
+        orderNumber
+    }
+    o2: updateOrder(
+        input: {
+            id: "@{ids/Order/O2}"
+            addHandlingUnits: ["@{ids/HandlingUnit/H1}", "@{ids/HandlingUnit/H2}"]
+        }
+    ) {
+        orderNumber
+    }
+    o3: updateOrder(
+        input: { id: "@{ids/Order/O3}", addHandlingUnits: ["@{ids/HandlingUnit/H3}"] }
+    ) {
+        orderNumber
+    }
+}
+
+# O2 has an item without tags, so not every item has the tag "a"
+query everySome {
+    allOrders(filter: { items_every: { tags_some: { equal: "a" } } }, orderBy: orderNumber_ASC) {
+        orderNumber
+    }
+}
+
+# same, but with a second condition in the negated part
+query everySomeAndOtherField {
+    allOrders(
+        filter: { items_every: { tags_some: { equal: "a" }, itemNumber_not: "x" } }
+        orderBy: orderNumber_ASC
+    ) {
+        orderNumber
+    }
+}
+
+# H2 has no tags, so not every handling unit of O2 has the tag "a"
+query relationEverySome {
+    allOrders(
+        filter: { handlingUnits_every: { tags_some: { equal: "a" } } }
+        orderBy: orderNumber_ASC
+    ) {
+        orderNumber
+    }
+}
+
+query noneSome {
+    allOrders(filter: { items_none: { tags_some: { equal: "a" } } }, orderBy: orderNumber_ASC) {
+        orderNumber
+    }
+}
+
+query someNone {
+    allOrders(filter: { items_some: { tags_none: { equal: "a" } } }, orderBy: orderNumber_ASC) {
+        orderNumber
+    }
+}
+
+query everyNone {
+    allOrders(filter: { items_every: { tags_none: { equal: "a" } } }, orderBy: orderNumber_ASC) {
+        orderNumber
+    }
+}
+
+query someEqual {
+    allOrders(filter: { items_some: { tags_some: { equal: "a" } } }, orderBy: orderNumber_ASC) {
+        orderNumber
+    }
+}
+
+query listFieldFilter {
+    allOrders(orderBy: orderNumber_ASC) {
+        orderNumber
+        items(filter: { tags_some: { equal: "a" } }) {
+            itemNumber
+        }
+    }
+}
