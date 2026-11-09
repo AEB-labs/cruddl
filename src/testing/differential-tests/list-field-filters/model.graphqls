@@ -1,0 +1,145 @@
+# Model for the differential test of filters on list fields. It covers every kind of list field
+# (child entities, value objects, relations, @collect) and every kind of path segment within
+# filters (scalars, scalar lists, entity extensions, value objects, references, to-1 and to-n
+# relations).
+#
+# Every type has a field whose values are unique across the test data (the @key field or an
+# "...Number" field). The test selects and sorts by it so results can be compared regardless of
+# the internal ids.
+
+enum Color {
+    RED
+    GREEN
+    BLUE
+}
+
+type Shipment @rootEntity {
+    shipmentNumber: String @key
+    priority: Int
+    deliveries: [Delivery] @relation
+    handlingUnits: [HandlingUnit] @relation
+
+    "to-n relation, then a child entity list"
+    allItems: [DeliveryItem] @collect(path: "deliveries.items")
+    "to-n relation, then two child entity lists"
+    allSubItems: [DeliveryItem] @collect(path: "deliveries.items.subItems")
+    "to-n relation, then an entity extension and a child entity list"
+    allAdditionalItems: [DeliveryItem] @collect(path: "deliveries.additions.items")
+    "to-n relation, then a child entity list and a value object list"
+    allPackages: [Package] @collect(path: "deliveries.items.packages", aggregate: DISTINCT)
+    "to-n relation, then a to-1 relation"
+    allOrders: [Order] @collect(path: "deliveries.order", aggregate: DISTINCT)
+    "to-n relation, then a @collect field with a relation depth range"
+    allHandlingUnits: [HandlingUnit] @collect(path: "handlingUnits.allInnerHandlingUnits")
+    "to-n relation, then a @collect field over a @collect field"
+    allPackedItems: [PackedItem] @collect(path: "handlingUnits.allInnerPackedItems")
+}
+
+type Order @rootEntity {
+    orderNumber: String @key
+    description: String
+    delivery: Delivery @relation
+
+    "to-1 relation, then a child entity list"
+    allItems: [DeliveryItem] @collect(path: "delivery.items")
+    "two to-1 relations, then a to-n relation"
+    allHandlingUnits: [HandlingUnit] @collect(path: "delivery.shipment.handlingUnits")
+    "two to-1 relations, a to-n relation and a child entity list"
+    allPackedItems: [PackedItem] @collect(path: "delivery.shipment.handlingUnits.packedItems")
+}
+
+type Delivery @rootEntity {
+    deliveryNumber: String @key
+    description: String
+    colors: [Color]
+    destinationCountryCode: String
+    destinationCountry: Country @reference(keyField: "destinationCountryCode")
+    items: [DeliveryItem]
+    packages: [Package]
+    additions: DeliveryAdditions
+
+    shipment: Shipment @relation(inverseOf: "deliveries")
+    order: Order @relation(inverseOf: "delivery")
+
+    "child entity list, then a value object list"
+    itemPackages: [Package] @collect(path: "items.packages", aggregate: DISTINCT)
+    "two child entity lists"
+    subItems: [DeliveryItem] @collect(path: "items.subItems")
+    "to-1 relation, then a to-n relation"
+    siblingHandlingUnits: [HandlingUnit] @collect(path: "shipment.handlingUnits")
+}
+
+type DeliveryAdditions @entityExtension {
+    note: String
+    items: [DeliveryItem]
+    mainPackage: Package
+}
+
+type DeliveryItem @childEntity {
+    itemNumber: String
+    description: String
+    quantity: Int
+    weight: Float
+    isDangerous: Boolean
+    color: Color
+    shippedAt: DateTime
+    deliveryDate: LocalDate
+    tags: [String]
+    quantities: [Int]
+    articleNumber: String
+    article: Article @reference(keyField: "articleNumber")
+    details: ItemDetails
+    packages: [Package]
+    subItems: [DeliveryItem]
+}
+
+type ItemDetails @entityExtension {
+    origin: String
+    originCountryCode: String
+    originCountry: Country @reference(keyField: "originCountryCode")
+}
+
+type Package @valueObject {
+    packageNumber: String
+    quantity: Int
+    tags: [String]
+    materialArticleNumber: String
+    materialArticle: Article @reference(keyField: "materialArticleNumber")
+}
+
+type HandlingUnit @rootEntity {
+    handlingUnitNumber: String @key
+    weight: Float
+    packedItems: [PackedItem]
+
+    shipment: Shipment @relation(inverseOf: "handlingUnits")
+    childHandlingUnits: [HandlingUnit] @relation
+    parentHandlingUnit: HandlingUnit @relation(inverseOf: "childHandlingUnits")
+
+    "relation depth range including the entity itself"
+    allInnerHandlingUnits: [HandlingUnit] @collect(path: "childHandlingUnits{0,2}")
+    "relation depth range starting at the children"
+    descendantHandlingUnits: [HandlingUnit] @collect(path: "childHandlingUnits{1,3}")
+    "@collect field with a relation depth range, then a child entity list"
+    allInnerPackedItems: [PackedItem] @collect(path: "allInnerHandlingUnits.packedItems")
+}
+
+type PackedItem @childEntity {
+    packedItemNumber: String
+    quantity: Int
+    articleNumber: String
+    article: Article @reference(keyField: "articleNumber")
+}
+
+type Article @rootEntity {
+    articleNumber: String @key
+    description: String
+    isDangerous: Boolean
+    tags: [String]
+    replacements: [Article] @relation
+}
+
+type Country @rootEntity {
+    isoCode: String @key
+    name: String
+}
