@@ -1,9 +1,26 @@
 import { gql } from 'graphql-tag';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { expectQuickFix } from '../../../../testing/utils/model-validation-utils.js';
 import { Project } from '../../../project/project.js';
 
 describe('@suppress quick fix', () => {
+    it('exposes the code of the message', () => {
+        const project = new Project([
+            gql`
+                type Stuff @rootEntity {
+                    foo: String
+                }
+                type Child @childEntity {
+                    stuff: Int
+                }
+            `.loc!.source,
+        ]);
+        const messages = project.validate().messages;
+        expect(messages.map((m) => [m.code, m.quickFixes.map((q) => q.kind)])).to.deep.equal([
+            ['UNUSED', ['REMOVE_UNUSED_TYPE', 'SUPPRESS']],
+        ]);
+    });
+
     it('generates a quick fix on type level', () => {
         const project = new Project([
             gql`
