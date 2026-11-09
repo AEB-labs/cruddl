@@ -45,6 +45,7 @@ import { QuickFix } from '../validation/quick-fix.js';
 import type { ModelComponent, ValidationContext } from '../validation/validation-context.js';
 import { numberTypeNames } from './built-in-types.js';
 import { CollectPath } from './collect-path.js';
+import { parseDefaultValue } from './default-value.js';
 import { IDENTITY_ANALYZER, NORM_CI_ANALYZER } from './flex-search.js';
 import type { FieldLocalization } from './i18n.js';
 import { InvalidType } from './invalid-type.js';
@@ -212,6 +213,20 @@ export class Field implements ModelComponent {
 
     public get hasDefaultValue(): boolean {
         return this.defaultValue !== undefined;
+    }
+
+    /**
+     * The default value, parsed like an equivalent GraphQL input value would be
+     *
+     * For example, DateTime values are normalized, decimals are rounded, and OffsetDateTime values
+     * are ZonedDateTime instances. If the default value is invalid, this is the raw default value.
+     */
+    @memorize()
+    get parsedDefaultValue(): unknown {
+        if (this.defaultValue === undefined) {
+            return undefined;
+        }
+        return parseDefaultValue(this).value;
     }
 
     @memorize()
@@ -1475,14 +1490,9 @@ export class Field implements ModelComponent {
             return;
         }
 
-        context.addMessage(
-            ValidationMessage.suppressableInfo(
-                'NO_TYPE_CHECKS',
-                `Take care, there are no type checks for default values yet.`,
-                this.astNode,
-                { location: this.input.defaultValueASTNode || this.astNode },
-            ),
-        );
+        for (const message of parseDefaultValue(this).messages) {
+            context.addMessage(message);
+        }
     }
 
     private validateCalcMutations(context: ValidationContext) {

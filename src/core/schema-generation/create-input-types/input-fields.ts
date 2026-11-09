@@ -75,7 +75,7 @@ export class BasicCreateInputField implements CreateInputField {
 
     getProperties(value: AnyValue, context: FieldContext) {
         if (value === undefined && this.field.hasDefaultValue) {
-            value = this.field.defaultValue;
+            value = this.field.parsedDefaultValue;
         }
 
         value = this.coerceValue(value, context);

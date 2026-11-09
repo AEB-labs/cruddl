@@ -31,12 +31,17 @@ export const WARNING_CODES = {
     EMPTY_NAME: 'The empty string is used as a name',
 
     REDUNDANT_FIELD: 'A field declaration that is not needed',
+
+    INVALID_DEFAULT_VALUE:
+        'A @defaultValue does not match the field type (will be an error in a future release)',
 } as const satisfies MessageCodes;
 
 export type WarningCode = keyof typeof WARNING_CODES;
 
 export const INFO_CODES = {
-    NO_TYPE_CHECKS: '@defaultValue currently does not have type checks for the value',
+    // no longer reported because @defaultValue is type-checked now. Kept so existing @suppress
+    // directives stay valid.
+    NO_TYPE_CHECKS: 'Deprecated and no longer reported (@defaultValue values are type-checked now)',
 
     INEFFECTIVE_ACCESS_FIELD:
         '@accessField is specified but the field is not used in a restriction of a permission profile',

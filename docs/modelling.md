@@ -690,15 +690,28 @@ will be used during object creation** if the field value is not specified. The d
 affect existing objects. This still applies if you add a new field with the `@defaultValue`
 directive: only newly created objects will have the default value.
 
-Be careful with specifying the field value exactly, because there are currently no typechecks for
-default values. For example, for fields of type `Int`, make sure you specify a number and not a
-string value:
+The default value is checked against the field type, and it's stored the same way as if it had been
+specified in the create mutation. For example, `DateTime` values are normalized and `Decimal2`
+values are rounded to two digits. Specify values like you would in a GraphQL query: enum values as
+enum literals or strings, date and time values as strings, and objects for value objects, entity
+extensions and child entities (within a list):
 
 ```graphql
 type Delivery @rootEntity {
     isShipped: Boolean @defaultValue(value: false)
+    status: DeliveryStatus @defaultValue(value: DRAFT)
+    plannedAt: OffsetDateTime @defaultValue(value: "2020-01-01T12:00:00+02:00")
+    weight: AmountWithUnit @defaultValue(value: { amount: 0, unit: "kg" })
+    tags: [String] @defaultValue(value: ["new"])
 }
 ```
+
+Within objects, reference fields take the key of the referenced object. System fields like `id` of
+child entities, relations, and `@collect`, `@parent` and `@root` fields can't be set.
+
+A default value that doesn't match the field type currently causes a warning (code
+`INVALID_DEFAULT_VALUE`), and the value is stored as specified, without conversion. This will become
+an error in a future release.
 
 ### Calc mutations
 
