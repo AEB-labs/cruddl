@@ -1,0 +1,151 @@
+mutation createEdges {
+    updateShipment(
+        input: {
+            id: "@{ids/Shipment/S1}"
+            addDeliveries: ["@{ids/Delivery/D1}", "@{ids/Delivery/D2}"]
+            addHandlingUnits: ["@{ids/HandlingUnit/H1}"]
+        }
+    ) {
+        shipmentNumber
+    }
+    s2: updateShipment(
+        input: {
+            id: "@{ids/Shipment/S2}"
+            addDeliveries: ["@{ids/Delivery/D3}"]
+            addHandlingUnits: ["@{ids/HandlingUnit/H4}"]
+        }
+    ) {
+        shipmentNumber
+    }
+    updateOrder(input: { id: "@{ids/Order/O1}", delivery: "@{ids/Delivery/D1}" }) {
+        orderNumber
+    }
+    updateHandlingUnit(
+        input: { id: "@{ids/HandlingUnit/H1}", addChildHandlingUnits: ["@{ids/HandlingUnit/H2}"] }
+    ) {
+        handlingUnitNumber
+    }
+    h2: updateHandlingUnit(
+        input: { id: "@{ids/HandlingUnit/H2}", addChildHandlingUnits: ["@{ids/HandlingUnit/H3}"] }
+    ) {
+        handlingUnitNumber
+    }
+    updateArticle(input: { id: "@{ids/Article/A1}", addReplacements: ["@{ids/Article/A2}"] }) {
+        articleNumber
+    }
+}
+
+# a quantifier with an OR condition on a nested list (compiled to a subquery before cruddl 6.0.0-alpha.3)
+query someWithOr {
+    Shipment(shipmentNumber: "S1") {
+        allItems(
+            filter: { subItems_some: { OR: [{ openQuantity_gt: 0 }, { openQuantity: null }] } }
+        ) {
+            itemNumber
+        }
+    }
+}
+
+query nestedSome {
+    Shipment(shipmentNumber: "S1") {
+        allItems(filter: { subItems_some: { subItems_some: { itemNumber: "4.1.1" } } }) {
+            itemNumber
+        }
+        _allItemsMeta(filter: { subItems_some: { subItems_some: { itemNumber: "4.1.1" } } }) {
+            count
+        }
+    }
+}
+
+query nestedEveryAndNone {
+    Shipment(shipmentNumber: "S1") {
+        allItems(filter: { subItems_every: { subItems_none: { itemNumber_starts_with: "4" } } }) {
+            itemNumber
+        }
+    }
+}
+
+query nestedEmpty {
+    Shipment(shipmentNumber: "S1") {
+        allItems(filter: { subItems_some: { tags_empty: false } }) {
+            itemNumber
+        }
+    }
+}
+
+query nestedScalarListQuantifier {
+    Shipment(shipmentNumber: "S1") {
+        allItems(filter: { subItems_some: { tags_some: { equal: "urgent" } } }) {
+            itemNumber
+        }
+    }
+}
+
+query nestedInOr {
+    Shipment(shipmentNumber: "S1") {
+        allItems(
+            filter: {
+                OR: [
+                    { itemNumber: "3" }
+                    { subItems_some: { subItems_some: { itemNumber: "4.1.1" } } }
+                ]
+            }
+        ) {
+            itemNumber
+        }
+    }
+}
+
+query nestedWithOrderAndPagination {
+    Shipment(shipmentNumber: "S1") {
+        sorted: allItems(
+            filter: { subItems_every: { subItems_none: { itemNumber_starts_with: "4" } } }
+            orderBy: itemNumber_DESC
+        ) {
+            itemNumber
+        }
+        paginated: allItems(
+            filter: { subItems_every: { subItems_none: { itemNumber_starts_with: "4" } } }
+            orderBy: itemNumber_ASC
+            skip: 1
+            first: 1
+        ) {
+            itemNumber
+        }
+        firstOnly: allItems(
+            filter: { subItems_every: { subItems_none: { itemNumber_starts_with: "4" } } }
+            first: 5
+        ) {
+            itemNumber
+        }
+    }
+}
+
+query twoListSegments {
+    Shipment(shipmentNumber: "S1") {
+        allSubItems(filter: { subItems_some: { subItems_empty: true } }) {
+            itemNumber
+        }
+    }
+}
+
+query entityExtension {
+    Shipment(shipmentNumber: "S1") {
+        allAdditionalItems(
+            filter: { subItems_some: { OR: [{ openQuantity_gt: 0 }, { tags_empty: false }] } }
+        ) {
+            itemNumber
+        }
+    }
+}
+
+query toOneRelation {
+    Order(orderNumber: "O1") {
+        allItems(filter: { subItems_some: { subItems_empty: true } }) {
+            itemNumber
+        }
+        _allItemsMeta(filter: { subItems_some: { subItems_empty: true } }) {
+            count
+        }
+    }
+}

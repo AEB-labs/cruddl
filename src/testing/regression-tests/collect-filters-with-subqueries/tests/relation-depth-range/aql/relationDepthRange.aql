@@ -1,0 +1,82 @@
+WITH @@handlingUnits
+LET v_handlingUnit1 = FIRST((
+  FOR v_handlingUnit2
+  IN @@handlingUnits
+  FILTER (v_handlingUnit2.`handlingUnitNumber` == @var1)
+  LIMIT @var2
+  RETURN v_handlingUnit2
+))
+LET v_shipment1 = FIRST((
+  FOR v_shipment2
+  IN @@shipments
+  FILTER (v_shipment2.`shipmentNumber` == @var3)
+  LIMIT @var4
+  RETURN v_shipment2
+))
+RETURN {
+  "HandlingUnit": (IS_NULL(v_handlingUnit1) ? null : {
+    "allInnerPackedItems": (
+      FOR v_root1, v_edge1, v_path1 IN @var5..@var6 OUTBOUND v_handlingUnit1 @@handlingUnits_childHandlingUnits
+      FILTER v_root1._key != null
+      FOR v_item1 IN v_root1.`packedItems`[* FILTER ((IS_NULL(CURRENT.`articleNumber`) ? null : FIRST((
+        FOR v_article1
+        IN @@articles
+        FILTER ((v_article1.`articleNumber` > NULL) && (v_article1.`articleNumber` == CURRENT.`articleNumber`))
+        LIMIT @var7
+        RETURN v_article1
+      ))).`isDangerousGoods` == @var8)]
+      RETURN {
+        "itemNumber": v_item1.`itemNumber`
+      }
+    ),
+    @var9: {
+      "count": FIRST(
+        FOR v_item2
+        IN (
+          FOR v_root2, v_edge2, v_path2 IN @var10..@var11 OUTBOUND v_handlingUnit1 @@handlingUnits_childHandlingUnits
+          FILTER v_root2._key != null
+          FOR v_item3 IN v_root2.`packedItems`[* FILTER ((IS_NULL(CURRENT.`articleNumber`) ? null : FIRST((
+            FOR v_article2
+            IN @@articles
+            FILTER ((v_article2.`articleNumber` > NULL) && (v_article2.`articleNumber` == CURRENT.`articleNumber`))
+            LIMIT @var12
+            RETURN v_article2
+          ))).`isDangerousGoods` == @var13)]
+          RETURN v_item3
+        )
+        COLLECT WITH COUNT INTO v_count1
+        RETURN v_count1
+      )
+    }
+  }),
+  "Shipment": (IS_NULL(v_shipment1) ? null : {
+    "allPackedItems": (
+      FOR v_node1, v_edge3, v_path3 IN @var14..@var15 OUTBOUND v_shipment1 @@shipments_handlingUnits
+      FOR v_root3, v_edge4, v_path4 IN @var16..@var17 OUTBOUND v_node1 @@handlingUnits_childHandlingUnits
+      FILTER v_root3._key != null
+      FOR v_item4 IN v_root3.`packedItems`[* FILTER ((IS_NULL(CURRENT.`articleNumber`) ? null : FIRST((
+        FOR v_article3
+        IN @@articles
+        FILTER ((v_article3.`articleNumber` > NULL) && (v_article3.`articleNumber` == CURRENT.`articleNumber`))
+        LIMIT @var18
+        RETURN v_article3
+      ))).`description` >= UPPER(@var19) && (IS_NULL(CURRENT.`articleNumber`) ? null : FIRST((
+        FOR v_article3
+        IN @@articles
+        FILTER ((v_article3.`articleNumber` > NULL) && (v_article3.`articleNumber` == CURRENT.`articleNumber`))
+        LIMIT @var20
+        RETURN v_article3
+      ))).`description` < LOWER(@var21)) && (LEFT((IS_NULL(CURRENT.`articleNumber`) ? null : FIRST((
+        FOR v_article3
+        IN @@articles
+        FILTER ((v_article3.`articleNumber` > NULL) && (v_article3.`articleNumber` == CURRENT.`articleNumber`))
+        LIMIT @var22
+        RETURN v_article3
+      ))).`description`, LENGTH(@var23)) == @var24)]
+      SORT (v_item4.`itemNumber`)
+      RETURN {
+        "itemNumber": v_item4.`itemNumber`
+      }
+    )
+  })
+}

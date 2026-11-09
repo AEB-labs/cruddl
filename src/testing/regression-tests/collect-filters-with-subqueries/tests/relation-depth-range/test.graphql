@@ -1,0 +1,55 @@
+mutation createEdges {
+    updateShipment(
+        input: {
+            id: "@{ids/Shipment/S1}"
+            addDeliveries: ["@{ids/Delivery/D1}", "@{ids/Delivery/D2}"]
+            addHandlingUnits: ["@{ids/HandlingUnit/H1}"]
+        }
+    ) {
+        shipmentNumber
+    }
+    s2: updateShipment(
+        input: {
+            id: "@{ids/Shipment/S2}"
+            addDeliveries: ["@{ids/Delivery/D3}"]
+            addHandlingUnits: ["@{ids/HandlingUnit/H4}"]
+        }
+    ) {
+        shipmentNumber
+    }
+    updateOrder(input: { id: "@{ids/Order/O1}", delivery: "@{ids/Delivery/D1}" }) {
+        orderNumber
+    }
+    updateHandlingUnit(
+        input: { id: "@{ids/HandlingUnit/H1}", addChildHandlingUnits: ["@{ids/HandlingUnit/H2}"] }
+    ) {
+        handlingUnitNumber
+    }
+    h2: updateHandlingUnit(
+        input: { id: "@{ids/HandlingUnit/H2}", addChildHandlingUnits: ["@{ids/HandlingUnit/H3}"] }
+    ) {
+        handlingUnitNumber
+    }
+    updateArticle(input: { id: "@{ids/Article/A1}", addReplacements: ["@{ids/Article/A2}"] }) {
+        articleNumber
+    }
+}
+
+query relationDepthRange {
+    HandlingUnit(handlingUnitNumber: "H1") {
+        allInnerPackedItems(filter: { article: { isDangerousGoods: true } }) {
+            itemNumber
+        }
+        _allInnerPackedItemsMeta(filter: { article: { isDangerousGoods: true } }) {
+            count
+        }
+    }
+    Shipment(shipmentNumber: "S1") {
+        allPackedItems(
+            filter: { article: { description_starts_with: "P" } }
+            orderBy: itemNumber_ASC
+        ) {
+            itemNumber
+        }
+    }
+}

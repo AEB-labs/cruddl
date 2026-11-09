@@ -1,0 +1,45 @@
+{
+  "createEdges": {
+    "data": {
+      "updateShipment": {
+        "shipmentNumber": "S1"
+      },
+      "s2": {
+        "shipmentNumber": "S2"
+      },
+      "updateOrder": {
+        "orderNumber": "O1"
+      },
+      "updateHandlingUnit": {
+        "handlingUnitNumber": "H1"
+      },
+      "h2": {
+        "handlingUnitNumber": "H2"
+      },
+      "updateArticle": {
+        "articleNumber": "A1"
+      }
+    }
+  },
+  "relationDepthRange": {
+    "data": {
+      "HandlingUnit": {
+        "allInnerPackedItems": [
+          {
+            "itemNumber": "4"
+          }
+        ],
+        "_allInnerPackedItemsMeta": {
+          "count": 1
+        }
+      },
+      "Shipment": {
+        "allPackedItems": [
+          {
+            "itemNumber": "1"
+          }
+        ]
+      }
+    }
+  }
+}

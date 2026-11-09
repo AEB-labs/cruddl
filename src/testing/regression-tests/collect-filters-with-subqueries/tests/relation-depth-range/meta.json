@@ -1,0 +1,8 @@
+{
+  "databases": {
+    // traversals with min/max depth are not implemented in InMemoryAdapter
+    "in-memory": {
+      "ignore": true
+    }
+  }
+}
