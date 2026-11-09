@@ -14,21 +14,21 @@ RETURN (
   RETURN NEW._key
 )
 
-// Peak memory usage (arangodb 3.12.13): 32768 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN DOCUMENT(@@deliveries, @var1)
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
 WITH @@deliveries
 RETURN DOCUMENT(@@deliveries, @var1)
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
@@ -40,7 +40,7 @@ RETURN (
   REMOVE v_edge1 IN @@shipments_deliveries
 )
 
-// Peak memory usage (arangodb 3.12.13): 32768 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
@@ -54,14 +54,14 @@ RETURN (
   IN @@shipments_deliveries
 )
 
-// Peak memory usage (arangodb 3.12.13): 65536 bytes
+// Peak memory usage: 65536 bytes
 
 // ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
@@ -73,7 +73,7 @@ RETURN (
   REMOVE v_edge1 IN @@shipments_handlingUnits
 )
 
-// Peak memory usage (arangodb 3.12.13): 32768 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
@@ -87,7 +87,7 @@ RETURN (
   IN @@shipments_handlingUnits
 )
 
-// Peak memory usage (arangodb 3.12.13): 65536 bytes
+// Peak memory usage: 65536 bytes
 
 // ----------------------------------------------------------------
 
@@ -97,7 +97,7 @@ RETURN (IS_NULL(v_shipment1) ? null : {
   "shipmentNumber": v_shipment1.`shipmentNumber`
 })
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
@@ -118,14 +118,14 @@ RETURN (
   RETURN NEW._key
 )
 
-// Peak memory usage (arangodb 3.12.13): 32768 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits, @@shipments
 RETURN DOCUMENT(@@deliveries, @var1)
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
@@ -137,7 +137,7 @@ RETURN (
   REMOVE v_edge1 IN @@shipments_deliveries
 )
 
-// Peak memory usage (arangodb 3.12.13): 32768 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
@@ -151,14 +151,14 @@ RETURN (
   IN @@shipments_deliveries
 )
 
-// Peak memory usage (arangodb 3.12.13): 65536 bytes
+// Peak memory usage: 65536 bytes
 
 // ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits, @@shipments
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
@@ -170,7 +170,7 @@ RETURN (
   REMOVE v_edge1 IN @@shipments_handlingUnits
 )
 
-// Peak memory usage (arangodb 3.12.13): 32768 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
@@ -184,7 +184,7 @@ RETURN (
   IN @@shipments_handlingUnits
 )
 
-// Peak memory usage (arangodb 3.12.13): 65536 bytes
+// Peak memory usage: 65536 bytes
 
 // ----------------------------------------------------------------
 
@@ -194,7 +194,7 @@ RETURN (IS_NULL(v_shipment1) ? null : {
   "shipmentNumber": v_shipment1.`shipmentNumber`
 })
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
@@ -215,14 +215,14 @@ RETURN (
   RETURN NEW._key
 )
 
-// Peak memory usage (arangodb 3.12.13): 32768 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits, @@shipments
 RETURN DOCUMENT(@@deliveries, @var1)
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
@@ -234,7 +234,7 @@ RETURN (
   REMOVE v_edge1 IN @@orders_delivery
 )
 
-// Peak memory usage (arangodb 3.12.13): 32768 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
@@ -246,7 +246,7 @@ RETURN (
   IN @@orders_delivery
 )
 
-// Peak memory usage (arangodb 3.12.13): 65536 bytes
+// Peak memory usage: 65536 bytes
 
 // ----------------------------------------------------------------
 
@@ -256,7 +256,7 @@ RETURN (IS_NULL(v_order1) ? null : {
   "orderNumber": v_order1.`orderNumber`
 })
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
@@ -277,14 +277,14 @@ RETURN (
   RETURN NEW._key
 )
 
-// Peak memory usage (arangodb 3.12.13): 32768 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits, @@shipments, @@orders
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
@@ -296,7 +296,7 @@ RETURN (
   REMOVE v_edge1 IN @@handlingUnits_childHandlingUnits
 )
 
-// Peak memory usage (arangodb 3.12.13): 32768 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
@@ -310,7 +310,7 @@ RETURN (
   IN @@handlingUnits_childHandlingUnits
 )
 
-// Peak memory usage (arangodb 3.12.13): 65536 bytes
+// Peak memory usage: 65536 bytes
 
 // ----------------------------------------------------------------
 
@@ -320,7 +320,7 @@ RETURN (IS_NULL(v_handlingUnit1) ? null : {
   "handlingUnitNumber": v_handlingUnit1.`handlingUnitNumber`
 })
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
@@ -341,14 +341,14 @@ RETURN (
   RETURN NEW._key
 )
 
-// Peak memory usage (arangodb 3.12.13): 32768 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits, @@shipments, @@orders
 RETURN DOCUMENT(@@handlingUnits, @var1)
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
@@ -360,7 +360,7 @@ RETURN (
   REMOVE v_edge1 IN @@handlingUnits_childHandlingUnits
 )
 
-// Peak memory usage (arangodb 3.12.13): 32768 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
@@ -374,7 +374,7 @@ RETURN (
   IN @@handlingUnits_childHandlingUnits
 )
 
-// Peak memory usage (arangodb 3.12.13): 65536 bytes
+// Peak memory usage: 65536 bytes
 
 // ----------------------------------------------------------------
 
@@ -384,7 +384,7 @@ RETURN (IS_NULL(v_handlingUnit1) ? null : {
   "handlingUnitNumber": v_handlingUnit1.`handlingUnitNumber`
 })
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
@@ -405,14 +405,14 @@ RETURN (
   RETURN NEW._key
 )
 
-// Peak memory usage (arangodb 3.12.13): 32768 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
 WITH @@deliveries, @@handlingUnits, @@shipments, @@orders, @@articles
 RETURN DOCUMENT(@@articles, @var1)
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
@@ -426,7 +426,7 @@ RETURN (
   IN @@articles_replacements
 )
 
-// Peak memory usage (arangodb 3.12.13): 65536 bytes
+// Peak memory usage: 65536 bytes
 
 // ----------------------------------------------------------------
 
@@ -436,7 +436,7 @@ RETURN (IS_NULL(v_article1) ? null : {
   "articleNumber": v_article1.`articleNumber`
 })
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes
 
 // ----------------------------------------------------------------
 
@@ -450,4 +450,4 @@ RETURN {
   "updateArticle": @v_updateArticle1
 }
 
-// Peak memory usage (arangodb 3.12.13): 0 bytes
+// Peak memory usage: 0 bytes

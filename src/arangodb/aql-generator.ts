@@ -2282,7 +2282,8 @@ function processTraversalWithNonListRelationSegmentsAndNonListFieldSegments(
  *     FOR node2 in OUTBOUND hop1_hop2
  *     FOR root IN OUTBOUND hop2_target
  *     LET extractedVar1 = NOEVAL(variable1ValueExpr(root))
- *     FOR item IN root.fieldSegment1[*].fieldSegment2[** FILTER filterExpr(CURRENT)][*]
+ *     FOR item IN root.fieldSegment1[*].fieldSegment2[**][*]
+ *     FILTER filterExpr(item)
  *     LET extractedVar2 = variable1ValueExpr(item)
  *     SORT item.sortValues[0]
  *     LIMIT skip, maxCount
@@ -2294,11 +2295,16 @@ function processTraversalWithNonListRelationSegmentsAndNonListFieldSegments(
  *     FOR node2 in OUTBOUND hop1_hop2
  *     LET root = FIRST(FOR node3 IN OUTBOUND hop2_target RETURN node3)
  *     LET extractedVar1 = NOEVAL(variable1ValueExpr(root))
- *     FOR item IN root.fieldSegment1[*].fieldSegment2[** FILTER filterExpr(CURRENT)][*]
+ *     FOR item IN root.fieldSegment1[*].fieldSegment2[**][*]
+ *     FILTER filterExpr(item)
  *     LET extractedVar2 = variable1ValueExpr(item)
  *     SORT item.sortValues[0]
  *     LIMIT skip, maxCount
  *     RETURN innerNode(item, { root })
+ *
+ * The filter is a FILTER statement and not part of the array expansion because this function is
+ * used when the traversal can't be implemented as an array expansion, e.g. because the filter
+ * uses subqueries.
  */
 function processTraversalWithRelationAndListFieldSegmentsUsingSubquery(
     node: TraversalQueryNode,
@@ -2324,20 +2330,9 @@ function processTraversalWithRelationAndListFieldSegmentsUsingSubquery(
         context,
     });
 
-    const filterNode = node.filterNode;
-    const innerFilterFrag = filterNode
-        ? (itemFrag: AQLFragment) => {
-              // don't provide rootEntityVariable
-              // (if we want to filter on root, it should happen outside already)
-              const innerContext = context.bindVariable(node.itemVariable, itemFrag);
-              return processNode(filterNode, innerContext);
-          }
-        : undefined;
-
     const fieldTraversalFrag = getFieldTraversalFragment({
         segments: node.fieldSegments,
         sourceFrag: rootVar,
-        filterFrag: innerFilterFrag,
     });
 
     const itemVar = aql.variable(node.itemVariable.label ?? 'item');
@@ -2349,6 +2344,12 @@ function processTraversalWithRelationAndListFieldSegmentsUsingSubquery(
         innerFrag,
     } = extractTraversalAssignmentsAsAql({ node, context, rootVar, itemVar });
 
+    // filter in the subquery instead of in getFieldTraversalFragment() because the filter
+    // expression might use subqueries, which can't be used within array expansions
+    const filterFrag = node.filterNode
+        ? aql`FILTER ${processNode(node.filterNode, itemBaseContext)}`
+        : aql``;
+
     // The fieldTraversalFrag will produce a list, so a simple RETURN mapFrag would result in nested lists
     // -> we iterate over the items again to flatten the lists (the FOR ${itemVar} ...)
     return aqlExt.subquery(
@@ -2356,6 +2357,7 @@ function processTraversalWithRelationAndListFieldSegmentsUsingSubquery(
         aql`${forStatementsFrag}`,
         ...rootAssignmentFrags,
         aql`FOR ${itemVar} IN ${fieldTraversalFrag}`,
+        filterFrag,
         generateSortAQL(node.orderBy, itemBaseContext),
         generateLimitClause(node) ?? aql``,
         ...itemAssignmentFrags,

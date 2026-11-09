@@ -11,11 +11,12 @@ RETURN {
     "allItems": (
       FOR v_root1, v_edge1, v_path1 IN @var3..@var4 OUTBOUND v_shipment1 @@shipments_deliveries
       FILTER v_root1._key != null
-      FOR v_item1 IN v_root1.`items`[* FILTER (FIRST(
+      FOR v_item1 IN v_root1.`items`[*]
+      FILTER (FIRST(
         FOR v_item2
         IN (
           FOR v_subItems1
-          IN (IS_LIST(CURRENT.`subItems`) ? CURRENT.`subItems` : [])
+          IN (IS_LIST(v_item1.`subItems`) ? v_item1.`subItems` : [])
           FILTER ((IS_NULL(v_subItems1.`articleNumber`) ? null : FIRST((
             FOR v_article1
             IN @@articles
@@ -27,10 +28,12 @@ RETURN {
         )
         COLLECT WITH COUNT INTO v_count1
         RETURN v_count1
-      ) > @var7)]
+      ) > @var7)
       RETURN {
         "itemNumber": v_item1.`itemNumber`
       }
     )
   })
 }
+
+// Peak memory usage: 163840 bytes
