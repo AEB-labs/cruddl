@@ -1,0 +1,34 @@
+LET v_shipment1 = FIRST((
+  FOR v_shipment2
+  IN @@shipments
+  FILTER (v_shipment2.`shipmentNumber` == @var1)
+  LIMIT @var2
+  RETURN v_shipment2
+))
+RETURN {
+  "Shipment": (IS_NULL(v_shipment1) ? null : {
+    "itemSlots": (
+      FOR v_warehouseSlot1
+      IN (
+        FOR v_item1
+        IN v_shipment1.`items`[*].`slot`
+        FILTER v_item1 != null
+        COLLECT v_distinct1 = v_item1 OPTIONS { method: "hash" }
+        RETURN v_distinct1
+      )
+      RETURN {
+        "warehouse": v_warehouseSlot1.`warehouse`,
+        "level": v_warehouseSlot1.`level`
+      }
+    ),
+    "itemSlotCount": FIRST(
+      FOR v_item2
+      IN v_shipment1.`items`[*].`slot`
+      FILTER v_item2 != null
+      COLLECT AGGREGATE v_count_distinct1 = COUNT_DISTINCT(v_item2)
+      RETURN v_count_distinct1
+    )
+  })
+}
+
+// Peak memory usage: 98304 bytes
