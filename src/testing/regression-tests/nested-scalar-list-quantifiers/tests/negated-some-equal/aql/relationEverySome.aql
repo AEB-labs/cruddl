@@ -8,7 +8,7 @@ RETURN {
       IN (
         FOR v_handlingUnits1
         IN OUTBOUND v_order1 @@orders_handlingUnits
-        FILTER !((@var1 IN v_handlingUnits1.`tags`))
+        FILTER !((@var1 IN v_handlingUnits1.`tags`[*]))
         FILTER v_handlingUnits1._key != null
         RETURN v_handlingUnits1
       )

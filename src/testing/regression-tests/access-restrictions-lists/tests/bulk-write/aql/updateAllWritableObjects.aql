@@ -10,7 +10,7 @@ RETURN (FIRST(
         FILTER ((v_item2.`tags` ANY IN @var1) || (v_item2.`tags` ANY IN @var2))
         RETURN v_item2
       )
-      FILTER (@var3 IN v_shipment2.`tags`)
+      FILTER (@var3 IN v_shipment2.`tags`[*])
       RETURN v_shipment2
     )
     FILTER !((v_shipment1.`tags` ANY IN @var4))
@@ -21,7 +21,7 @@ RETURN (FIRST(
   RETURN v_count1
 ) == 0)
 
-// Peak memory usage: 0 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
@@ -37,7 +37,7 @@ RETURN (FIRST(
         FILTER ((v_item2.`tags` ANY IN @var1) || (v_item2.`tags` ANY IN @var2))
         RETURN v_item2
       )
-      FILTER (@var3 IN v_shipment1.`tags`)
+      FILTER (@var3 IN v_shipment1.`tags`[*])
       RETURN v_shipment1
     )
     FILTER !((v_currentEntity1.`tags` ANY IN @var4))
@@ -48,7 +48,7 @@ RETURN (FIRST(
   RETURN v_count1
 ) == 0)
 
-// Peak memory usage: 0 bytes
+// Peak memory usage: 32768 bytes
 
 // ----------------------------------------------------------------
 
@@ -62,7 +62,7 @@ RETURN (
       FILTER ((v_item1.`tags` ANY IN @var1) || (v_item1.`tags` ANY IN @var2))
       RETURN v_item1
     )
-    FILTER (@var3 IN v_shipment1.`tags`)
+    FILTER (@var3 IN v_shipment1.`tags`[*])
     RETURN v_shipment1
   )
   UPDATE v_currentEntity1

@@ -1629,10 +1629,15 @@ function getQuantifierFilterUsingArrayComparisonOperator(
     // The case of "field ANY == value" can further be optimized into "value IN field" which can use an array index
     // https://www.arangodb.com/docs/stable/indexing-index-basics.html#indexing-array-values
     if (operator === BinaryOperator.EQUAL && node.quantifier === 'some') {
-        // the IN operator does not complain if the rhs operand is not a list, it just yields false
-        // so we do not need to care about the safe list wrapper
-        needsSafeListWrapper = false;
-        return aql`(${valueFrag} IN ${fieldValueFragFn(needsSafeListWrapper)})`;
+        if (fields.length) {
+            // list[*].field is always an array
+            return aql`(${valueFrag} IN ${fieldValueFragFn(false)})`;
+        }
+        // The rhs of IN must always be an array: IN yields false for a non-array rhs, but ArangoDB
+        // rewrites !(value IN list) into (value NOT IN list), which also yields false for a
+        // non-array rhs. This matters when the condition is negated, e.g. in "every" quantifiers
+        // (ArangoDB MDS-1330). list[*] yields [] for non-arrays and can still use an array index.
+        return aql`(${valueFrag} IN ${processNode(listNode, context)}[*])`;
     }
 
     let quantifierFrag: AQLFragment;
