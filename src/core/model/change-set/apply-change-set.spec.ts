@@ -75,6 +75,17 @@ describe('applyChangeSet', () => {
         ]);
     });
 
+    it('applies an insert at the start of a replaced range before the replacement', () => {
+        const source = new ProjectSource('file1.txt', `This is a test.`);
+        const project = new Project([source]);
+        const changeSet = new ChangeSet([
+            new TextChange(new MessageLocation(source, 'This '.length, 'This is'.length), 'was'),
+            new TextChange(new MessageLocation(source, 'This '.length, 'This '.length), 'really '),
+        ]);
+        const newProject = applyChangeSet(project, changeSet);
+        expect(newProject.sources.map((s) => s.body)).to.deep.equal(['This really was a test.']);
+    });
+
     it('applies a change set with unordered changes', () => {
         const source = new ProjectSource('file1.txt', `This is a test.`);
         const project = new Project([source]);
