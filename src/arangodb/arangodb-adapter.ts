@@ -27,6 +27,7 @@ import type { Mutable } from '../core/utils/util-types.js';
 import { isDefined, sleep, sleepInterruptible } from '../core/utils/utils.js';
 import { getPreciseTime, Watch } from '../core/utils/watch.js';
 import { generateTokenizationQuery, getAQLQuery } from './aql-generator.js';
+import { getAQLQueryComment } from './aql-query-comment.js';
 import type { AQLCompoundQuery, AQLExecutableQuery } from './aql.js';
 import { aqlConfig } from './aql.js';
 import { CancellationManager } from './cancellation-manager.js';
@@ -52,9 +53,10 @@ interface ArangoExecutionOptions {
     readonly queries: ReadonlyArray<AQLExecutableQuery>;
     readonly options: ExecutionOptions;
     /**
-     * An ID that will be prepended to all queries in this transaction so they can be aborted on cancellation
+     * A comment that will be prepended to all queries in this transaction. It includes the transaction ID so the
+     * queries can be aborted on cancellation.
      */
-    readonly transactionID: string;
+    readonly queryComment: string;
 }
 
 interface ArangoError extends Error {
@@ -142,7 +144,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         const arangoExecutionFunction = function ({
             queries,
             options,
-            transactionID,
+            queryComment,
         }: ArangoExecutionOptions) {
             const db = require('@arangodb').db;
             const enableProfiling = options.recordTimings;
@@ -208,7 +210,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     }
 
                     executionResult = db._query({
-                        query: `/*id:${transactionID}*/\n${query.code}`,
+                        query: `${queryComment}\n${query.code}`,
                         bindVars,
                         options: {
                             profile: options.recordPlan ? 2 : options.recordTimings ? 1 : 0,
@@ -480,7 +482,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
     private async executeTransactionWithRetries(
         executableQueries: ReadonlyArray<AQLExecutableQuery>,
-        options: ExecutionOptions,
+        options: Omit<ExecutionArgs, 'queryTree'>,
         aqlQuery: AQLCompoundQuery,
     ): Promise<TransactionResult> {
         const maxRetries = this.config.retriesOnConflict || 0;
@@ -596,7 +598,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
 
     private async executeTransactionOnce(
         executableQueries: ReadonlyArray<AQLExecutableQuery>,
-        options: ExecutionOptions,
+        options: Omit<ExecutionArgs, 'queryTree'>,
         aqlQuery: AQLCompoundQuery,
     ): Promise<TransactionResult> {
         const transactionID = crypto.randomUUID();
@@ -606,7 +608,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 ...options,
                 queryMemoryLimit: options.queryMemoryLimit || this.config.queryMemoryLimit,
             },
-            transactionID,
+            queryComment: getAQLQueryComment(transactionID, options.operationName),
         };
         let isTransactionFinished = false;
         const watch = new Watch();

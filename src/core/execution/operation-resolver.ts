@@ -149,6 +149,7 @@ export class OperationResolver {
                 ? await this.context.databaseAdapter.executeExt({
                       queryTree,
                       ...options,
+                      operationName: operationInfo.operation.name?.value,
                   })
                 : {
                       data: this.context.databaseAdapter.execute(queryTree),
