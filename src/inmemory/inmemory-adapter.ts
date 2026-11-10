@@ -264,6 +264,10 @@ export class InMemoryAdapter implements DatabaseAdapter {
     }
 
     async executeExt(args: ExecutionArgs): Promise<ExecutionResult> {
+        if (args.explainOnly) {
+            // there are no execution plans in the InMemoryAdapter, and silently executing would be dangerous
+            throw new Error(`explainOnly is not supported by the InMemoryAdapter`);
+        }
         globalContext.registerContext(this.schemaContext);
         let executableQueries: ReadonlyArray<JSExecutableQuery>;
         let jsQuery: JSCompoundQuery;
