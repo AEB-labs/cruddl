@@ -3,18 +3,18 @@ RETURN {
   "allOrders": (
     FOR v_order1
     IN @@orders
-    FILTER (FIRST(
-      FOR v_item1
+    FILTER (LENGTH((
+      FOR v_handlingUnits1
       IN (
-        FOR v_handlingUnits1
+        FOR v_node1
         IN OUTBOUND v_order1 @@orders_handlingUnits
-        FILTER !((@var1 IN v_handlingUnits1.`tags`[*]))
-        FILTER v_handlingUnits1._key != null
-        RETURN v_handlingUnits1
+        FILTER v_node1._key != null
+        RETURN v_node1
       )
-      COLLECT WITH COUNT INTO v_count1
-      RETURN v_count1
-    ) == @var2)
+      FILTER !((@var1 IN v_handlingUnits1.`tags`[*]))
+      LIMIT 1
+      RETURN true
+    )) == 0)
     SORT (v_order1.`orderNumber`)
     RETURN {
       "orderNumber": v_order1.`orderNumber`
@@ -22,4 +22,4 @@ RETURN {
   )
 }
 
-// Peak memory usage: 131072 bytes
+// Peak memory usage: 98304 bytes

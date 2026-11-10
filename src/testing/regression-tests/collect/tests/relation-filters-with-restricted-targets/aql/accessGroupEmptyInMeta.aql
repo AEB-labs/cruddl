@@ -11,22 +11,22 @@ RETURN {
           FILTER (v_item2.`accessGroup` IN @var2)
           RETURN v_item2
         )
-        FILTER (FIRST(
-          FOR v_item3
+        FILTER (LENGTH((
+          FOR v_handlingUnits1
           IN (
-            FOR v_item4
+            FOR v_item3
             IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
-            FILTER (v_item4.`accessGroup` IN @var3)
-            FILTER v_item4._key != null
-            RETURN v_item4
+            FILTER (v_item3.`accessGroup` IN @var3)
+            FILTER v_item3._key != null
+            RETURN v_item3
           )
-          COLLECT WITH COUNT INTO v_count1
-          RETURN v_count1
-        ) == @var4)
+          LIMIT 1
+          RETURN true
+        )) == 0)
         RETURN v_delivery1
       )
-      COLLECT WITH COUNT INTO v_count2
-      RETURN v_count2
+      COLLECT WITH COUNT INTO v_count1
+      RETURN v_count1
     )
   }
 }

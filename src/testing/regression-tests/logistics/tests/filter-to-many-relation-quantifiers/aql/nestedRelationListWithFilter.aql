@@ -10,11 +10,17 @@ RETURN {
         FOR v_delivery1
         IN INBOUND v_forwarder1 @@deliveries_forwarder
         FILTER (LENGTH((
-          FOR v_node1
-          IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
-          FILTER v_node1._key != null
-          RETURN v_node1
-        )[* FILTER (CURRENT.`huNumber` >= UPPER(@var1) && CURRENT.`huNumber` < LOWER(@var2)) && (LEFT(CURRENT.`huNumber`, LENGTH(@var3)) == @var4)]) > 0)
+          FOR v_handlingUnits1
+          IN (
+            FOR v_node1
+            IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
+            FILTER v_node1._key != null
+            RETURN v_node1
+          )
+          FILTER (v_handlingUnits1.`huNumber` >= UPPER(@var1) && v_handlingUnits1.`huNumber` < LOWER(@var2)) && (LEFT(v_handlingUnits1.`huNumber`, LENGTH(@var3)) == @var4)
+          LIMIT 1
+          RETURN true
+        )) > 0)
         FILTER v_delivery1._key != null
         SORT (v_delivery1.`deliveryNumber`)  DESC
         RETURN {

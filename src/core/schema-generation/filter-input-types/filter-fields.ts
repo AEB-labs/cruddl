@@ -257,11 +257,6 @@ export class EmptyListFilterField implements FilterField {
             // null means do not filter
             return ConstBoolQueryNode.TRUE;
         }
-        // relations are not stored on the object, so they need to be traversed. Other lists are
-        // stored on the object and LENGTH() can be used directly (LENGTH(null) == 0)
-        const valueNode = this.field.isRelation
-            ? createFieldNode(this.field, sourceNode)
-            : new FieldQueryNode(sourceNode, this.field);
         if (typeof filterValue !== 'boolean') {
             throw new Error(
                 `Expected value for EmptyListFilterField to be null, false or true, but is ${String(
@@ -269,6 +264,22 @@ export class EmptyListFilterField implements FilterField {
                 )}`,
             );
         }
+        if (this.field.isRelation) {
+            // Relations are stored as edges, not on the object, so the field of the object can't be
+            // used (it would always be empty). "_empty: true" is "no related object exists", i.e.
+            // _none without a condition, and "_empty: false" is _some without a condition. The
+            // quantifier is generated as an existence check that stops at the first related object
+            // instead of counting all of them.
+            return new QuantifierFilterNode({
+                listNode: createFieldNode(this.field, sourceNode),
+                itemVariable: new VariableQueryNode(decapitalize(this.field.name)),
+                quantifier: filterValue ? 'none' : 'some',
+                conditionNode: ConstBoolQueryNode.TRUE,
+            });
+        }
+        // other lists are stored on the object, so LENGTH() can be used directly, which is cheaper
+        // than a quantifier
+        const valueNode = new FieldQueryNode(sourceNode, this.field);
         const lengthNode = new CountQueryNode(valueNode);
         if (filterValue) {
             // _empty: true means length == 0 (LENGTH(null) == 0)

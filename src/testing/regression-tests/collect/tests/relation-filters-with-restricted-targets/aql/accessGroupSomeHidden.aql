@@ -9,12 +9,18 @@ RETURN {
       RETURN v_item1
     )
     FILTER (LENGTH((
-      FOR v_item2
-      IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
-      FILTER (v_item2.`accessGroup` IN @var2)
-      FILTER v_item2._key != null
-      RETURN v_item2
-    )[* FILTER (CURRENT.`handlingUnitNumber` == @var3)]) > 0)
+      FOR v_handlingUnits1
+      IN (
+        FOR v_item2
+        IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
+        FILTER (v_item2.`accessGroup` IN @var2)
+        FILTER v_item2._key != null
+        RETURN v_item2
+      )
+      FILTER (v_handlingUnits1.`handlingUnitNumber` == @var3)
+      LIMIT 1
+      RETURN true
+    )) > 0)
     SORT (v_delivery1.`deliveryNumber`)
     RETURN {
       "deliveryNumber": v_delivery1.`deliveryNumber`

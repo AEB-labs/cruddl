@@ -1491,50 +1491,77 @@ register(SafeListQueryNode, (node, context) => {
     return processNode(reducedNode, context);
 });
 
+/**
+ * Generates AQL for _some / _every / _none filters. There are three strategies, from cheapest to
+ * most general:
+ *
+ * 1. array comparison operators, e.g. `list[*].field ANY == @value` (single comparison conditions)
+ * 2. inline filters, e.g. `LENGTH(list[* FILTER CURRENT.field == @value]) > 0` (simple conditions)
+ * 3. an existence check with a subquery that stops at the first match:
+ *    `LENGTH((FOR item IN list FILTER cond LIMIT 1 RETURN true)) > 0` (all other cases)
+ *
+ * 1 and 2 are only cheap if the list is already available, i.e. stored on the object (child
+ * entities, value objects, scalar lists). If the list itself is computed by a subquery (e.g. a
+ * relation traversal), ArangoDB would build the whole list of related objects before 1 or 2 can
+ * be evaluated, so such lists always use 3, which allows ArangoDB to stop traversing at the first
+ * match.
+ */
 register(QuantifierFilterNode, (node, context) => {
-    const fastFragment = getQuantifierFilterUsingArrayComparisonOperator(node, context);
-    if (fastFragment) {
-        return fastFragment;
-    }
-
     let { quantifier, conditionNode } = node;
     conditionNode = simplifyBooleans(conditionNode);
+    const listFrag = processNode(node.listNode, context);
 
-    // an inline filter avoids a subquery, but CURRENT only refers to the innermost item, so it can only be used
-    // if the condition does not contain nested list operations
-    // (the containsSubquery() check is a safeguard in case isSimpleExpressionNode() misses a case)
-    const conditionFrag = isSimpleExpressionNode(conditionNode)
-        ? processNode(conditionNode, context.bindVariable(node.itemVariable, aql`CURRENT`))
-        : undefined;
-    if (conditionFrag && !conditionFrag.containsSubquery()) {
-        const listFrag = processNode(node.listNode, context);
-        switch (quantifier) {
-            case 'some':
-                return aql`(LENGTH(${listFrag}[* FILTER ${conditionFrag}]) > 0)`;
-            case 'every':
-                return aql`(LENGTH(${listFrag}[* FILTER !(${conditionFrag})]) == 0)`;
-            case 'none':
-                return aql`(LENGTH(${listFrag}[* FILTER ${conditionFrag}]) == 0)`;
+    // Strategies 1 and 2 would evaluate a computed list (e.g. a relation traversal) completely, so
+    // only use them for lists that are stored on the object
+    if (!listFrag.containsSubquery()) {
+        const fastFragment = getQuantifierFilterUsingArrayComparisonOperator(node, context);
+        if (fastFragment) {
+            return fastFragment;
+        }
+
+        // an inline filter avoids a subquery, but CURRENT only refers to the innermost item, so it can only be used
+        // if the condition does not contain nested list operations
+        // (the containsSubquery() check is a safeguard in case isSimpleExpressionNode() misses a case)
+        const conditionFrag = isSimpleExpressionNode(conditionNode)
+            ? processNode(conditionNode, context.bindVariable(node.itemVariable, aql`CURRENT`))
+            : undefined;
+        if (conditionFrag && !conditionFrag.containsSubquery()) {
+            switch (quantifier) {
+                case 'some':
+                    return aql`(LENGTH(${listFrag}[* FILTER ${conditionFrag}]) > 0)`;
+                case 'every':
+                    return aql`(LENGTH(${listFrag}[* FILTER !(${conditionFrag})]) == 0)`;
+                case 'none':
+                    return aql`(LENGTH(${listFrag}[* FILTER ${conditionFrag}]) == 0)`;
+            }
         }
     }
-    // reduce 'every' to 'none' so that count-based evaluation is possible
+
+    // Strategy 3: the existence check
+    // "every item matches cond" is the same as "no item matches !cond", so 'every' is reduced to
+    // 'none' and both 'some' and 'none' only need to know whether there is at least one match
     if (quantifier === 'every') {
         quantifier = 'none';
-        conditionNode = not(conditionNode);
+        conditionNode = simplifyBooleans(not(conditionNode));
     }
 
-    const filteredListNode = new TransformListQueryNode({
-        listNode: node.listNode,
-        filterNode: conditionNode,
-        itemVariable: node.itemVariable,
-    });
-
-    const finalNode = new BinaryOperationQueryNode(
-        new CountQueryNode(filteredListNode),
-        quantifier === 'none' ? BinaryOperator.EQUAL : BinaryOperator.GREATER_THAN,
-        new LiteralQueryNode(0),
+    // LIMIT 1 allows ArangoDB to stop at the first matching item instead of counting all of them.
+    // For relations, ArangoDB inlines the traversal subquery of listFrag, so the LIMIT also stops
+    // the traversal itself. Unconditional quantifiers (e.g. _none: {} or _empty) omit the FILTER.
+    const itemContext = context.bindVariable(node.itemVariable);
+    const itemVar = itemContext.getVariable(node.itemVariable);
+    const isUnconditional =
+        conditionNode instanceof ConstBoolQueryNode && conditionNode.value === true;
+    const existenceFrag = aql.subquery(
+        aql`FOR ${itemVar}`,
+        aql`IN ${listFrag}`,
+        ...(isUnconditional ? [] : [aql`FILTER ${processNode(conditionNode, itemContext)}`]),
+        aql`LIMIT 1`,
+        aql`RETURN true`,
     );
-    return processNode(finalNode, context);
+    return quantifier === 'none'
+        ? aql`(LENGTH(${existenceFrag}) == 0)`
+        : aql`(LENGTH(${existenceFrag}) > 0)`;
 });
 
 /**

@@ -3,23 +3,29 @@ RETURN {
   "allForwarders": (
     FOR v_forwarder1
     IN @@forwarders
-    FILTER (FIRST(
-      FOR v_item1
+    FILTER (LENGTH((
+      FOR v_deliveries1
       IN (
-        FOR v_deliveries1
+        FOR v_node1
         IN INBOUND v_forwarder1 @@deliveries_forwarder
-        FILTER (LENGTH((
-          FOR v_node1
-          IN OUTBOUND v_deliveries1 @@deliveries_handlingUnits
-          FILTER v_node1._key != null
-          RETURN v_node1
-        )[* FILTER (CURRENT.`huNumber` == @var1)]) > 0)
-        FILTER v_deliveries1._key != null
-        RETURN v_deliveries1
+        FILTER v_node1._key != null
+        RETURN v_node1
       )
-      COLLECT WITH COUNT INTO v_count1
-      RETURN v_count1
-    ) > @var2)
+      FILTER (LENGTH((
+        FOR v_handlingUnits1
+        IN (
+          FOR v_node2
+          IN OUTBOUND v_deliveries1 @@deliveries_handlingUnits
+          FILTER v_node2._key != null
+          RETURN v_node2
+        )
+        FILTER (v_handlingUnits1.`huNumber` == @var1)
+        LIMIT 1
+        RETURN true
+      )) > 0)
+      LIMIT 1
+      RETURN true
+    )) > 0)
     SORT (v_forwarder1.`name`)
     RETURN {
       "name": v_forwarder1.`name`
@@ -27,4 +33,4 @@ RETURN {
   )
 }
 
-// Peak memory usage: 163840 bytes
+// Peak memory usage: 98304 bytes

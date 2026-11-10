@@ -3,21 +3,21 @@ RETURN {
   "allDeliveries": (
     FOR v_delivery1
     IN @@deliveries
-    FILTER (FIRST(
-      FOR v_item1
+    FILTER (LENGTH((
+      FOR v_handlingUnits1
       IN (
         FOR v_node1
         IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
         FILTER v_node1._key != null
         RETURN v_node1
       )
-      COLLECT WITH COUNT INTO v_count1
-      RETURN v_count1
-    ) == @var1)
+      LIMIT 1
+      RETURN true
+    )) == 0)
     RETURN {
       "deliveryNumber": v_delivery1.`deliveryNumber`
     }
   )
 }
 
-// Peak memory usage: 131072 bytes
+// Peak memory usage: 65536 bytes
