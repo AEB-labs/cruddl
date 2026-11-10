@@ -202,7 +202,9 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 let executionResult;
                 try {
                     // the explain statement also can cause errors which should be caught
-                    if (options.recordPlan) {
+                    // (profile: 2 already includes the chosen plan, so explain is only needed for the
+                    // discarded plans)
+                    if (options.recordPlan && options.recordDiscardedPlans !== false) {
                         const stmt = db._createStatement({
                             query: query.code,
                             bindVars,
@@ -225,6 +227,19 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                             discardedPlans: explainResult.plans.slice(1),
                             warnings: explainResult.warnings,
                         });
+                    } else if (options.recordPlan) {
+                        // the plan is usually taken from the profile, but there is none if the query failed
+                        try {
+                            const failedExplainResult = db
+                                ._createStatement({ query: query.code, bindVars })
+                                .explain();
+                            plans.push({
+                                plan: failedExplainResult.plan,
+                                warnings: failedExplainResult.warnings,
+                            });
+                        } catch (explainError) {
+                            // the query probably can't be planned at all (then, the original error is more relevant)
+                        }
                     }
 
                     rollbackWithError(error);
@@ -246,7 +261,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     const extra = executionResult.getExtra();
                     plans.push({
                         plan: extra.plan,
-                        discardedPlans: explainResult ? explainResult.plans.slice(1) : [],
+                        discardedPlans: explainResult ? explainResult.plans.slice(1) : undefined,
                         stats: extra.stats,
                         warnings: extra.warnings,
                         profile: extra.profile,
