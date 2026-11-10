@@ -39,6 +39,18 @@ export interface ExecutionOptions {
     readonly recordPlan?: boolean;
 
     /**
+     * Specifies if the plans the query optimizer considered but discarded should be included in the request profile
+     * (in addition to the chosen plan). Only has an effect if recordPlan is set.
+     *
+     * Recording discarded plans requires an additional explain step for each query of the transaction, and the
+     * number of plans can grow large for complex queries (up to the optimizer's maxNumberOfPlans), which makes
+     * planning slower and increases memory usage. If set to false, only the chosen plan is recorded.
+     *
+     * If undefined, defaults to true. The default will change to false in the next major version.
+     */
+    readonly recordDiscardedPlans?: boolean;
+
+    /**
      * The memory limit in bytes to impose on individual ArangoDB queries (does not apply to the whole ArangoDB transaction)
      */
     readonly queryMemoryLimit?: number;

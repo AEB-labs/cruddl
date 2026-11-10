@@ -105,6 +105,10 @@ export interface ExecutionPlanTransactionStep {
     readonly boundValues: { [p: string]: any };
 
     readonly plan?: Plan;
+
+    /**
+     * The plans the optimizer considered but discarded. Only set if recordDiscardedPlans is not false.
+     */
     readonly discardedPlans?: ReadonlyArray<Plan>;
 
     readonly stats?: {
