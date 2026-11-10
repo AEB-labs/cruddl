@@ -85,6 +85,16 @@
               "claim": "customerName"
             }
           ]
+        },
+        {
+          "roles": ["claimed-customer"],
+          "access": "readWrite",
+          "restrictions": [
+            {
+              "field": "customerName",
+              "claim": "customerName"
+            }
+          ]
         }
       ]
     }

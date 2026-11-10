@@ -1,0 +1,25 @@
+# the only permission of the user restricts by a claim that is not set, so it matches no object
+
+query list {
+    allFiles(orderBy: name_ASC) {
+        name
+    }
+}
+
+query single {
+    File(id: "@{ids/File/4}") {
+        name
+    }
+}
+
+mutation create {
+    createFile(input: { name: "test", customerName: "Customer1" }) {
+        name
+    }
+}
+
+mutation delete {
+    deleteFile(id: "@{ids/File/4}") {
+        name
+    }
+}

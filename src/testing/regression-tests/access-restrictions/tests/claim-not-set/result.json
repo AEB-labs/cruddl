@@ -1,0 +1,80 @@
+{
+  "list": {
+    "errors": [
+      {
+        "message": "Not authorized to read File objects",
+        "locations": [
+          {
+            "line": 4,
+            "column": 5
+          }
+        ],
+        "path": ["allFiles"],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
+      }
+    ],
+    "data": {
+      "allFiles": null
+    }
+  },
+  "single": {
+    "errors": [
+      {
+        "message": "Not authorized to read File objects",
+        "locations": [
+          {
+            "line": 10,
+            "column": 5
+          }
+        ],
+        "path": ["File"],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
+      }
+    ],
+    "data": {
+      "File": null
+    }
+  },
+  "create": {
+    "errors": [
+      {
+        "message": "Not authorized to create File objects, Not authorized to read File objects",
+        "locations": [
+          {
+            "line": 16,
+            "column": 5
+          }
+        ],
+        "path": ["createFile"],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
+      }
+    ],
+    "data": null
+  },
+  "delete": {
+    "errors": [
+      {
+        "message": "Not authorized to read File objects, Not authorized to delete File objects",
+        "locations": [
+          {
+            "line": 22,
+            "column": 5
+          }
+        ],
+        "path": ["deleteFile"],
+        "extensions": {
+          "code": "PERMISSION_DENIED"
+        }
+      }
+    ],
+    "data": {
+      "deleteFile": null
+    }
+  }
+}
