@@ -12,6 +12,7 @@ import {
 import { UpdateChildEntitiesQueryNode } from '../core/query-tree/child-entities.js';
 import {
     RUNTIME_ERROR_CODE_PROPERTY,
+    RUNTIME_ERROR_PERMISSION_DENIAL_PROPERTY,
     RUNTIME_ERROR_TOKEN,
     RuntimeErrorQueryNode,
 } from '../core/query-tree/errors.js';
@@ -282,12 +283,18 @@ register(NullQueryNode, () => {
 });
 
 register(RuntimeErrorQueryNode, (node) => {
-    const runtimeErrorToken = js.code(RUNTIME_ERROR_TOKEN);
-    if (node.code) {
-        const codeProp = js.code(RUNTIME_ERROR_CODE_PROPERTY);
-        return js`{ ${codeProp}: ${node.code}, ${runtimeErrorToken}: ${node.message} }`;
-    }
-    return js`{ ${runtimeErrorToken}: ${node.message} }`;
+    const properties = [
+        ...(node.code ? [js`${js.code(RUNTIME_ERROR_CODE_PROPERTY)}: ${node.code}`] : []),
+        js`${js.code(RUNTIME_ERROR_TOKEN)}: ${node.message}`,
+        ...(node.permissionDenial
+            ? [
+                  js`${js.code(RUNTIME_ERROR_PERMISSION_DENIAL_PROPERTY)}: ${js.value(
+                      node.permissionDenial,
+                  )}`,
+              ]
+            : []),
+    ];
+    return js`{ ${js.join(properties, js`, `)} }`;
 });
 
 register(ConstBoolQueryNode, (node) => {

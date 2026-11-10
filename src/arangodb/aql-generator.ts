@@ -16,6 +16,7 @@ import { UpdateChildEntitiesQueryNode } from '../core/query-tree/child-entities.
 import {
     ARGUMENT_OUT_OF_RANGE_ERROR,
     RUNTIME_ERROR_CODE_PROPERTY,
+    RUNTIME_ERROR_PERMISSION_DENIAL_PROPERTY,
     RUNTIME_ERROR_TOKEN,
     RuntimeErrorQueryNode,
 } from '../core/query-tree/errors.js';
@@ -468,12 +469,18 @@ register(NullQueryNode, () => {
 });
 
 register(RuntimeErrorQueryNode, (node) => {
-    const runtimeErrorToken = aql.code(RUNTIME_ERROR_TOKEN);
-    if (node.code) {
-        const codeProp = aql.code(RUNTIME_ERROR_CODE_PROPERTY);
-        return aql`{ ${codeProp}: ${node.code}, ${runtimeErrorToken}: ${node.message} }`;
-    }
-    return aql`{ ${runtimeErrorToken}: ${node.message} }`;
+    const properties = [
+        ...(node.code ? [aql`${aql.code(RUNTIME_ERROR_CODE_PROPERTY)}: ${node.code}`] : []),
+        aql`${aql.code(RUNTIME_ERROR_TOKEN)}: ${node.message}`,
+        ...(node.permissionDenial
+            ? [
+                  aql`${aql.code(RUNTIME_ERROR_PERMISSION_DENIAL_PROPERTY)}: ${aql.value(
+                      node.permissionDenial,
+                  )}`,
+              ]
+            : []),
+    ];
+    return aql`{ ${aql.join(properties, aql`, `)} }`;
 });
 
 register(ConstBoolQueryNode, (node) => {

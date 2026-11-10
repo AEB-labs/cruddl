@@ -1,9 +1,9 @@
 import type { QueryNode } from '../../query-tree/base.js';
-import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
 import { BinaryOperationQueryNode, BinaryOperator } from '../../query-tree/operators.js';
 import { VectorSearchQueryNode } from '../../query-tree/vector-search.js';
 import type { AuthContext } from '../auth-basics.js';
 import { AccessOperation } from '../auth-basics.js';
+import { createPermissionDeniedNode } from '../permission-denial.js';
 import {
     getPermissionDescriptorOfField,
     getPermissionDescriptorOfRootEntityType,
@@ -20,8 +20,10 @@ export function transformVectorSearchQueryNode(
     const entityPermissionDescriptor = getPermissionDescriptorOfRootEntityType(rootEntityType);
     const entityAccess = entityPermissionDescriptor.canAccess(authContext, AccessOperation.READ);
     if (entityAccess === PermissionResult.DENIED) {
-        return new RuntimeErrorQueryNode(`Not authorized to read ${rootEntityType.name} objects`, {
-            code: PERMISSION_DENIED_ERROR,
+        return createPermissionDeniedNode({
+            operation: AccessOperation.READ,
+            typeName: rootEntityType.name,
+            message: `Not authorized to read ${rootEntityType.name} objects`,
         });
     }
 
@@ -29,10 +31,12 @@ export function transformVectorSearchQueryNode(
     const fieldPermissionDescriptor = getPermissionDescriptorOfField(node.field);
     const fieldAccess = fieldPermissionDescriptor.canAccess(authContext, AccessOperation.READ);
     if (fieldAccess === PermissionResult.DENIED) {
-        return new RuntimeErrorQueryNode(
-            `Not authorized to read ${node.field.declaringType.name}.${node.field.name}`,
-            { code: PERMISSION_DENIED_ERROR },
-        );
+        return createPermissionDeniedNode({
+            operation: AccessOperation.READ,
+            typeName: node.field.declaringType.name,
+            fieldName: node.field.name,
+            message: `Not authorized to read ${node.field.declaringType.name}.${node.field.name}`,
+        });
     }
     if (fieldAccess !== PermissionResult.GRANTED) {
         // same as in transformFieldQueryNode (model validation should prevent this)

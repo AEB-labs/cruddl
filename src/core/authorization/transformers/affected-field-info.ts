@@ -1,8 +1,8 @@
 import type { QueryNode } from '../../query-tree/base.js';
-import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
 import type { AffectedFieldInfoQueryNode } from '../../query-tree/mutations.js';
 import type { AuthContext } from '../auth-basics.js';
 import { AccessOperation } from '../auth-basics.js';
+import { createPermissionDeniedNode } from '../permission-denial.js';
 import { getPermissionDescriptorOfField } from '../permission-descriptors-in-model.js';
 import { PermissionResult } from '../permission-descriptors.js';
 
@@ -19,10 +19,12 @@ export function transformAffectedFieldInfoQueryNode(
     const access = permissionDescriptor.canAccess(authContext, AccessOperation.UPDATE);
     switch (access) {
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(
-                `Not authorized to set ${node.field.declaringType.name}.${node.field.name}`,
-                { code: PERMISSION_DENIED_ERROR },
-            );
+            return createPermissionDeniedNode({
+                operation: AccessOperation.UPDATE,
+                typeName: node.field.declaringType.name,
+                fieldName: node.field.name,
+                message: `Not authorized to set ${node.field.declaringType.name}.${node.field.name}`,
+            });
         case PermissionResult.CONDITIONAL:
             throw new Error(
                 `Conditional permission profiles are currently not supported on fields, but used in ${node.field.declaringType.name}.${node.field.name}`,

@@ -1,10 +1,10 @@
 import type { QueryNode } from '../../query-tree/base.js';
-import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
 import { TransformListQueryNode } from '../../query-tree/lists.js';
 import type { FollowEdgeQueryNode } from '../../query-tree/queries.js';
 import { VariableQueryNode } from '../../query-tree/variables.js';
 import type { AuthContext } from '../auth-basics.js';
 import { AccessOperation } from '../auth-basics.js';
+import { createPermissionDeniedNode } from '../permission-denial.js';
 import {
     getPermissionDescriptorOfField,
     getPermissionDescriptorOfRootEntityType,
@@ -26,10 +26,12 @@ export function transformFollowEdgeQueryNode(
     const access = fieldPermissionDescriptor.canAccess(authContext, AccessOperation.READ);
     switch (access) {
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(
-                `Not authorized to read ${sourceType.name}.${sourceField.name}`,
-                { code: PERMISSION_DENIED_ERROR },
-            );
+            return createPermissionDeniedNode({
+                operation: AccessOperation.READ,
+                typeName: sourceType.name,
+                fieldName: sourceField.name,
+                message: `Not authorized to read ${sourceType.name}.${sourceField.name}`,
+            });
         case PermissionResult.CONDITIONAL:
             throw new Error(
                 `Conditional permission profiles are currently not supported on fields, but used in ${sourceType.name}.${sourceField.name}`,
@@ -43,10 +45,11 @@ export function transformFollowEdgeQueryNode(
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(
-                `Not authorized to read ${targetType.name} objects (in ${sourceType.name}.${sourceField.name})`,
-                { code: PERMISSION_DENIED_ERROR },
-            );
+            return createPermissionDeniedNode({
+                operation: AccessOperation.READ,
+                typeName: targetType.name,
+                message: `Not authorized to read ${targetType.name} objects (in ${sourceType.name}.${sourceField.name})`,
+            });
         default:
             const itemVar = new VariableQueryNode('item');
             const condition = entityPermissionDescriptor.getAccessCondition(

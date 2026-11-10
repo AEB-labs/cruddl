@@ -1,3 +1,4 @@
+import type { PermissionDenial } from '../authorization/permission-denial.js';
 import type { RelationSide } from '../model/implementation/relation.js';
 import type { RootEntityType } from '../model/implementation/root-entity-type.js';
 import { QueryNode } from './base.js';
@@ -43,6 +44,11 @@ export interface QueryResultValidator extends QueryNode {
 export interface ValidatorParams {
     readonly errorMessage: string;
     readonly errorCode?: string;
+
+    /**
+     * Set on the error if the validator fails (should be set for PERMISSION_DENIED errors)
+     */
+    readonly permissionDenial?: PermissionDenial;
 }
 
 /**
@@ -51,11 +57,13 @@ export interface ValidatorParams {
 export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryResultValidator {
     readonly errorMessage: string;
     readonly errorCode?: string;
+    readonly permissionDenial?: PermissionDenial;
 
     constructor(params: ValidatorParams) {
         super();
         this.errorMessage = params.errorMessage;
         this.errorCode = params.errorCode;
+        this.permissionDenial = params.permissionDenial;
     }
 
     // The following function will be translated to a string and executed within the ArangoDB server itself.
@@ -70,17 +78,23 @@ export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryR
              */
             class RuntimeValidationError extends Error {
                 readonly code: string | undefined;
+                readonly permissionDenial: unknown;
 
-                constructor(message: string, args: { readonly code?: string } = {}) {
+                constructor(
+                    message: string,
+                    args: { readonly code?: string; readonly permissionDenial?: unknown } = {},
+                ) {
                     super(message);
                     this.name = this.constructor.name;
                     this.code = args.code;
+                    this.permissionDenial = args.permissionDenial;
                 }
             }
 
             if (!result) {
                 throw new RuntimeValidationError(validationData.errorMessage, {
                     code: validationData.errorCode,
+                    permissionDenial: validationData.permissionDenial,
                 });
             }
         };
@@ -98,6 +112,7 @@ export class ErrorIfNotTruthyResultValidator extends QueryNode implements QueryR
         return {
             errorMessage: this.errorMessage,
             errorCode: this.errorCode,
+            permissionDenial: this.permissionDenial,
         };
     }
 
@@ -190,11 +205,13 @@ export class NoImplicitlyTruncatedListValidator extends QueryNode implements Que
 export class ErrorIfEmptyResultValidator extends QueryNode implements QueryResultValidator {
     readonly errorMessage: string;
     readonly errorCode?: string;
+    readonly permissionDenial?: PermissionDenial;
 
     constructor(params: ValidatorParams) {
         super();
         this.errorMessage = params.errorMessage;
         this.errorCode = params.errorCode;
+        this.permissionDenial = params.permissionDenial;
     }
 
     // The following function will be translated to a string and executed within the ArangoDB server itself.
@@ -237,6 +254,7 @@ export class ErrorIfEmptyResultValidator extends QueryNode implements QueryResul
         return {
             errorMessage: this.errorMessage,
             errorCode: this.errorCode,
+            permissionDenial: this.permissionDenial,
         };
     }
 

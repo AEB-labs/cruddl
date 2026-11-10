@@ -1,6 +1,5 @@
 import type { RelationSegment } from '../../model/implementation/collect-path.js';
 import type { QueryNode } from '../../query-tree/base.js';
-import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
 import type { TraversalQueryNodeParams } from '../../query-tree/queries.js';
 import { TraversalQueryNode } from '../../query-tree/queries.js';
 import { VariableQueryNode } from '../../query-tree/variables.js';
@@ -8,6 +7,7 @@ import type { RequireAllProperties } from '../../utils/util-types.js';
 import { decapitalize } from '../../utils/utils.js';
 import type { AuthContext } from '../auth-basics.js';
 import { AccessOperation } from '../auth-basics.js';
+import { createPermissionDeniedNode } from '../permission-denial.js';
 import {
     getPermissionDescriptorOfField,
     getPermissionDescriptorOfRootEntityType,
@@ -28,8 +28,10 @@ export function transformTraversalQueryNode(
             AccessOperation.READ,
         );
         if (entityAccess === PermissionResult.DENIED) {
-            return new RuntimeErrorQueryNode(`Not authorized to read ${targetType.name} objects`, {
-                code: PERMISSION_DENIED_ERROR,
+            return createPermissionDeniedNode({
+                operation: AccessOperation.READ,
+                typeName: targetType.name,
+                message: `Not authorized to read ${targetType.name} objects`,
             });
         }
     }
@@ -39,10 +41,12 @@ export function transformTraversalQueryNode(
         const access = fieldPermissionDescriptor.canAccess(authContext, AccessOperation.READ);
         switch (access) {
             case PermissionResult.DENIED:
-                return new RuntimeErrorQueryNode(
-                    `Not authorized to read ${segment.field.declaringType.name}.${segment.field.name}`,
-                    { code: PERMISSION_DENIED_ERROR },
-                );
+                return createPermissionDeniedNode({
+                    operation: AccessOperation.READ,
+                    typeName: segment.field.declaringType.name,
+                    fieldName: segment.field.name,
+                    message: `Not authorized to read ${segment.field.declaringType.name}.${segment.field.name}`,
+                });
             case PermissionResult.CONDITIONAL:
                 throw new Error(
                     `Conditional permission profiles are currently not supported on fields, but used in ${segment.field.declaringType.name}.${segment.field.name}`,

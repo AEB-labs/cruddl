@@ -1,4 +1,3 @@
-import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
 import { FlexSearchQueryNode } from '../../query-tree/flex-search.js';
 import { TransformListQueryNode } from '../../query-tree/lists.js';
 import { NullQueryNode } from '../../query-tree/literals.js';
@@ -11,6 +10,7 @@ import type { EntitiesQueryNode, EntityFromIdQueryNode } from '../../query-tree/
 import { VariableAssignmentQueryNode, VariableQueryNode } from '../../query-tree/variables.js';
 import type { AuthContext } from '../auth-basics.js';
 import { AccessOperation } from '../auth-basics.js';
+import { createPermissionDeniedNode } from '../permission-denial.js';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model.js';
 import { PermissionResult } from '../permission-descriptors.js';
 
@@ -21,10 +21,11 @@ export function transformEntitiesQueryNode(node: EntitiesQueryNode, authContext:
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(
-                `Not authorized to read ${node.rootEntityType.name} objects`,
-                { code: PERMISSION_DENIED_ERROR },
-            );
+            return createPermissionDeniedNode({
+                operation: AccessOperation.READ,
+                typeName: node.rootEntityType.name,
+                message: `Not authorized to read ${node.rootEntityType.name} objects`,
+            });
         default:
             const itemVar = new VariableQueryNode('item');
             const condition = permissionDescriptor.getAccessCondition(
@@ -50,10 +51,11 @@ export function transformEntityFromIdQueryNode(
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(
-                `Not authorized to read ${node.rootEntityType.name} objects`,
-                { code: PERMISSION_DENIED_ERROR },
-            );
+            return createPermissionDeniedNode({
+                operation: AccessOperation.READ,
+                typeName: node.rootEntityType.name,
+                message: `Not authorized to read ${node.rootEntityType.name} objects`,
+            });
         default:
             const entityVar = new VariableQueryNode('entity');
             const condition = permissionDescriptor.getAccessCondition(
@@ -76,10 +78,11 @@ export function transformFlexSearchQueryNode(node: FlexSearchQueryNode, authCont
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(
-                `Not authorized to read ${node.rootEntityType.name} objects`,
-                { code: PERMISSION_DENIED_ERROR },
-            );
+            return createPermissionDeniedNode({
+                operation: AccessOperation.READ,
+                typeName: node.rootEntityType.name,
+                message: `Not authorized to read ${node.rootEntityType.name} objects`,
+            });
         default:
             const condition = permissionDescriptor.getAccessCondition(
                 authContext,

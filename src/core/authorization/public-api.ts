@@ -5,3 +5,5 @@ export type {
     PermissionDescription,
     RestrictionDescription,
 } from './describe-access-condition.js';
+export { getPermissionDenial } from './permission-denial.js';
+export type { PermissionDenial } from './permission-denial.js';

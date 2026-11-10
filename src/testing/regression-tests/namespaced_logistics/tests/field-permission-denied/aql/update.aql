@@ -1,10 +1,10 @@
 RETURN {
   "logistics": {
     "delivery": {
-      "updateDelivery": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 },
-      "update2": { __cruddl_runtime_error_code: @var3, __cruddl_runtime_error: @var4 }
+      "updateDelivery": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2, __cruddl_runtime_error_permission_denial: @var3 },
+      "update2": { __cruddl_runtime_error_code: @var4, __cruddl_runtime_error: @var5 }
     },
-    "updateForwarder": { __cruddl_runtime_error_code: @var5, __cruddl_runtime_error: @var6 }
+    "updateForwarder": { __cruddl_runtime_error_code: @var6, __cruddl_runtime_error: @var7 }
   }
 }
 

@@ -1,6 +1,6 @@
 import type { Field } from '../../model/implementation/field.js';
 import type { QueryNode } from '../../query-tree/base.js';
-import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
+import { PERMISSION_DENIED_ERROR } from '../../query-tree/errors.js';
 import { CountQueryNode, TransformListQueryNode } from '../../query-tree/lists.js';
 import { ConstBoolQueryNode, ConstIntQueryNode } from '../../query-tree/literals.js';
 import {
@@ -23,6 +23,7 @@ import { VariableAssignmentQueryNode, VariableQueryNode } from '../../query-tree
 import { decapitalize } from '../../utils/utils.js';
 import type { AuthContext } from '../auth-basics.js';
 import { AccessOperation } from '../auth-basics.js';
+import { createPermissionDeniedNode } from '../permission-denial.js';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model.js';
 import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors.js';
 
@@ -53,10 +54,11 @@ function transformUpdateOrDeleteEntitiesQueryNode(
 
     switch (access) {
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(
-                `Not authorized to ${actionDescription} ${node.rootEntityType.name} objects`,
-                { code: PERMISSION_DENIED_ERROR },
-            );
+            return createPermissionDeniedNode({
+                operation: operation,
+                typeName: node.rootEntityType.name,
+                message: `Not authorized to ${actionDescription} ${node.rootEntityType.name} objects`,
+            });
         case PermissionResult.GRANTED:
             return node;
     }
@@ -92,6 +94,7 @@ function transformUpdateOrDeleteEntitiesQueryNode(
             query: canWrite,
             resultValidator: new ErrorIfNotTruthyResultValidator({
                 errorCode: PERMISSION_DENIED_ERROR,
+                permissionDenial: { operation: operation, typeName: node.rootEntityType.name },
                 errorMessage: `Not authorized to ${actionDescription} ${explanation}`,
             }),
         }),
@@ -152,6 +155,7 @@ function transformUpdateOrDeleteEntitiesQueryNode(
                 query: canWriteTheseValues,
                 resultValidator: new ErrorIfNotTruthyResultValidator({
                     errorCode: PERMISSION_DENIED_ERROR,
+                    permissionDenial: { operation: operation, typeName: node.rootEntityType.name },
                     errorMessage: `Not authorized to ${explanation}`,
                 }),
             }),

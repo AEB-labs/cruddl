@@ -1,3 +1,4 @@
+import type { PermissionDenial } from '../authorization/permission-denial.js';
 import { red } from '../utils/colors.js';
 import { QueryNode } from './base.js';
 
@@ -17,12 +18,18 @@ export class UnknownValueQueryNode extends QueryNode {
 export class RuntimeErrorQueryNode extends QueryNode {
     readonly code: string | undefined;
 
+    /**
+     * Set if this is a PERMISSION_DENIED error. Not reported to the client.
+     */
+    readonly permissionDenial: PermissionDenial | undefined;
+
     constructor(
         readonly message: string,
-        args: { readonly code?: string } = {},
+        args: { readonly code?: string; readonly permissionDenial?: PermissionDenial } = {},
     ) {
         super();
         this.code = args.code;
+        this.permissionDenial = args.permissionDenial;
     }
 
     public describe() {
@@ -42,6 +49,7 @@ export const TOO_MANY_OBJECTS_ERROR = 'TOO_MANY_OBJECTS';
 
 export const RUNTIME_ERROR_TOKEN = '__cruddl_runtime_error';
 export const RUNTIME_ERROR_CODE_PROPERTY = '__cruddl_runtime_error_code';
+export const RUNTIME_ERROR_PERMISSION_DENIAL_PROPERTY = '__cruddl_runtime_error_permission_denial';
 
 /**
  * The result value of a RuntimeErrorQueryNode
@@ -53,6 +61,8 @@ export interface RuntimeErrorValue {
     readonly __cruddl_runtime_error: string;
 
     readonly __cruddl_runtime_error_code?: string;
+
+    readonly __cruddl_runtime_error_permission_denial?: PermissionDenial;
 }
 
 /**
@@ -68,6 +78,7 @@ export function isRuntimeErrorValue(value: any): value is RuntimeErrorValue {
 export function extractRuntimeError(value: RuntimeErrorValue): RuntimeError {
     return new RuntimeError(value.__cruddl_runtime_error, {
         code: value.__cruddl_runtime_error_code,
+        permissionDenial: value.__cruddl_runtime_error_permission_denial,
     });
 }
 
@@ -82,10 +93,19 @@ export class RuntimeError extends Error {
      */
     readonly extensions: Record<string, unknown> | undefined;
 
-    constructor(message: string, args: { readonly code?: string } = {}) {
+    /**
+     * Set if this is a PERMISSION_DENIED error. Not reported to the client.
+     */
+    readonly permissionDenial: PermissionDenial | undefined;
+
+    constructor(
+        message: string,
+        args: { readonly code?: string; readonly permissionDenial?: PermissionDenial } = {},
+    ) {
         super(message);
         this.name = this.constructor.name;
         this.code = args.code;
+        this.permissionDenial = args.permissionDenial;
 
         if (args.code) {
             // this is used by the GraphQLError constructor to populate the extensions

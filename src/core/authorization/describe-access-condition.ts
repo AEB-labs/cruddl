@@ -14,7 +14,21 @@ export type AccessConditionDescription =
     /**
      * No object can be accessed
      */
-    | { readonly kind: 'denied' }
+    | {
+          readonly kind: 'denied';
+
+          /**
+           * Set if access is controlled by a permission profile
+           */
+          readonly permissionProfileName?: string;
+
+          /**
+           * The permissions of the permission profile that apply to the user and operation. Set
+           * if access is controlled by a permission profile. If it is not empty, each of them
+           * has empty accessGroups or a restriction without values.
+           */
+          readonly permissions?: ReadonlyArray<PermissionDescription>;
+      }
     /**
      * Objects can be accessed if they match at least one of the permissions. Queries filter
      * out the other objects.
