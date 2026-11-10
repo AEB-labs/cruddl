@@ -109,6 +109,7 @@ import {
     AQLCompoundQuery,
     AQLQueryResultVariable,
     AQLVariable,
+    associateWithQueryTreeVariable,
 } from './aql.js';
 import {
     billingCollectionName,
@@ -167,6 +168,12 @@ export interface QueryGenerationOptions {
      * See {@link ArangoDBConfig.vectorSearchMaxSkipPlusFirst} for details.
      */
     readonly vectorSearchMaxSkipPlusFirst?: number;
+
+    /**
+     * If set, AQL variables are associated with the query tree variables they represent so
+     * getExecutableQueries() can report them (see collectQueryTreeVariableIndices)
+     */
+    readonly trackQueryTreeVariables?: boolean;
 }
 
 class QueryContext {
@@ -241,6 +248,9 @@ class QueryContext {
     ): QueryContext {
         if (this.variableMap.has(variableNode)) {
             throw new Error(`Variable ${variableNode} is introduced twice`);
+        }
+        if (this.options.trackQueryTreeVariables && aqlFrag instanceof AQLVariable) {
+            associateWithQueryTreeVariable(aqlFrag, variableNode.index);
         }
         return this.newNestedContextWithVariableBinding(variableNode, aqlFrag);
     }
@@ -1705,7 +1715,7 @@ register(EntitiesQueryNode, (node, context) => {
 });
 
 register(FollowEdgeQueryNode, (node, context) => {
-    const tmpVar = aql.variable('node');
+    const tmpVar = variableForQueryTreeVariable('node', node.itemVariable, context);
     return aqlExt.subquery(
         aql`FOR ${tmpVar}`,
         aql`IN ${getSimpleFollowEdgeFragment(node, context)}`,
@@ -2861,6 +2871,22 @@ interface GetRelationTraversalForStatementsParams {
     readonly preserveNullValues?: boolean;
 }
 
+/**
+ * Creates an AQL variable that is not bound to a query tree variable, but should be considered to
+ * be part of what the query tree variable represents (e.g. a helper variable of a traversal)
+ */
+function variableForQueryTreeVariable(
+    label: string,
+    queryTreeVariable: VariableQueryNode,
+    context: QueryContext,
+) {
+    const variable = new AQLVariable(label);
+    if (context.options.trackQueryTreeVariables) {
+        associateWithQueryTreeVariable(variable, queryTreeVariable.index);
+    }
+    return variable;
+}
+
 function getRelationTraversalForStatements({
     node,
     innermostItemVar,
@@ -2894,7 +2920,10 @@ function getRelationTraversalForStatements({
         sourceFrag = plainSourceFrag;
     }
 
-    const sourceEntityVar = aql.variable(`sourceEntity`);
+    // the helper variables of the traversal belong to the same origin as the traversal's item
+    const traversalVariable = (label: string) =>
+        variableForQueryTreeVariable(label, node.itemVariable, context);
+    const sourceEntityVar = traversalVariable(`sourceEntity`);
     let currentObjectFrag = sourceIsList ? sourceEntityVar : sourceFrag;
     const forFragments: AQLFragment[] = sourceIsList
         ? [aql`FOR ${sourceEntityVar} IN ${sourceFrag}`]
@@ -2911,10 +2940,10 @@ function getRelationTraversalForStatements({
         const needsNullableVar = preserveNullValues && segmentIndex > lastListSegmentIndex; // see below
         // the caller can specify the result var because they will need it to work with it
         const nodeVar =
-            isLastSegment && !needsNullableVar ? innermostItemVar : aql.variable(`node`);
+            isLastSegment && !needsNullableVar ? innermostItemVar : traversalVariable(`node`);
 
-        const edgeVar = aql.variable(`edge`);
-        const pathVar = aql.variable(`path`);
+        const edgeVar = traversalVariable(`edge`);
+        const pathVar = traversalVariable(`path`);
         const dir = segment.relationSide.isFromSide ? aql`OUTBOUND` : aql`INBOUND`;
         let filterFrag = aql``;
         let pruneFrag = aql``;
@@ -2987,7 +3016,9 @@ function getRelationTraversalForStatements({
             // (if there was one dangling edge and one real edge collected, we should use the real one)
             // using $var._key != null instead of $var != null because the latter prevents ArangoDB
             // from applying the reduce-extraction-to-projection optimization
-            const nullableVar = isLastSegment ? innermostItemVar : aql.variable(`nullableNode`);
+            const nullableVar = isLastSegment
+                ? innermostItemVar
+                : traversalVariable(`nullableNode`);
             forFragments.push(
                 aql`LET ${nullableVar} = FIRST(${traversalFrag} FILTER ${nodeVar}._key != NULL RETURN ${nodeVar})`,
             );
@@ -3489,6 +3520,7 @@ export function getAQLQuery(
             maxProjections: options.maxProjections,
             collectionNamePrefix: options.collectionNamePrefix,
             vectorSearchMaxSkipPlusFirst: options.vectorSearchMaxSkipPlusFirst,
+            trackQueryTreeVariables: options.trackQueryTreeVariables,
         }),
     );
 }

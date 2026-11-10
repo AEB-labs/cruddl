@@ -10,6 +10,7 @@ import type {
     ExecutionPlanTransactionStep,
     ExecutionResult,
     FlexSearchTokenizable,
+    QueryTreeVariableOrigins,
     TransactionStats,
 } from '../core/database/database-adapter.js';
 import type { ExecutionOptions } from '../core/execution/execution-options.js';
@@ -48,6 +49,7 @@ import { type SchemaMigration } from './schema-migration/migrations.js';
 import { MigrationPerformer } from './schema-migration/performer.js';
 import { VectorIndexAnalyzer } from './schema-migration/vector-index/vector-index-analyzer.js';
 import type { VectorIndexStatus } from './schema-migration/vector-index/vector-index-status.js';
+import { getVariableOrigins } from './variable-origins.js';
 import type { ArangoDBVersion } from './version-helper.js';
 import { ArangoDBVersionHelper } from './version-helper.js';
 
@@ -371,13 +373,19 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         return result.data;
     }
 
-    async executeExt({ queryTree, ...options }: ExecutionArgs): Promise<ExecutionResult> {
+    async executeExt({
+        queryTree,
+        queryTreeVariableOrigins,
+        ...options
+    }: ExecutionArgs): Promise<ExecutionResult> {
         const prepStartTime = getPreciseTime();
         globalContext.registerContext(this.schemaContext);
         let executableQueries: ReadonlyArray<AQLExecutableQuery>;
         let aqlQuery: AQLCompoundQuery;
         const oldEnableIndentationForCode = aqlConfig.enableIndentationForCode;
-        aqlConfig.enableIndentationForCode = !!(options.recordPlan || options.explainOnly);
+        const recordPlan = !!(options.recordPlan || options.explainOnly);
+        aqlConfig.enableIndentationForCode = recordPlan;
+        const collectVariableOrigins = recordPlan && !!queryTreeVariableOrigins;
         try {
             //TODO Execute single statement AQL queries directly without "db.transaction"?
             aqlQuery = getAQLQuery(queryTree, {
@@ -388,8 +396,11 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 vectorSearchMaxSkipPlusFirst:
                     this.config.vectorSearchMaxSkipPlusFirst ??
                     DEFAULT_VECTOR_SEARCH_MAX_SKIP_PLUS_FIRST,
+                trackQueryTreeVariables: collectVariableOrigins,
             });
-            executableQueries = aqlQuery.getExecutableQueries();
+            executableQueries = aqlQuery.getExecutableQueries({
+                collectQueryTreeVariableIndices: collectVariableOrigins,
+            });
         } finally {
             globalContext.unregisterContext();
             aqlConfig.enableIndentationForCode = oldEnableIndentationForCode;
@@ -405,6 +416,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 executableQueries,
                 options,
                 aqlPreparationTime,
+                queryTreeVariableOrigins,
             });
         }
 
@@ -459,6 +471,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     stats: plans[index] && plans[index].stats,
                     warnings: plans[index] && plans[index].warnings,
                     profile: plans[index] && plans[index].profile,
+                    variableOrigins: getVariableOrigins(q, queryTreeVariableOrigins),
                 })),
             };
         }
@@ -489,11 +502,13 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         executableQueries,
         options,
         aqlPreparationTime,
+        queryTreeVariableOrigins,
     }: {
         readonly queryTree: QueryNode;
         readonly executableQueries: ReadonlyArray<AQLExecutableQuery>;
         readonly options: ExecutionOptions;
         readonly aqlPreparationTime: number;
+        readonly queryTreeVariableOrigins: QueryTreeVariableOrigins | undefined;
     }): Promise<ExecutionResult> {
         const allPlans = options.recordDiscardedPlans !== false;
         let wasCancelled = false;
@@ -515,6 +530,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                 query: query.code,
                 boundValues: bindVars,
                 ...(placeholderBindVars.length ? { placeholderBindVars } : {}),
+                variableOrigins: getVariableOrigins(query, queryTreeVariableOrigins),
             };
             transactionSteps.push(step);
             if (error) {

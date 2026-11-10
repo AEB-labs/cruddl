@@ -1,4 +1,5 @@
 import type { Clock, ExecutionOptions, IDGenerator } from '../../execution/execution-options.js';
+import type { VariableOriginRecorder } from '../../execution/variable-origin-recorder.js';
 import type { FieldSelection } from '../../graphql/query-distiller.js';
 
 /**
@@ -60,4 +61,9 @@ export interface FieldContext {
      * Refer to {@link ExecutionOptions.implicitLimitForRootEntityQueries} for a description of this property.
      */
     readonly implicitLimitForRootEntityQueries?: number;
+
+    /**
+     * If set, records which field each variable of the query tree is created for
+     */
+    readonly variableOriginRecorder?: VariableOriginRecorder;
 }

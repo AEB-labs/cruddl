@@ -30,6 +30,7 @@ import { getPreciseTime, Watch } from '../utils/watch.js';
 import type { ExecutionOptions } from './execution-options.js';
 import { DefaultClock, UUIDGenerator } from './execution-options.js';
 import type { ExecutionResult } from './execution-result.js';
+import { VariableOriginRecorder } from './variable-origin-recorder.js';
 
 export class OperationResolver {
     constructor(private context: SchemaTransformationContext) {}
@@ -70,6 +71,7 @@ export class OperationResolver {
         }
 
         let queryTree: QueryNode;
+        let variableOriginRecorder: VariableOriginRecorder | undefined;
         try {
             logger.debug(
                 `Executing ${operationDesc} with roles ${
@@ -91,6 +93,7 @@ export class OperationResolver {
             }
 
             const rootQueryNode = ObjectQueryNode.EMPTY; // can't use NULL because then the whole operation would yield null
+            variableOriginRecorder = options.recordPlan ? new VariableOriginRecorder() : undefined;
             const fieldContext: FieldContext = {
                 selectionStack: [],
                 selectionTokenStack: [],
@@ -104,6 +107,7 @@ export class OperationResolver {
                 idGenerator: options.idGenerator ?? new UUIDGenerator(),
                 implicitLimitForRootEntityQueries: options.implicitLimitForRootEntityQueries,
                 maxLimitForRootEntityQueries: options.maxLimitForRootEntityQueries,
+                variableOriginRecorder,
             };
             queryTree = buildConditionalObjectQueryNode(
                 rootQueryNode,
@@ -153,6 +157,7 @@ export class OperationResolver {
             const res = this.context.databaseAdapter.executeExt
                 ? await this.context.databaseAdapter.executeExt({
                       queryTree,
+                      queryTreeVariableOrigins: variableOriginRecorder,
                       ...options,
                       operationName: operationInfo.operation.name?.value,
                   })
