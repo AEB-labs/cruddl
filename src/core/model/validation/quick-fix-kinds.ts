@@ -24,6 +24,9 @@ export const QUICK_FIX_KINDS = {
     REMOVE_DIRECTIVE: 'Removes a directive that is not allowed or has no effect',
     INCLUDE_IN_ALL_MODULES: 'Includes a field in all modules of its declaring type',
 
+    // indices
+    ADD_INDEX: 'Adds an index on fields of a root entity type',
+
     // relations
     ADD_RELATION_DIRECTIVE: 'Adds a missing @relation directive',
     USE_RESTRICT_DELETE_ACTION: 'Changes the onDelete action of a relation to RESTRICT',
