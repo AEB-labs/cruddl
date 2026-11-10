@@ -52,7 +52,9 @@ export class OperationResolver {
                 : {};
         }
 
-        const needsTimings = profileConsumer || options.recordPlan || options.recordTimings;
+        // explainOnly implies recordPlan, and the plan is part of the profile
+        const needsTimings =
+            profileConsumer || options.recordPlan || options.recordTimings || options.explainOnly;
         const watch = needsTimings ? new Watch() : undefined;
         const topLevelWatch = needsTimings ? new Watch() : undefined;
 
@@ -145,6 +147,9 @@ export class OperationResolver {
             topLevelWatch.stop('preparation');
         }
         if (!canEvaluateStatically) {
+            if (options.explainOnly && !this.context.databaseAdapter.executeExt) {
+                throw new Error(`The database adapter does not support explainOnly`);
+            }
             const res = this.context.databaseAdapter.executeExt
                 ? await this.context.databaseAdapter.executeExt({
                       queryTree,
@@ -179,7 +184,7 @@ export class OperationResolver {
         }
         let profile: RequestProfile | undefined;
         if (watch && topLevelWatch && isDefined(start)) {
-            // equivalent to (profileConsumer || options.recordPlan || options.recordTimings) but pleases typescript
+            // equivalent to needsTimings but pleases typescript
             const preparation = {
                 ...(dbAdapterTimings ? dbAdapterTimings.preparation : {}),
                 ...watch.timings,

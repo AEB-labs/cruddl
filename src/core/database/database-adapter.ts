@@ -104,6 +104,13 @@ export interface ExecutionPlanTransactionStep {
     readonly query: string;
     readonly boundValues: { [p: string]: any };
 
+    /**
+     * Only set if explainOnly is used: the names of bind parameters that would have been set to results of previous
+     * transaction steps. Because nothing is executed, they are bound to null instead, and the explained query wraps
+     * them in NOEVAL() (query contains the original code).
+     */
+    readonly placeholderBindVars?: ReadonlyArray<string>;
+
     readonly plan?: Plan;
 
     /**

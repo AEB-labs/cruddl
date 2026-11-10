@@ -40,7 +40,7 @@ export interface ExecutionOptions {
 
     /**
      * Specifies if the plans the query optimizer considered but discarded should be included in the request profile
-     * (in addition to the chosen plan). Only has an effect if recordPlan is set.
+     * (in addition to the chosen plan). Only has an effect if recordPlan or explainOnly is set.
      *
      * Recording discarded plans requires an additional explain step for each query of the transaction, and the
      * number of plans can grow large for complex queries (up to the optimizer's maxNumberOfPlans), which makes
@@ -49,6 +49,39 @@ export interface ExecutionOptions {
      * If undefined, defaults to true. The default will change to false in the next major version.
      */
     readonly recordDiscardedPlans?: boolean;
+
+    /**
+     * If set to true, the queries are only planned, but not executed. Use this to inspect execution plans without
+     * reading or writing any data.
+     *
+     * Each query of the transaction is passed to ArangoDB's explain API. No transaction is started, so nothing is
+     * written, also for mutations. mutationMode has no effect, except that 'disallowed' still rejects mutations.
+     * Authorization is applied as usual.
+     *
+     * Implies recordPlan: the request profile's plan contains the plan, the discarded plans (unless
+     * recordDiscardedPlans is false) and the warnings of each query, but no execution stats. Query result validators
+     * (e.g. the check that an entity to update exists) are not run.
+     *
+     * The result has no data. Runtime errors that are part of the data (e.g. permission denied errors) are
+     * therefore not reported, but can be seen in the explained queries. When executed via a GraphQL schema, all
+     * root fields resolve to null, so non-nullable root fields cause GraphQL errors. Use the SchemaExecutor or the
+     * profileConsumer to get the plan. Operations that can be evaluated without the database still yield their data
+     * (and no plan).
+     *
+     * Bind parameters that would carry results of earlier queries of the same transaction are bound to null (see
+     * ExecutionPlanTransactionStep.placeholderBindVars). The optimizer would fold these constants (and e.g. reject
+     * null as the operand of a FOR loop), so the explained query wraps these bind parameters in NOEVAL(). The plan
+     * therefore can differ from the plan of an actual execution, where the optimizer knows the values.
+     *
+     * When recordTimings is set, timings.database and timings.dbConnection both contain the total time spent on the
+     * explain requests. transactionTimeoutMs is not applied, and the cancellationToken is only checked between
+     * queries.
+     *
+     * Not supported by the InMemoryAdapter (it throws an error).
+     *
+     * If undefined, defaults to false.
+     */
+    readonly explainOnly?: boolean;
 
     /**
      * The memory limit in bytes to impose on individual ArangoDB queries (does not apply to the whole ArangoDB transaction)

@@ -7,6 +7,7 @@ import type {
     DatabaseAdapterTimings,
     ExecutionArgs,
     ExecutionPlan,
+    ExecutionPlanTransactionStep,
     ExecutionResult,
     FlexSearchTokenizable,
     TransactionStats,
@@ -95,6 +96,19 @@ interface TransactionResult {
      * you should check databaseError for his.
      */
     readonly wasCancelled: boolean;
+}
+
+/**
+ * Wraps references to the given bind parameters in NOEVAL() so the optimizer does not evaluate them while planning
+ */
+function wrapBindVarsInNoEval(code: string, bindVarNames: ReadonlyArray<string>): string {
+    if (!bindVarNames.length) {
+        return code;
+    }
+    // bind parameter names only consist of letters, digits and underscores, so they don't need escaping.
+    // The lookbehind excludes collection bind parameters (@@name)
+    const regex = new RegExp(`(?<![@\\w])@(${bindVarNames.join('|')})(?!\\w)`, 'g');
+    return code.replace(regex, (match) => `NOEVAL(${match})`);
 }
 
 export class ArangoDBAdapter implements DatabaseAdapter {
@@ -363,7 +377,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
         let executableQueries: ReadonlyArray<AQLExecutableQuery>;
         let aqlQuery: AQLCompoundQuery;
         const oldEnableIndentationForCode = aqlConfig.enableIndentationForCode;
-        aqlConfig.enableIndentationForCode = !!options.recordPlan;
+        aqlConfig.enableIndentationForCode = !!(options.recordPlan || options.explainOnly);
         try {
             //TODO Execute single statement AQL queries directly without "db.transaction"?
             aqlQuery = getAQLQuery(queryTree, {
@@ -384,6 +398,15 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             this.logger.trace(`Executing AQL: ${aqlQuery.toColoredString()}`);
         }
         const aqlPreparationTime = getPreciseTime() - prepStartTime;
+
+        if (options.explainOnly) {
+            return this.explainQueries({
+                queryTree,
+                executableQueries,
+                options,
+                aqlPreparationTime,
+            });
+        }
 
         // if the query contains revision assertions (_revision is used in updates / deletes), CONFLICT errors are
         // expected and retrying the mutation won't help. The caller needs to handle the conflicts then.
@@ -455,6 +478,99 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             timings,
             plan,
             stats,
+        };
+    }
+
+    /**
+     * Explains each query without executing anything (for explainOnly)
+     */
+    private async explainQueries({
+        queryTree,
+        executableQueries,
+        options,
+        aqlPreparationTime,
+    }: {
+        readonly queryTree: QueryNode;
+        readonly executableQueries: ReadonlyArray<AQLExecutableQuery>;
+        readonly options: ExecutionOptions;
+        readonly aqlPreparationTime: number;
+    }): Promise<ExecutionResult> {
+        const allPlans = options.recordDiscardedPlans !== false;
+        let wasCancelled = false;
+        options.cancellationToken?.then(() => {
+            wasCancelled = true;
+        });
+
+        const dbStartTime = getPreciseTime();
+        const transactionSteps: ExecutionPlanTransactionStep[] = [];
+        let error: Error | undefined;
+        for (const query of executableQueries) {
+            // results of previous steps are not available because nothing is executed
+            const placeholderBindVars = Object.values(query.usedPreExecResultNames);
+            const bindVars: { [name: string]: unknown } = { ...query.boundValues };
+            for (const name of placeholderBindVars) {
+                bindVars[name] = null;
+            }
+            const step: Mutable<ExecutionPlanTransactionStep> = {
+                query: query.code,
+                boundValues: bindVars,
+                ...(placeholderBindVars.length ? { placeholderBindVars } : {}),
+            };
+            transactionSteps.push(step);
+            if (error) {
+                // like in a regular execution, the steps after a failed one are not planned
+                continue;
+            }
+            if (wasCancelled) {
+                error = new TransactionCancelledError();
+                continue;
+            }
+
+            const code = wrapBindVarsInNoEval(query.code, placeholderBindVars);
+            try {
+                // the plan types of arangojs and cruddl differ slightly
+                let plans: ReadonlyArray<any>;
+                let warnings: any;
+                if (allPlans) {
+                    ({ plans, warnings } = await this.db.explain(code, bindVars, {
+                        allPlans: true,
+                    }));
+                } else {
+                    const result = await this.db.explain(code, bindVars);
+                    plans = [result.plan];
+                    warnings = result.warnings;
+                }
+                step.plan = plans[0];
+                if (allPlans) {
+                    step.discardedPlans = plans.slice(1);
+                }
+                step.warnings = warnings;
+            } catch (e: any) {
+                error = this.processDatabaseError(e, {
+                    hasTimedOut: false,
+                    wasCancelled: false,
+                    transactionTimeoutMs: undefined,
+                });
+            }
+        }
+
+        let timings: DatabaseAdapterTimings | undefined;
+        if (options.recordTimings) {
+            // the explain API does not report how long planning took, so the database time can't be
+            // separated from the connection time
+            const explainTotal = getPreciseTime() - dbStartTime;
+            timings = {
+                preparation: { total: aqlPreparationTime, aql: aqlPreparationTime },
+                dbConnection: { total: explainTotal },
+                database: { total: explainTotal },
+            };
+        }
+
+        return {
+            error,
+            data: undefined,
+            timings,
+            plan: { queryTree, transactionSteps },
         };
     }
 
