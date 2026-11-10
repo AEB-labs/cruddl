@@ -27,6 +27,7 @@ import {
 import type { AnyValue, PlainObject } from '../../utils/utils.js';
 import { decapitalize, isDefined, isReadonlyArray } from '../../utils/utils.js';
 import { createFieldNode } from '../field-nodes.js';
+import { createFilterFieldExtensions } from '../input-field-info.js';
 import type { TypedInputFieldBase } from '../typed-input-object-type.js';
 import type { Quantifier } from './constants.js';
 import { FILTER_DESCRIPTIONS, OPERATORS_WITH_LIST_OPERAND } from './constants.js';
@@ -103,6 +104,14 @@ export class ScalarOrEnumFieldFilterField implements FilterField {
         return this.field.name + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorPrefix;
     }
 
+    get extensions() {
+        return createFilterFieldExtensions({
+            kind: 'field',
+            fieldName: this.field.name,
+            operator: this.operatorPrefix ?? INPUT_FIELD_EQUAL,
+        });
+    }
+
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
         if (
             this.operatorPrefix &&
@@ -150,6 +159,14 @@ export class StringMapEntryFilterField implements FilterField {
         return this.fieldName + FILTER_FIELD_PREFIX_SEPARATOR + this.operatorPrefix;
     }
 
+    get extensions() {
+        return createFilterFieldExtensions({
+            kind: 'stringMapEntry',
+            part: this.kind,
+            operator: this.operatorPrefix ?? INPUT_FIELD_EQUAL,
+        });
+    }
+
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
         if (
             this.operatorPrefix &&
@@ -185,6 +202,10 @@ export class ScalarOrEnumFilterField implements FilterField {
 
     get name() {
         return this.operatorName;
+    }
+
+    get extensions() {
+        return createFilterFieldExtensions({ kind: 'value', operator: this.operatorName });
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
@@ -227,6 +248,14 @@ export class QuantifierFilterField implements FilterField {
         return undefined;
     }
 
+    get extensions() {
+        return createFilterFieldExtensions({
+            kind: 'quantifier',
+            fieldName: this.field.name,
+            quantifier: this.quantifierName,
+        });
+    }
+
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
         const listNode = createFieldNode(this.field, sourceNode);
         const itemVariable = new VariableQueryNode(decapitalize(this.field.name));
@@ -250,6 +279,10 @@ export class EmptyListFilterField implements FilterField {
     constructor(public readonly field: Field) {
         this.name = this.field.name + '_empty';
         this.description = `Checks if \`${this.field.name}\` is an empty list (true) or a non-empty list (false).`;
+    }
+
+    get extensions() {
+        return createFilterFieldExtensions({ kind: 'empty', fieldName: this.field.name });
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
@@ -320,6 +353,10 @@ export class NestedObjectFilterField implements FilterField {
         }
     }
 
+    get extensions() {
+        return createFilterFieldExtensions({ kind: 'object', fieldName: this.field.name });
+    }
+
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
         return this.inputType.getFilterNode(createFieldNode(this.field, sourceNode), filterValue);
     }
@@ -335,6 +372,10 @@ export class EntityExtensionFilterField implements FilterField {
     ) {
         this.name = this.field.name;
         this.description = `Allows to filter on the fields of \`${this.field.name}\`.\n\nNote that \`${this.field.name}\` is an entity extension and thus can never be \`null\`, so specifying \`null\` to this filter field has no effect.`;
+    }
+
+    get extensions() {
+        return createFilterFieldExtensions({ kind: 'object', fieldName: this.field.name });
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
@@ -362,6 +403,10 @@ export class AndFilterField implements FilterField {
         this.inputType = new GraphQLList(new GraphQLNonNull(filterType.getInputType()));
     }
 
+    get extensions() {
+        return createFilterFieldExtensions({ kind: 'and' });
+    }
+
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
         if (!isReadonlyArray(filterValue) || !filterValue.length) {
             return new ConstBoolQueryNode(true);
@@ -383,6 +428,10 @@ export class OrFilterField implements FilterField {
         this.name = OR_FILTER_FIELD;
         this.description = `A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete \`OR\` field is *and*-combined with outer fields in the parent filter type.`;
         this.inputType = new GraphQLList(new GraphQLNonNull(filterType.getInputType()));
+    }
+
+    get extensions() {
+        return createFilterFieldExtensions({ kind: 'or' });
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
@@ -415,6 +464,14 @@ export class StringMapSomeValueFilterField implements FilterField {
             `Makes sure at least one of the entries in "${this.field.name}" has a value that matches a certain filter.\n\n` +
             `Note that you can specify the empty object for this filter to make sure \`${this.field.name}\` has at least one item.`
         );
+    }
+
+    get extensions() {
+        return createFilterFieldExtensions({
+            kind: 'quantifier',
+            fieldName: this.field.name,
+            quantifier: 'some',
+        });
     }
 
     getFilterNode(sourceNode: QueryNode, filterValue: AnyValue): QueryNode {
