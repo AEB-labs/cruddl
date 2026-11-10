@@ -1,7 +1,24 @@
 export type { CreateCollectionOptions } from 'arangojs/collections';
 export { TransactionError } from '../core/execution/transaction-error.js';
+export type {
+    DiscriminatorIndexOrigin,
+    FieldDirectiveIndexOrigin,
+    IndexOrigin,
+    IndexWithOrigin,
+    KeyIndexOrigin,
+    PersistentIndexOrigin,
+    RootEntityIndicesIndexOrigin,
+    TimeToLiveIndexOrigin,
+    VectorIndexOrigin,
+} from '../core/model/implementation/index-origin.js';
 export { ArangoDBAdapter } from './arangodb-adapter.js';
 export type { ArangoDBConfig, KeyGeneratorType } from './config.js';
+export type {
+    ModelDatabaseCollection,
+    ModelDatabaseIndex,
+    ModelDatabaseObjects,
+    ModelDatabaseView,
+} from './database-objects.js';
 export type { ArangoSearchConfiguration } from './schema-migration/arango-search-helpers.js';
 export {
     describeIndex,

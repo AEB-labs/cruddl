@@ -1,4 +1,4 @@
-import type { ArgumentNode } from 'graphql';
+import type { ArgumentNode, ASTNode } from 'graphql';
 import { GraphQLID, GraphQLString } from 'graphql';
 import { memorize } from 'memorize-decorator';
 import {
@@ -42,6 +42,7 @@ import { ValidationContext } from '../validation/validation-context.js';
 import { FieldPath } from './field-path.js';
 import type { Field, SystemFieldConfig } from './field.js';
 import { FlexSearchPrimarySortClause } from './flex-search.js';
+import { getIndicesWithOrigins, type IndexWithOrigin } from './index-origin.js';
 import { Index } from './indices.js';
 import type { Model } from './model.js';
 import { EffectiveModuleSpecification } from './modules/effective-module-specification.js';
@@ -177,55 +178,15 @@ export class RootEntityType extends ObjectTypeBase {
 
     @memorize()
     get indices(): ReadonlyArray<Index> {
-        const indexConfigs = [...this.indexConfigs];
+        return this.indicesWithOrigins.map(({ index }) => index);
+    }
 
-        // @key implies a unique index
-        // (do this to the inputs so that addIdentifyingSuffixIfNeeded is called on these, too)
-        if (this.keyField) {
-            const keyField = this.keyField;
-            if (
-                !indexConfigs.some(
-                    (f) =>
-                        f.unique === true && f.fields.length == 1 && f.fields[0] === keyField.name,
-                )
-            ) {
-                indexConfigs.push({ unique: true, fields: [keyField.name] });
-            }
-        }
-
-        for (const timeToLiveType of this.timeToLiveTypes) {
-            indexConfigs.push({ unique: false, fields: [timeToLiveType.input.dateField] });
-        }
-
-        const indices = indexConfigs.map((config) => new Index(config, this));
-
-        if (this.discriminatorField !== this.keyField) {
-            if (
-                !indices.some(
-                    (index) =>
-                        index.fields.length === 1 &&
-                        index.fields[0].field === this.discriminatorField,
-                )
-            ) {
-                // make sure there is an index on the discriminator field that can be used for sorting
-                // arangodb already has an index on 'id', but it's a hash index which is unusable for sorting
-                // if the discriminator field is the key field, we already added an index above.
-                // don't use unique to avoid running into performance workarounds for unique indices (sparseness)
-                indices.push(
-                    new Index(
-                        {
-                            fields: [this.discriminatorField.name],
-                        },
-                        this,
-                    ),
-                );
-            }
-        }
-
-        // deduplicate indices
-        return indices.filter(
-            (index, i1) => !indices.some((other, i2) => i1 < i2 && other.equals(index)),
-        );
+    /**
+     * The indices of this type (like indices), together with the part of the model they come from
+     */
+    @memorize()
+    get indicesWithOrigins(): ReadonlyArray<IndexWithOrigin> {
+        return getIndicesWithOrigins(this);
     }
 
     @memorize()
@@ -250,6 +211,13 @@ export class RootEntityType extends ObjectTypeBase {
             return undefined;
         }
         return field;
+    }
+
+    /**
+     * The node of the @key directive or the field it is declared on, if available
+     */
+    get keyFieldASTNode(): ASTNode | undefined {
+        return this.input.keyFieldASTNode;
     }
 
     getKeyFieldOrThrow(): Field {

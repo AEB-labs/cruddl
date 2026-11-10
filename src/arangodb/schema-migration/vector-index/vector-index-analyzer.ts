@@ -6,12 +6,8 @@ import type { RootEntityType } from '../../../core/model/implementation/root-ent
 import { getCollectionNameForRootEntity } from '../../arango-basics.js';
 import type { ArangoDBConfig } from '../../config.js';
 import { computeVectorIndexStatus } from './compute-vector-index-status.js';
-import type { VectorIndexDefinition } from './vector-index-definition.js';
-import {
-    computeAutoNLists,
-    mapMetricForArango,
-    vectorIndexSlotName,
-} from './vector-index-helpers.js';
+import { getRequiredVectorIndexDefinition } from './vector-index-definition.js';
+import { computeAutoNLists, vectorIndexSlotName } from './vector-index-helpers.js';
 import type { VectorIndexStatus } from './vector-index-status.js';
 
 /**
@@ -73,20 +69,10 @@ export class VectorIndexAnalyzer {
             ? vectorIndex.nLists!
             : computeAutoNLists(vectorDocumentCount);
 
-        const requiredIndex: VectorIndexDefinition = {
-            fieldName,
+        const requiredIndex = getRequiredVectorIndexDefinition(field, {
             collectionName,
-            sparse: vectorIndex.sparse,
-            params: {
-                metric: mapMetricForArango(vectorIndex.metric),
-                dimension: vectorIndex.dimension || 1,
-                nLists: computedNLists,
-                trainingIterations: vectorIndex.trainingIterations,
-                factory: vectorIndex.factory,
-            },
-            storedValues:
-                vectorIndex.storedValues.length > 0 ? vectorIndex.storedValues : undefined,
-        };
+            nLists: computedNLists,
+        });
 
         return computeVectorIndexStatus({
             field,
