@@ -62,8 +62,12 @@ function applyTextChanges(source: ProjectSource, changes: ReadonlyArray<TextChan
         return source.body;
     }
 
+    // an insertion at the start of a replaced range needs to come first. Insertions at the same
+    // position keep their order (sort() is stable).
     const sortedChanges = [...changes].sort(
-        (a, b) => a.location.start.offset - b.location.start.offset,
+        (a, b) =>
+            a.location.start.offset - b.location.start.offset ||
+            a.location.end.offset - b.location.end.offset,
     );
 
     let currentPosition = 0;
