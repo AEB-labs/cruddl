@@ -1,5 +1,6 @@
 import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../query-tree/errors.js';
-import type { AccessOperation } from './auth-basics.js';
+import type { AccessOperation, AuthContext } from './auth-basics.js';
+import type { PermissionDescriptor } from './permission-descriptors.js';
 
 /**
  * Identifies the operation of a PERMISSION_DENIED error
@@ -45,6 +46,8 @@ export function getPermissionDenial(error: unknown): PermissionDenial | undefine
 }
 
 export interface CreatePermissionDeniedNodeParams {
+    readonly permissionDescriptor: PermissionDescriptor;
+    readonly authContext: AuthContext;
     readonly operation: AccessOperation;
     readonly typeName: string;
     readonly fieldName?: string;
@@ -59,12 +62,22 @@ export interface CreatePermissionDeniedNodeParams {
  * Creates a PERMISSION_DENIED error node for an operation that is denied regardless of the objects
  */
 export function createPermissionDeniedNode({
+    permissionDescriptor,
+    authContext,
     operation,
     typeName,
     fieldName,
     message,
 }: CreatePermissionDeniedNodeParams): RuntimeErrorQueryNode {
-    return new RuntimeErrorQueryNode(message, {
+    // Users with applicable permissions should know that their permissions are not missing, but
+    // currently match no object (e.g. because a claim is not set). Only describe the user's own
+    // rights, never the configuration: this message can be shown to third parties.
+    const fullMessage = permissionDescriptor.hasApplicablePermissions(authContext, operation)
+        ? `${message}: your permissions for this ${
+              fieldName ? 'field' : 'type'
+          } currently do not grant access to any object`
+        : message;
+    return new RuntimeErrorQueryNode(fullMessage, {
         code: PERMISSION_DENIED_ERROR,
         permissionDenial: { operation, typeName, ...(fieldName ? { fieldName } : {}) },
     });

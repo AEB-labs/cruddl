@@ -27,6 +27,8 @@ export function transformFollowEdgeQueryNode(
     switch (access) {
         case PermissionResult.DENIED:
             return createPermissionDeniedNode({
+                permissionDescriptor: fieldPermissionDescriptor,
+                authContext,
                 operation: AccessOperation.READ,
                 typeName: sourceType.name,
                 fieldName: sourceField.name,
@@ -46,6 +48,8 @@ export function transformFollowEdgeQueryNode(
             return node;
         case PermissionResult.DENIED:
             return createPermissionDeniedNode({
+                permissionDescriptor: entityPermissionDescriptor,
+                authContext,
                 operation: AccessOperation.READ,
                 typeName: targetType.name,
                 message: `Not authorized to read ${targetType.name} objects (in ${sourceType.name}.${sourceField.name})`,

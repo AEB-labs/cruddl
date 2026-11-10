@@ -29,6 +29,8 @@ export function transformTraversalQueryNode(
         );
         if (entityAccess === PermissionResult.DENIED) {
             return createPermissionDeniedNode({
+                permissionDescriptor: entityPermissionDescriptor,
+                authContext,
                 operation: AccessOperation.READ,
                 typeName: targetType.name,
                 message: `Not authorized to read ${targetType.name} objects`,
@@ -42,6 +44,8 @@ export function transformTraversalQueryNode(
         switch (access) {
             case PermissionResult.DENIED:
                 return createPermissionDeniedNode({
+                    permissionDescriptor: fieldPermissionDescriptor,
+                    authContext,
                     operation: AccessOperation.READ,
                     typeName: segment.field.declaringType.name,
                     fieldName: segment.field.name,

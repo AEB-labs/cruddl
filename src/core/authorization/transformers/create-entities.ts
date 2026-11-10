@@ -26,6 +26,8 @@ export function transformCreateEntitiesQueryNode(
             return node;
         case PermissionResult.DENIED:
             return createPermissionDeniedNode({
+                permissionDescriptor: permissionDescriptor,
+                authContext,
                 operation: AccessOperation.CREATE,
                 typeName: node.rootEntityType.name,
                 message: `Not authorized to create ${node.rootEntityType.name} objects`,

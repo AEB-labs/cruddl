@@ -21,6 +21,8 @@ export function transformVectorSearchQueryNode(
     const entityAccess = entityPermissionDescriptor.canAccess(authContext, AccessOperation.READ);
     if (entityAccess === PermissionResult.DENIED) {
         return createPermissionDeniedNode({
+            permissionDescriptor: entityPermissionDescriptor,
+            authContext,
             operation: AccessOperation.READ,
             typeName: rootEntityType.name,
             message: `Not authorized to read ${rootEntityType.name} objects`,
@@ -32,6 +34,8 @@ export function transformVectorSearchQueryNode(
     const fieldAccess = fieldPermissionDescriptor.canAccess(authContext, AccessOperation.READ);
     if (fieldAccess === PermissionResult.DENIED) {
         return createPermissionDeniedNode({
+            permissionDescriptor: fieldPermissionDescriptor,
+            authContext,
             operation: AccessOperation.READ,
             typeName: node.field.declaringType.name,
             fieldName: node.field.name,
