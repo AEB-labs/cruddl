@@ -10,6 +10,7 @@ import { getOrderByTypeName } from '../schema/names.js';
 import { isDefined } from '../utils/utils.js';
 import { createFieldNode } from './field-nodes.js';
 import { getScalarFilterValueNode } from './filter-input-types/filter-fields.js';
+import { createOrderByValueExtensions } from './input-field-info.js';
 
 export class OrderByEnumType {
     constructor(
@@ -48,6 +49,10 @@ export class OrderByEnumType {
                     {
                         value: value.name,
                         deprecationReason: value.deprecationReason,
+                        extensions: createOrderByValueExtensions({
+                            fieldPath: value.path.map((field) => field.name),
+                            direction: value.direction,
+                        }),
                     },
                 ]),
             ),

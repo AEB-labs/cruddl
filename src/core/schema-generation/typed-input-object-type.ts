@@ -1,6 +1,7 @@
 import type {
     GraphQLInputFieldConfig,
     GraphQLInputFieldConfigMap,
+    GraphQLInputFieldExtensions,
     GraphQLInputType,
     ThunkReadonlyArray,
 } from 'graphql';
@@ -12,6 +13,7 @@ export interface TypedInputFieldBase<TField extends TypedInputFieldBase<TField>>
     readonly name: string;
     readonly description?: string;
     readonly deprecationReason?: string;
+    readonly extensions?: GraphQLInputFieldExtensions;
     readonly inputType: GraphQLInputType | TypedInputObjectType<TField>;
 }
 
@@ -39,6 +41,7 @@ export class TypedInputObjectType<TField extends TypedInputFieldBase<TField>> {
                                         : field.inputType,
                                 description: field.description,
                                 deprecationReason: field.deprecationReason,
+                                extensions: field.extensions,
                             },
                         ]),
                     ),

@@ -35,6 +35,7 @@ import {
     getScalarFilterLiteralValue,
     getScalarFilterValueNode,
 } from '../filter-input-types/filter-fields.js';
+import { createFilterFieldExtensions } from '../input-field-info.js';
 import type { QueryNodeResolveInfo } from '../query-node-object-type/definition.js';
 import type { TypedInputFieldBase } from '../typed-input-object-type.js';
 import { not } from '../utils/input-types.js';
@@ -127,6 +128,15 @@ export class FlexSearchScalarOrEnumFieldFilterField implements FlexSearchFilterF
         );
     }
 
+    get extensions() {
+        return createFilterFieldExtensions({
+            kind: 'field',
+            fieldName: this.field.name,
+            operator: this.operatorName,
+            ...(this.isAggregation ? { aggregation: true } : {}),
+        });
+    }
+
     getFilterNode(
         sourceNode: QueryNode,
         filterValue: AnyValue,
@@ -188,6 +198,10 @@ export class FlexSearchScalarOrEnumFilterField implements FlexSearchFilterField 
         return this.operatorName;
     }
 
+    get extensions() {
+        return createFilterFieldExtensions({ kind: 'value', operator: this.operatorName });
+    }
+
     getFilterNode(
         sourceNode: QueryNode,
         filterValue: AnyValue,
@@ -228,6 +242,14 @@ export class FlexSearchNestedObjectFilterField implements FlexSearchFilterField 
                 `Filters the through \`${this.field.type.keyField.name}\` referenced ${this.field.type.pluralName} that fulfills the given requirements.\n\n ` +
                 this.description;
         }
+    }
+
+    get extensions() {
+        return createFilterFieldExtensions({
+            kind: 'object',
+            fieldName: this.field.name,
+            ...(this.field.isList ? { aggregation: true } : {}),
+        });
     }
 
     getFilterNode(
@@ -289,6 +311,14 @@ export class FlexSearchEntityExtensionFilterField implements FlexSearchFilterFie
         this.description = `Allows to filter on the fields of \`${this.field.name}\`.\n\nNote that \`${this.field.name}\` is an entity extension and thus can never be \`null\`, so specifying \`null\` to this filter field has no effect.`;
     }
 
+    get extensions() {
+        return createFilterFieldExtensions({
+            kind: 'object',
+            fieldName: this.field.name,
+            ...(this.field.isList ? { aggregation: true } : {}),
+        });
+    }
+
     getFilterNode(
         sourceNode: QueryNode,
         filterValue: AnyValue,
@@ -313,6 +343,10 @@ export class FlexSearchEmptyListFilterField implements FlexSearchFilterField {
     constructor(public readonly field: Field) {
         this.name = this.field.name + '_empty';
         this.description = `Checks if \`${this.field.name}\` is an empty list (true) or a non-empty list (false).`;
+    }
+
+    get extensions() {
+        return createFilterFieldExtensions({ kind: 'empty', fieldName: this.field.name });
     }
 
     getFilterNode(
@@ -354,6 +388,10 @@ export class FlexSearchAndFilterField implements FlexSearchFilterField {
         this.inputType = new GraphQLList(new GraphQLNonNull(filterType.getInputType()));
     }
 
+    get extensions() {
+        return createFilterFieldExtensions({ kind: 'and' });
+    }
+
     getFilterNode(
         sourceNode: QueryNode,
         filterValue: AnyValue,
@@ -382,6 +420,10 @@ export class FlexSearchOrFilterField implements FlexSearchFilterField {
         this.name = OR_FILTER_FIELD;
         this.description = `A field that checks if any of the filters in the list apply.\n\nIf the list is empty, this filter applies to no objects.\n\nNote that only the items in the list *or*-combined; this complete \`OR\` field is *and*-combined with outer fields in the parent filter type.`;
         this.inputType = new GraphQLList(new GraphQLNonNull(filterType.getInputType()));
+    }
+
+    get extensions() {
+        return createFilterFieldExtensions({ kind: 'or' });
     }
 
     getFilterNode(
@@ -421,6 +463,10 @@ export class FlexSearchI18nStringLocalizedFilterField implements FlexSearchFilte
             `Makes sure at least one of the entries in "${this.field.name}" has a value that matches a certain filter.\n\n` +
             `Note that you can specify the empty object for this filter to make sure \`${this.field.name}\` has at least one item.`
         );
+    }
+
+    get extensions() {
+        return createFilterFieldExtensions({ kind: 'localized', fieldName: this.field.name });
     }
 
     getFilterNode(
