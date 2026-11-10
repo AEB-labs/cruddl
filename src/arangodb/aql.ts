@@ -23,13 +23,26 @@ function indentLineBreaks(val: string, level: number) {
     return val.replace(/\n/g, '\n' + indent);
 }
 
+export interface AQLCodeOptions {
+    /**
+     * Whether to collect the query tree variable indices of the variables (see
+     * associateWithQueryTreeVariable())
+     */
+    readonly collectQueryTreeVariableIndices?: boolean;
+}
+
 export class AQLCodeBuildingContext {
     private readonly boundValues: unknown[] = [];
     private readonly boundCollectionNames = new Set<string>();
     private variableBindings = new Map<AQLVariable, string>();
     private preExecInjectedVariablesMap = new Map<AQLQueryResultVariable, string>();
     private nextIndexPerLabel = new Map<string, number>();
+    private readonly queryTreeVariableIndices: { [variableName: string]: number } | undefined;
     public indentationLevel = 0;
+
+    constructor(options: AQLCodeOptions = {}) {
+        this.queryTreeVariableIndices = options.collectQueryTreeVariableIndices ? {} : undefined;
+    }
 
     private static getBoundValueName(index: number) {
         return 'var' + (index + 1);
@@ -82,6 +95,11 @@ export class AQLCodeBuildingContext {
         this.variableBindings.set(token, newBinding);
         if (token instanceof AQLQueryResultVariable) {
             this.preExecInjectedVariablesMap.set(token, newBinding);
+        } else if (this.queryTreeVariableIndices) {
+            const queryTreeVariableIndex = queryTreeVariableIndices.get(token);
+            if (isDefined(queryTreeVariableIndex)) {
+                this.queryTreeVariableIndices[newBinding] = queryTreeVariableIndex;
+            }
         }
         return newBinding;
     }
@@ -101,6 +119,13 @@ export class AQLCodeBuildingContext {
     getPreExecInjectedVariablesMap(): Map<AQLQueryResultVariable, string> {
         return this.preExecInjectedVariablesMap;
     }
+
+    /**
+     * The query tree variable indices by AQL variable name (only if collectQueryTreeVariableIndices is set)
+     */
+    getQueryTreeVariableIndices(): { readonly [variableName: string]: number } | undefined {
+        return this.queryTreeVariableIndices;
+    }
 }
 
 export abstract class AQLFragment {
@@ -112,13 +137,14 @@ export abstract class AQLFragment {
         return this.toColoredStringWithContext(new AQLCodeBuildingContext());
     }
 
-    getCode() {
-        const context = new AQLCodeBuildingContext();
+    getCode(options?: AQLCodeOptions) {
+        const context = new AQLCodeBuildingContext(options);
         const code = this.getCodeWithContext(context);
         return {
             code,
             boundValues: context.getBoundValueMap(),
             usedResultVariables: context.getPreExecInjectedVariablesMap(),
+            queryTreeVariableIndices: context.getQueryTreeVariableIndices(),
         };
     }
 
@@ -167,6 +193,26 @@ export class AQLCodeFragment extends AQLFragment {
         } else {
             return this.aql;
         }
+    }
+}
+
+/**
+ * The index of the query tree variable (VariableQueryNode.index) an AQLVariable represents
+ *
+ * Kept outside of AQLVariable because AQLVariable is used interchangeably with AQLFragment in many
+ * places. Only informational, does not influence the generated code.
+ */
+const queryTreeVariableIndices = new WeakMap<AQLVariable, number>();
+
+/**
+ * Records that an AQLVariable represents a query tree variable (unless it already represents one)
+ */
+export function associateWithQueryTreeVariable(
+    variable: AQLVariable,
+    queryTreeVariableIndex: number,
+) {
+    if (!queryTreeVariableIndices.has(variable)) {
+        queryTreeVariableIndices.set(variable, queryTreeVariableIndex);
     }
 }
 
@@ -512,19 +558,21 @@ export class AQLCompoundQuery extends AQLFragment {
      *
      * The returned transaction steps are to be executed sequentially.
      */
-    getExecutableQueries(): ReadonlyArray<AQLExecutableQuery> {
+    getExecutableQueries(options?: AQLCodeOptions): ReadonlyArray<AQLExecutableQuery> {
         const resultVarToNameMap = new Map<AQLQueryResultVariable, string>();
-        return this.getExecutableQueriesRecursive(resultVarToNameMap);
+        return this.getExecutableQueriesRecursive(resultVarToNameMap, options);
     }
 
     private getExecutableQueriesRecursive(
         resultVarToNameMap: Map<AQLQueryResultVariable, string>,
+        options: AQLCodeOptions | undefined,
     ): ReadonlyArray<AQLExecutableQuery> {
         const executableQueries = this.preExecQueries.flatMap((aqlQuery) =>
-            aqlQuery.getExecutableQueriesRecursive(resultVarToNameMap),
+            aqlQuery.getExecutableQueriesRecursive(resultVarToNameMap, options),
         );
 
-        const { code, boundValues, usedResultVariables } = this.aqlQuery.getCode();
+        const { code, boundValues, usedResultVariables, queryTreeVariableIndices } =
+            this.aqlQuery.getCode(options);
 
         const usedResultNames: { [p: string]: string } = {};
         usedResultVariables.forEach((bindParamName, aqlVariable) => {
@@ -554,6 +602,7 @@ export class AQLCompoundQuery extends AQLFragment {
             usedResultNames,
             queryResultName,
             queryResultValidator,
+            queryTreeVariableIndices,
         );
         return [...executableQueries, executableQuery];
     }
@@ -619,5 +668,11 @@ export class AQLExecutableQuery {
         public readonly usedPreExecResultNames: { [p: string]: string },
         public readonly resultName?: string,
         public readonly resultValidator?: { [name: string]: any },
+        /**
+         * The query tree variable indices (VariableQueryNode.index) by AQL variable name
+         *
+         * Only set if collectQueryTreeVariableIndices was specified.
+         */
+        public readonly queryTreeVariableIndices?: { readonly [variableName: string]: number },
     ) {}
 }

@@ -237,6 +237,53 @@ export interface ExecutionPlanTransactionStep {
      * @deprecated never populated. Use stats.peakMemoryUsage instead.
      */
     readonly peakMemoryUsage?: number;
+
+    /**
+     * The GraphQL fields the variables of this transaction step's query originate from, keyed by
+     * the variable name as it appears in the query (and in the outVariable of the plan nodes)
+     *
+     * Variables that do not originate from a specific GraphQL field (e.g. variables introduced for
+     * authorization) are not included. Only set if recordPlan or explainOnly is enabled and the query was
+     * generated from a GraphQL operation.
+     */
+    readonly variableOrigins?: { readonly [aqlVariableName: string]: FieldOrigin };
+}
+
+/**
+ * Describes a field within a GraphQL operation
+ */
+export interface FieldOrigin {
+    /**
+     * The response keys (aliases or field names) from the operation root to this field
+     *
+     * Example: ['Consignment', 'deliveries']
+     */
+    readonly path: ReadonlyArray<string>;
+
+    /**
+     * The name of the GraphQL type that declares the field
+     */
+    readonly parentTypeName: string;
+
+    /**
+     * The name of the field in the schema (not the alias)
+     */
+    readonly fieldName: string;
+
+    /**
+     * The start of the field in the operation's source (1-based line and column)
+     *
+     * If the field is selected within a fragment, this is the location within the fragment.
+     */
+    readonly loc?: { readonly line: number; readonly column: number };
+}
+
+/**
+ * Maps the indices of query tree variables (VariableQueryNode.index) to the GraphQL fields they
+ * originate from
+ */
+export interface QueryTreeVariableOrigins {
+    getOrigin(variableIndex: number): FieldOrigin | undefined;
 }
 
 export interface ExecutionArgs extends ExecutionOptions {
@@ -252,6 +299,13 @@ export interface ExecutionArgs extends ExecutionOptions {
      * running queries. Characters that are not valid in GraphQL names are replaced by underscores.
      */
     readonly operationName?: string;
+
+    /**
+     * The GraphQL fields the variables in queryTree originate from
+     *
+     * Database adapters can use this to populate ExecutionPlanTransactionStep.variableOrigins.
+     */
+    readonly queryTreeVariableOrigins?: QueryTreeVariableOrigins;
 }
 
 export interface DatabaseAdapter {

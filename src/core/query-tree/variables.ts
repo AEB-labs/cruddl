@@ -10,6 +10,20 @@ namespace varIndices {
         nextIndex++;
         return thisIndex;
     }
+
+    export function peek() {
+        return nextIndex;
+    }
+}
+
+/**
+ * Gets the index the next VariableQueryNode will be assigned
+ *
+ * Variable indices are assigned in ascending order, so all variables created between two calls of this function have
+ * an index in the range [first result, second result).
+ */
+export function peekNextVariableIndex(): number {
+    return varIndices.peek();
 }
 
 /**

@@ -13,6 +13,7 @@ import { FieldQueryNode, TraversalQueryNode } from '../../query-tree/queries.js'
 import { BasicType, TypeCheckQueryNode } from '../../query-tree/type-check.js';
 import {
     HoistableQueryNode,
+    peekNextVariableIndex,
     VariableAssignmentQueryNode,
     VariableQueryNode,
 } from '../../query-tree/variables.js';
@@ -233,6 +234,25 @@ function buildFieldQueryNode0(
 }
 
 function buildFieldQueryNode(
+    sourceNode: QueryNode,
+    field: QueryNodeField,
+    fieldRequest: FieldRequest,
+    context: FieldContext,
+): QueryNode {
+    const recorder = context.variableOriginRecorder;
+    if (!recorder) {
+        return buildFieldQueryNodeWithPreExecution(sourceNode, field, fieldRequest, context);
+    }
+
+    // all variables created in this (synchronous) call belong to this field or to one of its
+    // child fields. Child fields are recorded first, so they keep their variables.
+    const startIndex = peekNextVariableIndex();
+    const node = buildFieldQueryNodeWithPreExecution(sourceNode, field, fieldRequest, context);
+    recorder.recordField(startIndex, peekNextVariableIndex(), context.selectionStack);
+    return node;
+}
+
+function buildFieldQueryNodeWithPreExecution(
     sourceNode: QueryNode,
     field: QueryNodeField,
     fieldRequest: FieldRequest,

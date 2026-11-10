@@ -146,11 +146,28 @@ export class RevisionQueryNode extends QueryNode {
  * Evaluates to all root entities that are connected to a specific root entitity through a specific edge
  */
 export class FollowEdgeQueryNode extends QueryNode {
+    /**
+     * A variable that identifies the target entities of this edge traversal
+     *
+     * It is not referenced within the query tree. Database adapters can use it to identify the
+     * loop variable they generate for the traversal.
+     */
+    readonly itemVariable: VariableQueryNode;
+
     constructor(
         readonly relationSide: RelationSide,
         readonly sourceEntityNode: QueryNode,
     ) {
         super();
+        this.itemVariable = new VariableQueryNode('node');
+    }
+
+    protected fieldEquals(key: string, lhs: any, rhs: any): boolean {
+        // itemVariable is unique per instance and does not change what the node evaluates to
+        if (key === 'itemVariable') {
+            return true;
+        }
+        return super.fieldEquals(key, lhs, rhs);
     }
 
     describe() {
