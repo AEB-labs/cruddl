@@ -7,7 +7,7 @@ import {
 } from '../../../testing/utils/model-validation-utils.js';
 import { Project } from '../../project/project.js';
 import { ProjectSource } from '../../project/source.js';
-import { applyChangeSet } from '../../public-api.js';
+import { applyChangeSet, combineQuickFixes } from '../../public-api.js';
 import { runCheck } from './testing/run-check.js';
 
 describe('checkModel', () => {
@@ -37,6 +37,41 @@ describe('checkModel', () => {
     field: String
 }`,
             );
+        });
+
+        it('can add multiple missing fields of the same type at once', () => {
+            const projectToCheck = new Project([
+                new ProjectSource(
+                    'to-check.graphql',
+                    `type Test @rootEntity {
+    wrongFieldName: String
+}`,
+                ),
+            ]);
+            const result = runCheck(
+                gql`
+                    type Test @rootEntity @modules(in: "module1") {
+                        field1: String @modules(all: true)
+                        field2: Int @modules(all: true)
+                    }
+                `,
+                projectToCheck,
+            );
+            const quickFixes = result.messages.flatMap((m) =>
+                m.quickFixes.filter((q) => q.isPreferred),
+            );
+            expect(quickFixes.map((q) => q.kind)).to.deep.equal([
+                'ADD_MISSING_FIELD',
+                'ADD_MISSING_FIELD',
+            ]);
+            const combined = combineQuickFixes(quickFixes);
+            expect(combined.skippedQuickFixes).to.deep.equal([]);
+            const newProject = applyChangeSet(projectToCheck, combined.changeSet);
+            expect(newProject.sources[0].body).to.equal(`type Test @rootEntity {
+    wrongFieldName: String
+    field1: String
+    field2: Int
+}`);
         });
 
         it('includes field directives in the quickfix', () => {

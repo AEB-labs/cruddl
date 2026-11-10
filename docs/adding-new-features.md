@@ -189,6 +189,21 @@ this with the modules feature, passing a baseline model with a subset of modules
     always receive the component to check, the baseline, and a shared `ValidationContext` and add
     messages to it.
 
+### Quick fixes
+
+Validation messages can offer `QuickFix` objects (`src/model/validation/quick-fix.ts`) with a
+`ChangeSet` that tooling can apply as a code action.
+
+-   Every quick fix has a `kind` from `QUICK_FIX_KINDS` (`src/model/validation/quick-fix-kinds.ts`).
+    Reuse a kind if a fix does the same thing as an existing one, otherwise add a new kind. UIs use
+    kinds to group fixes and to apply all fixes of one kind at once.
+-   Only set `isPreferred` if the fix can be applied without reviewing it, e.g. in a "fix all"
+    action. Fixes that are a guess (like similar names) or that make a decision the user should make
+    consciously (like removing a type or changing how values are stored) are not preferred. At most
+    one fix of a message should be preferred.
+-   `combineQuickFixes()` combines the fixes of multiple messages into one change set, skipping
+    fixes whose changes overlap.
+
 ## Tests
 
 -   Regression tests are the most important tests. They end-to-end test from the schema definition
