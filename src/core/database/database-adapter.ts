@@ -139,6 +139,14 @@ export interface ExecutionArgs extends ExecutionOptions {
      * The query to execute
      */
     readonly queryTree: QueryNode;
+
+    /**
+     * The name of the GraphQL operation the query belongs to, if any
+     *
+     * The ArangoDBAdapter includes it in a comment in the AQL queries so it shows up in the lists of slow and
+     * running queries. Characters that are not valid in GraphQL names are replaced by underscores.
+     */
+    readonly operationName?: string;
 }
 
 export interface DatabaseAdapter {
