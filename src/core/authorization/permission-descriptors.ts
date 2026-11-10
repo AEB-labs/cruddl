@@ -26,6 +26,11 @@ import { ACCESS_GROUP_FIELD } from '../schema/constants.js';
 import { isReadonlyArray } from '../utils/utils.js';
 import type { AuthContext } from './auth-basics.js';
 import { AccessOperation } from './auth-basics.js';
+import type {
+    AccessConditionDescription,
+    PermissionDescription,
+    RestrictionDescription,
+} from './describe-access-condition.js';
 
 export enum ConditionExplanationContext {
     BEFORE_WRITE,
@@ -101,6 +106,26 @@ export abstract class PermissionDescriptor {
         context: ConditionExplanationContext,
     ): string | undefined {
         return undefined;
+    }
+
+    /**
+     * Describes the condition that determines if a user has access, e.g. for tools that explain
+     * why a query reads or skips certain objects
+     */
+    describeAccessCondition(
+        authContext: AuthContext,
+        operation: AccessOperation,
+    ): AccessConditionDescription {
+        switch (this.canAccess(authContext, operation)) {
+            case PermissionResult.GRANTED:
+                return { kind: 'granted' };
+            case PermissionResult.DENIED:
+                return { kind: 'denied' };
+            default:
+                throw new Error(
+                    `${this.constructor.name} can not describe instance-dependent access conditions`,
+                );
+        }
     }
 }
 
@@ -291,11 +316,7 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
             }
 
             if (restriction.claim !== undefined) {
-                const claimValue = authContext.claims?.[restriction.claim];
-                const claimValues = isReadonlyArray(claimValue) ? claimValue : [claimValue];
-                const sanitizedClaimValues = claimValues.filter(
-                    (v) => !!v && typeof v === 'string',
-                );
+                const sanitizedClaimValues = getClaimValues(restriction.claim, authContext);
                 if (!sanitizedClaimValues.length) {
                     return ConstBoolQueryNode.FALSE;
                 }
@@ -313,6 +334,54 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
             (acc: QueryNode, node) => new BinaryOperationQueryNode(acc, BinaryOperator.AND, node),
             accessGroupConditionNode,
         );
+    }
+
+    describeAccessCondition(
+        authContext: AuthContext,
+        operation: AccessOperation,
+    ): AccessConditionDescription {
+        switch (this.canAccess(authContext, operation)) {
+            case PermissionResult.GRANTED:
+                return { kind: 'granted' };
+            case PermissionResult.DENIED:
+                return { kind: 'denied' };
+        }
+        return {
+            kind: 'restricted',
+            permissionProfileName: this.profile.name,
+            permissions: this.getApplicablePermissions(authContext, operation).map(
+                (permission): PermissionDescription => ({
+                    ...(permission.restrictToAccessGroups
+                        ? { accessGroups: permission.getAllowedAccessGroups(authContext) }
+                        : {}),
+                    restrictions: permission.restrictions.map(
+                        (restriction): RestrictionDescription => ({
+                            fieldPath:
+                                this.getRestrictionFieldPath(restriction.field).fields?.map(
+                                    (field) => field.name,
+                                ) ?? restriction.field.split('.'),
+                            ...(restriction.value !== undefined
+                                ? { source: 'value', values: [restriction.value] }
+                                : restriction.valueTemplate !== undefined
+                                  ? {
+                                        source: 'valueTemplate',
+                                        values: permission.evaluateTemplate(
+                                            restriction.valueTemplate,
+                                            authContext,
+                                        ),
+                                    }
+                                  : {
+                                        source: 'claim',
+                                        claim: restriction.claim!,
+                                        values: getClaimValues(restriction.claim!, authContext),
+                                    }),
+                            loc: restriction.loc,
+                        }),
+                    ),
+                    loc: permission.loc,
+                }),
+            ),
+        };
     }
 
     getListChangeCondition(
@@ -606,4 +675,13 @@ function replaceFieldPathValue(
         objectNode,
         new ObjectQueryNode([new PropertySpecification(field.name, fieldValueNode)]),
     ]);
+}
+
+/**
+ * Gets the string values of a claim, ignoring all other values
+ */
+function getClaimValues(claim: string, authContext: AuthContext): ReadonlyArray<string> {
+    const claimValue = authContext.claims?.[claim];
+    const claimValues = isReadonlyArray(claimValue) ? claimValue : [claimValue];
+    return claimValues.filter((v): v is string => !!v && typeof v === 'string');
 }
