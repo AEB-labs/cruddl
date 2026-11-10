@@ -209,6 +209,8 @@ Validation messages can offer `QuickFix` objects (`src/model/validation/quick-fi
     one fix of a message should be preferred.
 -   `combineQuickFixes()` combines the fixes of multiple messages into one change set, skipping
     fixes whose changes overlap.
+-   Some quick fixes are not tied to a validation message, but are offered to tooling as functions,
+    like `createAddIndexQuickFix()`.
 
 ## Tests
 

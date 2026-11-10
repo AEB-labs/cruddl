@@ -1,3 +1,7 @@
+export {
+    createAddIndexQuickFix,
+    type AddIndexQuickFixOptions,
+} from './change-set/add-index-quick-fix.js';
 export { applyChangeSet, applyYamlAddInMapChange } from './change-set/apply-change-set.js';
 export {
     AppendChange,
