@@ -1,8 +1,8 @@
 import type { QueryNode } from '../../query-tree/base.js';
-import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
 import type { FieldPathQueryNode, FieldQueryNode } from '../../query-tree/queries.js';
 import type { AuthContext } from '../auth-basics.js';
 import { AccessOperation } from '../auth-basics.js';
+import { createPermissionDeniedNode } from '../permission-denial.js';
 import { getPermissionDescriptorOfField } from '../permission-descriptors-in-model.js';
 import { PermissionResult } from '../permission-descriptors.js';
 
@@ -13,10 +13,12 @@ export function transformFieldQueryNode(node: FieldQueryNode, authContext: AuthC
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(
-                `Not authorized to read ${node.field.declaringType.name}.${node.field.name}`,
-                { code: PERMISSION_DENIED_ERROR },
-            );
+            return createPermissionDeniedNode({
+                operation: AccessOperation.READ,
+                typeName: node.field.declaringType.name,
+                fieldName: node.field.name,
+                message: `Not authorized to read ${node.field.declaringType.name}.${node.field.name}`,
+            });
         default:
             throw new Error(
                 `Conditional permission profiles are currently not supported on fields, but used in ${node.field.declaringType.name}.${node.field.name}`,
@@ -35,10 +37,12 @@ export function transformFieldPathQueryNode(
             case PermissionResult.GRANTED:
                 break;
             case PermissionResult.DENIED:
-                return new RuntimeErrorQueryNode(
-                    `Not authorized to read ${field.declaringType.name}.${field.name}`,
-                    { code: PERMISSION_DENIED_ERROR },
-                );
+                return createPermissionDeniedNode({
+                    operation: AccessOperation.READ,
+                    typeName: field.declaringType.name,
+                    fieldName: field.name,
+                    message: `Not authorized to read ${field.declaringType.name}.${field.name}`,
+                });
             default:
                 throw new Error(
                     `Conditional permission profiles are currently not supported on fields, but used in ${field.declaringType.name}.${field.name}`,

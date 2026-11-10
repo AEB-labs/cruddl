@@ -31,22 +31,22 @@ RETURN {
     "delivery": {
       "Delivery": (IS_NULL(v_delivery1) ? null : {
         "deliveryNumber": v_delivery1.`deliveryNumber`,
-        "totalValue": { __cruddl_runtime_error_code: @var7, __cruddl_runtime_error: @var8 },
-        "forwarder": { __cruddl_runtime_error_code: @var9, __cruddl_runtime_error: @var10 }
+        "totalValue": { __cruddl_runtime_error_code: @var7, __cruddl_runtime_error: @var8, __cruddl_runtime_error_permission_denial: @var9 },
+        "forwarder": { __cruddl_runtime_error_code: @var10, __cruddl_runtime_error: @var11, __cruddl_runtime_error_permission_denial: @var12 }
       }),
       "allDeliveries": (
         FOR v_delivery4
         IN @@deliveries
-        FILTER (v_delivery4._key == @var11)
+        FILTER (v_delivery4._key == @var13)
         RETURN {
           "deliveryNumber": v_delivery4.`deliveryNumber`,
-          "totalValue": { __cruddl_runtime_error_code: @var12, __cruddl_runtime_error: @var13 }
+          "totalValue": { __cruddl_runtime_error_code: @var14, __cruddl_runtime_error: @var15, __cruddl_runtime_error_permission_denial: @var16 }
         }
       ),
       "HandlingUnit": (IS_NULL(v_handlingUnit1) ? null : {
         "delivery": (IS_NULL(v_delivery3) ? null : {
           "deliveryNumber": v_delivery3.`deliveryNumber`,
-          "totalValue": { __cruddl_runtime_error_code: @var14, __cruddl_runtime_error: @var15 }
+          "totalValue": { __cruddl_runtime_error_code: @var17, __cruddl_runtime_error: @var18, __cruddl_runtime_error_permission_denial: @var19 }
         })
       })
     }
@@ -54,7 +54,7 @@ RETURN {
   "foundation": {
     "Country": (IS_NULL(v_country1) ? null : {
       "isoCode": v_country1.`isoCode`,
-      "totalInvestment": { __cruddl_runtime_error_code: @var16, __cruddl_runtime_error: @var17 }
+      "totalInvestment": { __cruddl_runtime_error_code: @var20, __cruddl_runtime_error: @var21, __cruddl_runtime_error_permission_denial: @var22 }
     })
   }
 }

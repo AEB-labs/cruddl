@@ -316,6 +316,7 @@ export class ArangoDBAdapter implements DatabaseAdapter {
                     rollbackWithError({
                         message: e.message,
                         code: e.code,
+                        permissionDenial: e.permissionDenial,
                     });
                 }
             }

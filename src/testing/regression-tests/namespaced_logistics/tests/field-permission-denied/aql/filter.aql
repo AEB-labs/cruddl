@@ -1,14 +1,14 @@
 RETURN {
   "logistics": {
     "delivery": {
-      "direct": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2 },
-      "startsWith": { __cruddl_runtime_error_code: @var3, __cruddl_runtime_error: @var4 },
-      "throughRelation": { __cruddl_runtime_error_code: @var5, __cruddl_runtime_error: @var6 },
-      "toUnaccessibleEntity": { __cruddl_runtime_error_code: @var7, __cruddl_runtime_error: @var8 }
+      "direct": { __cruddl_runtime_error_code: @var1, __cruddl_runtime_error: @var2, __cruddl_runtime_error_permission_denial: @var3 },
+      "startsWith": { __cruddl_runtime_error_code: @var4, __cruddl_runtime_error: @var5, __cruddl_runtime_error_permission_denial: @var6 },
+      "throughRelation": { __cruddl_runtime_error_code: @var7, __cruddl_runtime_error: @var8, __cruddl_runtime_error_permission_denial: @var9 },
+      "toUnaccessibleEntity": { __cruddl_runtime_error_code: @var10, __cruddl_runtime_error: @var11, __cruddl_runtime_error_permission_denial: @var12 }
     }
   },
   "simple": {
-    "SecretKey": { __cruddl_runtime_error_code: @var9, __cruddl_runtime_error: @var10 }
+    "SecretKey": { __cruddl_runtime_error_code: @var13, __cruddl_runtime_error: @var14, __cruddl_runtime_error_permission_denial: @var15 }
   }
 }
 

@@ -1,5 +1,5 @@
 import type { QueryNode } from '../../query-tree/base.js';
-import { PERMISSION_DENIED_ERROR, RuntimeErrorQueryNode } from '../../query-tree/errors.js';
+import { PERMISSION_DENIED_ERROR } from '../../query-tree/errors.js';
 import type { CreateEntityQueryNode } from '../../query-tree/mutations.js';
 import { BinaryOperationQueryNode, BinaryOperator } from '../../query-tree/operators.js';
 import { PreExecQueryParms, WithPreExecutionQueryNode } from '../../query-tree/pre-exec.js';
@@ -7,6 +7,7 @@ import { simplifyBooleans } from '../../query-tree/utils/simplify-booleans.js';
 import { ErrorIfNotTruthyResultValidator } from '../../query-tree/validation.js';
 import type { AuthContext } from '../auth-basics.js';
 import { AccessOperation } from '../auth-basics.js';
+import { createPermissionDeniedNode } from '../permission-denial.js';
 import { getPermissionDescriptorOfRootEntityType } from '../permission-descriptors-in-model.js';
 import { ConditionExplanationContext, PermissionResult } from '../permission-descriptors.js';
 
@@ -21,12 +22,11 @@ export function transformCreateEntityQueryNode(
         case PermissionResult.GRANTED:
             return node;
         case PermissionResult.DENIED:
-            return new RuntimeErrorQueryNode(
-                `Not authorized to create ${node.rootEntityType.name} objects`,
-                {
-                    code: PERMISSION_DENIED_ERROR,
-                },
-            );
+            return createPermissionDeniedNode({
+                operation: AccessOperation.CREATE,
+                typeName: node.rootEntityType.name,
+                message: `Not authorized to create ${node.rootEntityType.name} objects`,
+            });
         default:
             const condition = simplifyBooleans(
                 new BinaryOperationQueryNode(
@@ -56,6 +56,10 @@ export function transformCreateEntityQueryNode(
                         query: condition,
                         resultValidator: new ErrorIfNotTruthyResultValidator({
                             errorCode: PERMISSION_DENIED_ERROR,
+                            permissionDenial: {
+                                operation: AccessOperation.CREATE,
+                                typeName: node.rootEntityType.name,
+                            },
                             errorMessage: `Not authorized to ${explanation}`,
                         }),
                     }),

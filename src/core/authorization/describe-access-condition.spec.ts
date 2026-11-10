@@ -92,7 +92,11 @@ describe('describeAccessCondition', () => {
     });
 
     it('reports denied access', () => {
-        expect(describeFor('File', { authRoles: ['other'] })).toEqual({ kind: 'denied' });
+        expect(describeFor('File', { authRoles: ['other'] })).toEqual({
+            kind: 'denied',
+            permissionProfileName: 'restricted',
+            permissions: [],
+        });
         expect(describeFor('Note', { authRoles: ['reader'] }, 'UPDATE')).toEqual({
             kind: 'denied',
         });
@@ -123,8 +127,24 @@ describe('describeAccessCondition', () => {
         });
     });
 
-    it('reports denied access if a claim of the only applicable permission is missing', () => {
-        expect(describeFor('File', { authRoles: ['customer'] })).toEqual({ kind: 'denied' });
+    it('describes the applicable permissions if a claim of the only applicable permission is missing', () => {
+        expect(describeFor('File', { authRoles: ['customer'] })).toEqual({
+            kind: 'denied',
+            permissionProfileName: 'restricted',
+            permissions: [
+                {
+                    restrictions: [
+                        {
+                            fieldPath: ['customerName'],
+                            source: 'claim',
+                            claim: 'customers',
+                            values: [],
+                        },
+                        { fieldPath: ['tags'], source: 'value', values: ['public'] },
+                    ],
+                },
+            ],
+        });
     });
 
     it('describes access groups and evaluated templates', () => {
@@ -149,6 +169,8 @@ describe('describeAccessCondition', () => {
     it('only includes the permissions that apply to the operation', () => {
         expect(describeFor('File', { authRoles: ['customer'] }, 'UPDATE')).toEqual({
             kind: 'denied',
+            permissionProfileName: 'restricted',
+            permissions: [],
         });
     });
 

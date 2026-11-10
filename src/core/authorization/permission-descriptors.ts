@@ -340,47 +340,53 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
         authContext: AuthContext,
         operation: AccessOperation,
     ): AccessConditionDescription {
-        switch (this.canAccess(authContext, operation)) {
-            case PermissionResult.GRANTED:
-                return { kind: 'granted' };
-            case PermissionResult.DENIED:
-                return { kind: 'denied' };
+        const access = this.canAccess(authContext, operation);
+        if (access === PermissionResult.GRANTED) {
+            return { kind: 'granted' };
         }
+        const permissions = this.getApplicablePermissions(authContext, operation).map(
+            (permission) => this.describePermission(permission, authContext),
+        );
         return {
-            kind: 'restricted',
+            kind: access === PermissionResult.DENIED ? 'denied' : 'restricted',
             permissionProfileName: this.profile.name,
-            permissions: this.getApplicablePermissions(authContext, operation).map(
-                (permission): PermissionDescription => ({
-                    ...(permission.restrictToAccessGroups
-                        ? { accessGroups: permission.getAllowedAccessGroups(authContext) }
-                        : {}),
-                    restrictions: permission.restrictions.map(
-                        (restriction): RestrictionDescription => ({
-                            fieldPath:
-                                this.getRestrictionFieldPath(restriction.field).fields?.map(
-                                    (field) => field.name,
-                                ) ?? restriction.field.split('.'),
-                            ...(restriction.value !== undefined
-                                ? { source: 'value', values: [restriction.value] }
-                                : restriction.valueTemplate !== undefined
-                                  ? {
-                                        source: 'valueTemplate',
-                                        values: permission.evaluateTemplate(
-                                            restriction.valueTemplate,
-                                            authContext,
-                                        ),
-                                    }
-                                  : {
-                                        source: 'claim',
-                                        claim: restriction.claim!,
-                                        values: getClaimValues(restriction.claim!, authContext),
-                                    }),
-                            loc: restriction.loc,
-                        }),
-                    ),
-                    loc: permission.loc,
+            permissions,
+        };
+    }
+
+    private describePermission(
+        permission: Permission,
+        authContext: AuthContext,
+    ): PermissionDescription {
+        return {
+            ...(permission.restrictToAccessGroups
+                ? { accessGroups: permission.getAllowedAccessGroups(authContext) }
+                : {}),
+            restrictions: permission.restrictions.map(
+                (restriction): RestrictionDescription => ({
+                    fieldPath:
+                        this.getRestrictionFieldPath(restriction.field).fields?.map(
+                            (field) => field.name,
+                        ) ?? restriction.field.split('.'),
+                    ...(restriction.value !== undefined
+                        ? { source: 'value', values: [restriction.value] }
+                        : restriction.valueTemplate !== undefined
+                          ? {
+                                source: 'valueTemplate',
+                                values: permission.evaluateTemplate(
+                                    restriction.valueTemplate,
+                                    authContext,
+                                ),
+                            }
+                          : {
+                                source: 'claim',
+                                claim: restriction.claim!,
+                                values: getClaimValues(restriction.claim!, authContext),
+                            }),
+                    loc: restriction.loc,
                 }),
             ),
+            loc: permission.loc,
         };
     }
 
