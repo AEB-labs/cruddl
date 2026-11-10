@@ -68,9 +68,11 @@ export function serializeQueries(steps: ReadonlyArray<{ readonly query: string }
  * Builds the new content of an AQL file, keeping the recorded peak memory usage of the ArangoDB
  * versions that are currently not being tested against
  *
- * If the query of a transaction step changed, the peak memory usage of the other versions is kept
- * even though it is likely to be outdated - the tests on those versions will then report the actual
- * value so it can be recorded without having to run all versions locally.
+ * If a transaction step is new or its query changed, the recorded values of the other versions
+ * would be missing or outdated, so the actual value is recorded for all tested versions instead.
+ * This keeps the file at a single value in the common case that the versions agree. If they
+ * don't, the tests on those versions report the actual value so it can be recorded without having
+ * to run all versions locally.
  */
 export function buildUpdatedAqlGoldenFile({
     actualSteps,
@@ -81,19 +83,35 @@ export function buildUpdatedAqlGoldenFile({
     readonly goldenSteps: ReadonlyArray<AqlGoldenTransactionStep> | undefined;
     readonly arangoDBVersion: string | undefined;
 }): string {
-    const steps = actualSteps.map((actualStep, index) => {
-        const peakMemoryUsageByVersion = new Map(
-            goldenSteps?.[index]?.peakMemoryUsageByVersion ?? [],
-        );
+    const steps = actualSteps.map((actualStep, index): AqlGoldenTransactionStep => {
+        const query = normalizeQuery(actualStep.query);
+        const goldenStep = goldenSteps?.[index];
         // if we're running a version we don't have golden values for, keep the recorded values
-        if (arangoDBVersion && TESTED_ARANGODB_VERSIONS.includes(arangoDBVersion)) {
-            if (actualStep.peakMemoryUsage === undefined) {
-                peakMemoryUsageByVersion.delete(arangoDBVersion);
-            } else {
-                peakMemoryUsageByVersion.set(arangoDBVersion, actualStep.peakMemoryUsage);
-            }
+        if (!arangoDBVersion || !TESTED_ARANGODB_VERSIONS.includes(arangoDBVersion)) {
+            return {
+                query,
+                peakMemoryUsageByVersion: goldenStep?.peakMemoryUsageByVersion ?? new Map(),
+            };
         }
-        return { query: normalizeQuery(actualStep.query), peakMemoryUsageByVersion };
+
+        if (!goldenStep || goldenStep.query !== query) {
+            const versions =
+                actualStep.peakMemoryUsage === undefined ? [] : TESTED_ARANGODB_VERSIONS;
+            return {
+                query,
+                peakMemoryUsageByVersion: new Map(
+                    versions.map((version) => [version, actualStep.peakMemoryUsage!]),
+                ),
+            };
+        }
+
+        const peakMemoryUsageByVersion = new Map(goldenStep.peakMemoryUsageByVersion);
+        if (actualStep.peakMemoryUsage === undefined) {
+            peakMemoryUsageByVersion.delete(arangoDBVersion);
+        } else {
+            peakMemoryUsageByVersion.set(arangoDBVersion, actualStep.peakMemoryUsage);
+        }
+        return { query, peakMemoryUsageByVersion };
     });
     return formatWhitespaceInFile(
         steps.map(serializeTransactionStep).join(TRANSACTION_STEP_SEPARATOR),

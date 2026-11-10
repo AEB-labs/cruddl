@@ -107,6 +107,37 @@ describe('buildUpdatedAqlGoldenFile', () => {
         expect(content).to.equal(goldenFile);
     });
 
+    it('records the value for all tested versions in a new file', () => {
+        const content = buildUpdatedAqlGoldenFile({
+            actualSteps: [actualStep('RETURN 1', 32768)],
+            goldenSteps: undefined,
+            arangoDBVersion: NEWEST_VERSION,
+        });
+        expect(content).to.equal('RETURN 1\n\n// Peak memory usage: 32768 bytes\n');
+    });
+
+    it('records the value for all tested versions if the query changed', () => {
+        const content = buildUpdatedAqlGoldenFile({
+            actualSteps: [actualStep('RETURN 2', 32768)],
+            goldenSteps: parseAqlGoldenFile(FILE_WITH_DIFFERENT_NEWEST_VALUE),
+            arangoDBVersion: NEWEST_VERSION,
+        });
+        expect(content).to.equal('RETURN 2\n\n// Peak memory usage: 32768 bytes\n');
+    });
+
+    it('records the value for all tested versions in a new transaction step', () => {
+        const content = buildUpdatedAqlGoldenFile({
+            actualSteps: [actualStep('RETURN 1', 32768), actualStep('RETURN 2', 16384)],
+            goldenSteps: parseAqlGoldenFile(FILE_WITH_DIFFERENT_NEWEST_VALUE),
+            arangoDBVersion: NEWEST_VERSION,
+        });
+        expect(content).to.equal(
+            FILE_WITH_DIFFERENT_NEWEST_VALUE +
+                TRANSACTION_STEP_SEPARATOR.slice(1) +
+                'RETURN 2\n\n// Peak memory usage: 16384 bytes\n',
+        );
+    });
+
     it('records a query that has no peak memory usage', () => {
         const content = buildUpdatedAqlGoldenFile({
             actualSteps: [actualStep('RETURN 1')],
