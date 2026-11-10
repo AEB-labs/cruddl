@@ -19,6 +19,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
           cache: 'npm'
       - run: npm ci
-      - run: npm publish --tag next
+      # prereleases (v6.0.0-alpha.1) go to "next", stable versions to "latest"
+      - run: npm publish --tag "$([[ "$GITHUB_REF_NAME" == *-* ]] && echo next || echo latest)"
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
