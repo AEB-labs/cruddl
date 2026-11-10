@@ -3,28 +3,28 @@ RETURN {
   "allDeliveries": (
     FOR v_delivery1
     IN @@deliveries
-    FILTER (FIRST(
-      FOR v_item1
+    FILTER (LENGTH((
+      FOR v_handlingUnits1
       IN (
-        FOR v_handlingUnits1
+        FOR v_node1
         IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
-        FILTER (FIRST((
-          FOR v_node1
-          IN OUTBOUND FIRST((
-            FOR v_node2
-            IN INBOUND v_handlingUnits1 @@deliveries_handlingUnits
-            FILTER v_node2._key != null
-            RETURN v_node2
-          )) @@deliveries_forwarder
-          FILTER v_node1._key != null
-          RETURN v_node1
-        )).`name` == @var1)
-        FILTER v_handlingUnits1._key != null
-        RETURN v_handlingUnits1
+        FILTER v_node1._key != null
+        RETURN v_node1
       )
-      COLLECT WITH COUNT INTO v_count1
-      RETURN v_count1
-    ) > @var2)
+      FILTER (FIRST((
+        FOR v_node2
+        IN OUTBOUND FIRST((
+          FOR v_node3
+          IN INBOUND v_handlingUnits1 @@deliveries_handlingUnits
+          FILTER v_node3._key != null
+          RETURN v_node3
+        )) @@deliveries_forwarder
+        FILTER v_node2._key != null
+        RETURN v_node2
+      )).`name` == @var1)
+      LIMIT 1
+      RETURN true
+    )) > 0)
     SORT (v_delivery1.`deliveryNumber`)
     RETURN {
       "deliveryNumber": v_delivery1.`deliveryNumber`
@@ -32,4 +32,4 @@ RETURN {
   )
 }
 
-// Peak memory usage: 163840 bytes
+// Peak memory usage: 131072 bytes

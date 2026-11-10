@@ -2,17 +2,13 @@ RETURN {
   "allOrders": (
     FOR v_order1
     IN @@orders
-    FILTER (FIRST(
-      FOR v_item1
-      IN (
-        FOR v_items1
-        IN (IS_LIST(v_order1.`items`) ? v_order1.`items` : [])
-        FILTER !(((v_items1.`itemNumber` != @var1) && (@var2 IN v_items1.`tags`[*])))
-        RETURN v_items1
-      )
-      COLLECT WITH COUNT INTO v_count1
-      RETURN v_count1
-    ) == @var3)
+    FILTER (LENGTH((
+      FOR v_items1
+      IN (IS_LIST(v_order1.`items`) ? v_order1.`items` : [])
+      FILTER !(((v_items1.`itemNumber` != @var1) && (@var2 IN v_items1.`tags`[*])))
+      LIMIT 1
+      RETURN true
+    )) == 0)
     SORT (v_order1.`orderNumber`)
     RETURN {
       "orderNumber": v_order1.`orderNumber`
@@ -20,4 +16,4 @@ RETURN {
   )
 }
 
-// Peak memory usage: 131072 bytes
+// Peak memory usage: 65536 bytes

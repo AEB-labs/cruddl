@@ -9,12 +9,17 @@ RETURN {
       RETURN v_item1
     )
     FILTER (LENGTH((
-      FOR v_item2
-      IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
-      FILTER (v_item2.`accessGroup` IN @var2)
-      FILTER v_item2._key != null
-      RETURN v_item2
-    )[* FILTER true]) > 0)
+      FOR v_handlingUnits1
+      IN (
+        FOR v_item2
+        IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
+        FILTER (v_item2.`accessGroup` IN @var2)
+        FILTER v_item2._key != null
+        RETURN v_item2
+      )
+      LIMIT 1
+      RETURN true
+    )) > 0)
     SORT (v_delivery1.`deliveryNumber`)
     RETURN {
       "deliveryNumber": v_delivery1.`deliveryNumber`
@@ -22,4 +27,6 @@ RETURN {
   )
 }
 
-// Peak memory usage: 98304 bytes
+// Peak memory usage (arangodb 3.12.6): 98304 bytes
+// Peak memory usage (arangodb 3.12.11): 65536 bytes
+// Peak memory usage (arangodb 3.12.13): 65536 bytes

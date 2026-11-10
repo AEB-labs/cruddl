@@ -10,21 +10,17 @@ RETURN {
     "items": (
       FOR v_deliveryItem1
       IN v_delivery1.`items`[*]
-      FILTER (FIRST(
-        FOR v_item1
+      FILTER (LENGTH((
+        FOR v_description1
         IN (
-          FOR v_description1
-          IN (
-            LET v_object1 = v_deliveryItem1.`description`
-            FOR v_key1 IN IS_DOCUMENT(v_object1) ? ATTRIBUTES(v_object1) : []
-            RETURN [ v_key1, v_object1[v_key1] ]
-          )
-          FILTER (((v_description1)[@var3] == @var4) && ((v_description1)[@var5] == @var6))
-          RETURN v_description1
+          LET v_object1 = v_deliveryItem1.`description`
+          FOR v_key1 IN IS_DOCUMENT(v_object1) ? ATTRIBUTES(v_object1) : []
+          RETURN [ v_key1, v_object1[v_key1] ]
         )
-        COLLECT WITH COUNT INTO v_count1
-        RETURN v_count1
-      ) > @var7)
+        FILTER (((v_description1)[@var3] == @var4) && ((v_description1)[@var5] == @var6))
+        LIMIT 1
+        RETURN true
+      )) > 0)
       RETURN {
         "itemNumber": v_deliveryItem1.`itemNumber`
       }
@@ -32,4 +28,4 @@ RETURN {
   })
 }
 
-// Peak memory usage: 98304 bytes
+// Peak memory usage: 65536 bytes

@@ -7,11 +7,17 @@ RETURN {
         FOR v_delivery1
         IN @@deliveries
         FILTER (LENGTH((
-          FOR v_node1
-          IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
-          FILTER v_node1._key != null
-          RETURN v_node1
-        )[* FILTER (CURRENT.`huNumber` == @var2)]) > 0)
+          FOR v_handlingUnits1
+          IN (
+            FOR v_node1
+            IN OUTBOUND v_delivery1 @@deliveries_handlingUnits
+            FILTER v_node1._key != null
+            RETURN v_node1
+          )
+          FILTER (v_handlingUnits1.`huNumber` == @var2)
+          LIMIT 1
+          RETURN true
+        )) > 0)
         RETURN v_delivery1
       )
       COLLECT WITH COUNT INTO v_count1
