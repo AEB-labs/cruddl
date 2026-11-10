@@ -22,6 +22,8 @@ export function transformEntitiesQueryNode(node: EntitiesQueryNode, authContext:
             return node;
         case PermissionResult.DENIED:
             return createPermissionDeniedNode({
+                permissionDescriptor: permissionDescriptor,
+                authContext,
                 operation: AccessOperation.READ,
                 typeName: node.rootEntityType.name,
                 message: `Not authorized to read ${node.rootEntityType.name} objects`,
@@ -52,6 +54,8 @@ export function transformEntityFromIdQueryNode(
             return node;
         case PermissionResult.DENIED:
             return createPermissionDeniedNode({
+                permissionDescriptor: permissionDescriptor,
+                authContext,
                 operation: AccessOperation.READ,
                 typeName: node.rootEntityType.name,
                 message: `Not authorized to read ${node.rootEntityType.name} objects`,
@@ -79,6 +83,8 @@ export function transformFlexSearchQueryNode(node: FlexSearchQueryNode, authCont
             return node;
         case PermissionResult.DENIED:
             return createPermissionDeniedNode({
+                permissionDescriptor: permissionDescriptor,
+                authContext,
                 operation: AccessOperation.READ,
                 typeName: node.rootEntityType.name,
                 message: `Not authorized to read ${node.rootEntityType.name} objects`,

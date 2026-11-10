@@ -14,6 +14,8 @@ export function transformFieldQueryNode(node: FieldQueryNode, authContext: AuthC
             return node;
         case PermissionResult.DENIED:
             return createPermissionDeniedNode({
+                permissionDescriptor: permissionDescriptor,
+                authContext,
                 operation: AccessOperation.READ,
                 typeName: node.field.declaringType.name,
                 fieldName: node.field.name,
@@ -38,6 +40,8 @@ export function transformFieldPathQueryNode(
                 break;
             case PermissionResult.DENIED:
                 return createPermissionDeniedNode({
+                    permissionDescriptor: permissionDescriptor,
+                    authContext,
                     operation: AccessOperation.READ,
                     typeName: field.declaringType.name,
                     fieldName: field.name,

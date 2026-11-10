@@ -20,6 +20,8 @@ export function transformAffectedFieldInfoQueryNode(
     switch (access) {
         case PermissionResult.DENIED:
             return createPermissionDeniedNode({
+                permissionDescriptor: permissionDescriptor,
+                authContext,
                 operation: AccessOperation.UPDATE,
                 typeName: node.field.declaringType.name,
                 fieldName: node.field.name,

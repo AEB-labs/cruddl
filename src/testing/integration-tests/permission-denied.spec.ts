@@ -116,6 +116,30 @@ describe.each(adapters)('permission denied errors ($name)', ({ skip, create }) =
         });
     });
 
+    it.skipIf(skip)('tells users when their permissions match no object', async () => {
+        const run = await createSchema();
+        const suffix =
+            ': your permissions for this type currently do not grant access to any object';
+        const readResult = await run(
+            { authRoles: ['customer'], claims: {} },
+            `{ allFiles { name } }`,
+        );
+        expect(readResult.errors?.map((e) => e.message)).to.deep.equal([
+            'Not authorized to read File objects' + suffix,
+        ]);
+        const createResult = await run(
+            { authRoles: ['customer'], claims: { customerId: '' } },
+            `mutation { createFile(input: { name: "a" }) { name } }`,
+        );
+        // the error for reading the created object is merged into the same message
+        expect(createResult.errors?.map((e) => e.message)).to.deep.equal([
+            'Not authorized to create File objects' +
+                suffix +
+                ', Not authorized to read File objects' +
+                suffix,
+        ]);
+    });
+
     it.skipIf(skip)('returns undefined for other errors', async () => {
         expect(getPermissionDenial(new Error('test'))).to.be.undefined;
         expect(getPermissionDenial(undefined)).to.be.undefined;

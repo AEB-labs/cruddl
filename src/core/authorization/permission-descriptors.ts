@@ -109,6 +109,14 @@ export abstract class PermissionDescriptor {
     }
 
     /**
+     * Determines if the user has permissions for the operation that restrict the accessible
+     * objects. If canAccess() returns DENIED nevertheless, these permissions match no object.
+     */
+    hasApplicablePermissions(authContext: AuthContext, operation: AccessOperation): boolean {
+        return false;
+    }
+
+    /**
      * Describes the condition that determines if a user has access, e.g. for tools that explain
      * why a query reads or skips certain objects
      */
@@ -334,6 +342,10 @@ export class ProfileBasedPermissionDescriptor extends PermissionDescriptor {
             (acc: QueryNode, node) => new BinaryOperationQueryNode(acc, BinaryOperator.AND, node),
             accessGroupConditionNode,
         );
+    }
+
+    hasApplicablePermissions(authContext: AuthContext, operation: AccessOperation): boolean {
+        return this.getApplicablePermissions(authContext, operation).length > 0;
     }
 
     describeAccessCondition(

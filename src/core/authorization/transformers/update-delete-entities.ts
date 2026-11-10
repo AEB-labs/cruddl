@@ -55,6 +55,8 @@ function transformUpdateOrDeleteEntitiesQueryNode(
     switch (access) {
         case PermissionResult.DENIED:
             return createPermissionDeniedNode({
+                permissionDescriptor: permissionDescriptor,
+                authContext,
                 operation: operation,
                 typeName: node.rootEntityType.name,
                 message: `Not authorized to ${actionDescription} ${node.rootEntityType.name} objects`,
