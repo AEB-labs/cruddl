@@ -80,7 +80,10 @@ interface Plan {
         estimatedNrItems: number;
         [key: string]: any;
     }>;
-    rules: ReadonlyArray<any>;
+    /**
+     * The names of the optimizer rules that were applied to the plan
+     */
+    rules: ReadonlyArray<string>;
     collections: ReadonlyArray<{
         name: string;
         type: string;
@@ -91,7 +94,12 @@ interface Plan {
     }>;
     estimatedCost: number;
     estimatedNrItems: number;
+
+    /**
+     * @deprecated ArangoDB does not return this field, so it is always undefined
+     */
     initialize: boolean;
+
     isModificationQuery: boolean;
 }
 
@@ -123,25 +131,111 @@ export interface ExecutionPlanTransactionStep {
             id: number;
             calls: number;
             items: number;
+
+            /**
+             * The number of items this node filtered out
+             */
+            readonly filtered?: number;
+
+            /**
+             * The time (in seconds) spent in this node and all its dependencies
+             */
             runtime: number;
+
+            /**
+             * The time (in seconds) this node spent waiting for its dependencies
+             */
+            readonly fetching?: number;
         }>;
         writesExecuted: number;
         writesIgnored: number;
+
+        /**
+         * The number of documents that were read via a full collection scan
+         */
+        readonly scannedFull?: number;
+
+        /**
+         * @deprecated misspelled, always undefined. Use scannedFull instead.
+         */
         scannedFul: number;
+
+        /**
+         * The number of index entries that were read
+         */
         scannedIndex: number;
+
+        /**
+         * The number of documents that were loaded after an index lookup
+         */
+        readonly documentLookups?: number;
+
+        /**
+         * The number of seek operations on indexes
+         */
+        readonly seeks?: number;
+
+        /**
+         * The number of index cursors that were created
+         */
+        readonly cursorsCreated?: number;
+
+        /**
+         * The number of times existing index cursors were reused for a new lookup value
+         */
+        readonly cursorsRearmed?: number;
+
+        /**
+         * The number of lookups served from the in-memory edge or index cache
+         */
+        readonly cacheHits?: number;
+
+        /**
+         * The number of lookups that could not be served from the in-memory edge or index cache
+         */
+        readonly cacheMisses?: number;
+
         filtered: number;
-        httpRequests: 0;
+        httpRequests: number;
+
+        /**
+         * The number of intermediate commits the query performed
+         */
+        readonly intermediateCommits?: number;
+
+        /**
+         * The number of documents that would have been returned without the last LIMIT. Only present if the
+         * fullCount option was set.
+         */
+        readonly fullCount?: number;
+
+        /**
+         * The time (in seconds) the query took
+         */
         executionTime: number;
+
+        /**
+         * The maximum memory (in bytes) the query used
+         */
         peakMemoryUsage?: number;
     };
 
     readonly warnings?: ReadonlyArray<{
-        code: string;
+        /**
+         * The ArangoDB error number of the warning (e.g. 1562 for "division by zero")
+         */
+        code: number;
         message: string;
     }>;
 
+    /**
+     * Times (in seconds) spent in the phases of query execution (e.g. "parsing", "optimizing plan", "executing")
+     */
     readonly profile?: { [key: string]: number };
 
+    /**
+     * @deprecated never populated. Use stats.peakMemoryUsage instead.
+     */
     readonly peakMemoryUsage?: number;
 }
 

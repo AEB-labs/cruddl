@@ -1,6 +1,12 @@
 import type { ArangoSearchViewProperties } from 'arangojs/views';
 import { gql } from 'graphql-tag';
 import { beforeEach, describe, expect, it } from 'vitest';
+import type { ExecutionPlanTransactionStep } from '../core/database/database-adapter.js';
+import { TransformListQueryNode } from '../core/query-tree/lists.js';
+import { LiteralQueryNode } from '../core/query-tree/literals.js';
+import { BinaryOperationQueryNode, BinaryOperator } from '../core/query-tree/operators.js';
+import { EntitiesQueryNode, FieldQueryNode } from '../core/query-tree/queries.js';
+import { VariableQueryNode } from '../core/query-tree/variables.js';
 import { createTempDatabase, getTempDatabase } from '../testing/regression-tests/initialization.js';
 import { createSimpleModel } from '../testing/utils/create-simple-model.js';
 import { ArangoDBAdapter } from './arangodb-adapter.js';
@@ -202,6 +208,88 @@ describe.skipIf(isArangoDBDisabled())('ArangoDBAdapter', () => {
             expect(properties.commitIntervalMsec).to.equal(2000);
             expect(properties.consolidationIntervalMsec).to.equal(8000);
             expect(properties.cleanupIntervalStep).to.equal(1);
+        });
+    });
+
+    describe('executeExt with recordPlan', () => {
+        const model = createSimpleModel(gql`
+            type Delivery @rootEntity {
+                deliveryNumber: String @key
+                itemCount: Int @index
+                description: String
+            }
+        `);
+        const deliveryType = model.getRootEntityTypeOrThrow('Delivery');
+
+        async function executeFilter(
+            fieldName: string,
+            value: unknown,
+        ): Promise<ExecutionPlanTransactionStep> {
+            const adapter = new ArangoDBAdapter(await createTempDatabase());
+            await adapter.updateSchema(model);
+            await getTempDatabase()
+                .collection('deliveries')
+                .saveAll(
+                    [1, 2, 3, 4, 5].map((i) => ({
+                        deliveryNumber: `D${i}`,
+                        itemCount: i,
+                        description: `delivery ${i}`,
+                    })),
+                );
+
+            const itemVariable = new VariableQueryNode('item');
+            const result = await adapter.executeExt({
+                queryTree: new TransformListQueryNode({
+                    itemVariable,
+                    listNode: new EntitiesQueryNode(deliveryType),
+                    filterNode: new BinaryOperationQueryNode(
+                        new FieldQueryNode(itemVariable, deliveryType.getFieldOrThrow(fieldName)),
+                        BinaryOperator.EQUAL,
+                        new LiteralQueryNode(value),
+                    ),
+                }),
+                recordPlan: true,
+            });
+            expect(result.error).to.be.undefined;
+            expect(result.plan?.transactionSteps).toHaveLength(1);
+            return result.plan!.transactionSteps[0];
+        }
+
+        it('reports stats of a full collection scan', async () => {
+            const step = await executeFilter('description', 'delivery 3');
+            const stats = step.stats!;
+            expect(stats.scannedFull).to.equal(5);
+            expect(stats.scannedIndex).to.equal(0);
+            expect(stats.filtered).to.equal(4);
+            expect(stats.httpRequests).to.be.a('number');
+            expect(stats.documentLookups).to.be.a('number');
+            expect(stats.peakMemoryUsage).to.be.a('number');
+
+            const enumerateNode = step.plan!.nodes.find(
+                (n) => n.type === 'EnumerateCollectionNode',
+            )!;
+            expect(enumerateNode.collection).to.equal('deliveries');
+            expect(enumerateNode.outVariable?.name).to.be.a('string');
+            const nodeStats = stats.nodes!.find((n) => n.id === enumerateNode.id)!;
+            expect(nodeStats.filtered).to.equal(4);
+            expect(step.plan!.rules).to.include('move-filters-into-enumerate');
+        });
+
+        it('reports stats and the used index of an index scan', async () => {
+            const step = await executeFilter('itemCount', 3);
+            const stats = step.stats!;
+            expect(stats.scannedFull).to.equal(0);
+            expect(stats.scannedIndex).to.equal(1);
+            expect(stats.seeks).to.be.a('number');
+            expect(stats.cursorsCreated).to.be.a('number');
+
+            const indexNode = step.plan!.nodes.find((n) => n.type === 'IndexNode')!;
+            expect(indexNode.collection).to.equal('deliveries');
+            const indexes = indexNode.indexes;
+            expect(Array.isArray(indexes)).to.be.true;
+            expect(indexes).to.containSubset([
+                { type: 'persistent', fields: ['itemCount'], unique: false, sparse: false },
+            ]);
         });
     });
 
