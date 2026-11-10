@@ -38,6 +38,8 @@ export { ScalarType } from './implementation/scalar-type.js';
 export { TimeToLiveType } from './implementation/time-to-live.js';
 export type { ObjectType, Type } from './implementation/type.js';
 export { ValueObjectType } from './implementation/value-object-type.js';
+export { combineQuickFixes } from './validation/combine-quick-fixes.js';
+export type { CombinedQuickFixes } from './validation/combine-quick-fixes.js';
 export { MessageLocation, SourcePosition } from './validation/location.js';
 export { Severity, ValidationMessage } from './validation/message.js';
 export { QUICK_FIX_KINDS } from './validation/quick-fix-kinds.js';
