@@ -157,6 +157,12 @@ collections or adding indices.
     be run twice at the same time. This needs to be implemented by the embedder.
 -   `MigrationPerformer` (`src/database/arangodb/schema-migration/performer.ts`) performs a
     migration.
+-   `ArangoDBAdapter.getDatabaseObjects()` lists the collections, indexes and views the adapter uses
+    for a model, with the part of the model each index comes from (`IndexOrigin`). Tooling uses it
+    to map names in ArangoDB (e.g. in query plans) back to the model. It is built from the same
+    functions as the migrations (`getRequiredIndicesWithOriginsFromModel()` in `index-helpers.ts`,
+    which reads `RootEntityType.indicesWithOrigins`), so a new kind of index that cruddl creates
+    needs a new `IndexOrigin` variant there.
 
 ### Modules
 

@@ -1,3 +1,4 @@
+import type { PersistentIndexOrigin } from '../../core/model/implementation/index-origin.js';
 import type { IndexField } from '../../core/model/implementation/indices.js';
 import type { Model } from '../../core/model/implementation/model.js';
 import type { RootEntityType } from '../../core/model/implementation/root-entity-type.js';
@@ -94,10 +95,24 @@ function indexDefinitionsEqual(a: PersistentIndexDefinition, b: PersistentIndexD
     return false;
 }
 
+export interface RequiredPersistentIndex {
+    readonly definition: PersistentIndexDefinition;
+    readonly origin: PersistentIndexOrigin;
+}
+
 export function getRequiredIndicesFromModel(
     model: Model,
     { prefix }: { prefix: string | undefined },
 ): ReadonlyArray<PersistentIndexDefinition> {
+    return getRequiredIndicesWithOriginsFromModel(model, { prefix }).map(
+        ({ definition }) => definition,
+    );
+}
+
+export function getRequiredIndicesWithOriginsFromModel(
+    model: Model,
+    { prefix }: { prefix: string | undefined },
+): ReadonlyArray<RequiredPersistentIndex> {
     return model.rootEntityTypes.flatMap((rootEntity) =>
         getIndicesForRootEntity(rootEntity, prefix),
     );
@@ -106,17 +121,20 @@ export function getRequiredIndicesFromModel(
 function getIndicesForRootEntity(
     rootEntity: RootEntityType,
     prefix: string | undefined,
-): ReadonlyArray<PersistentIndexDefinition> {
+): ReadonlyArray<RequiredPersistentIndex> {
     const collectionName = getCollectionNameForRootEntity(rootEntity, { prefix });
 
-    return rootEntity.indices.map((index) => ({
-        rootEntity,
-        collectionName,
-        name: index.name,
-        fields: index.fields.map(getArangoFieldPath),
-        unique: index.unique,
-        type: DEFAULT_INDEX_TYPE,
-        sparse: index.sparse,
+    return rootEntity.indicesWithOrigins.map(({ index, origin }) => ({
+        definition: {
+            rootEntity,
+            collectionName,
+            name: index.name,
+            fields: index.fields.map(getArangoFieldPath),
+            unique: index.unique,
+            type: DEFAULT_INDEX_TYPE,
+            sparse: index.sparse,
+        },
+        origin,
     }));
 }
 

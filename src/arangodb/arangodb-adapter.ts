@@ -39,6 +39,7 @@ import {
     initDatabase,
     RETRY_DELAY_RANDOM_FRACTION,
 } from './config.js';
+import { getModelDatabaseObjects, type ModelDatabaseObjects } from './database-objects.js';
 import { ERROR_ARANGO_CONFLICT, ERROR_QUERY_KILLED } from './error-codes.js';
 import { hasRevisionAssertions } from './revision-helper.js';
 import { SchemaAnalyzer } from './schema-migration/analyzer.js';
@@ -781,6 +782,17 @@ export class ArangoDBAdapter implements DatabaseAdapter {
             hasTimedOut,
             wasCancelled,
         };
+    }
+
+    /**
+     * Gets the collections, indexes and views this adapter uses for the given model, with the
+     * names they have in ArangoDB (including the collectionNamePrefix)
+     *
+     * Does not access the database, so the objects might not exist yet. Can be used to map names
+     * in ArangoDB (e.g. in query plans) back to the model.
+     */
+    getDatabaseObjects(model: Model): ModelDatabaseObjects {
+        return getModelDatabaseObjects(model, { prefix: this.config.collectionNamePrefix });
     }
 
     /**
